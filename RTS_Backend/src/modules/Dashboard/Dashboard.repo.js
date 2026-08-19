@@ -1,6 +1,7 @@
 const { executeQuery } = require("../../db/queryExecutor");
 const getConnection = require("../../config/db");
 const oracledb = require("oracledb");
+const { decryptString } = require("./encrypt.js");
 
 const lobToBuffer = async (lob) => {
     return new Promise((resolve, reject) => {
@@ -9,6 +10,71 @@ const lobToBuffer = async (lob) => {
         lob.on("end", () => resolve(Buffer.concat(chunks)));
         lob.on("error", reject);
     });
+};
+
+const decryptRequestRepo = async ({encryptedRequest}) => {
+    console.log("Repo: Decrypt Request",{ encryptedRequest });
+
+    const DEFAULT_ENCRYPTED_REQUEST = "00FCB9012692E1D96C83CEB51B616291";
+
+    if (encryptedRequest === null || encryptedRequest === undefined || String(encryptedRequest).trim() === "") {
+        encryptedRequest = DEFAULT_ENCRYPTED_REQUEST;
+        console.log("Using default encrypted request:", encryptedRequest);
+    }
+
+    const decryptedRequest = decryptString(encryptedRequest);
+    console.log("Decrypted Request:",decryptedRequest);
+
+    const requestParts = decryptedRequest.split("&");
+
+    let corpCode = "";
+    requestParts.forEach(
+        (part) => {
+            const [key, ...values] = part.split("=");
+
+            if (key?.trim().toUpperCase() === "CORPCODE") {
+                corpCode = values.join("=").trim();
+            }
+        }
+    );
+
+    if (!corpCode) {
+        throw new Error("CORPCODE not found in decrypted request");
+    }
+
+    const ulbSql = `
+        SELECT
+            corporationid
+        FROM prop.vw_corporation
+        WHERE corporation_code = :corpCode
+    `;
+
+    const ulbResult =
+        await executeQuery(ulbSql, {corpCode});
+
+    if (!ulbResult.success) {
+        throw new Error(ulbResult.error || "Failed to fetch corporation ID");
+    }
+
+    const ulbRow = ulbResult.rows?.[0] || null;
+
+    if (!ulbRow) {
+        throw new Error(`No corporation found for CORPCODE: ${corpCode}`);
+    }
+
+
+    const ulbId = ulbRow.CORPORATIONID ?? ulbRow.corporationid ?? null;
+
+    if (!ulbId) {
+        throw new Error(`Corporation ID not found for CORPCODE: ${corpCode}`);
+    }
+
+    return {
+        encryptedRequest,
+        request: decryptedRequest,
+        corpCode,
+        ulbId: Number(ulbId),
+    };
 };
 
 const getCorporationDetailsRepo = async ({ corporationId }) => {
@@ -52,6 +118,8 @@ const getCorporationDetailsRepo = async ({ corporationId }) => {
         const logoRow = logoResult.rows?.[0] || null;
 
         let logo = null;
+
+        console.log({logo: logoResult})
 
         if (logoRow?.BLOB_CORPORATION_IMG) {
             if (Buffer.isBuffer(logoRow.BLOB_CORPORATION_IMG)) {
@@ -275,6 +343,7 @@ const getDownloadDocsRepo = async ({ serviceName, ulbid }) => {
 };
 
 module.exports = {
+    decryptRequestRepo,
     getCorporationDetailsRepo,
     getDepartmentMenuRepo,
     getServicesByDeptIdRepo,

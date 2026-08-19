@@ -1,331 +1,95 @@
-import { createContext, useContext, useEffect, useState, useRef } from "react";
-import { jwtDecode } from "jwt-decode";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import axios from "axios";
 import Swal from "sweetalert2";
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-let inactivityTimer = null;
+const AuthProvider = ({ children }) => {
+    const [user, setUser] = useState(() => {
+        const storedUser = sessionStorage.getItem("user");
+        if (!storedUser) { return null }
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // Refs to hold timer IDs
-  const tokenCheckIntervalRef = useRef(null);
-  const tokenExpiryTimeoutRef = useRef(null);
-
-  const logout = async ( reason = "Your login session has expired. Please login again.", showPopup = false) => {
-    console.warn("🚪 Logging out user...");
-
-    // Clear inactivity timer
-    clearTimeout(inactivityTimer);
-
-    // Clear token check interval
-    if (tokenCheckIntervalRef.current) {
-      clearInterval(tokenCheckIntervalRef.current);
-      tokenCheckIntervalRef.current = null;
-    }
-
-    // Clear exact expiry timeout
-    if (tokenExpiryTimeoutRef.current) {
-      clearTimeout(tokenExpiryTimeoutRef.current);
-      tokenExpiryTimeoutRef.current = null;
-    }
-
-    // Clear local storage
-    localStorage.clear();
-
-    // Notify other tabs
-    localStorage.setItem("logout", Date.now().toString());
-
-    // Clear state
-    setUser(null);
-    setLoading(false);
-
-    // Swal popup
-    if (showPopup) {
-    await Swal.fire({
-      icon: "warning",
-      text: reason,
-      confirmButtonText: "Login Again",
-      allowOutsideClick: false,
-      allowEscapeKey: false,
+        try {
+            return JSON.parse(storedUser);
+        } catch {
+            sessionStorage.removeItem("user");
+            return null;
+        }
     });
-  }
 
-    window.location.replace("/login");
-  };
+    const [requestInitialized, setRequestInitialized] = useState(false);
 
+    useEffect(() => {
+        const resolveRequest = async () => {
+            Swal.fire({
+                title: "Loading...",
+                text: "Initializing application",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const encryptedRequest = params.get("@") || params.get("request") || "";
 
-  const isTokenExpired = (token) => {
-    try {
-      const decoded = jwtDecode(token);
+                const response =
+                    await axios.get(`${BASE_URL}/api/Dashboard/decrypt-request`,
+                        { params: { request: encryptedRequest } }
+                    );
 
-      if (!decoded.exp) return true;
+                const resolved = response.data?.data?.data;
 
-      return decoded.exp * 1000 <= Date.now();
-    } catch (err) {
-      console.error("❌ Invalid token:", err);
-      return true;
-    }
-  };
+                const resolvedUser = {
+                    ulbId: Number(resolved?.ulbId),
+                    corpCode: resolved?.corpCode || "",
+                    decryptedRequest: resolved?.decryptedRequest || "",
+                    resolvedEncryptedRequest: resolved?.resolvedEncryptedRequest || encryptedRequest,
+                };
 
+                setUser(resolvedUser);
 
-  const startTokenCheckInterval = (token) => {
-    // Clear existing interval
-    if (tokenCheckIntervalRef.current) {
-      clearInterval(tokenCheckIntervalRef.current);
-    }
+                sessionStorage.setItem("user", JSON.stringify(resolvedUser));
+            } catch (error) {
+                console.error("Request resolution error:", error);
+                const storedUser = sessionStorage.getItem("user");
+                if (!storedUser) { setUser(null) }
+            } finally {
+                if (Swal.isVisible()) {
+                Swal.close();
+            }
+                setRequestInitialized(true);
+            }
+        };
+        resolveRequest();
+    }, []);
 
-    tokenCheckIntervalRef.current = setInterval(() => {
-      const currentToken = localStorage.getItem("token");
-
-      if (!currentToken || isTokenExpired(currentToken)) {
-        console.warn(" Token expired during interval check");
-        logout("Your login session has expired.", true);
-      } else {
-        console.log(" Token still valid");
-      }
-    }, 60 * 1000); // 60 seconds
-  };
-
-  const scheduleTokenExpiryLogout = (token) => {
-    try {
-      const decoded = jwtDecode(token);
-
-      if (!decoded.exp) {
-        logout("Your login session has expired.", true);
-        return;
-      }
-
-      const expiresAt = decoded.exp * 1000;
-      const remainingTime = expiresAt - Date.now();
-
-      if (remainingTime <= 0) {
-        console.warn("⛔ Token already expired");
-        logout("Your login session has expired.", true);
-        return;
-      }
-
-      // Clear previous timeout
-      if (tokenExpiryTimeoutRef.current) {
-        clearTimeout(tokenExpiryTimeoutRef.current);
-      }
-
-      tokenExpiryTimeoutRef.current = setTimeout(() => {
-        console.warn("⏰ Token expired exactly at expiry time");
-        logout("Your login session has expired.", true);
-      }, remainingTime);
-
-      console.log(
-        `⏳ Auto logout scheduled in ${Math.round(
-          remainingTime / 1000
-        )} seconds`
-      );
-    } catch (err) {
-      console.error("❌ Failed to schedule token expiry logout:", err);
-      logout("Your login session has expired.", true);
-    }
-  };
-
-  /* -------------------------------------------------------------------------- */
-  /*                            INACTIVITY TIMER                               */
-  /* -------------------------------------------------------------------------- */
-  const startInactivityTimer = () => {
-    clearTimeout(inactivityTimer);
-
-    inactivityTimer = setTimeout(() => {
-      // alert("Session expired due to inactivity.");
-      logout("Your login session has expired.", true);
-    }, 15 * 60 * 1000); // 15 minutes
-  };
-
-  const resetInactivityTimer = () => {
-    startInactivityTimer();
-  };
-
-  const setupInactivityListeners = () => {
-    const events = [
-      "mousemove",
-      "keydown",
-      "click",
-      "scroll",
-      "touchstart",
-    ];
-
-    events.forEach((event) => {
-      window.addEventListener(event, resetInactivityTimer);
-    });
-  };
-
-  const removeInactivityListeners = () => {
-    const events = [
-      "mousemove",
-      "keydown",
-      "click",
-      "scroll",
-      "touchstart",
-    ];
-
-    events.forEach((event) => {
-      window.removeEventListener(event, resetInactivityTimer);
-    });
-  };
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      if (isTokenExpired(token)) {
-        console.warn("⛔ Stored token expired");
-        logout("Your login session has expired.", true);
-        return;
-      }
-
-      const decoded = jwtDecode(token);
-
-      const userData = {
-        userId: decoded.sub,
-        username: localStorage.getItem("username"),
-        deptId: localStorage.getItem("deptid"),
-        ulbId: localStorage.getItem("ulbId"),
-        collcenterid: localStorage.getItem("collcenterid"),
-        lastLogin: localStorage.getItem("lastlogin"),
-        lastLogout: localStorage.getItem("lastlogout"),
-        prabhagName: localStorage.getItem("prabhagName"),
-        prabhagID: localStorage.getItem("prabhagID"),
-        token,
-      };
-
-      setUser(userData);
-
-      // Start session management
-      setupInactivityListeners();
-      startInactivityTimer();
-      startTokenCheckInterval(token);
-      scheduleTokenExpiryLogout(token);
-    } catch (err) {
-      console.error("❌ Error restoring auth:", err);
-      logout("Your login session has expired.", true);
-      return;
-    }
-
-    setLoading(false);
-
-    // Cleanup on unmount
-    return () => {
-      clearTimeout(inactivityTimer);
-
-      if (tokenCheckIntervalRef.current) {
-        clearInterval(tokenCheckIntervalRef.current);
-      }
-
-      if (tokenExpiryTimeoutRef.current) {
-        clearTimeout(tokenExpiryTimeoutRef.current);
-      }
-
-      removeInactivityListeners();
+    const login = (userData) => {
+        const authenticatedUser = { ...userData, ulbId: Number(userData?.ulbId || user?.ulbId) };
+        setUser(authenticatedUser);
+        sessionStorage.setItem("user", JSON.stringify(authenticatedUser));
     };
-  }, []);
 
-  /* -------------------------------------------------------------------------- */
-  /*                                   LOGIN                                    */
-  /* -------------------------------------------------------------------------- */
-  const loginAdmin = (userData, token) => {
-    try {
-      const decoded = jwtDecode(token);
-      const userId = decoded.sub;
-
-      // Save to localStorage
-      localStorage.setItem("username", userData.out_username);
-      localStorage.setItem("deptid", userData.acccounttype);
-      localStorage.setItem("ulbId", userData.out_orgid);
-      localStorage.setItem(
-        "collcenterid",
-        userData.out_collectioncenter
-      );
-      localStorage.setItem("token", token);
-      localStorage.setItem("lastlogin", userData.out_lastlogin);
-      localStorage.setItem("lastlogout", userData.out_lastlogout);
-      localStorage.setItem(
-        "prabhagName",
-        userData.out_prabhagname || ""
-      );
-      localStorage.setItem(
-        "prabhagID",
-        userData.out_prabhagid || ""
-      );
-      localStorage.setItem("userId", userId);
-
-      const authUser = {
-        userId,
-        username: userData.out_username,
-        deptId: userData.acccounttype,
-        ulbId: userData.out_orgid,
-        collcenterid: userData.out_collectioncenter,
-        lastLogin: userData.out_lastlogin,
-        lastLogout: userData.out_lastlogout,
-        prabhagName: userData.out_prabhagname,
-        prabhagID: userData.out_prabhagid,
-        token,
-      };
-
-      setUser(authUser);
-      setLoading(false);
-
-      // Start session management
-      setupInactivityListeners();
-      startInactivityTimer();
-      startTokenCheckInterval(token);
-      scheduleTokenExpiryLogout(token);
-    } catch (error) {
-      console.error("❌ Error decoding token during login:", error);
-      logout("Your login session has expired.", true);
-    }
-  };
-
-  /* -------------------------------------------------------------------------- */
-  /*                        CROSS-TAB LOGOUT HANDLING                           */
-  /* -------------------------------------------------------------------------- */
-  useEffect(() => {
-    const handleStorage = (e) => {
-      if (e.key === "logout") {
-        console.log("🗂️ Logout detected in another tab");
+    const logout = () => {
         setUser(null);
-        setLoading(false);
-        window.location.replace("/");
-      }
+        sessionStorage.removeItem("user");
     };
 
-    window.addEventListener("storage", handleStorage);
+    useEffect(() => {
+        if (!user) { return }
+        sessionStorage.setItem("user", JSON.stringify(user)
+        );
+    }, [user]);
 
-    return () => {
-      window.removeEventListener("storage", handleStorage);
-    };
-  }, []);
-
-  /* -------------------------------------------------------------------------- */
-  /*                                   PROVIDER                                 */
-  /* -------------------------------------------------------------------------- */
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        setUser,
-        token: user?.token,
-        loading,
-        loginAdmin,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+    return (
+        <AuthContext.Provider value={{ user, setUser, login, logout, requestInitialized }}>{children}</AuthContext.Provider>
+    );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () =>
+    useContext(AuthContext);
+
+export default AuthProvider;

@@ -1,5 +1,16 @@
 const repo = require("./Dashboard.repo");
 
+const decryptRequestService = async ({encryptedRequest}) => {
+    console.log( "Service: Decrypt Request", { encryptedRequest });
+    const data = await repo.decryptRequestRepo({encryptedRequest});
+
+    if (!data) {
+        return { success: false, message: "Unable to decrypt request", data: null};
+    }
+
+    return { success: true, data};
+};
+
 const getCorporationDetailsService = async (payload) => {
     console.log("Service: Fetch Corporation Details", payload);
     const data = await repo.getCorporationDetailsRepo(payload);
@@ -52,6 +63,7 @@ const getDownloadDocsService = async (payload) => {
 };
 
 module.exports = {
+    decryptRequestService,
     getCorporationDetailsService,
     getDepartmentMenuService,
     getServicesByDeptIdService,

@@ -2,6 +2,19 @@ const asyncHandler = require("../../libs/asyncHandler");
 const { fail, ok } = require("../../libs/response");
 const service = require("./Dashboard.service");
 
+exports.decryptRequestController =
+    asyncHandler(async (req, res) => {
+        console.log("Decrypt Request:", req.query);
+        const {request} = req.query;
+
+        const data = await service.decryptRequestService({encryptedRequest: request});
+
+        if (!data.success) {
+            return fail( res, data.message);
+        }
+        return ok( res, data, "Request decrypted successfully");
+    }
+);
 
 exports.getCorporationDetailsController = asyncHandler(
     async (req, res) => {

@@ -1,152 +1,135 @@
-// import React from "react";
-// import { Outlet } from "react-router-dom";
-// import Navbar from "@/components/Navbar";
-// import ProtectedRoute from "@/routes/ProtectedRoute";
-// import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-// import { motion } from "framer-motion";
-
-// const Layout = () => {
-//   return (
-//     <SidebarProvider>
-//       <div className="flex min-h-screen w-full bg-[#f4f7fb]">    
-//         <SidebarInset className="min-w-0">         
-//           <Navbar />
-//           <motion.main
-//             initial={{ opacity: 0, y: 8 }}
-//             animate={{ opacity: 1, y: 0 }}
-//             transition={{ duration: 0.25, ease: "easeOut" }}
-//             className="flex min-h-[calc(100vh-4rem)] w-full min-w-0 flex-1 flex-col overflow-x-hidden px-2 py-3 sm:px-4 sm:py-4 md:px-5 lg:px-6"
-//           >
-//             {/* <ProtectedRoute> */}
-//               <Outlet />
-//             {/* </ProtectedRoute> */}
-//           </motion.main>
-//         </SidebarInset>
-//       </div>
-//     </SidebarProvider>
-//   );
-// };
-
-// export default Layout;
-
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
-import Navbar from "@/components/Navbar";
-import ProtectedRoute from "@/routes/ProtectedRoute";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import axios from "axios";
+import Swal from "sweetalert2";
 import { motion } from "framer-motion";
+import { Building2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import Navbar from "@/components/Navbar";
 import DepartmentSidebar from "@/components/DepartmentSidebar";
-import { ChevronRight, ChevronLeft, FileText, Download, ExternalLink, Search, Building2, ShieldCheck, ArrowLeft } from "lucide-react";
+import {
+    SidebarProvider,
+    SidebarInset,
+} from "@/components/ui/sidebar";
 
-const defaultDepartments = [
-  {
-    id: 1,
-    name: "सामान्य प्रशासन विभाग",
-    icon: Building2,
-    services: [
-      {
-        id: 101,
-        name: "जन्म नोंदणी सेवा",
-        description: "जन्म प्रमाणपत्रासाठी अर्ज करा.",
-        documents: ["रुग्णालयाचा जन्म अहवाल", "पालकांचे ओळखपत्र", "पत्त्याचा पुरावा"],
-      },
-      {
-        id: 102,
-        name: "मृत्यू नोंदणी सेवा",
-        description: "मृत्यू प्रमाणपत्रासाठी अर्ज करा.",
-        documents: ["मृत्यू अहवाल", "मृत व्यक्तीचे ओळखपत्र", "अर्जदाराचे ओळखपत्र"],
-      },
-      {
-        id: 103,
-        name: "विवाह नोंदणी सेवा",
-        description: "विवाह नोंदणी संबंधित सेवा.",
-        documents: ["विवाहाचा पुरावा", "वधूचे ओळखपत्र", "वराचे ओळखपत्र", "साक्षीदारांचे ओळखपत्र"],
-      },
-    ],
-  },
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-  {
-    id: 2,
-    name: "मालमत्ता विभाग",
-    icon: Building2,
-    services: [
-      {
-        id: 201,
-        name: "मालमत्ता कर भरणा",
-        description: "मालमत्ता कर ऑनलाइन भरा.",
-        documents: ["मालमत्ता क्रमांक", "मालकाचे नाव", "नोंदणीकृत मोबाईल क्रमांक"],
-      },
-      {
-        id: 202,
-        name: "मालमत्ता शोध",
-        description: "मालमत्ता क्रमांक वापरून शोधा.",
-        documents: ["मालमत्ता क्रमांक", "मालकाचे नाव", "प्रभाग माहिती"],
-      },
-      {
-        id: 203,
-        name: "मालमत्ता हस्तांतरण",
-        description: "मालमत्ता हस्तांतरणासाठी अर्ज.",
-        documents: ["खरेदीखत / विक्रीखत", "मालमत्ता कर पावती", "ओळखपत्र"],
-      },
-    ],
-  },
-
-  {
-    id: 3,
-    name: "पाणी पुरवठा विभाग",
-    icon: Building2,
-    services: [
-      {
-        id: 301,
-        name: "पाणी बिल भरणा",
-        description: "पाणी बिल ऑनलाइन भरा.",
-        documents: ["ग्राहक क्रमांक", "नोंदणीकृत मोबाईल क्रमांक"],
-      },
-      {
-        id: 302,
-        name: "नवीन पाणी जोडणी",
-        description: "नवीन पाणी जोडणीसाठी अर्ज.",
-        documents: ["मालमत्ता कागदपत्रे", "ओळखपत्र", "पत्त्याचा पुरावा"],
-      },
-    ],
-  },
+const ULB3_DEPARTMENTS = [
+    { id: 1, key: "BirthDeath", name: "Birth & Death" },
+    { id: 7, key: "Property", name: "Property" },
+    { id: 23, key: "Town Planning", name: "Town Planning" },
+    { id: 18, key: "Market", name: "Market" },
+    { id: 25, key: "Marraige", name: "Marriage" },
+    { id: 10, key: "FireBrigade", name: "Fire Brigade" },
+    { id: 290, key: "NOC", name: "NOC" },
+    { id: 1901, key: "Bombay Nursing", name: "Bombay Nursing" },
+    { id: 24, key: "Water", name: "Water" },
+    { id: 841, key: "TradeLicense", name: "Trade License" },
+    { id: 26, key: "PWD", name: "PWD" },
+    { id: 1041, key: "Sewerage", name: "Sewerage" },
+    { id: 503, key: "Health", name: "Health" },
+    { id: 1042, key: "TreeCutting", name: "Tree Cutting" },
+    { id: 725, key: "InformationRelations", name: "Information Relations" },
+    { id: 689, key: "Encroachment", name: "Encroachment" },
+    { id: 683, key: "SolidWaste", name: "Solid Waste" },
+    { id: 3, key: "Advertisement", name: "Advertisement" },
 ];
 
 const Layout = () => {
+    const { user, requestInitialized } = useAuth();
+    const ulbId = Number(user?.ulbId);
+    const [departments, setDepartments] = useState([]);
+    const [selectedDepartment, setSelectedDepartment] = useState(null);
 
-   const [selectedDepartment, setSelectedDepartment] = useState(defaultDepartments?.[0] || null);
+    useEffect(() => {
+        if (!requestInitialized) {
+            return;
+        }
 
-  
-      const handleDepartmentSelect = (department) => {
-          setSelectedDepartment(department);
-      };
+        const fetchDepartments = async () => {
+            if (ulbId === 3) {
+                setDepartments(ULB3_DEPARTMENTS.map((department) => ({...department, icon: Building2, ulbId: 3})));
+                return;
+            }
 
+            Swal.fire({
+            title: "Loading departments..",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            },
+        });
 
-  return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-[#f4f7fb]">
-        <DepartmentSidebar
-          departments={defaultDepartments}
-          selectedDepartmentId={selectedDepartment?.id}
-          onDepartmentSelect={handleDepartmentSelect}
-        />
-        <SidebarInset className="min-w-0">
-          <Navbar />
-          <motion.main
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className=" flex min-h-[calc(100vh-4rem)] w-full min-w-0 flex-1 flex-col overflow-x-hidden px-2 py-3 sm:px-4 sm:py-4 md:px-5 lg:px-6"
-          >
-            {/* <ProtectedRoute> */}
-            <Outlet />
-            {/* </ProtectedRoute> */}
-          </motion.main>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
-  );
+            try {
+                const res = await axios.get(
+                    `${BASE_URL}/api/Dashboard/department-menu`,
+                    {
+                      params: {ulbid: ulbId},
+                    }
+                );
+
+                const data = res.data?.data?.data || [];
+
+                const mappedDepartments =
+                    data.map((item) => ({
+                        id: item.DEPTID,
+                        name: item.ACCORNAME || item.DEPTNAME,
+                        icon: Building2,
+                        seqId: item.SEQID,
+                        entryId: item.ENTRYID,
+                        path: item.VAR_ENTRY_PATH,
+                        deptName: item.DEPTNAME,
+                        ulbId: item.ULBID,
+                    }));
+
+                setDepartments(mappedDepartments);
+            } catch (error) {
+                console.error( "Department fetch error:", error);
+                seDepartments([]);
+
+                await Swal.fire({
+                    icon: "error",
+                    text: error?.response?.data?.message || error?.response?.data?.error || "Unable to fetch departments.",
+                });
+            } finally {
+                if (Swal.isVisible()) {
+                    Swal.close();
+                }
+            }
+        };
+
+        fetchDepartments();
+    }, [requestInitialized, ulbId]);
+
+    const handleDepartmentSelect = (department) => {
+        setSelectedDepartment(department);
+    };
+
+    return (
+        <SidebarProvider>
+            <div className="flex min-h-screen w-full bg-[#f4f7fb]">
+                <DepartmentSidebar
+                    departments={departments}
+                    selectedDepartmentId={selectedDepartment?.id}
+                    onDepartmentSelect={handleDepartmentSelect}
+                />
+
+                <SidebarInset className="min-w-0 flex-1">
+                    <Navbar />
+                    <motion.main
+                        initial={{opacity: 0, y: 8}}
+                        animate={{opacity: 1, y: 0}}
+                        transition={{duration: 0.25, ease: "easeOut"}}
+                        className="flex min-h-[calc(100vh-4rem)] w-full min-w-0 flex-1 flex-col overflow-x-hidden px-2 py-3 sm:px-4 sm:py-4 md:px-5 lg:px-6"
+                    >
+                        <Outlet context={{departments, selectedDepartment, setSelectedDepartment, handleDepartmentSelect}}/>
+                    </motion.main>
+                </SidebarInset>
+            </div>
+        </SidebarProvider>
+    );
 };
 
 export default Layout;
