@@ -131,7 +131,53 @@ async function loginByProcedure({ corpId, mobile, password, ulbId, logflag }) {
   }
 }
 
-async function loginWithOtpProcedure({ corpId, userId, ulbId, mobileNumber, otp, mode }) {
+async function sendLoginOtp({ userId, ulbId, mobileNumber }) {
+  const conn = await getConnection();
+
+  try {
+    const result = await conn.execute(
+      `BEGIN
+        aorts_onlloginwithotp_ins(
+          :in_Userid,
+          :in_ulbID,
+          :in_mobnumber,
+          :in_OTP,
+          :in_Mode,
+          :out_errcode,
+          :out_ErrMsg
+        );
+      END;`,
+      {
+        in_Userid: userId,
+        in_ulbID: Number(ulbId),
+        in_mobnumber: String(mobileNumber),
+        in_OTP: 0,
+        in_Mode: 1,
+        out_errcode: {
+          dir: oracledb.BIND_OUT,
+          type: oracledb.NUMBER
+        },
+        out_ErrMsg: {
+          dir: oracledb.BIND_OUT,
+          type: oracledb.STRING,
+          maxSize: 4000
+        }
+      },
+      {
+        autoCommit: true
+      }
+    );
+
+    return {
+      errorCode: result.outBinds.out_errcode,
+      errorMsg: result.outBinds.out_ErrMsg
+    };
+  } finally {
+    await conn.close();
+  }
+}
+
+async function loginWithOtpProcedure({ userId, ulbId, mobileNumber, otp }) {
   const conn = await getConnection();
 
   try {
@@ -142,9 +188,9 @@ async function loginWithOtpProcedure({ corpId, userId, ulbId, mobileNumber, otp,
        FROM aorts_onlineregister_mas
        INNER JOIN aorts_user_def
          ON num_user_uniqueid = num_onlinereg_id
-         AND num_user_mobileno = num_onlinereg_mobile
+        AND num_user_mobileno = num_onlinereg_mobile
        WHERE num_onlinereg_ulbid = :ulbId
-       AND num_onlinereg_mobile = :mobile`,
+         AND num_onlinereg_mobile = :mobile`,
       {
         ulbId: Number(ulbId),
         mobile: Number(mobileNumber)
@@ -181,7 +227,7 @@ async function loginWithOtpProcedure({ corpId, userId, ulbId, mobileNumber, otp,
         in_ulbID: Number(ulbId),
         in_mobnumber: String(mobileNumber),
         in_OTP: Number(otp),
-        in_Mode: Number(mode),
+        in_Mode: 2,
         out_errcode: {
           dir: oracledb.BIND_OUT,
           type: oracledb.NUMBER
@@ -221,7 +267,7 @@ async function loginWithOtpProcedure({ corpId, userId, ulbId, mobileNumber, otp,
         );
       END;`,
       {
-        in_CorpId: Number(corpId),
+        in_CorpId: 10001,
         in_username: email,
         in_password: password,
         in_ulbID: Number(ulbId),
@@ -270,7 +316,6 @@ async function loginWithOtpProcedure({ corpId, userId, ulbId, mobileNumber, otp,
       userId: loginOut.out_userUniqueId,
       username: loginOut.out_userFullName,
       email,
-      password,
       lastLogin: loginOut.out_lastlogin,
       lastLogout: loginOut.out_lastlogout
     };
@@ -345,6 +390,7 @@ async function getCitizenDetailsByMobile({ mobile }) {
 module.exports = {
   registerUser,
   loginByProcedure,
+  sendLoginOtp,
   loginWithOtpProcedure,
   changePassword,
   getCitizenDetailsByMobile

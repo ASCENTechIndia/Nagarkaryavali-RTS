@@ -23,11 +23,25 @@ exports.loginProc = asyncHandler(async (req, res) => {
   return ok(res, data, "Login success");
 });
 
-exports.loginWithOtp = asyncHandler(async (req, res) => {
-  const { userId, ulbId, mobileNumber, otp, mode } = req.body;
+exports.sendLoginOtp = asyncHandler(async (req, res) => {
+  const data = await service.sendLoginOtp({
+    userId: req.body.userId || "SMCTT",
+    ulbId: req.body.ulbId || 3,
+    mobileNumber: req.body.mobileNumber
+  });
 
-  const data = await service.loginWithOtp({ userId, ulbId, mobileNumber, otp, mode });
-  return ok(res, data, data.errorMsg || "OTP operation successful");
+  return ok(res, data, "OTP sent successfully");
+});
+
+exports.loginWithOtp = asyncHandler(async (req, res) => {
+  const data = await service.loginWithOtp({
+    userId: req.body.userId || "SMCTT",
+    ulbId: req.body.ulbId || 3,
+    mobileNumber: req.body.mobileNumber,
+    otp: req.body.otp
+  });
+
+  return ok(res, data, "OTP login success");
 });
 
 exports.changePassword = asyncHandler(async (req, res) => {

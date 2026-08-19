@@ -140,38 +140,90 @@ async function loginProc({ corpId, mobile, password, ulbId, logflag }) {
   };
 }
 
-async function loginWithOtp({ corpId, userId, ulbId, mobileNumber, otp, mode }) {
-  const out = await repo.loginWithOtpProcedure({corpId, userId, ulbId, mobileNumber, otp, mode});
-
-  if (!out) {
-    throw new AppError("OTP login failed", 500);
+async function sendLoginOtp({ userId, ulbId, mobileNumber }) {
+  if (!mobileNumber) {
+    throw new AppError("Mobile number is required", 422);
   }
 
-  const errorCode = Number(out.errorCode ?? 0);
+  if (!ulbId) {
+    throw new AppError("ULB ID is required", 422);
+  }
+
+  const result = await repo.sendLoginOtp({
+    userId,
+    ulbId,
+    mobileNumber
+  });
+
+  if (!result) {
+    throw new AppError("OTP procedure did not return output", 500);
+  }
+
+  const errorCode = Number(result.errorCode ?? 0);
 
   if (errorCode !== 9999) {
-    throw new AppError(out.errorMsg || "OTP login failed", 401);
+    throw new AppError(
+      result.errorMsg || "Unable to send OTP",
+      401
+    );
   }
 
   return {
+    errorCode,
+    errorMsg: result.errorMsg
+  };
+}
+
+async function loginWithOtp({ userId, ulbId, mobileNumber, otp }) {
+  if (!mobileNumber) {
+    throw new AppError("Mobile number is required", 422);
+  }
+
+  if (!otp) {
+    throw new AppError("OTP is required", 422);
+  }
+
+  const result = await repo.loginWithOtpProcedure({
+    userId,
+    ulbId,
+    mobileNumber,
+    otp
+  });
+
+  if (!result) {
+    throw new AppError("OTP login failed", 500);
+  }
+
+  const errorCode = Number(result.errorCode ?? 0);
+
+  if (errorCode !== 9999) {
+    throw new AppError(
+      result.errorMsg || "OTP verification failed",
+      401
+    );
+  }
+
+  const corpId = 10001;
+
+  return {
     token: signAccessToken({
-      sub: out.userId,
-      name: out.username,
-      ulbId: out.ulbId,
-      corpId: Number(corpId)
+      sub: result.userId,
+      name: result.username,
+      ulbId: result.ulbId,
+      corpId
     }),
     user: {
-      userId: out.userId,
-      username: out.username,
-      fullName: out.username,
-      ulbId: out.ulbId,
-      corpId: Number(corpId),
-      email: out.email,
-      lastLogin: out.lastLogin,
-      lastLogout: out.lastLogout
+      userId: result.userId,
+      username: result.username,
+      fullName: result.username,
+      ulbId: result.ulbId,
+      corpId,
+      email: result.email,
+      lastLogin: result.lastLogin,
+      lastLogout: result.lastLogout
     },
     errorCode,
-    errorMsg: out.errorMsg
+    errorMsg: result.errorMsg
   };
 }
 
@@ -246,6 +298,7 @@ async function getCitizenDetailsByMobile({ mobile }) {
 module.exports = {
   registerUser,
   loginProc,
+  sendLoginOtp,
   loginWithOtp,
   changePassword,
   verifyToken,
