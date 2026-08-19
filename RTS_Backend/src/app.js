@@ -9,7 +9,6 @@ const errorMiddleware = require("./middlewares/error.middleware");
 const { rateLimitMiddleware } = require("./middlewares/rateLimit.middleware");
 const requestLogger = require("./middlewares/requestLogger.middleware");
 const authRoutes = require("./modules/auth/auth.routes");
-const tasksRoutes = require("./modules/tasks/tasks.routes");
 const adminRoutes = require("./modules/admin/admin.routes");
 const healthRoutes = require("./routes/health.routes");
 const path = require("path");
@@ -63,7 +62,6 @@ app.get("/", (req, res) => res.send("API Running ✅"));
 
 // routes
 app.use("/api/auth", authRoutes);
-app.use("/api/tasks", tasksRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/menu-access", require("./modules/MenuAccess/MenuAccess.routes"));
 

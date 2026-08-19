@@ -159,19 +159,19 @@ const LandingPage = () => {
         return services.filter((service) => service.name?.toLowerCase().includes(value));
     }, [services, search]);
 
-const handleApply = () => {
-    if (!selectedDepartment || !selectedService) {
-        return;
-    }
+    const handleApply = () => {
+        if (!selectedDepartment || !selectedService) {
+            return;
+        }
 
-    navigate("/login", {
-        state: {
-            ulbId,
-            deptId: selectedDepartment.id,
-            serviceId: selectedService.id,
-        },
-    });
-};
+        navigate("/login", {
+            state: {
+                ulbId,
+                deptId: selectedDepartment.id,
+                serviceId: selectedService.id,
+            },
+        });
+    };
 
     const handleDownload = (document) => {
         if (!document?.id) {
