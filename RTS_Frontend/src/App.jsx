@@ -5,12 +5,12 @@ import LandingPage from "./Pages/LandingPage";
 import Layout from "./layout/main-layout";
 import PageLayout from "./layout/page-layout";
 import Watermodule from "./Pages/WaterModule/WaterbillCopy/Step0New"
-import FrmPropertyAppel from "./Pages/app/FrmPropertyAppel";
-import FrmRebateTax from "./Pages/app/FrmRebateTax";
-import FrmNoDuesCerti from "./Pages/app/FrmNoDuesCerti";
-import FrmAssessmentCerti from "./Pages/app/FrmAssessmentCerti";
-import FrmPropertyTransfer from "./Pages/app/FrmPropertyTransfer";
-import FrmNewTaxAssesment from "./Pages/app/FrmNewTaxAssesment";
+import FrmPropertyAppel from "./Pages/Property/FrmPropertyAppel";
+import FrmRebateTax from "./Pages/Property/FrmRebateTax";
+import FrmNoDuesCerti from "./Pages/Property/FrmNoDuesCerti";
+import FrmAssessmentCerti from "./Pages/Property/FrmAssessmentCerti";
+import FrmPropertyTransfer from "./Pages/Property/FrmPropertyTransfer";
+import FrmNewTaxAssesment from "./Pages/Property/FrmNewTaxAssesment";
 import Registration from "./Pages/Login/Registration";
 import ForgotPassword from "./Pages/Login/ForgotPassword";
 
