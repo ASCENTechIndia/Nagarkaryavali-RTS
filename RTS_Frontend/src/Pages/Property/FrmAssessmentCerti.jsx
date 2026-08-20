@@ -20,6 +20,7 @@ import {
   applicantDetailsValidationSchema,
   documentValidationSchema 
 } from "@/validations/global.validation";
+import config from "@/utils/config";
 
 const ENCRYPTION_KEY = "AS23N7E2H4V717DEAS23N7E2H4V717DE";
 const EXTERNAL_API_URL = "http://ptaxtmccollection.thanecity.gov.in/TMC_IGRClient/Service.svc/GetDataDetails_TMC";
@@ -397,7 +398,7 @@ const FrmAssessmentCerti = () => {
       applicantName: values.applicantName,
       mobile: values.mobileNo,
       email: values.emailId,
-      appSource: "WEB",
+      appSource: config.source,
       documents: documents,
       mahaData: {
         ulbId: ulbId,
@@ -406,6 +407,8 @@ const FrmAssessmentCerti = () => {
         trackId: Date.now().toString(),
       },
     };
+
+    console.log("Submit Data:", submitData);
 
     try {
       setIsSubmitting(true);
@@ -419,9 +422,9 @@ const FrmAssessmentCerti = () => {
           confirmButtonColor: '#1e3a8a',
         }).then(() => {
           if (data.payFlag === "N") {
-            navigate("/APP/FrmAssessmentCerti");
+            navigate("/app/FrmAssessmentCerti");
           } else {
-            navigate("/APP/FrmAppliFee", {
+            navigate("/app/FrmAppliFee", {
               state: {
                 applicationNo: data.applicationNo,
                 serviceId: serviceId,
@@ -439,7 +442,7 @@ const FrmAssessmentCerti = () => {
     } catch (error) {
       console.error("Submit Error:", error);
       Swal.fire({
-        text: error?.response?.data?.message || "Error submitting application",
+        text: error?.response?.data?.error || "Error submitting application",
         confirmButtonColor: '#1e3a8a',
       });
     } finally {

@@ -19,9 +19,15 @@ import {
 } from "@/components/ui/select";
 import ShadCNTable from "@/components/ui/table";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
+import config from "@/utils/config";
+import { 
+  propertyTransferSearchSchema, 
+  propertyTransferApplicantSchema,
+  propertyTransferDocumentValidationSchema 
+} from "@/validations/global.validation";
 
 const ENCRYPTION_KEY = "AS23N7E2H4V717DEAS23N7E2H4V717DE";
 const EXTERNAL_API_URL = "http://ptaxtmccollection.thanecity.gov.in/TMC_IGRClient/Service.svc/GetDataDetails_TMC";
@@ -85,13 +91,18 @@ const initialValues = {
 
 const FrmPropertyTransfer = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const token = user?.token;
-  const ulbId = user?.ulbId || "3";
-  const userId = user?.userId || "151";
-  const zoneId = user?.zoneId || "12";
-  const mahaUlbId = user?.mahaUlbId || "";
-  const serviceId = user?.serviceId || "4";
+
+  const locationState = location.state || {};
+
+  const ulbId = locationState.ulbId || user?.ulbId || "3";
+  const userId = locationState.userId || user?.userId || "151";
+  const zoneId = locationState.zoneId || user?.zoneId || "12";
+  const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId || "";
+  const serviceId = locationState.serviceId || user?.serviceId || "4";
+  const serviceName = locationState.serviceName || "Transfer of Property Certificate";
 
   const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -106,7 +117,7 @@ const FrmPropertyTransfer = () => {
   const [zone, setZone] = useState("");
   const [wardno, setWardno] = useState("");
 
-  const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000/api";
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
 
   const headers = ["Sr No.", "Document Name", "Image(jpg,png,pdf)"];
   const keyMapping = {
@@ -116,14 +127,13 @@ const FrmPropertyTransfer = () => {
   };
 
   useEffect(() => {
-    fetchTransferTypes();
     fetchDocumentDefinitions(serviceId, ulbId);
     document.title = serviceId === "4"
       ? "Transfer of Property Certificate - Sale based on documents"
       : "Transfer of Property Certificate - Heredity";
   }, [serviceId, ulbId]);
 
-  const fetchTransferTypes = async () => {
+  const fetchTransferTypes = async (setFieldValue) => {
     try {
       const response = await axios.post(
         `${BASE_URL}/api/FrmPropertyTransfer/transfer-types`,
@@ -150,7 +160,7 @@ const FrmPropertyTransfer = () => {
           }
         );
 
-        if (autoSelectType) {
+        if (autoSelectType && setFieldValue) {
           setFieldValue("transferType", String(autoSelectType.NUM_TRANSFERTYPE_ID));
         }
       }
@@ -229,9 +239,15 @@ const FrmPropertyTransfer = () => {
   };
 
   const handleSearchProperty = async (values, setFieldValue) => {
-    if (!values.ptn || values.ptn.trim() === "") {
+    const validationResult = propertyTransferSearchSchema.safeParse({
+      ptn: values.ptn,
+      subcode: values.subcode,
+    });
+
+    if (!validationResult.success) {
+      const firstError = validationResult.error.issues[0];
       Swal.fire({
-        text: "Please Enter Property Number",
+        text: firstError.message,
         confirmButtonColor: '#1e3a8a',
       });
       return;
@@ -350,22 +366,31 @@ const FrmPropertyTransfer = () => {
 
   const insertMahaOnline = async (applicationNo) => {
     try {
+      const mahaPayload = {
+        mahaData: {
+          ulbId: ulbId,
+          mahaUlbId: mahaUlbId || ulbId,
+          trackId: Date.now().toString(),
+          districtId: "0",
+          requestString: `TrackId:${Date.now()}|AppNo:${applicationNo}|ServiceId:${serviceId}|ULBId:${ulbId}|MahaULBId:${mahaUlbId || ulbId}|Timestamp:${Date.now()}`,
+          responseString: `Success|Application:${applicationNo}|Status:Processed|Timestamp:${Date.now()}`,
+          encryptedFinalString: `ENC_${applicationNo}_${Date.now()}`
+        },
+        applicationNo: applicationNo,
+        serviceId: String(serviceId),
+      };
+
+      console.log("Maha Online Request Payload:", mahaPayload);
+
       const response = await axios.post(
         `${BASE_URL}/api/FrmAssessmentCerti/maha-online-first-step`,
-        {
-          mahaData: {
-            ulbId: ulbId,
-            mahaUlbId: mahaUlbId || ulbId,
-            trackId: Date.now().toString(),
-            districtId: "0",
-          },
-          applicationNo: applicationNo,
-          serviceId: serviceId,
-        },
+        mahaPayload,
         {
           headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
         }
       );
+
+      console.log("Maha Online Response:", response.data);
       return response.data.success;
     } catch (error) {
       console.error("Error in Maha Online integration:", error);
@@ -416,60 +441,42 @@ const FrmPropertyTransfer = () => {
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      if (!values.ptn || values.ptn.trim() === "") {
-        Swal.fire({ text: "Property Number cannot be blank", confirmButtonColor: '#1e3a8a', });
+      const validationResult = propertyTransferApplicantSchema.safeParse({
+        newOwnerName: values.newOwnerName,
+        emailId: values.emailId,
+        newAddress: values.newAddress,
+        mobileNo: values.mobileNo,
+        aadharNo: values.aadharNo,
+        transferType: values.transferType,
+      });
+
+      if (!validationResult.success) {
+        const firstError = validationResult.error.issues[0];
+        Swal.fire({ text: firstError.message, confirmButtonColor: '#1e3a8a' });
         setLoading(false);
         return;
       }
 
-      if (!values.newOwnerName || values.newOwnerName.trim() === "") {
-        Swal.fire({ text: "Owner Name cannot be blank", confirmButtonColor: '#1e3a8a', });
+      const propertyValidation = propertyTransferSearchSchema.safeParse({
+        ptn: values.ptn,
+        subcode: values.subcode,
+      });
+
+      if (!propertyValidation.success) {
+        const firstError = propertyValidation.error.issues[0];
+        Swal.fire({ text: firstError.message, confirmButtonColor: '#1e3a8a' });
         setLoading(false);
         return;
       }
 
-      if (!values.emailId || values.emailId.trim() === "") {
-        Swal.fire({ text: "Email ID cannot be blank", confirmButtonColor: '#1e3a8a', });
-        setLoading(false);
-        return;
-      }
+      // const documentValidation = propertyTransferDocumentValidationSchema.safeParse(tableData);
 
-      const emailRegex = /^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$/;
-      if (!emailRegex.test(values.emailId)) {
-        Swal.fire({ text: "Invalid Email Address", confirmButtonColor: '#1e3a8a', });
-        setLoading(false);
-        return;
-      }
-
-      if (!values.newAddress || values.newAddress.trim() === "") {
-        Swal.fire({ text: "Address cannot be blank", confirmButtonColor: '#1e3a8a', });
-        setLoading(false);
-        return;
-      }
-
-      if (!values.mobileNo || values.mobileNo.trim() === "") {
-        Swal.fire({ text: "Mobile Number cannot be blank", confirmButtonColor: '#1e3a8a', });
-        setLoading(false);
-        return;
-      }
-
-      if (values.mobileNo.length !== 10 || !/^\d+$/.test(values.mobileNo)) {
-        Swal.fire({ text: "Invalid Mobile Number", confirmButtonColor: '#1e3a8a', });
-        setLoading(false);
-        return;
-      }
-
-      if (values.aadharNo && (values.aadharNo.length !== 12 || !/^\d+$/.test(values.aadharNo))) {
-        Swal.fire({ text: "Invalid Aadhar Number", confirmButtonColor: '#1e3a8a', });
-        setLoading(false);
-        return;
-      }
-
-      if (!values.transferType) {
-        Swal.fire({ text: "Please select Transfer Type", confirmButtonColor: '#1e3a8a', });
-        setLoading(false);
-        return;
-      }
+      // if (!documentValidation.success) {
+      //   const firstError = documentValidation.error.issues[0];
+      //   Swal.fire({ text: firstError.message, confirmButtonColor: '#1e3a8a' });
+      //   setLoading(false);
+      //   return;
+      // }
 
       const documents = [];
       for (const row of tableData) {
@@ -482,6 +489,18 @@ const FrmPropertyTransfer = () => {
           });
         }
       }
+
+      const buildRequestString = (appNo) => {
+        return `TrackId:${Date.now()}|AppNo:${appNo}|ServiceId:${serviceId}|ULBId:${ulbId}|MahaULBId:${mahaUlbId || ulbId}|Timestamp:${Date.now()}`;
+      };
+
+      const buildResponseString = (appNo) => {
+        return `Success|Application:${appNo}|Status:Processed|Timestamp:${Date.now()}`;
+      };
+
+      const buildEncryptedString = (appNo) => {
+        return `ENC_${appNo}_${Date.now()}`;
+      };
 
       const payload = {
         userId: userId,
@@ -504,15 +523,20 @@ const FrmPropertyTransfer = () => {
         appliAddr: values.newAddress,
         appliMobile: values.mobileNo,
         appliAadhar: values.aadharNo || 0,
-        appSource: "WEB",
+        appSource: config.source,
         documents: documents,
         mahaData: {
-          ulbId: ulbId,
-          mahaUlbId: mahaUlbId || ulbId,
-          districtId: "0",
+          ulbId: Number(ulbId),
+          mahaUlbId: Number(mahaUlbId || ulbId),
+          districtId: Number(0),
           trackId: Date.now().toString(),
-        },
+          requestString: buildRequestString(""),
+          responseString: buildResponseString(""),
+          encryptedFinalString: buildEncryptedString("")
+        }
       };
+
+      console.log("Submit Payload:", payload);
 
       const submitResponse = await axios.post(
         `${BASE_URL}/api/FrmPropertyTransfer/submit`,
@@ -532,6 +556,7 @@ const FrmPropertyTransfer = () => {
       }
 
       const applicationNo = submitResponse.data.data.applicationNo;
+      const message = submitResponse.data.data.message || "Application submitted successfully";
 
       for (const doc of tableData) {
         if (doc.file) {
@@ -555,13 +580,13 @@ const FrmPropertyTransfer = () => {
       const payFlag = await checkPaymentFlag();
 
       Swal.fire({
-        text: `Application ${applicationNo} submitted successfully!${payFlag === "Y" ? " Please proceed to payment." : ""}`,
+        text: `${message}${payFlag === "Y" ? " Please proceed to payment." : ""}`,
         confirmButtonColor: '#1e3a8a',
       }).then(() => {
         if (payFlag === "Y") {
-          navigate("/app-fee", { state: { applicationNo: applicationNo } });
+          navigate("/app/FrmAppliFee", { state: { applicationNo: applicationNo } });
         } else {
-          navigate("/");
+          navigate("/app/FrmPropertyTransfer");
         }
       });
 
@@ -574,44 +599,6 @@ const FrmPropertyTransfer = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleReset = (resetForm) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "All entered data will be cleared!",
-      showCancelButton: true,
-      confirmButtonColor: '#1e3a8a',
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, reset it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        resetForm();
-        setConstType("0");
-        setPrabhag("");
-        setZoneid("");
-        setWard("");
-        setPrabhagname("");
-        setZone("");
-        setWardno("");
-        const tableRows = documentDefs.map((doc, index) => ({
-          id: doc.DOCID || doc.DocId || index + 1,
-          srNo: index + 1,
-          documentName: doc.DOCNAME || doc.DocName || "Document",
-          docId: doc.DOCID || doc.DocId,
-          docType: doc.DOCTYPE || doc.DocType || "PDF",
-          file: null,
-          fileName: "No file chosen",
-          fileBuffer: null,
-        }));
-        setTableData(tableRows);
-        Swal.fire({
-          text: "Form has been reset successfully!",
-          confirmButtonColor: '#1e3a8a',
-          timer: 1500,
-        });
-      }
-    });
   };
 
   const transformedTableData = tableData.map((item) => ({
@@ -636,280 +623,278 @@ const FrmPropertyTransfer = () => {
       initialValues={initialValues}
       onSubmit={handleSubmit}
     >
-      {({ values, handleChange, setFieldValue, resetForm }) => (
-        <Form>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <Card className="border shadow-sm">
-              <CardHeader className="border-b">
-                <CardTitle className="text-lg font-semibold">
-                  {serviceId === "4"
-                    ? "Transfer of Property Certificate - Sale based on documents"
-                    : "Transfer of Property Certificate - Heredity"}
-                </CardTitle>
-              </CardHeader>
+      {({ values, handleChange, setFieldValue, resetForm }) => {
 
-              <CardContent className="p-4 sm:p-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-24 shrink-0 flex justify-start sm:justify-between items-center">
-                      <Label required text="PTN" />
-                      <span>:</span>
-                    </div>
-                    <Input
-                      name="ptn"
-                      value={values.ptn}
-                      onChange={handleChange}
-                      className="w-full h-9"
-                    />
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-24 shrink-0 flex justify-start sm:justify-between items-center">
-                      <Label text="Subcode" />
-                      <span>:</span>
-                    </div>
-                    <Input
-                      name="subcode"
-                      value={values.subcode}
-                      onChange={handleChange}
-                      className="w-full h-9"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      className="bg-blue-900 hover:bg-blue-800 text-white"
-                      onClick={() => handleSearchProperty(values, setFieldValue)}
-                      disabled={isSearching}
-                    >
-                      {isSearching ? "Searching..." : "Search"}
-                    </Button>
-                  </div>
-                </div>
+        useEffect(() => {
+          fetchTransferTypes(setFieldValue);
+        }, []);
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 border-y border-gray-300 py-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
-                      <Label text="Land Holder" />
-                      <span>:</span>
-                    </div>
-                    <div className="w-full min-h-9 flex items-center px-2">
-                      {values.landHolder || ""}
-                    </div>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
-                      <Label text="Structure Owner" />
-                      <span>:</span>
-                    </div>
-                    <div className="w-full min-h-9 flex items-center px-2">
-                      {values.structureOwner || ""}
-                    </div>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
-                      <Label text="Owner Name" />
-                      <span>:</span>
-                    </div>
-                    <div className="w-full min-h-9 flex items-center px-2">
-                      {values.ownerName || ""}
-                    </div>
-                  </div>
+        return (
+          <Form>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <Card className="border shadow-sm">
+                <CardHeader className="border-b">
+                  <CardTitle className="text-lg font-semibold">
+                    {serviceId === "4"
+                      ? "Transfer of Property Certificate - Sale based on documents"
+                      : "Transfer of Property Certificate - Heredity"}
+                  </CardTitle>
+                </CardHeader>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
-                      <Label text="Occupier Name" />
-                      <span>:</span>
-                    </div>
-                    <div className="w-full min-h-9 flex items-center px-2">
-                      {values.occupierName || ""}
-                    </div>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
-                      <Label text="Area of Property" />
-                      <span>:</span>
-                    </div>
-                    <div className="w-full min-h-9 flex items-center px-2">
-                      {values.area || ""}
-                    </div>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
-                      <Label text="Legal Status" />
-                      <span>:</span>
-                    </div>
-                    <div className="w-full min-h-9 flex items-center px-2">
-                      {values.legalStatus || ""}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
-                      <Label text="Property Type" />
-                      <span>:</span>
-                    </div>
-                    <div className="w-full min-h-9 flex items-center px-2">
-                      {values.propertyType || ""}
-                    </div>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
-                      <Label text="Address" />
-                      <span>:</span>
-                    </div>
-                    <div className="w-full min-h-9 flex items-center px-2">
-                      {values.address || ""}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <CardContent className="p-4 sm:p-6 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label required text="Transfer Type" />
+                      <div className="sm:w-24 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label required text="PTN" />
                         <span>:</span>
                       </div>
-                      <Select
-                        value={values.transferType}
-                        onValueChange={(value) => setFieldValue("transferType", value)}
+                      <Input
+                        name="ptn"
+                        value={values.ptn}
+                        onChange={handleChange}
+                        className="w-full h-9"
+                      />
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="sm:w-24 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="Subcode" />
+                        <span>:</span>
+                      </div>
+                      <Input
+                        name="subcode"
+                        value={values.subcode}
+                        onChange={handleChange}
+                        className="w-full h-9"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        className="bg-blue-900 hover:bg-blue-800 text-white"
+                        onClick={() => handleSearchProperty(values, setFieldValue)}
+                        disabled={isSearching}
                       >
-                        <SelectTrigger className="w-full h-9">
-                          <SelectValue placeholder="-- Select Option --" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {transferTypes.map((type) => (
-                            <SelectItem
-                              key={type.NUM_TRANSFERTYPE_ID}
-                              value={String(type.NUM_TRANSFERTYPE_ID)}
-                            >
-                              {type.VAR_TRANSFERTYPE_NAME}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        {isSearching ? "Searching..." : "Search"}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 border-y border-gray-300 py-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="Land Holder" />
+                        <span>:</span>
+                      </div>
+                      <div className="w-full min-h-9 flex items-center px-2">
+                        {values.landHolder || ""}
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="Structure Owner" />
+                        <span>:</span>
+                      </div>
+                      <div className="w-full min-h-9 flex items-center px-2">
+                        {values.structureOwner || ""}
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="Owner Name" />
+                        <span>:</span>
+                      </div>
+                      <div className="w-full min-h-9 flex items-center px-2">
+                        {values.ownerName || ""}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="Occupier Name" />
+                        <span>:</span>
+                      </div>
+                      <div className="w-full min-h-9 flex items-center px-2">
+                        {values.occupierName || ""}
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="Area of Property" />
+                        <span>:</span>
+                      </div>
+                      <div className="w-full min-h-9 flex items-center px-2">
+                        {values.area || ""}
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="Legal Status" />
+                        <span>:</span>
+                      </div>
+                      <div className="w-full min-h-9 flex items-center px-2">
+                        {values.legalStatus || ""}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="Property Type" />
+                        <span>:</span>
+                      </div>
+                      <div className="w-full min-h-9 flex items-center px-2">
+                        {values.propertyType || ""}
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="Address" />
+                        <span>:</span>
+                      </div>
+                      <div className="w-full min-h-9 flex items-center px-2">
+                        {values.address || ""}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                          <Label required text="Transfer Type" />
+                          <span>:</span>
+                        </div>
+                        <Select
+                          value={values.transferType}
+                          onValueChange={(value) => setFieldValue("transferType", value)}
+                        >
+                          <SelectTrigger className="w-full h-9">
+                            <SelectValue placeholder="-- Select Option --" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {transferTypes.map((type) => (
+                              <SelectItem
+                                key={type.NUM_TRANSFERTYPE_ID}
+                                value={String(type.NUM_TRANSFERTYPE_ID)}
+                              >
+                                {type.VAR_TRANSFERTYPE_NAME}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <hr />
+
+                    <h3 className="font-bold text-lg">New Details</h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                          <Label required text="Owner Name" />
+                          <span>:</span>
+                        </div>
+                        <Input
+                          name="newOwnerName"
+                          value={values.newOwnerName}
+                          onChange={handleChange}
+                          className="w-full h-9"
+                        />
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                          <Label required text="Email ID" />
+                          <span>:</span>
+                        </div>
+                        <Input
+                          name="emailId"
+                          value={values.emailId}
+                          onChange={handleChange}
+                          className="w-full h-9"
+                          type="email"
+                        />
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                          <Label required text="Address" />
+                          <span>:</span>
+                        </div>
+                        <Input
+                          name="newAddress"
+                          value={values.newAddress}
+                          onChange={handleChange}
+                          className="w-full h-9"
+                        />
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                          <Label text="Aadhar No." />
+                          <span>:</span>
+                        </div>
+                        <Input
+                          name="aadharNo"
+                          value={values.aadharNo}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, "").slice(0, 12);
+                            setFieldValue("aadharNo", value);
+                          }}
+                          className="w-full h-9"
+                          type="text"
+                          maxLength={12}
+                        />
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                          <Label required text="Mobile No." />
+                          <span>:</span>
+                        </div>
+                        <Input
+                          name="mobileNo"
+                          value={values.mobileNo}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                            setFieldValue("mobileNo", value);
+                          }}
+                          className="w-full h-9"
+                          type="text"
+                          maxLength={10}
+                        />
+                      </div>
                     </div>
                   </div>
 
                   <hr />
 
-                  <h3 className="font-bold text-lg">New Details</h3>
+                  <ShadCNTable
+                    headers={headers}
+                    data={transformedTableData}
+                    keyMapping={keyMapping}
+                    pagination={false}
+                    className="max-md:min-w-380"
+                  />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label required text="Owner Name" />
-                        <span>:</span>
-                      </div>
-                      <Input
-                        name="newOwnerName"
-                        value={values.newOwnerName}
-                        onChange={handleChange}
-                        className="w-full h-9"
-                      />
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label required text="Email ID" />
-                        <span>:</span>
-                      </div>
-                      <Input
-                        name="emailId"
-                        value={values.emailId}
-                        onChange={handleChange}
-                        className="w-full h-9"
-                        type="email"
-                      />
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label required text="Address" />
-                        <span>:</span>
-                      </div>
-                      <Input
-                        name="newAddress"
-                        value={values.newAddress}
-                        onChange={handleChange}
-                        className="w-full h-9"
-                      />
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label text="Aadhar No." />
-                        <span>:</span>
-                      </div>
-                      <Input
-                        name="aadharNo"
-                        value={values.aadharNo}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, "").slice(0, 12);
-                          setFieldValue("aadharNo", value);
-                        }}
-                        className="w-full h-9"
-                        type="text"
-                        maxLength={12}
-                      />
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label required text="Mobile No." />
-                        <span>:</span>
-                      </div>
-                      <Input
-                        name="mobileNo"
-                        value={values.mobileNo}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, "").slice(0, 10);
-                          setFieldValue("mobileNo", value);
-                        }}
-                        className="w-full h-9"
-                        type="text"
-                        maxLength={10}
-                      />
-                    </div>
+                  <div className="flex justify-center items-center gap-3 pt-4">
+                    <Button
+                      type="submit"
+                      className="bg-blue-900 hover:bg-blue-800 text-white"
+                      disabled={loading}
+                    >
+                      {loading ? "Submitting..." : "Submit"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="bg-gray-100 hover:bg-gray-200"
+                      onClick={() => navigate("/")}
+                    >
+                      Back
+                    </Button>
                   </div>
-                </div>
-
-                <hr />
-
-                <ShadCNTable
-                  headers={headers}
-                  data={transformedTableData}
-                  keyMapping={keyMapping}
-                  pagination={false}
-                  className="max-md:min-w-380"
-                />
-
-                <div className="flex justify-center items-center gap-3 pt-4">
-                  <Button
-                    type="submit"
-                    className="bg-blue-900 hover:bg-blue-800 text-white"
-                    disabled={loading}
-                  >
-                    {loading ? "Submitting..." : "Submit"}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="bg-gray-100 hover:bg-gray-200"
-                    onClick={() => handleReset(resetForm)}
-                  >
-                    Reset
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="bg-gray-100 hover:bg-gray-200"
-                    onClick={() => navigate("/")}
-                  >
-                    Back
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </Form>
-      )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </Form>
+        )}}
     </Formik>
   );
 };
