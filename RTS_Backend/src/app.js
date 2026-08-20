@@ -72,6 +72,11 @@ app.use("/api/menu-access", require("./modules/MenuAccess/MenuAccess.routes"));
 //Dashboard
 app.use("/api/Dashboard", require("./modules/Dashboard/Dashboard.route"));
 
+
+//Water module 
+
+app.use("/api/watermodule", require("./modules/WaterModule/WaterBillCopy/Stepnew.route"))
+
 app.use(errorMiddleware);
 
 

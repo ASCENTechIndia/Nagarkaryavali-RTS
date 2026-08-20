@@ -3,6 +3,7 @@ import Login from "./Pages/Login/UserID.Login";
 import OTPLogin from "./Pages/Login/OTP.Login";
 import LandingPage from "./Pages/LandingPage";
 import Layout from "./layout/main-layout";
+import Watermodule from "./Pages/WaterModule/WaterbillCopy/Step0New"
 
 const router = createBrowserRouter([
   {
@@ -13,6 +14,7 @@ const router = createBrowserRouter([
     path: "/otp-login",
     element: <OTPLogin />,
   },
+  
   {
     path: "/",
     element: <Layout />,
@@ -20,6 +22,10 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <LandingPage />,
+      },
+       {
+        path: "/Step0New",
+        element: <Watermodule/>
       },
     ]
   },
