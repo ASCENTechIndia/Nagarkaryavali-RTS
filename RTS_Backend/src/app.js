@@ -79,6 +79,10 @@ app.use("/api/FrmPropertyAppel", require("./modules/Property/FrmPropertyAppel/Fr
 //Water module 
 app.use("/api/watermodule", require("./modules/WaterModule/WaterBillCopy/Stepnew.route"))
 
+
+//Trade
+app.use("/api/FrmMarketEntry", require("./modules/Trade/FrmMarketEntry/FrmMArketEntry.routes"));
+
 app.use(errorMiddleware);
 
 

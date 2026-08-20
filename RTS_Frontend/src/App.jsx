@@ -13,6 +13,7 @@ import FrmPropertyTransfer from "./Pages/Property/FrmPropertyTransfer";
 import FrmNewTaxAssesment from "./Pages/Property/FrmNewTaxAssesment";
 import Registration from "./Pages/Login/Registration";
 import ForgotPassword from "./Pages/Login/ForgotPassword";
+import FrmMarketEntry from "./Pages/Trade/FrmMarketEntry/FrmMarketEntry";
 
 const router = createBrowserRouter([
   {
@@ -27,7 +28,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <PageLayout allowPublic={true}/>,
+    element: <PageLayout allowPublic={true} />,
     children: [
       {
         path: "/login",
@@ -49,11 +50,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <PageLayout/>,
+    element: <PageLayout />,
     children: [
       {
         path: "app/Step0New",
-        element: <Watermodule/>
+        element: <Watermodule />
       },
       {
         path: "/app/FrmAssessmentCerti",
@@ -79,6 +80,10 @@ const router = createBrowserRouter([
         path: "/app/FrmPropertyAppel",
         element: <FrmPropertyAppel />,
       },
+      {
+        path: "/app/FrmMarketEntry",
+        element: <FrmMarketEntry />
+      }
     ]
   },
 
