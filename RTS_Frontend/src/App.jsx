@@ -12,6 +12,7 @@ import FrmAssessmentCerti from "./Pages/app/FrmAssessmentCerti";
 import FrmPropertyTransfer from "./Pages/app/FrmPropertyTransfer";
 import FrmNewTaxAssesment from "./Pages/app/FrmNewTaxAssesment";
 import Registration from "./Pages/Login/Registration";
+import ForgotPassword from "./Pages/Login/ForgotPassword";
 
 const router = createBrowserRouter([
   {
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
       {
         path: "/registration",
         element: <Registration />,
+      },
+      {
+        path: "/forgot-password",
+        element: <ForgotPassword />,
       },
     ]
   },

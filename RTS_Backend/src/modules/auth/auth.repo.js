@@ -331,40 +331,74 @@ async function loginWithOtpProcedure({ userId, ulbId, mobileNumber, otp }) {
   }
 }
 
-async function changePassword({ corpId, oldPassword, newPassword, userId, mode }) {
-  const conn = await getConnectionANCL();
+async function getForgotPasswordDetails({ mobile }) {
+    const conn = await getConnectionANCL();
 
-  try {
-    const result = await conn.execute(
-      `BEGIN
-        aorts_onlchangepassword_ins(
-          :in_Corpid,
-          :in_OldPassword,
-          :in_NewPassword,
-          :in_UserId,
-          :in_Mode,
-          :out_ErrorCode,
-          :out_ErrorMsg
+    try {
+        const result = await conn.execute(
+            `SELECT
+                var_onlinereg_email AS email,
+                var_onlinereg_pass AS pass
+             FROM aorts_onlineregister_mas
+             WHERE num_onlinereg_mobile = :mobile`,
+            {
+                mobile: Number(mobile)
+            },
+            {
+                outFormat: oracledb.OUT_FORMAT_OBJECT
+            }
         );
-      END;`,
-      {
-        in_Corpid: Number(corpId),
-        in_OldPassword: oldPassword,
-        in_NewPassword: newPassword,
-        in_UserId: userId,
-        in_Mode: Number(mode),
-        out_ErrorCode: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-        out_ErrorMsg: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 4000 },
-      }
-    );
 
-    return {
-      errorCode: result.outBinds.out_ErrorCode,
-      errorMsg: result.outBinds.out_ErrorMsg,
-    };
-  } finally {
-    await conn.close();
-  }
+        return result.rows?.[0] || null;
+    } finally {
+        await conn.close();
+    }
+}
+
+async function changePassword({ corpId, oldPassword, newPassword, userId, mode }) {
+    const conn = await getConnectionANCL();
+
+    try {
+        const result = await conn.execute(
+            `BEGIN
+                aorts_onlchangepassword_ins(
+                    :in_Corpid,
+                    :in_OldPassword,
+                    :in_NewPassword,
+                    :in_UserId,
+                    :in_Mode,
+                    :out_ErrorCode,
+                    :out_ErrorMsg
+                );
+            END;`,
+            {
+                in_Corpid: Number(corpId),
+                in_OldPassword: oldPassword,
+                in_NewPassword: newPassword,
+                in_UserId: userId,
+                in_Mode: Number(mode),
+                out_ErrorCode: {
+                    dir: oracledb.BIND_OUT,
+                    type: oracledb.NUMBER
+                },
+                out_ErrorMsg: {
+                    dir: oracledb.BIND_OUT,
+                    type: oracledb.STRING,
+                    maxSize: 4000
+                }
+            },
+            {
+                autoCommit: true
+            }
+        );
+
+        return {
+            errorCode: result.outBinds.out_ErrorCode,
+            errorMsg: result.outBinds.out_ErrorMsg
+        };
+    } finally {
+        await conn.close();
+    }
 }
 
 async function getCitizenDetailsByMobile({ mobile }) {
@@ -399,6 +433,7 @@ module.exports = {
   registerUser,
   loginByProcedure,
   sendLoginOtp,
+  getForgotPasswordDetails,
   loginWithOtpProcedure,
   changePassword,
   getCitizenDetailsByMobile

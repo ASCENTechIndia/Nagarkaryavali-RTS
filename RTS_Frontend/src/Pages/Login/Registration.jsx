@@ -254,58 +254,33 @@ const Registration = () => {
 
                                 <motion.div className="flex items-center gap-2 w-full" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
                                 >
-                                    <div className="flex items-center gap-2">
                                         <LockIcon size={19} className="shrink-0 text-[#184aa6]" />
                                         <Label text="Password:" required className="w-full" />
                                         <Input
                                             id="password"
                                             name="password"
-                                            type={showPassword ? "text" : "password"}
+                                            type="password"
                                             value={values.password}
                                             onChange={handleChange}
                                             placeholder="Enter password"
                                             autoComplete="new-password"
                                             className=" border-gray-300 bg-gray-50 focus-visible:border-[#184aa6] focus-visible:ring-[#184aa6]"
                                         />
-                                    </div>
-
-                                    <label className=" flex cursor-pointer items-center gap-2 text-sm text-gray-600">
-                                        <input
-                                            type="checkbox"
-                                            checked={showPassword}
-                                            onChange={(e) => setShowPassword(e.target.checked)}
-                                            className="h-4 w-4"
-                                        />
-                                        Show
-                                    </label>
                                 </motion.div>
 
-                                <motion.div className="flex gap-2 items-center" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }}
-                                >
-                                    <div className="flex items-center gap-2">
+                                <motion.div className="flex gap-2 items-center" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }}>
                                         <LockIcon size={19} className="shrink-0 text-[#184aa6]" />
                                         <Label text="Confirm Password:" required className="w-full" />
                                         <Input
                                             id="confirmPassword"
                                             name="confirmPassword"
-                                            type={showConfirmPassword ? "text" : "password"}
+                                            type="password"
                                             value={values.confirmPassword}
                                             onChange={handleChange}
                                             placeholder="Confirm password"
                                             autoComplete="new-password"
                                             className=" border-gray-300 bg-gray-50 focus-visible:border-[#184aa6] focus-visible:ring-[#184aa6]"
                                         />
-                                    </div>
-
-                                    <label className="flex cursor-pointer justify-center items-center gap-2 text-sm text-gray-600">
-                                        <input
-                                            type="checkbox"
-                                            checked={showConfirmPassword}
-                                            onChange={(e) => setShowConfirmPassword(e.target.checked)}
-                                            className="h-4 w-4"
-                                        />
-                                        Show
-                                    </label>
                                 </motion.div>
 
                                 <div className="flex justify-center gap-2 pt-2">

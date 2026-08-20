@@ -17,7 +17,7 @@ const Login = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
     const applicationState = location.state || {};
-    console.log({applicationState})
+    console.log({ applicationState })
     const ulbId = applicationState.ulbId || null;
     const deptId = applicationState.deptId || null;
     const serviceId = applicationState.serviceId || null;
@@ -187,13 +187,23 @@ const Login = () => {
                                 </Button>
                                 {error && <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-center text-sm font-medium text-red-600 underline">{error}</motion.div>}
                                 <div className="flex flex-col items-center gap-3 text-xs sm:flex-row sm:justify-between">
-                                    <Button path="/forgot-password" variant="link">Forgot Password?</Button>
+                                    <Button
+                                        type="button"
+                                        variant="link"
+                                        onClick={() =>
+                                            navigate("/forgot-password", {
+                                                state: applicationState
+                                            })
+                                        }
+                                    >
+                                        Forgot Password?
+                                    </Button>
                                     <Button
                                         type="button"
                                         variant="link"
                                         onClick={() =>
                                             navigate("/registration", {
-                                                state: {ulbId, deptId, serviceId, serviceName, serviceRate, serviceUrl, userId: applicationState.userId}
+                                                state: { ulbId, deptId, serviceId, serviceName, serviceRate, serviceUrl, userId: applicationState.userId }
                                             })
                                         }
                                     >

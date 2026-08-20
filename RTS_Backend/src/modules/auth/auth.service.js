@@ -22,7 +22,7 @@ function encodePasswordValue(password) {
 }
 
 function signAccessToken(payload) {
-  return jwt.sign(payload, JWT_SECRET, {expiresIn: ACCESS_TOKEN_EXPIRES_IN});
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRES_IN });
 }
 
 function verifyToken(token) {
@@ -225,27 +225,59 @@ async function loginWithOtp({ userId, ulbId, mobileNumber, otp }) {
   };
 }
 
+async function getForgotPasswordDetails({ mobile }) {
+  if (!mobile) {
+    throw new AppError("Mobile number is required", 422);
+  }
+
+  if (!/^\d{10}$/.test(String(mobile))) {
+    throw new AppError("Invalid mobile number", 422);
+  }
+
+  const result = await repo.getForgotPasswordDetails({mobile: Number(mobile)});
+
+  if (!result) {
+    throw new AppError("Mobile number is not registered", 404);
+  }
+  if (!result.EMAIL) {
+    throw new AppError("Email not found for this mobile number", 404);
+  }
+
+  return {
+    email: result.EMAIL,
+    password: result.PASS || ""
+  };
+}
+
 async function changePassword({ corpId, oldPassword, newPassword, userId, mode }) {
   if (!corpId) {
     throw new AppError("Corporation ID is required", 422);
   }
+
   if (!userId) {
     throw new AppError("User ID is required", 422);
   }
-  if (!oldPassword) {
-    throw new AppError("Old password is required", 422);
-  }
+
   if (!newPassword) {
     throw new AppError("New password is required", 422);
   }
-  if (oldPassword === newPassword) {
-    throw new AppError("New password cannot be same as old password", 422);
-  }
+
   if (mode === undefined || mode === null) {
     throw new AppError("Mode is required", 422);
   }
 
-  const encodedOldPassword = encodePassword(oldPassword);
+  const numericMode = Number(mode);
+
+  if (numericMode === 1 && !oldPassword) {
+    throw new AppError("Old password is required", 422);
+  }
+
+  if (numericMode === 2 && !oldPassword) {
+    throw new AppError("Stored password is required", 422);
+  }
+
+  const encodedOldPassword = numericMode === 2 ? oldPassword : encodePassword(oldPassword);
+
   const encodedNewPassword = encodePassword(newPassword);
 
   const result = await repo.changePassword({
@@ -253,7 +285,7 @@ async function changePassword({ corpId, oldPassword, newPassword, userId, mode }
     oldPassword: encodedOldPassword,
     newPassword: encodedNewPassword,
     userId,
-    mode: Number(mode),
+    mode: numericMode
   });
 
   const errorCode = Number(result?.errorCode ?? 0);
@@ -263,34 +295,37 @@ async function changePassword({ corpId, oldPassword, newPassword, userId, mode }
     throw new AppError(errorMsg, 422);
   }
 
-  return { errorCode, message: errorMsg };
+  return {
+    errorCode,
+    message: errorMsg
+  };
 }
 
 async function getCitizenDetailsByMobile({ mobile }) {
-    if (!mobile) {
-        throw new AppError("mobile is required", 422);
-    }
+  if (!mobile) {
+    throw new AppError("mobile is required", 422);
+  }
 
-    const data = await repo.getCitizenDetailsByMobile({
-        mobile: Number(mobile)
-    });
+  const data = await repo.getCitizenDetailsByMobile({
+    mobile: Number(mobile)
+  });
 
-    if (!data) {
-        throw new AppError("Citizen details not found", 404);
-    }
+  if (!data) {
+    throw new AppError("Citizen details not found", 404);
+  }
 
-    let email = data.EMAIL || "";
+  let email = data.EMAIL || "";
 
-    if (/^\d{10}$/.test(email)) {
-        email = "noemail@gmail.com";
-    }
+  if (/^\d{10}$/.test(email)) {
+    email = "noemail@gmail.com";
+  }
 
-    return {
-        name: data.VAR_USER_FNAME || String(mobile),
-        mobile: String(data.NUM_USER_MOBILENO || mobile),
-        email,
-        password: data.PASSWORD || ""
-    };
+  return {
+    name: data.VAR_USER_FNAME || String(mobile),
+    mobile: String(data.NUM_USER_MOBILENO || mobile),
+    email,
+    password: data.PASSWORD || ""
+  };
 }
 
 module.exports = {
@@ -298,6 +333,7 @@ module.exports = {
   loginProc,
   sendLoginOtp,
   loginWithOtp,
+  getForgotPasswordDetails,
   changePassword,
   verifyToken,
   getCitizenDetailsByMobile

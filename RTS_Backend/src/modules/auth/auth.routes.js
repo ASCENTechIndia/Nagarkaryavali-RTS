@@ -8,6 +8,7 @@ router.post("/register", controller.registerUser);
 router.post("/login-proc", controller.loginProc);
 router.post("/send-login-otp", controller.sendLoginOtp);
 router.post("/login-otp", controller.loginWithOtp);
+router.post("/forgot-password-details", controller.getForgotPasswordDetails);
 router.post("/change-password", controller.changePassword);
 router.get("/me", isValidToken, controller.me);
 router.post("/citizen-details", controller.getCitizenDetailsByMobile);

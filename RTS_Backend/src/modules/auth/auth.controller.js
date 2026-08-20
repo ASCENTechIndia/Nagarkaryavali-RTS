@@ -33,6 +33,26 @@ exports.sendLoginOtp = asyncHandler(async (req, res) => {
   return ok(res, data, "OTP sent successfully");
 });
 
+exports.getForgotPasswordDetails = asyncHandler(async (req, res) => {
+    const data = await service.getForgotPasswordDetails(req.body);
+
+    return res.status(200).json({
+        ok: true,
+        message: "Forgot password details fetched successfully",
+        data
+    });
+});
+
+exports.changePassword = asyncHandler(async (req, res) => {
+    const data = await service.changePassword(req.body);
+
+    return res.status(200).json({
+        ok: true,
+        message: "Password changed successfully",
+        data
+    });
+});
+
 exports.loginWithOtp = asyncHandler(async (req, res) => {
   const data = await service.loginWithOtp({
     userId: req.body.userId || "SMCTT",
@@ -42,13 +62,6 @@ exports.loginWithOtp = asyncHandler(async (req, res) => {
   });
 
   return ok(res, data, "OTP login success");
-});
-
-exports.changePassword = asyncHandler(async (req, res) => {
-  const { corpId, userId, oldPassword, newPassword, mode } = req.body;
-
-  const data = await service.changePassword({ corpId, userId, oldPassword, newPassword, mode });
-  return ok(res, data, data.message);
 });
 
 exports.me = asyncHandler(async (req, res) => {
