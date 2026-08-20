@@ -18,6 +18,7 @@ const OTPLogin = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
     const applicationState = location.state || {};
+    console.log({applicationState})
     const ulbId = applicationState.ulbId || null;
     const deptId = applicationState.deptId || null;
     const serviceId = applicationState.serviceId || null;
@@ -59,17 +60,13 @@ const OTPLogin = () => {
         };
 
         if (serviceUrl) {
-            navigate(serviceUrl, {
-                state: navigationState
-            });
+            navigate(serviceUrl, {state: navigationState});
             return;
         }
 
-        navigate("/", {
-            state: navigationState
-        });
+        navigate("/", {state: navigationState});
     };
-    
+
     const sendOtp = async (mobileNumber) => {
         const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/auth/send-login-otp`,
             {

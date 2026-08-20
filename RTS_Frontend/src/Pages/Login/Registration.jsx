@@ -22,6 +22,7 @@ const Registration = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const applicationState = location.state || {};
+    console.log({applicationState})
     const ulbId = applicationState.ulbId || 3;
     const serviceUrl = applicationState.serviceUrl || "";
     const [showPassword, setShowPassword] = useState(false);
@@ -29,14 +30,12 @@ const Registration = () => {
     const [loading, setLoading] = useState(false);
 
     const redirectAfterRegistration = () => {
-        if (serviceUrl) {
-            navigate("/login", {
-                state: { ...applicationState, serviceUrl }
-            });
-            return;
-        }
-
-        navigate("/login", { state: { ulbId } });
+        navigate("/login", {
+            state: {
+                ...applicationState,
+                serviceUrl
+            }
+        });
     };
 
     const formatOracleDate = (date) => {
@@ -134,7 +133,7 @@ const Registration = () => {
                 propNo: ""
             };
 
-            const response = await axios.post(`${BASE_URL}/api/auth/register`,payload);
+            const response = await axios.post(`${BASE_URL}/api/auth/register`, payload);
 
             const result = response.data;
             const data = result?.data;

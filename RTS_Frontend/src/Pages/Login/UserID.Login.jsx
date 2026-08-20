@@ -17,6 +17,7 @@ const Login = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
     const applicationState = location.state || {};
+    console.log({applicationState})
     const ulbId = applicationState.ulbId || null;
     const deptId = applicationState.deptId || null;
     const serviceId = applicationState.serviceId || null;
@@ -187,7 +188,17 @@ const Login = () => {
                                 {error && <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-center text-sm font-medium text-red-600 underline">{error}</motion.div>}
                                 <div className="flex flex-col items-center gap-3 text-xs sm:flex-row sm:justify-between">
                                     <Button path="/forgot-password" variant="link">Forgot Password?</Button>
-                                    <Button path="/registration" variant="link">New User Registration</Button>
+                                    <Button
+                                        type="button"
+                                        variant="link"
+                                        onClick={() =>
+                                            navigate("/registration", {
+                                                state: {ulbId, deptId, serviceId, serviceName, serviceRate, serviceUrl, userId: applicationState.userId}
+                                            })
+                                        }
+                                    >
+                                        New User Registration
+                                    </Button>
                                 </div>
                                 <div className="flex items-center justify-center">
                                     <Button type="button" variant="outline" onClick={() => navigate("/otp-login", { state: { ulbId, deptId, serviceId, serviceName, serviceRate, serviceUrl, userId: applicationState.userId || sessionStorage.getItem("userId") || "SMCTT" } })} className="h-9 rounded-lg border-[#184aa6] px-3 text-[#184aa6] hover:bg-[#184aa6] hover:text-white">Login With OTP</Button>
