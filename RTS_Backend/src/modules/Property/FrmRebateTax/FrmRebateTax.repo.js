@@ -1,5 +1,5 @@
-const { executeProcedure } = require("../../../db/procedureExecutor");
-const { executeQuery } = require("../../../db/queryExecutor");
+const { executeProcedureTMC } = require("../../../db/procedureExecutor");
+const { executeQueryTMC } = require("../../../db/queryExecutor");
 const oracledb = require("oracledb");
 
 async function getRebateTypes() {
@@ -9,7 +9,7 @@ async function getRebateTypes() {
       num_rebatetype_id AS NUM_REBATETYPE_ID 
     FROM aorts_rebatetype_mas
   `;
-  return await executeQuery(query, {});
+  return await executeQueryTMC(query, {});
 }
 
 async function getTaxNames() {
@@ -19,7 +19,7 @@ async function getTaxNames() {
       var_taxname_name AS NAME 
     FROM aorts_taxname_def
   `;
-  return await executeQuery(query, {});
+  return await executeQueryTMC(query, {});
 }
 
 async function insertTaxExemptionApplication(params) {
@@ -129,7 +129,7 @@ async function insertTaxExemptionApplication(params) {
     },
   };
 
-  const result = await executeProcedure({ sql, binds });
+  const result = await executeProcedureTMC({ sql, binds });
   if (!result.success) {
     throw new Error(result.error);
   }

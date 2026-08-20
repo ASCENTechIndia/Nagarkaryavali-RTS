@@ -1,6 +1,6 @@
-const getConnection = require("../../../config/db");
-const { executeProcedure } = require("../../../db/procedureExecutor");
-const { executeQuery } = require("../../../db/queryExecutor");
+const { getConnectionTMC } = require("../../../config/db");
+const { executeProcedureTMC } = require("../../../db/procedureExecutor");
+const { executeQueryTMC } = require("../../../db/queryExecutor");
 const oracledb = require("oracledb");
 
 async function getDocumentDefinitions(params) {
@@ -34,7 +34,7 @@ async function getDocumentDefinitions(params) {
   console.log("Document Definitions Query:", query);
   console.log("Bind Params:", bindParams);
 
-  return await executeQuery(query, bindParams);
+  return await executeQueryTMC(query, bindParams);
 }
 
 async function getServicePaymentFlag(serviceId) {
@@ -51,7 +51,7 @@ async function getServicePaymentFlag(serviceId) {
   console.log("Service Payment Flag Query:", query);
   console.log("Bind Params:", bindParams);
 
-  return await executeQuery(query, bindParams);
+  return await executeQueryTMC(query, bindParams);
 }
 
 async function getMahaServiceId(params) {
@@ -74,7 +74,7 @@ async function getMahaServiceId(params) {
   console.log("Maha Service ID Query:", query);
   console.log("Bind Params:", bindParams);
 
-  return await executeQuery(query, bindParams);
+  return await executeQueryTMC(query, bindParams);
 }
 
 async function insertAssessmentApplication(params) {
@@ -184,7 +184,7 @@ async function insertAssessmentApplication(params) {
     },
   };
 
-  const result = await executeProcedure({ sql, binds });
+  const result = await executeProcedureTMC({ sql, binds });
 
   if (!result.success) {
     throw new Error(result.error);
@@ -201,7 +201,7 @@ async function insertDocument(params) {
   try {
     const { corpId, serviceId, appNo, docType, documentId, docBuffer } = params;
 
-    connection = await getConnection();
+    connection = await getConnectionTMC();
 
     const buffer = docBuffer && docBuffer.length > 0 ? Buffer.from(docBuffer) : Buffer.alloc(1);
 
@@ -276,12 +276,25 @@ async function insertMahaOnlineData(params) {
     districtId,
   } = params;
 
+  if (!requestString || requestString === "") {
+    throw new Error("requestString is required and cannot be empty");
+  }
+
+  if (!responseString || responseString === "") {
+    throw new Error("responseString is required and cannot be empty");
+  }
+
   console.log("Insert Maha Online Data:", {
     ulbId,
     trackId,
     applicationId,
     serviceId,
     methodName,
+    requestString: requestString.substring(0, 100) + "...",
+    responseString: responseString.substring(0, 100) + "...",
+    encryptedFinalString: encryptedFinalString ? encryptedFinalString.substring(0, 50) + "..." : "null",
+    mahaUlbId,
+    districtId,
   });
 
   const sql = `
@@ -305,15 +318,15 @@ async function insertMahaOnlineData(params) {
 
   const binds = {
     in_ulbid: Number(ulbId),
-    in_requeststring: requestString || null,
-    in_responsestring: responseString || null,
-    in_trackid: Number(trackId),
+    in_requeststring: requestString,
+    in_responsestring: responseString,
+    in_trackid: Number(trackId) || 0,
     in_applicationid: String(applicationId),
     in_serviceid: Number(serviceId),
     in_methodname: methodName || "SetAppStatus",
-    in_encryptedFinalString: encryptedFinalString || null,
+    in_encryptedFinalString: encryptedFinalString || "N/A",
     in_mahaulbid: Number(mahaUlbId),
-    in_districtid: Number(districtId),
+    in_districtid: Number(districtId) || 0,
 
     out_errorcode: {
       dir: oracledb.BIND_OUT,
@@ -326,13 +339,16 @@ async function insertMahaOnlineData(params) {
     },
   };
 
-  const result = await executeProcedure({ sql, binds });
+  const result = await executeProcedureTMC({ sql, binds });
 
   if (!result.success) {
     throw new Error(result.error);
   }
 
   console.log("Maha Online Insert Result:", result.outBinds);
+  if (result.outBinds && result.outBinds.out_errorcode !== 9999) {
+    throw new Error(result.outBinds.out_errormsg || "Maha Online insert failed");
+  }
 
   return result.outBinds;
 }

@@ -1,6 +1,6 @@
 const getConnection = require("../../../config/db");
-const { executeProcedure } = require("../../../db/procedureExecutor");
-const { executeQuery } = require("../../../db/queryExecutor");
+const { executeProcedureTMC } = require("../../../db/procedureExecutor");
+const { executeQueryTMC } = require("../../../db/queryExecutor");
 const oracledb = require("oracledb");
 
 async function getTransferTypes() {
@@ -13,7 +13,7 @@ async function getTransferTypes() {
 
   console.log("Transfer Types Query:", query);
 
-  return await executeQuery(query, {});
+  return await executeQueryTMC(query, {});
 }
 
 async function insertPropertyTransferApplication(params) {
@@ -120,7 +120,7 @@ async function insertPropertyTransferApplication(params) {
     },
   };
 
-  const result = await executeProcedure({ sql, binds });
+  const result = await executeProcedureTMC({ sql, binds });
 
   if (!result.success) {
     throw new Error(result.error);
@@ -150,7 +150,7 @@ async function getPropertyTransferApplication(appNo) {
   console.log("Property Transfer Application Query:", query);
   console.log("Bind Params:", bindParams);
 
-  return await executeQuery(query, bindParams);
+  return await executeQueryTMC(query, bindParams);
 }
 
 async function getTransferRateConfig(params) {
@@ -179,7 +179,7 @@ async function getTransferRateConfig(params) {
   console.log("Transfer Rate Config Query:", query);
   console.log("Bind Params:", bindParams);
 
-  return await executeQuery(query, bindParams);
+  return await executeQueryTMC(query, bindParams);
 }
 
 module.exports = {
