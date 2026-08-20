@@ -159,18 +159,80 @@ const LandingPage = () => {
         return services.filter((service) => service.name?.toLowerCase().includes(value));
     }, [services, search]);
 
-    const handleApply = () => {
+    const handleApply = async () => {
         if (!selectedDepartment || !selectedService) {
             return;
         }
 
-        navigate("/login", {
-            state: {
-                ulbId,
-                deptId: selectedDepartment.id,
-                serviceId: selectedService.id,
-            },
-        });
+        const department = selectedDepartment.name;
+        const serviceId = String(selectedService.id);
+
+        if (department === "FireBrigade") {
+            window.location.href = "https://mahavastu.maharashtra.gov.in/";
+            return;
+        }
+
+        if (department === "Encroachment") {
+            window.location.href = "http://tmcmandap.vidhsiddinfotechllp.com";
+            return;
+        }
+
+        if (department === "InfoRel") {
+            window.location.href = "https://www.filmcell.maharashtra.gov.in";
+            return;
+        }
+
+        if (department === "PWD" && serviceId === "E79C935C43A49FF22A228595FC9B1EDC") {
+            window.location.href = "https://mahasanchar.emahapwd.com";
+            return;
+        }
+
+        if (department === "Sewerage") {
+            window.location.href = "https://thanecity.gov.in/tmc/CitizenHome.html";
+            return;
+        }
+
+        try {
+            showLoader("Fetching service details...");
+
+            const response = await axios.get(`${BASE_URL}/api/Dashboard/service-details`, { params: { serviceId } });
+
+            const serviceDetails = response.data?.data;
+
+            if (!serviceDetails) {
+                throw new Error("Service details not found");
+            }
+
+            if (Swal.isVisible()) {
+                Swal.close();
+            }
+
+            const serviceUrl = serviceDetails.serviceUrl ? serviceDetails.serviceUrl.replace(/^~\/?/, "/").replace(/\.aspx$/i, "") : "";
+
+            navigate("/login", {
+                state: {
+                    ulbId,
+                    deptId: selectedDepartment.id,
+                    serviceId: serviceDetails.serviceId || serviceId,
+                    serviceName: serviceDetails.serviceName || selectedService.name,
+                    serviceRate: serviceDetails.serviceRate,
+                    serviceUrl
+                }
+            });
+        } catch (error) {
+            if (Swal.isVisible()) {
+                Swal.close();
+            }
+
+            console.error("Service details error:", error);
+
+            Swal.fire({
+                icon: "error",
+                title: "Unable to Continue",
+                text: error?.response?.data?.message || error?.response?.data?.error || error?.message || "Unable to fetch service details",
+                confirmButtonText: "OK"
+            });
+        }
     };
 
     const handleDownload = (document) => {

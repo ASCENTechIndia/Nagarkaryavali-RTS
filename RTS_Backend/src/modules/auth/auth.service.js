@@ -22,9 +22,7 @@ function encodePasswordValue(password) {
 }
 
 function signAccessToken(payload) {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: ACCESS_TOKEN_EXPIRES_IN,
-  });
+  return jwt.sign(payload, JWT_SECRET, {expiresIn: ACCESS_TOKEN_EXPIRES_IN});
 }
 
 function verifyToken(token) {

@@ -62,6 +62,19 @@ const getDownloadDocsService = async (payload) => {
     return { success: true, count: data.length, data };
 };
 
+
+async function getServiceDetails({ serviceId }) {
+    console.log("Service: Fetch Sevice Documents", { serviceId });
+    const data = await repo.getServiceDetails({serviceId});
+
+    if (!data || data.length === 0) {
+        return { success: false, message: "Service details not found", data: [] };
+    }
+
+
+    return data;
+}
+
 module.exports = {
     decryptRequestService,
     getCorporationDetailsService,
@@ -69,4 +82,5 @@ module.exports = {
     getServicesByDeptIdService,
     getDocumentsForServiceService,
     getDownloadDocsService,
+    getServiceDetails
 };

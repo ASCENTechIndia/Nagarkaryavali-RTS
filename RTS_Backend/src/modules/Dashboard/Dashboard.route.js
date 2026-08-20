@@ -9,5 +9,6 @@ router.get("/services-by-dept", controller.getServicesByDeptIdController);
 router.get("/documents-for-service", controller.getDocumentsForServiceController);
 router.get("/download-docs", controller.getDownloadDocsController);
 router.get("/decrypt-request", controller.decryptRequestController);
+router.get("/service-details", auth(), controller.getServiceDetails);
 
 module.exports = router;

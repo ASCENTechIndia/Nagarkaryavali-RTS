@@ -1,6 +1,7 @@
 const oracledb = require("oracledb");
 const getConnection = require("../../db");
 
+
 async function registerUser({ userId, orgId, name, email, mobile, dob, password, confirmPassword, ipAddress, source, propNo }) {
   const conn = await getConnection();
   console.log({ userId, orgId, name, email, mobile, dob, password, confirmPassword, ipAddress, source, propNo })

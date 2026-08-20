@@ -28,8 +28,7 @@ const decryptRequestRepo = async ({encryptedRequest}) => {
     const requestParts = decryptedRequest.split("&");
 
     let corpCode = "";
-    requestParts.forEach(
-        (part) => {
+    requestParts.forEach((part) => {
             const [key, ...values] = part.split("=");
 
             if (key?.trim().toUpperCase() === "CORPCODE") {
@@ -39,7 +38,15 @@ const decryptRequestRepo = async ({encryptedRequest}) => {
     );
 
     if (!corpCode) {
-        throw new Error("CORPCODE not found in decrypted request");
+        console.log("CORPCODE not found, returning decrypted request only");
+
+        return {
+            encryptedRequest,
+            request: decryptedRequest,
+            decryptedRequest,
+            corpCode: null,
+            ulbId: null
+        };
     }
 
     const ulbSql = `
@@ -62,6 +69,15 @@ const decryptRequestRepo = async ({encryptedRequest}) => {
         throw new Error(`No corporation found for CORPCODE: ${corpCode}`);
     }
 
+    if (!ulbRow) {
+        return {
+            encryptedRequest,
+            request: decryptedRequest,
+            decryptedRequest,
+            corpCode,
+            ulbId: null
+        };
+    }
 
     const ulbId = ulbRow.CORPORATIONID ?? ulbRow.corporationid ?? null;
 
@@ -342,6 +358,64 @@ const getDownloadDocsRepo = async ({ serviceName, ulbid }) => {
     return result.rows;
 };
 
+async function getServiceDetails({ serviceId }) {
+    if (serviceId === null || serviceId === undefined || String(serviceId).trim() === "") {
+        throw new Error("serviceId is required");
+    }
+
+    let resolvedServiceId = String(serviceId).trim();
+
+    if (!/^\d+$/.test(resolvedServiceId)) {
+        const decryptedRequest = decryptString(resolvedServiceId);
+
+        console.log("Encrypted Service ID:", resolvedServiceId);
+        console.log("Decrypted Service Request:", decryptedRequest);
+
+        const match = decryptedRequest.match(/SERVICEID\s*=\s*(\d+)/i);
+
+        if (!match) {
+            throw new Error("Invalid encrypted service ID");
+        }
+
+        resolvedServiceId = match[1];
+    }
+
+    const numericServiceId = Number(resolvedServiceId);
+
+    console.log("Resolved Service ID:", numericServiceId);
+
+    const sql = `
+        SELECT
+            num_service_serviceid AS service_id,
+            var_service_url AS service_url,
+            num_service_rate AS service_rate,
+            var_service_eng_name AS service_name
+        FROM aorts_tmcservice_def
+        WHERE num_service_serviceid = :serviceId
+    `;
+
+    const result = await executeQuery(sql, {
+        serviceId: numericServiceId
+    });
+
+    if (!result.success) {
+        throw new Error(result.error || "Failed to fetch service details");
+    }
+
+    const row = result.rows?.[0];
+
+    if (!row) {
+        return null;
+    }
+
+    return {
+        serviceId: numericServiceId,
+        serviceUrl: row.SERVICE_URL || "",
+        serviceRate: row.SERVICE_RATE ?? null,
+        serviceName: row.SERVICE_NAME || ""
+    };
+}
+
 module.exports = {
     decryptRequestRepo,
     getCorporationDetailsRepo,
@@ -349,4 +423,5 @@ module.exports = {
     getServicesByDeptIdRepo,
     getDocumentsForServiceRepo,
     getDownloadDocsRepo,
+    getServiceDetails
 };

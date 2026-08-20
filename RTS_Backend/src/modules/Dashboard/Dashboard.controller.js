@@ -5,16 +5,16 @@ const service = require("./Dashboard.service");
 exports.decryptRequestController =
     asyncHandler(async (req, res) => {
         console.log("Decrypt Request:", req.query);
-        const {request} = req.query;
+        const { request } = req.query;
 
-        const data = await service.decryptRequestService({encryptedRequest: request});
+        const data = await service.decryptRequestService({ encryptedRequest: request });
 
         if (!data.success) {
-            return fail( res, data.message);
+            return fail(res, data.message);
         }
-        return ok( res, data, "Request decrypted successfully");
+        return ok(res, data, "Request decrypted successfully");
     }
-);
+    );
 
 exports.getCorporationDetailsController = asyncHandler(
     async (req, res) => {
@@ -102,22 +102,32 @@ exports.getDocumentsForServiceController = asyncHandler(
 
 exports.getDownloadDocsController = asyncHandler(
     async (req, res) => {
-        console.log( "Download Documents Request:", req.query);
-        const { serviceName, ulbid,} = req.query;
+        console.log("Download Documents Request:", req.query);
+        const { serviceName, ulbid, } = req.query;
 
         if (!serviceName) {
-            return fail( res, "serviceName is required");
+            return fail(res, "serviceName is required");
         }
 
         if (!ulbid) {
-            return fail( res, "ulbid is required");
+            return fail(res, "ulbid is required");
         }
 
-        const data =await service.getDownloadDocsService({ serviceName, ulbid });
+        const data = await service.getDownloadDocsService({ serviceName, ulbid });
 
         if (!data.success) {
-            return fail( res, data.message);
+            return fail(res, data.message);
         }
         return ok(res, data, data.message || "Download documents fetched successfully");
     }
 );
+
+exports.getServiceDetails = asyncHandler(async (req, res) => {
+
+    if (!req.query.serviceId) {
+        return fail(res, "serviceId is required");
+    }
+    const data = await service.getServiceDetails({serviceId: req.query.serviceId});
+
+    return ok(res, data, "Service details fetched successfully");
+});

@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { AppError } = require("../libs/errors");
 const { JWT_SECRET } = require("../config/env");
-const authRepo = require("../modules/auth/auth.repo");
 
 module.exports = function auth(allowedRoles = null) {
   return async (req, res, next) => {
@@ -15,16 +14,6 @@ module.exports = function auth(allowedRoles = null) {
       const token = authHeader.substring(7).trim();
       if (!token) throw new AppError("Authorization token missing", 401);
 
-      // ✅ ONLY DB BLACKLIST CHECK (correct way)
-      try {
-        const isBlacklisted = await authRepo.isAccessTokenBlacklisted({ token });
-
-        if (isBlacklisted) {
-          throw new AppError("Token has been revoked (logged out)", 401);
-        }
-      } catch (dbError) {
-        console.warn("⚠️ DB blacklist check failed:", dbError.message);
-      }
 
       let decoded;
       try {
