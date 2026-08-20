@@ -348,12 +348,7 @@ const OTPLogin = () => {
                                 )}
 
                                 {otpSent && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 15 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                        className="space-y-4 rounded-2xl border border-gray-200 bg-gray-50 p-4"
-                                    >
+                                    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="space-y-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
                                         <div className="text-center">
                                             <Label text="Enter OTP" required className="justify-center" />
                                             <p className="mt-1 text-xs text-gray-500">Enter the 4 digit OTP sent to your mobile number.</p>
@@ -428,11 +423,7 @@ const OTPLogin = () => {
                                 )}
 
                                 {error && (
-                                    <motion.div
-                                        initial={{opacity: 0,y: -5}}
-                                        animate={{opacity: 1,y: 0}}
-                                        className="text-center text-sm font-medium text-red-600"
-                                    >
+                                    <motion.div initial={{opacity: 0,y: -5}} animate={{opacity: 1,y: 0}} className="text-center text-sm font-medium text-red-600">
                                         {error}
                                     </motion.div>
                                 )}
