@@ -48,24 +48,28 @@ const OTPLogin = () => {
     }, [otpSent, resendTimer]);
 
     const redirectAfterLogin = (user) => {
+        const navigationState = {
+            userId: user?.userId,
+            ulbId: user?.ulbId || ulbId,
+            deptId,
+            serviceId,
+            serviceName,
+            serviceRate,
+            user
+        };
+
         if (serviceUrl) {
-            navigate(serviceUrl);
+            navigate(serviceUrl, {
+                state: navigationState
+            });
             return;
         }
 
         navigate("/", {
-            state: {
-                userId: user?.userId,
-                ulbId: user?.ulbId || ulbId,
-                deptId,
-                serviceId,
-                serviceName,
-                serviceRate,
-                user
-            }
+            state: navigationState
         });
     };
-
+    
     const sendOtp = async (mobileNumber) => {
         const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/auth/send-login-otp`,
             {

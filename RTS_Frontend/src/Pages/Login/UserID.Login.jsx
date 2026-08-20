@@ -45,21 +45,25 @@ const Login = () => {
     };
 
     const redirectAfterLogin = (user) => {
+        const navigationState = {
+            userId: user?.userId,
+            ulbId: user?.ulbId || ulbId,
+            deptId,
+            serviceId,
+            serviceName,
+            serviceRate,
+            user
+        };
+
         if (serviceUrl) {
-            navigate(serviceUrl);
+            navigate(serviceUrl, {
+                state: navigationState
+            });
             return;
         }
 
         navigate("/", {
-            state: {
-                userId: user?.userId,
-                ulbId: user?.ulbId || ulbId,
-                deptId,
-                serviceId,
-                serviceName,
-                serviceRate,
-                user
-            }
+            state: navigationState
         });
     };
 
