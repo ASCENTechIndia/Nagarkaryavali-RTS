@@ -1,6 +1,8 @@
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import Login from "./Pages/Login/UserID.Login";
 import OTPLogin from "./Pages/Login/OTP.Login";
+import Registration from "./Pages/Login/Registration";
+import ForgotPassword from "./Pages/Login/ForgotPassword";
 import LandingPage from "./Pages/LandingPage";
 import Layout from "./layout/main-layout";
 import PageLayout from "./layout/page-layout";
@@ -11,8 +13,6 @@ import FrmNoDuesCerti from "./Pages/Property/FrmNoDuesCerti";
 import FrmAssessmentCerti from "./Pages/Property/FrmAssessmentCerti";
 import FrmPropertyTransfer from "./Pages/Property/FrmPropertyTransfer";
 import FrmNewTaxAssesment from "./Pages/Property/FrmNewTaxAssesment";
-import Registration from "./Pages/Login/Registration";
-import ForgotPassword from "./Pages/Login/ForgotPassword";
 import FrmMarketEntry from "./Pages/Trade/FrmMarketEntry/FrmMarketEntry";
 
 const router = createBrowserRouter([
