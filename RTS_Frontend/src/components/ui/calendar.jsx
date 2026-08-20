@@ -179,8 +179,6 @@ function CalendarDayButton({
   );
 }
 
-
-
 function DatePicker({
   value,
   onChange,
@@ -343,7 +341,5 @@ function DatePicker({
     </Popover>
   );
 }
-
-
 
 export { Calendar, CalendarDayButton, DatePicker }

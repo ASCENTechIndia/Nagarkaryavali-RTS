@@ -4,6 +4,7 @@ const GetIPAddress = async () => {
   try {
     // Make a GET request to ipify API to get the user's IP address
     const response = await axios.get("https://api.ipify.org?format=json");
+    console.log({response})
     return response.data.ip; // Return the IP address
   } catch (error) {
     console.error("Error fetching IP address:", error);

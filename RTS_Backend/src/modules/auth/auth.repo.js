@@ -2,54 +2,61 @@ const oracledb = require("oracledb");
 const { getConnectionANCL } = require("../../config/db");
 
 async function registerUser({ userId, orgId, name, email, mobile, dob, password, confirmPassword, ipAddress, source, propNo }) {
-  const conn = await getConnectionANCL();
-  console.log({ userId, orgId, name, email, mobile, dob, password, confirmPassword, ipAddress, source, propNo })
-  try {
-    const result = await conn.execute(
-      `BEGIN
-        aorts_onlineregister_ins(
-          :in_UserId,
-          :in_OrgId,
-          :in_Name,
-          :in_Email,
-          :in_Mobile,
-          :in_Dob,
-          :in_password,
-          :in_cpassword,
-          :in_ipaddr,
-          :in_source,
-          :in_propno,
-          :out_ErrorCode,
-          :out_ErrorMsg
+    const conn = await getConnectionANCL();
+
+    try {
+        const normalizedIpAddress = typeof ipAddress === "string" && ipAddress.trim() ? ipAddress.trim() : "127.0.0.1";
+
+        const result = await conn.execute(
+            `BEGIN
+                aorts_onlineregister_ins(
+                    :in_UserId,
+                    :in_OrgId,
+                    :in_Name,
+                    :in_Email,
+                    :in_Mobile,
+                    :in_Dob,
+                    :in_password,
+                    :in_cpassword,
+                    :in_ipaddr,
+                    :in_source,
+                    :in_propno,
+                    :out_ErrorCode,
+                    :out_ErrorMsg
+                );
+            END;`,
+            {
+                in_UserId: String(userId),
+                in_OrgId: Number(orgId),
+                in_Name: String(name),
+                in_Email: String(email),
+                in_Mobile: Number(mobile),
+                in_Dob: dob,
+                in_password: String(password),
+                in_cpassword: String(confirmPassword),
+                in_ipaddr: normalizedIpAddress,
+                in_source: String(source || "WEB"),
+                in_propno: propNo ? String(propNo) : null,
+                out_ErrorCode: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER},
+                out_ErrorMsg: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 4000}
+            },
+            {
+                autoCommit: true
+            }
         );
-      END;`,
-      {
-        in_UserId: userId,
-        in_OrgId: Number(orgId),
-        in_Name: name,
-        in_Email: email,
-        in_Mobile: Number(mobile),
-        in_Dob: dob,
-        in_password: password,
-        in_cpassword: confirmPassword,
-        in_ipaddr: ipAddress,
-        in_source: source,
-        in_propno: propNo,
-        out_ErrorCode: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-        out_ErrorMsg: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 4000 },
-      },
-      {
-        autoCommit: true,
-      }
-    );
-    console.log({ errorCode: result.outBinds.out_ErrorCode, errorMsg: result.outBinds.out_ErrorMsg })
-    return {
-      errorCode: result.outBinds.out_ErrorCode,
-      errorMsg: result.outBinds.out_ErrorMsg,
-    };
-  } finally {
-    await conn.close();
-  }
+
+        console.log({
+            errorCode: result.outBinds.out_ErrorCode,
+            errorMsg: result.outBinds.out_ErrorMsg
+        });
+
+        return {
+            errorCode: result.outBinds.out_ErrorCode,
+            errorMsg: result.outBinds.out_ErrorMsg
+        };
+    } finally {
+        await conn.close();
+    }
 }
 
 async function loginByProcedure({ corpId, mobile, password, ulbId, logflag }) {

@@ -11,6 +11,7 @@ import FrmNoDuesCerti from "./Pages/app/FrmNoDuesCerti";
 import FrmAssessmentCerti from "./Pages/app/FrmAssessmentCerti";
 import FrmPropertyTransfer from "./Pages/app/FrmPropertyTransfer";
 import FrmNewTaxAssesment from "./Pages/app/FrmNewTaxAssesment";
+import Registration from "./Pages/Login/Registration";
 
 const router = createBrowserRouter([
   {
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
       {
         path: "/otp-login",
         element: <OTPLogin />,
+      },
+      {
+        path: "/registration",
+        element: <Registration />,
       },
     ]
   },
