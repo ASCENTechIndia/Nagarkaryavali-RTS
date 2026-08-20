@@ -71,6 +71,9 @@ app.use("/api/menu-access", require("./modules/MenuAccess/MenuAccess.routes"));
 
 //Dashboard
 app.use("/api/Dashboard", require("./modules/Dashboard/Dashboard.route"));
+app.use("/api/FrmAssessmentCerti", require("./modules/Property/FrmAssessmentCerti/FrmAssessmentCerti.routes"));
+app.use("/api/FrmNewTaxAssesment", require("./modules/Property/FrmNewTaxAssesment/FrmNewTaxAssesment.route"));
+app.use("/api/FrmPropertyAppel", require("./modules/Property/FrmPropertyAppel/FrmPropertyAppel.route"));
 
 app.use(errorMiddleware);
 
