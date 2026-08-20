@@ -1,6 +1,6 @@
 const oracledb = require("oracledb");
-const { executeProcedure } = require("../../../db/procedureExecutor");
-const { executeQuery } = require("../../../db/queryExecutor");
+const { executeProcedureTMC } = require("../../../db/procedureExecutor");
+const { executeQueryTMC } = require("../../../db/queryExecutor");
 
 async function insertNewTaxAssessment(params) {
   const {
@@ -94,7 +94,7 @@ async function insertNewTaxAssessment(params) {
     out_applino: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 500 },
   };
 
-  const result = await executeProcedure({ sql, binds });
+  const result = await executeProcedureTMC({ sql, binds });
 
   if (!result.success) {
     throw new Error(result.error);
@@ -117,7 +117,7 @@ async function fetchWardsByUlb(ulbid) {
     ulbid: Number(ulbid),
   };
 
-  const result = await executeQuery(sql, binds);
+  const result = await executeQueryTMC(sql, binds);
 
   if (!result.success) {
     throw new Error(result.error);

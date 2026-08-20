@@ -66,16 +66,15 @@ app.use("/api/admin", adminRoutes);
 
 //Dashboard
 app.use("/api/Dashboard", require("./modules/Dashboard/Dashboard.route"));
-app.use("/api/FrmAssessmentCerti", require("./modules/Property/FrmAssessmentCerti/FrmAssessmentCerti.routes"));
-app.use("/api/FrmNewTaxAssesment", require("./modules/Property/FrmNewTaxAssesment/FrmNewTaxAssesment.route"));
-app.use("/api/FrmPropertyAppel", require("./modules/Property/FrmPropertyAppel/FrmPropertyAppel.route"));
 
 // Property
 app.use("/api/FrmAssessmentCerti", require("./modules/Property/FrmAssessmentCerti/FrmAssessmentCerti.routes"));
 app.use("/api/FrmPropertyTransfer", require("./modules/Property/FrmPropertyTransfer/FrmPropertyTransfer.routes"));
 app.use("/api/FrmRebateTax", require("./modules/Property/FrmRebateTax/FrmRebateTax.routes"));
 app.use("/api/FrmNoDuesCerti", require("./modules/Property/FrmNoDuesCerti/FrmNoDuesCerti.routes"));
-
+app.use("/api/FrmAssessmentCerti", require("./modules/Property/FrmAssessmentCerti/FrmAssessmentCerti.routes"));
+app.use("/api/FrmNewTaxAssesment", require("./modules/Property/FrmNewTaxAssesment/FrmNewTaxAssesment.route"));
+app.use("/api/FrmPropertyAppel", require("./modules/Property/FrmPropertyAppel/FrmPropertyAppel.route"));
 
 //Water module 
 app.use("/api/watermodule", require("./modules/WaterModule/WaterBillCopy/Stepnew.route"))

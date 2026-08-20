@@ -1,5 +1,5 @@
 const oracledb = require("oracledb");
-const { executeProcedure } = require("../../../db/procedureExecutor");
+const { executeProcedureTMC } = require("../../../db/procedureExecutor");
 
 async function insertPropAppeal(params) {
   const {
@@ -258,7 +258,7 @@ async function insertPropAppeal(params) {
     },
   };
 
-  const result = await executeProcedure({
+  const result = await executeProcedureTMC({
     sql,
     binds,
   });
