@@ -12,9 +12,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ShadCNTable from "@/components/ui/table";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
+import { 
+  propertySearchValidationSchema, 
+  applicantDetailsValidationSchema,
+  documentValidationSchema 
+} from "@/validations/global.validation";
 
 const ENCRYPTION_KEY = "AS23N7E2H4V717DEAS23N7E2H4V717DE";
 const EXTERNAL_API_URL = "http://ptaxtmccollection.thanecity.gov.in/TMC_IGRClient/Service.svc/GetDataDetails_TMC";
@@ -79,15 +84,21 @@ const initialValues = {
 
 const FrmAssessmentCerti = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const token = user?.token;
-  const ulbId = user?.ulbId || 3;
-  const userId = user?.userId || "1";
-  const zoneId = user?.zoneId || "1";
+
+  const locationState = location.state || {};
+  
+  const ulbId = locationState.ulbId || user?.ulbId || 3;
+  const userId = locationState.userId || user?.userId || "1";
+  const zoneId = locationState.zoneId || user?.zoneId || "1";
+  const serviceId = locationState.serviceId || "2";
+  const serviceName = locationState.serviceName || "Assessment Certificate";
+  const serviceRate = locationState.serviceRate || null;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [serviceId, setServiceId] = useState("2");
   const [documentDefs, setDocumentDefs] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [propertyFound, setPropertyFound] = useState(false);
@@ -222,13 +233,20 @@ const FrmAssessmentCerti = () => {
   };
 
   const handleSearchProperty = async (ptn, subcode, setFieldValue) => {
-    if (!ptn || ptn.trim() === "") {
+     const validationResult = propertySearchValidationSchema.safeParse({
+      ptn: ptn,
+      subcode: subcode,
+    });
+
+    if (!validationResult.success) {
+      const firstError = validationResult.error.issues[0];
       Swal.fire({
-        text: "Please enter Property Number",
+        text: firstError.message,
         confirmButtonColor: '#1e3a8a',
       });
       return;
     }
+
 
     try {
       setIsLoading(true);
@@ -304,34 +322,32 @@ const FrmAssessmentCerti = () => {
   };
 
   const handleSubmit = async (values) => {
-    if (!values.ptn || values.ptn.trim() === "") {
-      Swal.fire({ text: "Property Number cannot be blank", confirmButtonColor: '#1e3a8a' });
+    const propertyValidation = propertySearchValidationSchema.safeParse({
+      ptn: values.ptn,
+      subcode: values.subcode,
+    });
+
+    if (!propertyValidation.success) {
+      const firstError = propertyValidation.error.issues[0];
+      Swal.fire({ 
+        text: firstError.message, 
+        confirmButtonColor: '#1e3a8a' 
+      });
       return;
     }
 
-    if (!values.applicantName || values.applicantName.trim() === "") {
-      Swal.fire({ text: "Applicant Name cannot be blank", confirmButtonColor: '#1e3a8a' });
-      return;
-    }
+    const applicantValidation = applicantDetailsValidationSchema.safeParse({
+      applicantName: values.applicantName,
+      mobileNo: values.mobileNo,
+      emailId: values.emailId,
+    });
 
-    if (!values.mobileNo || values.mobileNo.trim() === "") {
-      Swal.fire({ text: "Mobile Number cannot be blank", confirmButtonColor: '#1e3a8a' });
-      return;
-    }
-
-    if (values.mobileNo.length !== 10 || !/^\d+$/.test(values.mobileNo)) {
-      Swal.fire({ text: "Invalid Mobile Number", confirmButtonColor: '#1e3a8a' });
-      return;
-    }
-
-    if (!values.emailId || values.emailId.trim() === "") {
-      Swal.fire({ text: "Email ID cannot be blank", confirmButtonColor: '#1e3a8a' });
-      return;
-    }
-
-    const emailRegex = /^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$/;
-    if (!emailRegex.test(values.emailId)) {
-      Swal.fire({ text: "Invalid Email Address", confirmButtonColor: '#1e3a8a' });
+    if (!applicantValidation.success) {
+      const firstError = applicantValidation.error.issues[0];
+      Swal.fire({ 
+        text: firstError.message, 
+        confirmButtonColor: '#1e3a8a' 
+      });
       return;
     }
 
@@ -347,10 +363,13 @@ const FrmAssessmentCerti = () => {
       }
     }
 
-    // if (documents.length === 0) {
-    //   Swal.fire({
-    //     text: "Please upload at least one document",
-    //     confirmButtonColor: '#1e3a8a',
+    // const documentValidation = documentValidationSchema.safeParse(documents);
+
+    // if (!documentValidation.success) {
+    //   const firstError = documentValidation.error.issues[0];
+    //   Swal.fire({ 
+    //     text: firstError.message, 
+    //     confirmButtonColor: '#1e3a8a' 
     //   });
     //   return;
     // }
@@ -426,39 +445,6 @@ const FrmAssessmentCerti = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleReset = (resetForm) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "All entered data will be cleared!",
-      showCancelButton: true,
-      confirmButtonColor: '#1e3a8a',
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, reset it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        resetForm();
-        const tableRows = documentDefs.map((doc, index) => ({
-          id: doc.DocId,
-          srNo: index + 1,
-          documentName: doc.DocName || doc.engdocdesc || "",
-          docId: doc.DocId,
-          docType: doc.DocType || "",
-          file: null,
-          fileName: "No file chosen",
-          fileBuffer: null,
-        }));
-        setTableData(tableRows);
-        setPropertyFound(false);
-        setSearchError("");
-        Swal.fire({
-          text: "Form has been reset successfully!",
-          confirmButtonColor: '#1e3a8a',
-          timer: 1500,
-        });
-      }
-    });
   };
 
   return (
@@ -715,15 +701,6 @@ const FrmAssessmentCerti = () => {
                     onClick={() => navigate("/")}
                   >
                     Back
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="bg-gray-100 hover:bg-gray-200"
-                    onClick={() => handleReset(resetForm)}
-                    disabled={isSubmitting}
-                  >
-                    Reset
                   </Button>
                 </div>
               </CardContent>

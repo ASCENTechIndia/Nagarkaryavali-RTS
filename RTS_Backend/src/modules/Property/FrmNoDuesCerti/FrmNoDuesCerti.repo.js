@@ -1,4 +1,4 @@
-const { executeProcedure } = require("../../../db/procedureExecutor");
+const { executeProcedureTMC } = require("../../../db/procedureExecutor");
 const oracledb = require("oracledb");
 
 async function insertNoDuesCertificateApplication(params) {
@@ -96,7 +96,7 @@ async function insertNoDuesCertificateApplication(params) {
     },
   };
 
-  const result = await executeProcedure({ sql, binds });
+  const result = await executeProcedureTMC({ sql, binds });
 
   if (!result.success) {
     throw new Error(result.error);
