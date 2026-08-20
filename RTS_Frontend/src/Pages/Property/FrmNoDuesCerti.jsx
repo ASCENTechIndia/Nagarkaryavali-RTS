@@ -12,14 +12,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ShadCNTable from "@/components/ui/table";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
+import { 
+  propertySearchValidationSchema, 
+  applicantDetailsValidationSchema,
+  documentValidationSchema 
+} from "@/validations/global.validation";
+import config from "@/utils/config";
 
 const ENCRYPTION_KEY = "AS23N7E2H4V717DEAS23N7E2H4V717DE";
 const EXTERNAL_API_URL = "http://ptaxtmccollection.thanecity.gov.in/TMC_IGRClient/Service.svc/GetDataDetails_TMC";
 
-// Simple encryption/decryption functions (matching .NET logic)
 function encryptString(plainText, keyValue) {
   const keyBytes = [];
   for (let i = 0; i < keyValue.length; i++) {
@@ -58,7 +63,6 @@ function decryptString(cipherText, keyValue) {
   return String.fromCharCode(...result);
 }
 
-// Get page title based on service ID
 const getPageTitle = (serviceId) => {
   const titleMap = {
     "44": "Re Assessment",
@@ -85,21 +89,25 @@ const initialValues = {
 
 const FrmNoDuesCerti = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const token = user?.token;
-  const ulbId = user?.ulbId || "3";
-  const userId = user?.userId || "151";
-  const zoneId = user?.zoneId || "12";
-  const mahaUlbId = user?.mahaUlbId || "";
-  const serviceId = user?.serviceId || "56";
+
+  const locationState = location.state || {};
+  
+  const ulbId = locationState.ulbId || user?.ulbId || "3";
+  const userId = locationState.userId || user?.userId || "151";
+  const zoneId = locationState.zoneId || user?.zoneId || "12";
+  const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId || "3";
+  const serviceId = locationState.serviceId || user?.serviceId || "56";
+  const serviceName = locationState.serviceName || "No Dues Certificate";
 
   const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [documentDefs, setDocumentDefs] = useState([]);
   const [tableData, setTableData] = useState([]);
-  const [pageTitle, setPageTitle] = useState("No Dues Certificate");
+  const [pageTitle, setPageTitle] = useState(serviceName);
   
-  // State variables to store property details
   const [yearlyTax, setYearlyTax] = useState("");
   const [prabhag, setPrabhag] = useState("");
   const [zoneid, setZoneid] = useState("");
@@ -121,10 +129,11 @@ const FrmNoDuesCerti = () => {
     const title = getPageTitle(serviceId);
     setPageTitle(title);
     document.title = title;
-    fetchDocumentDefinitions(serviceId, ulbId);
+    if (ulbId && serviceId) {
+      fetchDocumentDefinitions(serviceId, ulbId);
+    }
   }, [serviceId, ulbId]);
 
-  // Fetch document definitions - REUSE AssessmentCerti API
   const fetchDocumentDefinitions = async (serviceId, ulbId) => {
     try {
       const response = await axios.post(
@@ -158,7 +167,6 @@ const FrmNoDuesCerti = () => {
     }
   };
 
-  // Get property details from external API
   const getPropertyDetails = async (propNo, userId) => {
     try {
       const jsonReq = {
@@ -195,11 +203,16 @@ const FrmNoDuesCerti = () => {
     }
   };
 
-  // Handle Search button click
   const handleSearchProperty = async (values, setFieldValue) => {
-    if (!values.ptn || values.ptn.trim() === "") {
+    const validationResult = propertySearchValidationSchema.safeParse({
+      ptn: values.ptn,
+      subcode: values.subcode,
+    });
+
+    if (!validationResult.success) {
+      const firstError = validationResult.error.issues[0];
       Swal.fire({
-        text: "Please Enter Property Number",
+        text: firstError.message,
         confirmButtonColor: '#1e3a8a',
       });
       return;
@@ -217,7 +230,6 @@ const FrmNoDuesCerti = () => {
       if (result && result.propertyOwners) {
         const propData = result.propertyOwners;
 
-        // Check for pending payment
         if (propData.payamt && parseFloat(propData.payamt) > 0) {
           const payNowUrl = `https://propertytax.thanecity.gov.in/PropSearch.aspx?PTN=${values.ptn}`;
           Swal.fire({
@@ -235,13 +247,11 @@ const FrmNoDuesCerti = () => {
           return;
         }
 
-        // Set property details in form fields
         setFieldValue("landHolder", propData.land_Holder || "");
         setFieldValue("structureHolder", propData.struct_Holder || "");
         setFieldValue("ownerDetails", propData.owner_Details || "");
         setFieldValue("address", propData.address || "");
 
-        // Set state variables
         setYearlyTax(propData.yearly_tax || "0");
         setPrabhag(propData.prabhag || "");
         setZoneid(propData.zoneid || "");
@@ -272,7 +282,6 @@ const FrmNoDuesCerti = () => {
     }
   };
 
-  // Upload document - REUSE AssessmentCerti API
   const uploadDocument = async (applicationNo, doc) => {
     const formData = new FormData();
     formData.append("serviceId", String(serviceId));
@@ -299,25 +308,33 @@ const FrmNoDuesCerti = () => {
     }
   };
 
-  // Insert Maha Online - REUSE AssessmentCerti API
   const insertMahaOnline = async (applicationNo) => {
     try {
+      const mahaPayload = {
+        mahaData: {
+          ulbId: ulbId,
+          mahaUlbId: mahaUlbId || ulbId,
+          trackId: Date.now().toString(),
+          districtId: "0",
+          requestString: `TrackId:${Date.now()}|AppNo:${applicationNo}|ServiceId:${serviceId}|ULBId:${ulbId}|MahaULBId:${mahaUlbId || ulbId}|Timestamp:${Date.now()}`,
+          responseString: `Success|Application:${applicationNo}|Status:Processed|Timestamp:${Date.now()}`,
+          encryptedFinalString: `ENC_${applicationNo}_${Date.now()}`
+        },
+        applicationNo: applicationNo,
+        serviceId: String(serviceId),
+      };
+
+      console.log("Maha Online Request Payload:", mahaPayload);
+
       const response = await axios.post(
         `${BASE_URL}/api/FrmAssessmentCerti/maha-online-first-step`,
-        {
-          mahaData: {
-            ulbId: ulbId,
-            mahaUlbId: mahaUlbId || ulbId,
-            trackId: Date.now().toString(),
-            districtId: "0",
-          },
-          applicationNo: applicationNo,
-          serviceId: String(serviceId),
-        },
+        mahaPayload,
         {
           headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
         }
       );
+
+      console.log("Maha Online Response:", response.data);
       return response.data.success;
     } catch (error) {
       console.error("Error in Maha Online integration:", error);
@@ -325,7 +342,6 @@ const FrmNoDuesCerti = () => {
     }
   };
 
-  // Check payment flag - REUSE AssessmentCerti API
   const checkPaymentFlag = async () => {
     try {
       const response = await axios.post(
@@ -347,7 +363,6 @@ const FrmNoDuesCerti = () => {
     }
   };
 
-  // Handle file change
   const handleFileChange = (id, event) => {
     const file = event.currentTarget.files?.[0];
     if (file) {
@@ -367,44 +382,30 @@ const FrmNoDuesCerti = () => {
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      // Validation
-      if (!values.ptn || values.ptn.trim() === "") {
-        Swal.fire({ text: "Property No. cannot be blank", confirmButtonColor: '#1e3a8a' });
+      const propertyValidation = propertySearchValidationSchema.safeParse({
+        ptn: values.ptn,
+        subcode: values.subcode,
+      });
+
+      if (!propertyValidation.success) {
+        const firstError = propertyValidation.error.issues[0];
+        Swal.fire({ text: firstError.message, confirmButtonColor: '#1e3a8a' });
         setLoading(false);
         return;
       }
 
-      if (!values.applicantName || values.applicantName.trim() === "") {
-        Swal.fire({ text: "Please Enter Application Name", confirmButtonColor: '#1e3a8a' });
-        setLoading(false);
-        return;
-      }
+      const applicantValidation = applicantDetailsValidationSchema.safeParse({
+        applicantName: values.applicantName,
+        mobileNo: values.mobileNo,
+        emailId: values.emailId,
+      });
 
-      if (!values.mobileNo || values.mobileNo.trim() === "") {
-        Swal.fire({ text: "Please Enter Mobile No", confirmButtonColor: '#1e3a8a' });
-        setLoading(false);
-        return;
-      }
-
-      if (values.mobileNo.length !== 10 || !/^\d+$/.test(values.mobileNo)) {
-        Swal.fire({ text: "Invalid Mobile No", confirmButtonColor: '#1e3a8a' });
-        setLoading(false);
-        return;
-      }
-
-      if (!values.emailId || values.emailId.trim() === "") {
-        Swal.fire({ text: "Please Enter Email ID", confirmButtonColor: '#1e3a8a' });
-        setLoading(false);
-        return;
-      }
-
-      const emailRegex = /^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$/;
-      if (!emailRegex.test(values.emailId)) {
-        Swal.fire({ text: "Invalid Email Address", confirmButtonColor: '#1e3a8a' });
+      if (!applicantValidation.success) {
+        const firstError = applicantValidation.error.issues[0];
+        Swal.fire({ text: firstError.message, confirmButtonColor: '#1e3a8a' });
         setLoading(false);
         return;
       }
@@ -415,7 +416,6 @@ const FrmNoDuesCerti = () => {
         return;
       }
 
-      // Prepare documents
       const documents = [];
       for (const row of tableData) {
         if (row.fileBuffer) {
@@ -428,33 +428,57 @@ const FrmNoDuesCerti = () => {
         }
       }
 
-      // Prepare payload
+      // const documentValidation = documentValidationSchema.safeParse(documents);
+
+      // if (!documentValidation.success) {
+      //   const firstError = documentValidation.error.issues[0];
+      //   Swal.fire({ text: firstError.message, confirmButtonColor: '#1e3a8a' });
+      //   setLoading(false);
+      //   return;
+      // }
+
+      const buildRequestString = (appNo) => {
+        return `TrackId:${Date.now()}|AppNo:${appNo}|ServiceId:${serviceId}|ULBId:${ulbId}|MahaULBId:${mahaUlbId || ulbId}|Timestamp:${Date.now()}`;
+      };
+
+      const buildResponseString = (appNo) => {
+        return `Success|Application:${appNo}|Status:Processed|Timestamp:${Date.now()}`;
+      };
+
+      const buildEncryptedString = (appNo) => {
+        return `ENC_${appNo}_${Date.now()}`;
+      };
+
       const payload = {
         userId: userId,
         zoneId: zoneId,
         serviceId: String(serviceId),
-        propNo: values.ptn,
+        propNo: values.ptn || "",
         subCode: values.subcode || "",
         landHolder: values.landHolder || "",
         structHolder: values.structureHolder || "",
         ownDetails: values.ownerDetails || "",
         address: values.address || "",
-        appliname: values.applicantName,
-        mobile: values.mobileNo,
-        email: values.emailId,
+        appliname: values.applicantName || "",
+        mobile: values.mobileNo || "",
+        email: values.emailId || "",
         taxAmount: yearlyTax || "0",
         aadharNo: values.aadharNo || 0,
-        appSource: "WEB",
+        appSource: config.source,
         documents: documents,
         mahaData: {
-          ulbId: ulbId,
-          mahaUlbId: mahaUlbId || ulbId,
-          districtId: "0",
+          ulbId: Number(ulbId),
+          mahaUlbId: Number(mahaUlbId || ulbId),
+          districtId: Number(0),
           trackId: Date.now().toString(),
-        },
+          requestString: buildRequestString(""),
+          responseString: buildResponseString(""),
+          encryptedFinalString: buildEncryptedString("")
+        }
       };
 
-      // Submit application to No Dues backend
+      console.log("Submit Payload:", payload);
+
       const submitResponse = await axios.post(
         `${BASE_URL}/api/FrmNoDuesCerti/submit`,
         payload,
@@ -475,7 +499,6 @@ const FrmNoDuesCerti = () => {
       const applicationNo = submitResponse.data.data.applicationNo;
       const message = submitResponse.data.data.message || "Application submitted successfully";
 
-      // Upload documents using common API
       for (const doc of documents) {
         const success = await uploadDocument(applicationNo, doc);
         if (!success) {
@@ -487,25 +510,20 @@ const FrmNoDuesCerti = () => {
           return;
         }
       }
-
-      // Insert Maha Online using common API
       const mahaSuccess = await insertMahaOnline(applicationNo);
       if (!mahaSuccess) {
         console.warn("Maha Online integration failed, but application was created");
       }
-
-      // Check payment flag using common API
       const payFlag = await checkPaymentFlag();
 
-      // Show success message
       Swal.fire({
-        text: `${message} Application No: ${applicationNo}`,
+        text: `${message}`,
         confirmButtonColor: '#1e3a8a',
       }).then(() => {
         if (payFlag === "Y") {
-          navigate("/app-fee", { state: { applicationNo: applicationNo } });
+          navigate("/app/FrmAppliFee", { state: { applicationNo: applicationNo } });
         } else {
-          navigate("/");
+          navigate("/app/FrmNoDuesCerti");
         }
       });
 
@@ -520,46 +538,6 @@ const FrmNoDuesCerti = () => {
     }
   };
 
-  // Handle Reset
-  const handleReset = (resetForm) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "All entered data will be cleared!",
-      showCancelButton: true,
-      confirmButtonColor: '#1e3a8a',
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, reset it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        resetForm();
-        setYearlyTax("");
-        setPrabhag("");
-        setZoneid("");
-        setWard("");
-        setPrabhagname("");
-        setZone("");
-        setWardno("");
-        const tableRows = documentDefs.map((doc, index) => ({
-          id: doc.DOCID || doc.DocId || index + 1,
-          srNo: index + 1,
-          documentName: doc.DOCNAME || doc.DocName || doc.ENGDOCDESC || "Document",
-          docId: doc.DOCID || doc.DocId,
-          docType: doc.DOCTYPE || doc.DocType || "PDF",
-          file: null,
-          fileName: "No file chosen",
-          fileBuffer: null,
-        }));
-        setTableData(tableRows);
-        Swal.fire({
-          text: "Form has been reset successfully!",
-          confirmButtonColor: '#1e3a8a',
-          timer: 1500,
-        });
-      }
-    });
-  };
-
-  // Transform table data for rendering
   const transformedTableData = tableData.map((item) => ({
     ...item,
     fileUpload: (
@@ -593,7 +571,6 @@ const FrmNoDuesCerti = () => {
               </CardHeader>
 
               <CardContent className="p-4 sm:p-6 space-y-6">
-                {/* PTN, Subcode, Search */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-24 shrink-0 flex justify-start sm:justify-between items-center">
@@ -631,7 +608,6 @@ const FrmNoDuesCerti = () => {
                   </div>
                 </div>
 
-                {/* Property Details Display */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-y border-gray-300 py-3">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
@@ -671,7 +647,6 @@ const FrmNoDuesCerti = () => {
                   </div>
                 </div>
 
-                {/* Applicant Details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
@@ -736,7 +711,6 @@ const FrmNoDuesCerti = () => {
 
                 <hr />
 
-                {/* Document Upload Table */}
                 {tableData.length > 0 && (
                   <ShadCNTable
                     headers={headers}
@@ -747,7 +721,6 @@ const FrmNoDuesCerti = () => {
                   />
                 )}
 
-                {/* Action Buttons */}
                 <div className="flex justify-center items-center gap-3 pt-4">
                   <Button
                     type="submit"
@@ -755,14 +728,6 @@ const FrmNoDuesCerti = () => {
                     disabled={loading}
                   >
                     {loading ? "Submitting..." : "Submit"}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="bg-gray-100 hover:bg-gray-200"
-                    onClick={() => handleReset(resetForm)}
-                  >
-                    Reset
                   </Button>
                   <Button
                     type="button"
