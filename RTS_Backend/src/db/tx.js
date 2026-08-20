@@ -1,14 +1,11 @@
 const oracledb = require("oracledb");
-const getConnection = require("../config/db");
+const { getConnectionTMC, getConnectionANCL } = require("../config/db");
 
-/**
- * Execute multiple operations inside Oracle transaction
- */
-async function withTx(fn) {
+async function withTxANCL(fn) {
   let connection;
 
   try {
-    connection = await getConnection();
+    connection = await getConnectionANCL();
 
     const result = await fn(connection);
 
@@ -33,4 +30,33 @@ async function withTx(fn) {
   }
 }
 
-module.exports = { withTx };
+async function withTxTMC(fn) {
+  let connection;
+
+  try {
+    connection = await getConnectionTMC();
+
+    const result = await fn(connection);
+
+    await connection.commit();
+
+    return result;
+
+  } catch (err) {
+    if (connection) {
+      try {
+        await connection.rollback();
+      } catch (_) {}
+    }
+    throw err;
+
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (_) {}
+    }
+  }
+}
+
+module.exports = {withTxANCL, withTxTMC};

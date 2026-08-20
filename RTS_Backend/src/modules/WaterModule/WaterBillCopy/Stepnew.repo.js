@@ -1,5 +1,5 @@
 const { executeQueryTMC } = require("../../../db/queryExecutor");
-const { withTx } = require("../../../db/tx");
+const { withTxTMC } = require("../../../db/tx");
 const oracledb = require("oracledb");
 
 
@@ -235,7 +235,7 @@ const saveApplicantInfoRepo = async (payload) => {
     });
 
     try {
-        const result = await withTx(async (connection) => {
+        const result = await withTxTMC(async (connection) => {
 
             const result = await connection.execute(
                 `
@@ -385,7 +385,7 @@ async function insertAppDocument({
   DocumentId,
   fileBuffer,
 }) {
-  return withTx(async (connection) => {
+  return withTxTMC(async (connection) => {
 
     const sql = `
       INSERT INTO aorts_appdoc_det
