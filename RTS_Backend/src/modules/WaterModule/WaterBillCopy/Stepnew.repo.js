@@ -1,4 +1,4 @@
-const { executeQuery } = require("../../../db/queryExecutor");
+const { executeQueryTMC } = require("../../../db/queryExecutor");
 const { withTx } = require("../../../db/tx");
 const oracledb = require("oracledb");
 
@@ -6,9 +6,7 @@ const oracledb = require("oracledb");
 const getServiceNameRepo = async ({ serviceId }) => {
     console.log("Repo: Fetch Service Name", { serviceId });
 
-    const binds = {
-        serviceId: Number(serviceId),
-    };
+    const binds = {serviceId: Number(serviceId)};
 
     const sql = `
         SELECT
@@ -17,7 +15,7 @@ const getServiceNameRepo = async ({ serviceId }) => {
         WHERE num_service_serviceid = :serviceId
     `;
 
-    const result = await executeQuery(sql, binds);
+    const result = await executeQueryTMC(sql, binds);
 
     if (!result || !result.success) {
         throw new Error(
@@ -40,7 +38,7 @@ const getNocPurposeRepo = async () => {
         ORDER BY var_nocpurpose_name
     `;
 
-    const result = await executeQuery(sql);
+    const result = await executeQueryTMC(sql);
 
     if (!result || !result.success) {
         throw new Error(
@@ -64,7 +62,7 @@ const getWardsRepo = async (  ) => {
         ORDER BY zonename
     `;
 
-    const result = await executeQuery(sql);
+    const result = await executeQueryTMC(sql);
 
     if (!result || !result.success) {
         throw new Error(
@@ -98,7 +96,7 @@ const getUserMobileRepo = async ({
           AND num_user_ulbid = :ulbid
     `;
 
-    const result = await executeQuery(sql, binds);
+    const result = await executeQueryTMC(sql, binds);
 
     if (!result || !result.success) {
         throw new Error(
@@ -121,7 +119,7 @@ const getWaterSewerageTypesRepo = async () => {
         ORDER BY var_wtsewarage_name
     `;
 
-    const result = await executeQuery(sql);
+    const result = await executeQueryTMC(sql);
 
     if (!result || !result.success) {
         throw new Error(
@@ -144,7 +142,7 @@ const getWaterConsumerTypesRepo = async () => {
         ORDER BY var_wtrcons_name
     `;
 
-    const result = await executeQuery(sql);
+    const result = await executeQueryTMC(sql);
 
     if (!result || !result.success) {
         throw new Error(
@@ -167,7 +165,7 @@ const getWaterMeterTypesRepo = async () => {
         ORDER BY var_wtrmeter_name
     `;
 
-    const result = await executeQuery(sql);
+    const result = await executeQueryTMC(sql);
 
     if (!result || !result.success) {
         throw new Error(
@@ -216,7 +214,7 @@ const getServiceDocumentsRepo = async ({
           AND s.var_service_active = 'Y'
     `;
 
-    const result = await executeQuery(sql, binds);
+    const result = await executeQueryTMC(sql, binds);
 
     if (!result || !result.success) {
         throw new Error(

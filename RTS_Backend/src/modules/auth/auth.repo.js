@@ -1,9 +1,8 @@
 const oracledb = require("oracledb");
-const getConnection = require("../../db");
-
+const { getConnectionANCL } = require("../../config/db");
 
 async function registerUser({ userId, orgId, name, email, mobile, dob, password, confirmPassword, ipAddress, source, propNo }) {
-  const conn = await getConnection();
+  const conn = await getConnectionANCL();
   console.log({ userId, orgId, name, email, mobile, dob, password, confirmPassword, ipAddress, source, propNo })
   try {
     const result = await conn.execute(
@@ -54,7 +53,7 @@ async function registerUser({ userId, orgId, name, email, mobile, dob, password,
 }
 
 async function loginByProcedure({ corpId, mobile, password, ulbId, logflag }) {
-  const conn = await getConnection();
+  const conn = await getConnectionANCL();
   try {
     const emailResult = await conn.execute(
       `SELECT var_onlinereg_email AS email
@@ -133,7 +132,7 @@ async function loginByProcedure({ corpId, mobile, password, ulbId, logflag }) {
 }
 
 async function sendLoginOtp({ userId, ulbId, mobileNumber }) {
-  const conn = await getConnection();
+  const conn = await getConnectionANCL();
 
   try {
     const result = await conn.execute(
@@ -179,7 +178,7 @@ async function sendLoginOtp({ userId, ulbId, mobileNumber }) {
 }
 
 async function loginWithOtpProcedure({ userId, ulbId, mobileNumber, otp }) {
-  const conn = await getConnection();
+  const conn = await getConnectionANCL();
 
   try {
     const userResult = await conn.execute(
@@ -326,7 +325,7 @@ async function loginWithOtpProcedure({ userId, ulbId, mobileNumber, otp }) {
 }
 
 async function changePassword({ corpId, oldPassword, newPassword, userId, mode }) {
-  const conn = await getConnection();
+  const conn = await getConnectionANCL();
 
   try {
     const result = await conn.execute(
@@ -362,7 +361,7 @@ async function changePassword({ corpId, oldPassword, newPassword, userId, mode }
 }
 
 async function getCitizenDetailsByMobile({ mobile }) {
-  const conn = await getConnection();
+  const conn = await getConnectionANCL();
   try {
     const result = await conn.execute(
       `SELECT
@@ -388,6 +387,7 @@ async function getCitizenDetailsByMobile({ mobile }) {
     await conn.close();
   }
 }
+
 module.exports = {
   registerUser,
   loginByProcedure,

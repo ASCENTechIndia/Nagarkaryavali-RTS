@@ -63,16 +63,12 @@ app.get("/", (req, res) => res.send("API Running ✅"));
 // routes
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/menu-access", require("./modules/MenuAccess/MenuAccess.routes"));
-
-
 
 //Dashboard
 app.use("/api/Dashboard", require("./modules/Dashboard/Dashboard.route"));
 
 
 //Water module 
-
 app.use("/api/watermodule", require("./modules/WaterModule/WaterBillCopy/Stepnew.route"))
 
 app.use(errorMiddleware);

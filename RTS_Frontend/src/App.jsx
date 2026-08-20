@@ -4,6 +4,7 @@ import OTPLogin from "./Pages/Login/OTP.Login";
 import LandingPage from "./Pages/LandingPage";
 import Layout from "./layout/main-layout";
 import PageLayout from "./layout/page-layout";
+import Watermodule from "./Pages/WaterModule/WaterbillCopy/Step0New"
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,16 @@ const router = createBrowserRouter([
       {
         path: "/otp-login",
         element: <OTPLogin />,
+      },
+    ]
+  },
+  {
+    path: "/",
+    element: <PageLayout/>,
+    children: [
+      {
+        path: "app/Step0New",
+        element: <Watermodule/>
       },
     ]
   },

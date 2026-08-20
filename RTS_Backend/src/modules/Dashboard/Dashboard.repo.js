@@ -1,5 +1,5 @@
-const { executeQuery } = require("../../db/queryExecutor");
-const getConnection = require("../../config/db");
+const { executeQueryANCL } = require("../../db/queryExecutor");
+const {getConnectionANCL} = require("../../config/db");
 const oracledb = require("oracledb");
 const { decryptString } = require("./encrypt.js");
 
@@ -12,8 +12,8 @@ const lobToBuffer = async (lob) => {
     });
 };
 
-const decryptRequestRepo = async ({encryptedRequest}) => {
-    console.log("Repo: Decrypt Request",{ encryptedRequest });
+const decryptRequestRepo = async ({ encryptedRequest }) => {
+    console.log("Repo: Decrypt Request", { encryptedRequest });
 
     const DEFAULT_ENCRYPTED_REQUEST = "00FCB9012692E1D96C83CEB51B616291";
 
@@ -23,18 +23,18 @@ const decryptRequestRepo = async ({encryptedRequest}) => {
     }
 
     const decryptedRequest = decryptString(encryptedRequest);
-    console.log("Decrypted Request:",decryptedRequest);
+    console.log("Decrypted Request:", decryptedRequest);
 
     const requestParts = decryptedRequest.split("&");
 
     let corpCode = "";
     requestParts.forEach((part) => {
-            const [key, ...values] = part.split("=");
+        const [key, ...values] = part.split("=");
 
-            if (key?.trim().toUpperCase() === "CORPCODE") {
-                corpCode = values.join("=").trim();
-            }
+        if (key?.trim().toUpperCase() === "CORPCODE") {
+            corpCode = values.join("=").trim();
         }
+    }
     );
 
     if (!corpCode) {
@@ -57,7 +57,7 @@ const decryptRequestRepo = async ({encryptedRequest}) => {
     `;
 
     const ulbResult =
-        await executeQuery(ulbSql, {corpCode});
+        await executeQueryANCL(ulbSql, { corpCode });
 
     if (!ulbResult.success) {
         throw new Error(ulbResult.error || "Failed to fetch corporation ID");
@@ -94,13 +94,13 @@ const decryptRequestRepo = async ({encryptedRequest}) => {
 };
 
 const getCorporationDetailsRepo = async ({ corporationId }) => {
-    console.log("Repo: Fetch Corporation Details", {corporationId});
+    console.log("Repo: Fetch Corporation Details", { corporationId });
 
     let connection;
 
     try {
-        connection = await getConnection();
-        const binds = {corporationId: Number(corporationId)};
+        connection = await getConnectionANCL();
+        const binds = { corporationId: Number(corporationId) };
 
         const corporationSql = `
             SELECT
@@ -120,13 +120,13 @@ const getCorporationDetailsRepo = async ({ corporationId }) => {
         const corporationResult = await connection.execute(
             corporationSql,
             binds,
-            {outFormat: oracledb.OUT_FORMAT_OBJECT}
+            { outFormat: oracledb.OUT_FORMAT_OBJECT }
         );
 
         const logoResult = await connection.execute(
             logoSql,
             binds,
-            {outFormat: oracledb.OUT_FORMAT_OBJECT}
+            { outFormat: oracledb.OUT_FORMAT_OBJECT }
         );
 
         const corporation = corporationResult.rows?.[0] || null;
@@ -135,7 +135,7 @@ const getCorporationDetailsRepo = async ({ corporationId }) => {
 
         let logo = null;
 
-        console.log({logo: logoResult})
+        console.log({ logo: logoResult })
 
         if (logoRow?.BLOB_CORPORATION_IMG) {
             if (Buffer.isBuffer(logoRow.BLOB_CORPORATION_IMG)) {
@@ -146,15 +146,15 @@ const getCorporationDetailsRepo = async ({ corporationId }) => {
             }
         }
 
-        return { corporation, logo};
+        return { corporation, logo };
 
     } catch (err) {
-        console.error( "❌ Corporation Details Repo Error:", err);
+        console.error("❌ Corporation Details Repo Error:", err);
         throw err;
     } finally {
         if (connection) {
-            try {await connection.close();} catch (e) {
-                console.error("Error closing connection:",e);
+            try { await connection.close(); } catch (e) {
+                console.error("Error closing connection:", e);
             }
         }
     }
@@ -193,7 +193,7 @@ const getDepartmentMenuRepo = async ({ ulbid }) => {
         ORDER BY deptid
     `;
 
-    const result = await executeQuery(sql, binds);
+    const result = await executeQueryANCL(sql, binds);
 
     if (!result || !result.success) {
         throw new Error(result?.error || "Failed to fetch department menu");
@@ -253,7 +253,7 @@ const getServicesByDeptIdRepo = async ({ ulbid, deptId }) => {
             ORDER BY num_service_serviceid
         `;
     }
-    const result = await executeQuery(sql, binds);
+    const result = await executeQueryANCL(sql, binds);
 
     if (!result || !result.success) {
         throw new Error(result?.error || "Failed to fetch services by department");
@@ -293,7 +293,7 @@ const getDocumentsForServiceRepo = async ({ serviceId, ulbid }) => {
           AND num_serdoc_ulbid = :ulbid
     `;
 
-    const result = await executeQuery(sql, binds);
+    const result = await executeQueryANCL(sql, binds);
 
     if (!result || !result.success) {
         throw new Error(result?.error || "Failed to fetch service documents");
@@ -324,7 +324,7 @@ const getDocumentsForServiceRepo = async ({ serviceId, ulbid }) => {
           AND num_serv_ulbid = :ulbid
     `;
 
-    const fallbackResult = await executeQuery(fallbackSql, fallbackBinds);
+    const fallbackResult = await executeQueryANCL(fallbackSql, fallbackBinds);
 
     if (!fallbackResult || !fallbackResult.success) {
         throw new Error(fallbackResult?.error || "Failed to fetch fallback service documents");
@@ -349,7 +349,7 @@ const getDownloadDocsRepo = async ({ serviceName, ulbid }) => {
           AND num_downlaoddoc_ulbid = :ulbid
     `;
 
-    const result = await executeQuery(sql, binds);
+    const result = await executeQueryANCL(sql, binds);
 
     if (!result || !result.success) {
         throw new Error(result?.error || "Failed to fetch download documents");
@@ -394,7 +394,7 @@ async function getServiceDetails({ serviceId }) {
         WHERE num_service_serviceid = :serviceId
     `;
 
-    const result = await executeQuery(sql, {
+    const result = await executeQueryANCL(sql, {
         serviceId: numericServiceId
     });
 

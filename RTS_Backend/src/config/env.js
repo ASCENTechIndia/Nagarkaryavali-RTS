@@ -13,7 +13,8 @@ module.exports = {
   // 🔥 ORACLE CONFIG
   DB_USER: must("DB_USER"),
   DB_PASSWORD: must("DB_PASSWORD"),
-  DB_CONNECT_STRING: must("DB_CONNECT_STRING"),
+  DB_CONNECT_STRING_TMC: must("DB_CONNECT_STRING_TMC"),
+  DB_CONNECT_STRING_ANCL: must("DB_CONNECT_STRING_ANCL"),
 
   JWT_SECRET: must("JWT_SECRET"),
   NODE_ENV: process.env.NODE_ENV || "development",

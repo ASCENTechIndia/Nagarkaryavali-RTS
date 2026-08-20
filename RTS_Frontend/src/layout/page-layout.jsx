@@ -2,6 +2,7 @@ import React from "react";
 import { Outlet } from "react-router-dom";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
+import ProtectedRoute from "@/routes/ProtectedRoute";
 
 const PageLayout = ({ allowPublic = false }) => {
     return (
