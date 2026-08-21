@@ -22,46 +22,46 @@ import {
 } from "@/validations/global.validation";
 import config from "@/utils/config";
 
-const ENCRYPTION_KEY = "AS23N7E2H4V717DEAS23N7E2H4V717DE";
-const EXTERNAL_API_URL = "http://ptaxtmccollection.thanecity.gov.in/TMC_IGRClient/Service.svc/GetDataDetails_TMC";
+// const ENCRYPTION_KEY = "AS23N7E2H4V717DEAS23N7E2H4V717DE";
+// const EXTERNAL_API_URL = "http://ptaxtmccollection.thanecity.gov.in/TMC_IGRClient/Service.svc/GetDataDetails_TMC";
 
-function encryptString(plainText, keyValue) {
-  const keyBytes = [];
-  for (let i = 0; i < keyValue.length; i++) {
-    keyBytes.push(keyValue.charCodeAt(i));
-  }
-  const plainBytes = [];
-  for (let i = 0; i < plainText.length; i++) {
-    plainBytes.push(plainText.charCodeAt(i));
-  }
-  const actualKey = keyBytes.slice(0, 32);
-  const result = [];
-  for (let i = 0; i < plainBytes.length; i++) {
-    result.push(plainBytes[i] ^ actualKey[i % actualKey.length]);
-  }
-  let hex = '';
-  for (let i = 0; i < result.length; i++) {
-    hex += result[i].toString(16).padStart(2, '0').toUpperCase();
-  }
-  return hex;
-}
+// function encryptString(plainText, keyValue) {
+//   const keyBytes = [];
+//   for (let i = 0; i < keyValue.length; i++) {
+//     keyBytes.push(keyValue.charCodeAt(i));
+//   }
+//   const plainBytes = [];
+//   for (let i = 0; i < plainText.length; i++) {
+//     plainBytes.push(plainText.charCodeAt(i));
+//   }
+//   const actualKey = keyBytes.slice(0, 32);
+//   const result = [];
+//   for (let i = 0; i < plainBytes.length; i++) {
+//     result.push(plainBytes[i] ^ actualKey[i % actualKey.length]);
+//   }
+//   let hex = '';
+//   for (let i = 0; i < result.length; i++) {
+//     hex += result[i].toString(16).padStart(2, '0').toUpperCase();
+//   }
+//   return hex;
+// }
 
-function decryptString(cipherText, keyValue) {
-  const keyBytes = [];
-  for (let i = 0; i < keyValue.length; i++) {
-    keyBytes.push(keyValue.charCodeAt(i));
-  }
-  const cipherBytes = [];
-  for (let i = 0; i < cipherText.length; i += 2) {
-    cipherBytes.push(parseInt(cipherText.substr(i, 2), 16));
-  }
-  const actualKey = keyBytes.slice(0, 32);
-  const result = [];
-  for (let i = 0; i < cipherBytes.length; i++) {
-    result.push(cipherBytes[i] ^ actualKey[i % actualKey.length]);
-  }
-  return String.fromCharCode(...result);
-}
+// function decryptString(cipherText, keyValue) {
+//   const keyBytes = [];
+//   for (let i = 0; i < keyValue.length; i++) {
+//     keyBytes.push(keyValue.charCodeAt(i));
+//   }
+//   const cipherBytes = [];
+//   for (let i = 0; i < cipherText.length; i += 2) {
+//     cipherBytes.push(parseInt(cipherText.substr(i, 2), 16));
+//   }
+//   const actualKey = keyBytes.slice(0, 32);
+//   const result = [];
+//   for (let i = 0; i < cipherBytes.length; i++) {
+//     result.push(cipherBytes[i] ^ actualKey[i % actualKey.length]);
+//   }
+//   return String.fromCharCode(...result);
+// }
 
 const initialValues = {
   ptn: "",
@@ -148,7 +148,7 @@ const FrmAssessmentCerti = () => {
     } catch (error) {
       console.error("Error fetching document definitions:", error);
       Swal.fire({
-        text: "Failed to load document definitions",
+        text: error?.response?.data?.error || "Failed to load document definitions",
         confirmButtonColor: '#1e3a8a',
       });
     } finally {
@@ -192,40 +192,64 @@ const FrmAssessmentCerti = () => {
     ),
   }));
 
+  // const getPropertyDetails = async (propNo, userId) => {
+  //   try {
+  //     const jsonReq = {
+  //       jsonData: [{
+  //         user_id: userId,
+  //         propno: propNo,
+  //         flatno: ""
+  //       }]
+  //     };
+
+  //     const jsonReqString = JSON.stringify(jsonReq);
+  //     const encryptedRequest = encryptString(jsonReqString, ENCRYPTION_KEY);
+
+  //     const postData = {
+  //       jsonData: [{
+  //         encr_request: encryptedRequest
+  //       }]
+  //     };
+
+  //     const response = await axios.post(EXTERNAL_API_URL, postData, {
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       },
+  //       timeout: 30000
+  //     });
+
+  //     if (response?.data?.jsonData?.[0]?.encr_request) {
+  //       const decryptedResponse = decryptString(
+  //         response.data.jsonData[0].encr_request,
+  //         ENCRYPTION_KEY
+  //       );
+  //       return JSON.parse(decryptedResponse);
+  //     }
+
+  //     return null;
+  //   } catch (error) {
+  //     console.error("getPropertyDetails Error:", error);
+  //     throw error;
+  //   }
+  // };
+
   const getPropertyDetails = async (propNo, userId) => {
     try {
-      const jsonReq = {
-        jsonData: [{
-          user_id: userId,
-          propno: propNo,
-          flatno: ""
-        }]
-      };
-
-      const jsonReqString = JSON.stringify(jsonReq);
-      const encryptedRequest = encryptString(jsonReqString, ENCRYPTION_KEY);
-
-      const postData = {
-        jsonData: [{
-          encr_request: encryptedRequest
-        }]
-      };
-
-      const response = await axios.post(EXTERNAL_API_URL, postData, {
-        headers: {
-          'Content-Type': 'application/json'
+      const response = await axios.post(
+        `${BASE_URL}/api/FrmNoDuesCerti/property-details`,
+        {
+          propNo: propNo,
+          userId: userId,
         },
-        timeout: 30000
-      });
+        {
+          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
+          timeout: 30000
+        }
+      );
 
-      if (response?.data?.jsonData?.[0]?.encr_request) {
-        const decryptedResponse = decryptString(
-          response.data.jsonData[0].encr_request,
-          ENCRYPTION_KEY
-        );
-        return JSON.parse(decryptedResponse);
+      if (response.data.ok && response.data.data) {
+        return response.data.data;
       }
-
       return null;
     } catch (error) {
       console.error("getPropertyDetails Error:", error);
@@ -282,18 +306,18 @@ const FrmAssessmentCerti = () => {
           return;
         }
 
-        setFieldValue("landHolder", propData.land_Holder || "");
-        setFieldValue("structureHolder", propData.struct_Holder || "");
-        setFieldValue("ownerDetails", propData.owner_Details || "");
-        setFieldValue("address", propData.address || "");
-        setFieldValue("flatNo", propData.flat_No || "");
-        setFieldValue("strType", propData.usagetype_name || "");
-        setFieldValue("constrType", propData.consttype_name || "");
-        setFieldValue("area", propData.prop_area || "");
-        setFieldValue("lettingRate", propData.letting_rate || "");
-        setFieldValue("rateableValue", propData.retable_value || "");
-        setFieldValue("yearlyTax", propData.yearly_tax || "");
-        setFieldValue("assessmentYear", propData.asses_year || "");
+        setFieldValue("landHolder", propData.land_Holder ?? "");
+        setFieldValue("structureHolder", propData.struct_Holder ?? "");
+        setFieldValue("ownerDetails", propData.owner_Details ?? "");
+        setFieldValue("address", propData.address ?? "");
+        setFieldValue("flatNo", propData.flat_No || propData.flatno || "");
+        setFieldValue("strType", propData.usagetype_name ?? "");
+        setFieldValue("constrType", propData.consttype_name ?? "");
+        setFieldValue("area", propData.prop_area ?? "");
+        setFieldValue("lettingRate", propData.letting_rate ?? "");
+        setFieldValue("rateableValue", propData.retable_value ?? "");
+        setFieldValue("yearlyTax", propData.yearly_tax?.toString() || "");
+        setFieldValue("assessmentYear", propData.asses_year ?? "");
 
         setPropertyFound(true);
 
@@ -314,7 +338,7 @@ const FrmAssessmentCerti = () => {
       let errorMessage = "Error searching property. Please try again.";
       setSearchError(errorMessage);
       Swal.fire({
-        text: errorMessage,
+        text: error?.response?.data?.error || errorMessage,
         confirmButtonColor: '#1e3a8a',
       });
     } finally {
@@ -323,6 +347,14 @@ const FrmAssessmentCerti = () => {
   };
 
   const handleSubmit = async (values) => {
+    const loader = Swal.fire({
+      title: "Submitting Application...",
+      text: "Please wait while we process your application.",
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
     const propertyValidation = propertySearchValidationSchema.safeParse({
       ptn: values.ptn,
       subcode: values.subcode,
@@ -414,6 +446,8 @@ const FrmAssessmentCerti = () => {
       setIsSubmitting(true);
       const response = await axios.post(`${BASE_URL}/api/FrmAssessmentCerti/submit`, submitData);
 
+      loader.close();
+      
       if (response?.data?.ok && response?.data?.data?.success) {
         const data = response.data.data;
 
@@ -442,7 +476,7 @@ const FrmAssessmentCerti = () => {
     } catch (error) {
       console.error("Submit Error:", error);
       Swal.fire({
-        text: error?.response?.data?.error || "Error submitting application",
+        text: error?.response?.data?.message || "Error submitting application",
         confirmButtonColor: '#1e3a8a',
       });
     } finally {

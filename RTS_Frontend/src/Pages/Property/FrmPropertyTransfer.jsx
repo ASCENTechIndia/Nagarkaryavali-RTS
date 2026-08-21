@@ -29,46 +29,46 @@ import {
   propertyTransferDocumentValidationSchema 
 } from "@/validations/global.validation";
 
-const ENCRYPTION_KEY = "AS23N7E2H4V717DEAS23N7E2H4V717DE";
-const EXTERNAL_API_URL = "http://ptaxtmccollection.thanecity.gov.in/TMC_IGRClient/Service.svc/GetDataDetails_TMC";
+// const ENCRYPTION_KEY = "AS23N7E2H4V717DEAS23N7E2H4V717DE";
+// const EXTERNAL_API_URL = "http://ptaxtmccollection.thanecity.gov.in/TMC_IGRClient/Service.svc/GetDataDetails_TMC";
 
-function encryptString(plainText, keyValue) {
-  const keyBytes = [];
-  for (let i = 0; i < keyValue.length; i++) {
-    keyBytes.push(keyValue.charCodeAt(i));
-  }
-  const plainBytes = [];
-  for (let i = 0; i < plainText.length; i++) {
-    plainBytes.push(plainText.charCodeAt(i));
-  }
-  const actualKey = keyBytes.slice(0, 32);
-  const result = [];
-  for (let i = 0; i < plainBytes.length; i++) {
-    result.push(plainBytes[i] ^ actualKey[i % actualKey.length]);
-  }
-  let hex = '';
-  for (let i = 0; i < result.length; i++) {
-    hex += result[i].toString(16).padStart(2, '0').toUpperCase();
-  }
-  return hex;
-}
+// function encryptString(plainText, keyValue) {
+//   const keyBytes = [];
+//   for (let i = 0; i < keyValue.length; i++) {
+//     keyBytes.push(keyValue.charCodeAt(i));
+//   }
+//   const plainBytes = [];
+//   for (let i = 0; i < plainText.length; i++) {
+//     plainBytes.push(plainText.charCodeAt(i));
+//   }
+//   const actualKey = keyBytes.slice(0, 32);
+//   const result = [];
+//   for (let i = 0; i < plainBytes.length; i++) {
+//     result.push(plainBytes[i] ^ actualKey[i % actualKey.length]);
+//   }
+//   let hex = '';
+//   for (let i = 0; i < result.length; i++) {
+//     hex += result[i].toString(16).padStart(2, '0').toUpperCase();
+//   }
+//   return hex;
+// }
 
-function decryptString(cipherText, keyValue) {
-  const keyBytes = [];
-  for (let i = 0; i < keyValue.length; i++) {
-    keyBytes.push(keyValue.charCodeAt(i));
-  }
-  const cipherBytes = [];
-  for (let i = 0; i < cipherText.length; i += 2) {
-    cipherBytes.push(parseInt(cipherText.substr(i, 2), 16));
-  }
-  const actualKey = keyBytes.slice(0, 32);
-  const result = [];
-  for (let i = 0; i < cipherBytes.length; i++) {
-    result.push(cipherBytes[i] ^ actualKey[i % actualKey.length]);
-  }
-  return String.fromCharCode(...result);
-}
+// function decryptString(cipherText, keyValue) {
+//   const keyBytes = [];
+//   for (let i = 0; i < keyValue.length; i++) {
+//     keyBytes.push(keyValue.charCodeAt(i));
+//   }
+//   const cipherBytes = [];
+//   for (let i = 0; i < cipherText.length; i += 2) {
+//     cipherBytes.push(parseInt(cipherText.substr(i, 2), 16));
+//   }
+//   const actualKey = keyBytes.slice(0, 32);
+//   const result = [];
+//   for (let i = 0; i < cipherBytes.length; i++) {
+//     result.push(cipherBytes[i] ^ actualKey[i % actualKey.length]);
+//   }
+//   return String.fromCharCode(...result);
+// }
 
 const initialValues = {
   ptn: "",
@@ -145,23 +145,31 @@ const FrmPropertyTransfer = () => {
 
       if (response.data.ok && response.data.data?.rows) {
         setTransferTypes(response.data.data.rows);
+        let autoSelectType = null;
         
-        const autoSelectType = response.data.data.rows.find(
-          type => {
-            if (serviceId === "4") {
-              return type.VAR_TRANSFERTYPE_NAME?.toLowerCase().includes("sale") ||
-                    type.NUM_TRANSFERTYPE_ID === 66;
-            } else if (serviceId === "5") {
-              return type.VAR_TRANSFERTYPE_NAME?.toLowerCase().includes("heir") ||
-                    type.VAR_TRANSFERTYPE_NAME?.toLowerCase().includes("heredity") ||
-                    type.NUM_TRANSFERTYPE_ID === 126;
-            }
-            return false;
+        if (serviceId === "4") {
+          autoSelectType = response.data.data.rows.find(
+            type => type.NUM_TRANSFERTYPE_ID === 66
+          );
+          if (!autoSelectType) {
+            autoSelectType = response.data.data.rows.find(
+              type => type.VAR_TRANSFERTYPE_NAME?.toLowerCase() === "transfer by sale"
+            );
           }
-        );
+        } else if (serviceId === "5") {
+          autoSelectType = response.data.data.rows.find(
+            type => type.NUM_TRANSFERTYPE_ID === 126
+          );
+          if (!autoSelectType) {
+            autoSelectType = response.data.data.rows.find(
+              type => type.VAR_TRANSFERTYPE_NAME?.toLowerCase() === "transfer by heredity"
+            );
+          }
+        }
 
         if (autoSelectType && setFieldValue) {
           setFieldValue("transferType", String(autoSelectType.NUM_TRANSFERTYPE_ID));
+          console.log(`Auto-selected Transfer Type: ${autoSelectType.VAR_TRANSFERTYPE_NAME} (ID: ${autoSelectType.NUM_TRANSFERTYPE_ID})`);
         }
       }
     } catch (error) {
@@ -202,34 +210,58 @@ const FrmPropertyTransfer = () => {
     }
   };
 
+  // const getPropertyDetails = async (propNo, userId) => {
+  //   try {
+  //     const jsonReq = {
+  //       jsonData: [{
+  //         user_id: userId,
+  //         propno: propNo,
+  //         flatno: ""
+  //       }]
+  //     };
+  //     const jsonReqString = JSON.stringify(jsonReq);
+  //     const encryptedRequest = encryptString(jsonReqString, ENCRYPTION_KEY);
+  //     const postData = {
+  //       jsonData: [{
+  //         encr_request: encryptedRequest
+  //       }]
+  //     };
+  //     const response = await axios.post(EXTERNAL_API_URL, postData, {
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       },
+  //       timeout: 30000
+  //     });
+  //     if (response?.data?.jsonData?.[0]?.encr_request) {
+  //       const decryptedResponse = decryptString(
+  //         response.data.jsonData[0].encr_request,
+  //         ENCRYPTION_KEY
+  //       );
+  //       return JSON.parse(decryptedResponse);
+  //     }
+  //     return null;
+  //   } catch (error) {
+  //     console.error("getPropertyDetails Error:", error);
+  //     throw error;
+  //   }
+  // };
+
   const getPropertyDetails = async (propNo, userId) => {
     try {
-      const jsonReq = {
-        jsonData: [{
-          user_id: userId,
-          propno: propNo,
-          flatno: ""
-        }]
-      };
-      const jsonReqString = JSON.stringify(jsonReq);
-      const encryptedRequest = encryptString(jsonReqString, ENCRYPTION_KEY);
-      const postData = {
-        jsonData: [{
-          encr_request: encryptedRequest
-        }]
-      };
-      const response = await axios.post(EXTERNAL_API_URL, postData, {
-        headers: {
-          'Content-Type': 'application/json'
+      const response = await axios.post(
+        `${BASE_URL}/api/FrmNoDuesCerti/property-details`,
+        {
+          propNo: propNo,
+          userId: userId,
         },
-        timeout: 30000
-      });
-      if (response?.data?.jsonData?.[0]?.encr_request) {
-        const decryptedResponse = decryptString(
-          response.data.jsonData[0].encr_request,
-          ENCRYPTION_KEY
-        );
-        return JSON.parse(decryptedResponse);
+        {
+          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
+          timeout: 30000
+        }
+      );
+
+      if (response.data.ok && response.data.data) {
+        return response.data.data;
       }
       return null;
     } catch (error) {
@@ -330,7 +362,7 @@ const FrmPropertyTransfer = () => {
     } catch (error) {
       console.error("Error fetching property details:", error);
       Swal.fire({
-        text: "Error fetching property details. Please try again.",
+        text: error?.response?.data?.error || "Error fetching property details. Please try again.",
         confirmButtonColor: '#1e3a8a',
       });
     } finally {
@@ -441,6 +473,14 @@ const FrmPropertyTransfer = () => {
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
+      const loader = Swal.fire({
+        title: "Submitting Application...",
+        text: "Please wait while we process your application.",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
       const validationResult = propertyTransferApplicantSchema.safeParse({
         newOwnerName: values.newOwnerName,
         emailId: values.emailId,
@@ -578,6 +618,8 @@ const FrmPropertyTransfer = () => {
       }
 
       const payFlag = await checkPaymentFlag();
+
+      loader.close();
 
       Swal.fire({
         text: `${message}${payFlag === "Y" ? " Please proceed to payment." : ""}`,
@@ -766,6 +808,7 @@ const FrmPropertyTransfer = () => {
                         <Select
                           value={values.transferType}
                           onValueChange={(value) => setFieldValue("transferType", value)}
+                          disabled
                         >
                           <SelectTrigger className="w-full h-9">
                             <SelectValue placeholder="-- Select Option --" />
