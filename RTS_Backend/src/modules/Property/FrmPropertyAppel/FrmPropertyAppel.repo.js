@@ -1,5 +1,6 @@
 const oracledb = require("oracledb");
 const { executeProcedureTMC } = require("../../../db/procedureExecutor");
+const { executeQueryTMC } = require("../../../db/queryExecutor");
 
 async function insertPropAppeal(params) {
   const {
@@ -104,9 +105,9 @@ async function insertPropAppeal(params) {
     IN_Mobile:
       mobile !== undefined && mobile !== null && mobile !== ""
         ? {
-            val: Number(mobile),
-            type: oracledb.NUMBER,
-          }
+          val: Number(mobile),
+          type: oracledb.NUMBER,
+        }
         : null,
 
     IN_Email: email || null,
@@ -114,127 +115,127 @@ async function insertPropAppeal(params) {
     IN_Aadhar:
       aadhar !== undefined && aadhar !== null && aadhar !== ""
         ? {
-            val: Number(aadhar),
-            type: oracledb.NUMBER,
-          }
+          val: Number(aadhar),
+          type: oracledb.NUMBER,
+        }
         : null,
 
     IN_Objecttype:
       objectType !== undefined &&
-      objectType !== null &&
-      objectType !== ""
+        objectType !== null &&
+        objectType !== ""
         ? {
-            val: Number(objectType),
-            type: oracledb.NUMBER,
-          }
+          val: Number(objectType),
+          type: oracledb.NUMBER,
+        }
         : null,
 
     IN_ObjectDesc: objectDesc || null,
 
     IN_TaxDate1: taxDate1
       ? {
-          val: new Date(taxDate1),
-          type: oracledb.DATE,
-        }
+        val: new Date(taxDate1),
+        type: oracledb.DATE,
+      }
       : null,
 
     IN_TaxDate2: taxDate2
       ? {
-          val: new Date(taxDate2),
-          type: oracledb.DATE,
-        }
+        val: new Date(taxDate2),
+        type: oracledb.DATE,
+      }
       : null,
 
     IN_OldUsage:
       oldUsage !== undefined && oldUsage !== null && oldUsage !== ""
         ? {
-            val: Number(oldUsage),
-            type: oracledb.NUMBER,
-          }
+          val: Number(oldUsage),
+          type: oracledb.NUMBER,
+        }
         : null,
 
     IN_NewUsage:
       newUsage !== undefined && newUsage !== null && newUsage !== ""
         ? {
-            val: Number(newUsage),
-            type: oracledb.NUMBER,
-          }
+          val: Number(newUsage),
+          type: oracledb.NUMBER,
+        }
         : null,
 
     IN_OldSubUsage:
       oldSubUsage !== undefined &&
-      oldSubUsage !== null &&
-      oldSubUsage !== ""
+        oldSubUsage !== null &&
+        oldSubUsage !== ""
         ? {
-            val: Number(oldSubUsage),
-            type: oracledb.NUMBER,
-          }
+          val: Number(oldSubUsage),
+          type: oracledb.NUMBER,
+        }
         : null,
 
     IN_NewSubUsage:
       newSubUsage !== undefined &&
-      newSubUsage !== null &&
-      newSubUsage !== ""
+        newSubUsage !== null &&
+        newSubUsage !== ""
         ? {
-            val: Number(newSubUsage),
-            type: oracledb.NUMBER,
-          }
+          val: Number(newSubUsage),
+          type: oracledb.NUMBER,
+        }
         : null,
 
     IN_OldArea:
       oldArea !== undefined && oldArea !== null && oldArea !== ""
         ? {
-            val: Number(oldArea),
-            type: oracledb.NUMBER,
-          }
+          val: Number(oldArea),
+          type: oracledb.NUMBER,
+        }
         : null,
 
     IN_NewArea:
       newArea !== undefined && newArea !== null && newArea !== ""
         ? {
-            val: Number(newArea),
-            type: oracledb.NUMBER,
-          }
+          val: Number(newArea),
+          type: oracledb.NUMBER,
+        }
         : null,
 
     IN_OldYrKaryogya:
       oldYrKaryogya !== undefined &&
-      oldYrKaryogya !== null &&
-      oldYrKaryogya !== ""
+        oldYrKaryogya !== null &&
+        oldYrKaryogya !== ""
         ? {
-            val: Number(oldYrKaryogya),
-            type: oracledb.NUMBER,
-          }
+          val: Number(oldYrKaryogya),
+          type: oracledb.NUMBER,
+        }
         : null,
 
     IN_NewYrKaryogya:
       newYrKaryogya !== undefined &&
-      newYrKaryogya !== null &&
-      newYrKaryogya !== ""
+        newYrKaryogya !== null &&
+        newYrKaryogya !== ""
         ? {
-            val: Number(newYrKaryogya),
-            type: oracledb.NUMBER,
-          }
+          val: Number(newYrKaryogya),
+          type: oracledb.NUMBER,
+        }
         : null,
 
     IN_OldKaryogya:
       oldKaryogya !== undefined &&
-      oldKaryogya !== null &&
-      oldKaryogya !== ""
+        oldKaryogya !== null &&
+        oldKaryogya !== ""
         ? {
-            val: Number(oldKaryogya),
-            type: oracledb.NUMBER,
-          }
+          val: Number(oldKaryogya),
+          type: oracledb.NUMBER,
+        }
         : null,
 
     IN_NewKaryogya:
       newKaryogya !== undefined &&
-      newKaryogya !== null &&
-      newKaryogya !== ""
+        newKaryogya !== null &&
+        newKaryogya !== ""
         ? {
-            val: Number(newKaryogya),
-            type: oracledb.NUMBER,
-          }
+          val: Number(newKaryogya),
+          type: oracledb.NUMBER,
+        }
         : null,
 
     // NEW PARAMETER
@@ -275,6 +276,17 @@ async function insertPropAppeal(params) {
   return result.outBinds;
 }
 
+async function fetchObjections() {
+  const sql = `
+    SELECT var_objection_name, num_objection_id
+    FROM aorts_Objection_mas
+  `;
+
+
+  const result = await executeQueryTMC(sql);
+  return result.rows || [];
+}
+
 module.exports = {
-  insertPropAppeal,
+  insertPropAppeal, fetchObjections
 };
