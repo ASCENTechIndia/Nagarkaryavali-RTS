@@ -168,19 +168,19 @@ const Registration = () => {
                 initial={{ opacity: 0, y: 25, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.45, ease: "easeOut" }}
-                className="relative flex w-full max-w-5xl overflow-hidden rounded-3xl border border-gray-300 bg-white shadow-[0px_10px_30px_10px_rgba(0,0,0,0.15)]"
+                className="relative flex w-full max-w-3xl overflow-hidden rounded-3xl border border-gray-300 bg-white shadow-[0px_10px_30px_10px_rgba(0,0,0,0.15)]"
             >
-                <div className="relative hidden shrink-0 overflow-hidden bg-[#bad2fa] lg:block lg:w-[40%]">
-                    <div className="absolute -right-110 top-1/2 h-160 w-160 -translate-y-1/2 rounded-full bg-white" />
-                    <div className="absolute left-32 top-1/2 z-20 flex h-32.5 w-32.5 -translate-y-1/2 items-center justify-center rounded-full border-10 border-white bg-[#184aa6]">
-                        <img src="/login-label.png" alt="Registration" className="h-16 w-16 object-contain shadow" />
+                <div className="relative hidden shrink-0 overflow-hidden bg-[#bad2fa] lg:block lg:w-[30%]">
+                    <div className="absolute -right-130 top-1/2 h-160 w-160 -translate-y-1/2 rounded-full bg-white" />
+                    <div className="absolute left-14 top-1/2 z-20 flex h-32.5 w-32.5 -translate-y-1/2 items-center justify-center rounded-full border-10 border-white bg-[#184aa6]">
+                        <img src="/login-label.png" alt="Login" className="h-16 w-16 object-contain shadow" />
                     </div>
                 </div>
 
-                <div className="z-10 w-full p-5 lg:w-[60%] lg:px-1.5 lg:py-5">
+                <div className="z-10 w-full p-5 lg:w-[70%] lg:px-1.5 lg:py-5">
                     <div className="mb-5 text-center">
-                        <h1 className="text-2xl font-bold text-[#184aa6]">TMC Online Service</h1>
-                        <p className="mt-1 text-sm text-gray-500">New User Registration</p>
+                        <h1 className="text-2xl font-bold text-[#184aa6]">New User Registration</h1>
+                        {/* <p className="mt-1 text-sm text-gray-500">New User Registration</p> */}
                     </div>
 
                     <Formik initialValues={{ name: "", email: "", mobile: "", dob: null, password: "", confirmPassword: "" }} onSubmit={handleSubmit}>
@@ -243,7 +243,7 @@ const Registration = () => {
 
                                 <motion.div initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
                                     <div className="flex items-center gap-2">
-                                        <Label text="Date of Birth:" required className="w-full" />
+                                        <Label text="Date of Birth:" required className="sm:w-36" />
                                         <DatePicker
                                             value={values.dob}
                                             onChange={(date) => setFieldValue("dob", date)}
@@ -270,7 +270,7 @@ const Registration = () => {
 
                                 <motion.div className="flex gap-2 items-center" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }}>
                                         <LockIcon size={19} className="shrink-0 text-[#184aa6]" />
-                                        <Label text="Confirm Password:" required className="w-full" />
+                                        <Label text="Confirm Password:" required className="sm:w-64" />
                                         <Input
                                             id="confirmPassword"
                                             name="confirmPassword"

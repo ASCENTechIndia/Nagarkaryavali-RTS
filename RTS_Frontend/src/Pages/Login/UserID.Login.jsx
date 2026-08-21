@@ -146,21 +146,21 @@ const Login = () => {
 
     return (
         <main className="flex flex-col items-center px-4 py-6 sm:py-3">
-            <motion.div initial={{ opacity: 0, y: 25, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.45, ease: "easeOut" }} className="relative flex w-full max-w-5xl overflow-hidden rounded-3xl border border-gray-300 bg-white shadow-[0px_10px_30px_10px_rgba(0,0,0,0.15)]">
-                <div className="relative hidden shrink-0 overflow-hidden bg-[#bad2fa] lg:block lg:w-[40%]">
-                    <div className="absolute -right-110 top-1/2 h-160 w-160 -translate-y-1/2 rounded-full bg-white" />
-                    <div className="absolute left-32 top-1/2 z-20 flex h-32.5 w-32.5 -translate-y-1/2 items-center justify-center rounded-full border-10 border-white bg-[#184aa6]">
+            <motion.div initial={{ opacity: 0, y: 25, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.45, ease: "easeOut" }} className="relative flex w-full max-w-3xl overflow-hidden rounded-3xl border border-gray-300 bg-white shadow-[0px_10px_30px_10px_rgba(0,0,0,0.15)]">
+                <div className="relative hidden shrink-0 overflow-hidden bg-[#bad2fa] lg:block lg:w-[30%]">
+                    <div className="absolute -right-130 top-1/2 h-160 w-160 -translate-y-1/2 rounded-full bg-white" />
+                    <div className="absolute left-14 top-1/2 z-20 flex h-32.5 w-32.5 -translate-y-1/2 items-center justify-center rounded-full border-10 border-white bg-[#184aa6]">
                         <img src="/login-label.png" alt="Login" className="h-16 w-16 object-contain shadow" />
                     </div>
                 </div>
-                <div className="z-10 w-full p-5 lg:w-[60%] lg:px-1.5 lg:py-5">
+                <div className="z-10 w-full p-5 lg:w-[70%] lg:px-1.5 lg:py-5">
                     <Formik initialValues={{ mobile: "", in_password: "", captcha: "" }} onSubmit={handleLogin}>
                         {({ values, handleChange }) => (
                             <Form className="space-y-4">
                                 <motion.div initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
                                     <div className="flex items-center gap-1">
                                         <UserIcon size={19} className="shrink-0 text-[#184aa6]" />
-                                        <Label text="Mobile Number:" required className="w-full" />
+                                        <Label text="Mobile Number:" required className="sm:w-52" />
                                         <Input id="mobile" name="mobile" type="tel" value={values.mobile} onChange={(e) => { const value = e.target.value.replace(/\D/g, ""); handleChange({ target: { name: "mobile", value } }); }} placeholder="Enter mobile number" autoComplete="tel" maxLength={10} onCopy={blockClipboard} onPaste={blockClipboard} className="h-11 rounded-xl border-gray-300 bg-gray-50 focus-visible:border-[#184aa6] focus-visible:ring-[#184aa6]" />
                                     </div>
                                 </motion.div>

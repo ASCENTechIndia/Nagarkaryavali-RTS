@@ -305,41 +305,34 @@ const ForgotPassword = () => {
     };
 
     return (
-        <main className="flex flex-col items-center px-4 py-6 sm:py-8">
+        <main className="flex flex-col items-center p-4">
             <motion.div
                 initial={{ opacity: 0, y: 25, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.45, ease: "easeOut" }}
-                className="relative flex w-full max-w-5xl overflow-hidden rounded-3xl border border-gray-300 bg-white shadow-[0px_10px_30px_10px_rgba(0,0,0,0.15)]"
+                className="relative flex w-full max-w-3xl overflow-hidden rounded-3xl border border-gray-300 bg-white shadow-[0px_10px_30px_10px_rgba(0,0,0,0.15)]"
             >
-                <div className="relative hidden shrink-0 overflow-hidden bg-[#bad2fa] lg:block lg:w-[40%]">
-                    <div className="absolute -right-110 top-1/2 h-160 w-160 -translate-y-1/2 rounded-full bg-white" />
-                    <div className="absolute left-32 top-1/2 z-20 flex h-32.5 w-32.5 -translate-y-1/2 items-center justify-center rounded-full border-10 border-white bg-[#184aa6]">
-                        <img
-                            src="/login-label.png"
-                            alt="Forgot Password"
-                            className="h-16 w-16 object-contain shadow"
-                        />
+               <div className="relative hidden shrink-0 overflow-hidden bg-[#bad2fa] lg:block lg:w-[35%]">
+                    <div className="absolute -right-120 top-1/2 h-160 w-160 -translate-y-1/2 rounded-full bg-white" />
+                    <div className="absolute left-14 top-1/2 z-20 flex h-32.5 w-32.5 -translate-y-1/2 items-center justify-center rounded-full border-10 border-white bg-[#184aa6]">
+                        <img src="/login-label.png" alt="Login" className="h-16 w-16 object-contain shadow" />
                     </div>
                 </div>
 
-                <div className="z-10 w-full p-5 sm:p-8 lg:w-1/2">
+                <div className="z-10 w-full p-5 lg:w-[65%]">
                     <div className="mb-8 text-center">
                         <h1 className="text-3xl font-bold text-[#184aa6]">
                             Forgot Password
                         </h1>
-                        <p className="mt-2 text-sm text-gray-500">
-                            {!otpSent && !forgotDetails && "Enter your registered mobile number"}
+                        <p className="text-sm text-gray-500">
+                            {/* {!otpSent && !forgotDetails && "Enter your registered mobile number"} */}
                             {otpSent && "Enter the OTP sent to your mobile"}
                             {forgotDetails && "Create your new password"}
                         </p>
                     </div>
 
                     {!forgotDetails ? (
-                        <Formik
-                            initialValues={{ mobile: "" }}
-                            onSubmit={handleGetOtp}
-                        >
+                        <Formik initialValues={{ mobile: "" }} onSubmit={handleGetOtp}>
                             {({ values, handleChange }) => (
                                 <Form className="space-y-5" autoComplete="off">
                                     <motion.div
