@@ -20,11 +20,7 @@ app.set("trust proxy", 1);
 
 // security & parsing
 // app.use(cors({ origin: NODE_ENV === "production" ? ["https://yourdomain.com"] : "*", credentials: true }));
-const allowedOrigins = [
-  "https://payroll.nagarkaryavalinewuat.com",
-  "https://nagarkaryavalinewuat.com",
-  "http://localhost:5173"
-];
+const allowedOrigins = ["https://payroll.nagarkaryavalinewuat.com", "https://nagarkaryavalinewuat.com", "http://localhost:5173"];
 
 app.use(
   cors({
@@ -36,7 +32,7 @@ app.use(
       }
     },
     credentials: true,
-  })
+  }),
 );
 
 app.use(express.json({ limit: "1mb" }));
@@ -76,14 +72,15 @@ app.use("/api/FrmAssessmentCerti", require("./modules/Property/FrmAssessmentCert
 app.use("/api/FrmNewTaxAssesment", require("./modules/Property/FrmNewTaxAssesment/FrmNewTaxAssesment.route"));
 app.use("/api/FrmPropertyAppel", require("./modules/Property/FrmPropertyAppel/FrmPropertyAppel.route"));
 
-//Water module 
-app.use("/api/watermodule", require("./modules/WaterModule/WaterBillCopy/Stepnew.route"))
-
+//Water module
+app.use("/api/watermodule", require("./modules/WaterModule/WaterBillCopy/Stepnew.route"));
 
 //Trade
 app.use("/api/FrmMarketEntry", require("./modules/Trade/FrmMarketEntry/FrmMArketEntry.routes"));
 
-app.use(errorMiddleware);
+//Track Application
+app.use("/api/FrmTrackApplication", require("./modules/TrackApplication/FrmTrackApplication/FrmTrackApplication.routes"));
 
+app.use(errorMiddleware);
 
 module.exports = app;
