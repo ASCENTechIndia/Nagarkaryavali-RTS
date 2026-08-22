@@ -199,8 +199,7 @@ exports.uploadWaterDocumentController = asyncHandler(
         }
 
 
-        const data =
-            await service.uploadWaterDocumentService({corpid, serviceid, appno, doctype, documentid, fileBuffer: req.file.buffer});
+        const data = await service.uploadWaterDocumentService({corpid, serviceid, appno, doctype, documentid, fileBuffer: req.file.buffer});
 
 
         if (!data.success) {
