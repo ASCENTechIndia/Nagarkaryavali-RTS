@@ -1,50 +1,42 @@
-import { useCallback, useEffect, useState } from "react";
-import { Formik, Form } from "formik";
-import { useLocation } from "react-router-dom";
+import React, { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ShadCNTable from "@/components/ui/table";
 
-const BASE_URL = import.meta.env.VITE_BASE_URL;
-
 const FrmWaterRegister = () => {
     const location = useLocation();
-    const { user, token: authToken } = useAuth();
+    const navigate = useNavigate();
+    const { user, token } = useAuth();
     const state = location.state || {};
+    const baseUrl = import.meta.env.VITE_BASE_URL;
     const ulbId = state.ulbId ?? user?.ulbId ?? 3;
-    const deptId = state.deptId ?? user?.deptId ?? 24;
+    const userId = state.userId ?? user?.userId ?? 151;
     const serviceId = state.serviceId ?? user?.serviceId ?? 21;
-    const serviceName = state.serviceName ?? user?.serviceName ?? "Reconnection";
-    const serviceRate = state.serviceRate ?? 0;
-    const userId = state.userId ?? user?.userId ?? 1001;
-    const token = state.token || authToken || user?.token || sessionStorage.getItem("token") || "TEST_TOKEN";
-
-    const [zones, setZones] = useState([]);
+    const source = state.source ?? "WEB";
+    const [serviceName, setServiceName] = useState(state.serviceName ?? "Reconnection");
+    const [wards, setWards] = useState([]);
     const [services, setServices] = useState([]);
     const [disconnectionTypes, setDisconnectionTypes] = useState([]);
     const [usageTypes, setUsageTypes] = useState([]);
     const [connectionSizes, setConnectionSizes] = useState([]);
     const [documents, setDocuments] = useState([]);
-    const [serviceDisplayName, setServiceDisplayName] = useState(serviceName);
-    const [payFlag, setPayFlag] = useState("");
-    const [connectionDetails, setConnectionDetails] = useState(null);
-    const [files, setFiles] = useState({});
+    const [consumerSearch, setConsumerSearch] = useState("");
     const [searching, setSearching] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
-
-    const initialValues = {
+    const [form, setForm] = useState({
         zoneId: "",
         serviceId: String(serviceId),
         consumerNo: "",
         disConId: "",
         reason: "",
         usageTypeId: "",
-        tarifRate: serviceRate,
+        tarifRate: "",
         connSize: "",
         remark: "",
         ownerName: "",
@@ -58,1210 +50,695 @@ const FrmWaterRegister = () => {
         ownerNameSrch: "",
         curConSizeSrch: "",
         usageTypeNewSrch: "",
-        erlDate: new Date().toISOString().split("T")[0],
-        source: "WEB",
-    };
+        erlDate: new Date().toISOString().split("T")[0]
+    });
 
-    const headers = {
-        Authorization: `Bearer ${token}`,
+    const updateField = (name, value) => {
+        setForm((prev) => ({ ...prev, [name]: value }));
     };
 
     const loadMasters = useCallback(async () => {
-        if (!ulbId || !serviceId || !token) return;
-
         Swal.fire({
             title: "Loading...",
-            text: "Loading water register data",
+            text: "Please wait",
             allowOutsideClick: false,
-            allowEscapeKey: false,
-            showConfirmButton: false,
-            didOpen: () => Swal.showLoading(),
+            didOpen: () => Swal.showLoading()
         });
 
         const results = await Promise.allSettled([
-            axios.get(`${BASE_URL}/api/FrmWaterRegister/ward-dropdown`, {
+            axios.get(`${baseUrl}/api/FrmWaterRegister/ward-dropdown`, {
                 params: { ulbid: Number(ulbId) },
-                headers,
+                headers: { Authorization: `Bearer ${token}` }
             }),
-            axios.get(`${BASE_URL}/api/FrmWaterRegister/service-dropdown`, {
+            axios.get(`${baseUrl}/api/FrmWaterRegister/service-dropdown`, {
                 params: { rptMode: 4 },
-                headers,
+                headers: { Authorization: `Bearer ${token}` }
             }),
-            axios.get(`${BASE_URL}/api/FrmWaterRegister/disconnection-dropdown`, {
-                headers,
+            axios.get(`${baseUrl}/api/FrmWaterRegister/disconnection-dropdown`, {
+                headers: { Authorization: `Bearer ${token}` }
             }),
-            axios.get(`${BASE_URL}/api/FrmWaterRegister/usage-type-dropdown`, {
-                headers,
+            axios.get(`${baseUrl}/api/FrmWaterRegister/usage-type-dropdown`, {
+                headers: { Authorization: `Bearer ${token}` }
             }),
-            axios.get(`${BASE_URL}/api/FrmWaterRegister/connection-size-dropdown`, {
-                headers,
+            axios.get(`${baseUrl}/api/FrmWaterRegister/connection-size-dropdown`, {
+                headers: { Authorization: `Bearer ${token}` }
             }),
-            axios.get(`${BASE_URL}/api/FrmWaterRegister/service-name`, {
+            axios.get(`${baseUrl}/api/FrmWaterRegister/service-name`, {
                 params: { serviceId: Number(serviceId) },
-                headers,
+                headers: { Authorization: `Bearer ${token}` }
             }),
-            axios.get(`${BASE_URL}/api/FrmWaterRegister/documents`, {
-                params: {
-                    ulbid: Number(ulbId),
-                    serviceId: Number(serviceId),
-                },
-                headers,
-            }),
-            axios.get(`${BASE_URL}/api/FrmWaterRegister/service-pay-flag`, {
-                params: { serviceId: Number(serviceId) },
-                headers,
-            }),
+            axios.get(`${baseUrl}/api/FrmWaterRegister/documents`, {
+                params: { ulbid: Number(ulbId), serviceId: Number(serviceId) },
+                headers: { Authorization: `Bearer ${token}` }
+            })
         ]);
 
-        const [zoneResult, serviceResult, disconnectionResult, usageResult, connectionSizeResult, serviceNameResult, documentResult, payFlagResult] = results;
-
-        if (zoneResult.status === "fulfilled") {
-            setZones(zoneResult.value?.data?.data?.data || []);
-        }
-
-        if (serviceResult.status === "fulfilled") {
-            setServices(serviceResult.value?.data?.data?.data || []);
-        }
-
-        if (disconnectionResult.status === "fulfilled") {
-            setDisconnectionTypes(disconnectionResult.value?.data?.data?.data || []);
-        }
-
-        if (usageResult.status === "fulfilled") {
-            setUsageTypes(usageResult.value?.data?.data?.data || []);
-        }
-
-        if (connectionSizeResult.status === "fulfilled") {
-            setConnectionSizes(connectionSizeResult.value?.data?.data?.data || []);
-        }
-
-        if (serviceNameResult.status === "fulfilled") {
-            const data = serviceNameResult.value?.data?.data?.data || [];
-            setServiceDisplayName(data?.[0]?.VAR_SERVICE_ENG_NAME || serviceName);
-        }
-
-        if (documentResult.status === "fulfilled") {
-            setDocuments(documentResult.value?.data?.data?.data || []);
-        }
-
-        if (payFlagResult.status === "fulfilled") {
-            const data = payFlagResult.value?.data?.data?.data || [];
-            setPayFlag(data?.[0]?.VAR_SERVICE_PAYFLAG || "");
-        }
-
-        const rejected = results.filter((result) => result.status === "rejected");
-
-        if (rejected.length === results.length) {
-            Swal.close();
-            await Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Unable to load water register data",
-            });
-            return;
-        }
-
         Swal.close();
-    }, [ulbId, serviceId, token, serviceName]);
+
+        const getData = (result) => result.status === "fulfilled" ? result.value?.data?.data?.data || [] : [];
+
+        setWards(getData(results[0]));
+        setServices(getData(results[1]));
+        setDisconnectionTypes(getData(results[2]));
+        setUsageTypes(getData(results[3]));
+        setConnectionSizes(getData(results[4]));
+
+        const serviceData = getData(results[5]);
+        if (serviceData.length) {
+            setServiceName(serviceData[0]?.VAR_SERVICE_ENG_NAME || "Reconnection");
+        }
+
+        setDocuments(getData(results[6]).map((item) => ({ ...item, file: null })));
+    }, [baseUrl, serviceId, token, ulbId]);
 
     useEffect(() => {
         loadMasters();
     }, [loadMasters]);
 
-    const searchConnection = async (consumerNo, setFieldValue) => {
-        if (!consumerNo?.trim()) {
-            Swal.fire({
-                icon: "warning",
-                text: "Please enter Consumer No",
-            });
+    const fetchConnectionDetails = async () => {
+        const consumerNo = consumerSearch.trim();
+
+        if (!consumerNo) {
+            Swal.fire("Required", "Please enter Consumer No.", "warning");
             return;
         }
 
         setSearching(true);
 
         try {
-            const response = await axios.get(
-                `${BASE_URL}/api/FrmWaterRegister/connection-details`,
-                {
-                    params: {
-                        consumerNo: consumerNo.trim(),
-                        userId: Number(userId),
-                    },
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            const response = await axios.get(`${baseUrl}/api/FrmWaterRegister/connection-details`, {
+                params: { consumerNo, userId: Number(userId) },
+                headers: { Authorization: `Bearer ${token}` }
+            });
 
-            const details = response?.data?.data;
-
-            console.log("Connection Details Response:", details);
+            const details = response?.data?.data?.connectionOwners;
 
             if (!details) {
-                setConnectionDetails(null);
-                Swal.fire({
-                    icon: "warning",
-                    title: "Not Found",
-                    text: "Connection details not found",
-                });
+                Swal.fire("Not Found", "Connection details not found.", "warning");
                 return;
             }
 
-            setConnectionDetails(details);
+            const usageMatch = usageTypes.find(
+                (item) => String(item.VAR_USAGETYPE_NAME || "").trim().toLowerCase() === String(details.usage_type || "").trim().toLowerCase()
+            );
+
+            const sizeMatch = connectionSizes.find(
+                (item) => Number(item.NUM_CONNSIZE_SIZE) === Number(details.connsize_size)
+            );
+
+            const zoneMatch = wards.find(
+                (item) => String(item.WARDNAME || "").trim().toLowerCase() === String(details.zone_name || "").trim().toLowerCase()
+            );
+
+            setForm((prev) => ({
+                ...prev,
+                consumerNo: details.connno || consumerNo,
+                zoneId: zoneMatch ? String(zoneMatch.WARDID) : prev.zoneId,
+                ownerName: details.owner || "",
+                usageType: details.usage_type || "",
+                tarifRate: details.rate ?? "",
+                connSize: sizeMatch ? String(sizeMatch.NUM_CONNSIZE_ID) : prev.connSize,
+                usageTypeId: usageMatch ? String(usageMatch.NUM_USAGETYPE_ID) : prev.usageTypeId,
+                detAppliName: details.owner || "",
+                detAddress: details.address?.trim() || "",
+                conAddressSrch: details.address?.trim() || "",
+                ownerNameSrch: details.owner || "",
+                curConSizeSrch: details.connsize_size != null ? String(details.connsize_size) : "",
+                usageTypeNewSrch: details.usage_type || ""
+            }));
 
             Swal.fire({
                 icon: "success",
                 title: "Connection Found",
-                text: "Connection details loaded successfully",
+                text: "Connection details fetched successfully.",
                 timer: 1200,
-                showConfirmButton: false,
+                showConfirmButton: false
             });
         } catch (error) {
-            console.error("Connection Search Error:", error);
-            setConnectionDetails(null);
-            Swal.fire({
-                icon: "error",
-                title: "Search Failed",
-                text:
-                    error?.response?.data?.message ||
-                    error?.response?.data?.error ||
-                    "Unable to fetch connection details",
-            });
+            Swal.fire("Error", error?.response?.data?.message || "Unable to fetch connection details.", "error");
         } finally {
             setSearching(false);
         }
     };
 
-    const handleFileChange = (event, documentItem) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        if (file.size > 5 * 1024 * 1024) {
-            event.target.value = "";
-            Swal.fire({
-                icon: "error",
-                text: "Document size should not exceed 5 MB",
-            });
-            return;
-        }
-
-        const extension = file.name.split(".").pop()?.toLowerCase();
-
-        if (!["pdf", "jpg", "jpeg", "png"].includes(extension)) {
-            event.target.value = "";
-            Swal.fire({
-                icon: "error",
-                text: "Only PDF, JPG, JPEG and PNG files are allowed",
-            });
-            return;
-        }
-
-        setFiles((prev) => ({
+    const handleUsageTypeChange = (value) => {
+        const selected = usageTypes.find((item) => String(item.NUM_USAGETYPE_ID) === String(value));
+        setForm((prev) => ({
             ...prev,
-            [documentItem.DOCID]: {
-                file,
-                docId: documentItem.DOCID,
-                docType: documentItem.DOCTYPE,
-                docName: documentItem.DOCNAME,
-            },
+            usageTypeId: value,
+            usageType: selected?.VAR_USAGETYPE_NAME || "",
+            usageTypeNewSrch: selected?.VAR_USAGETYPE_NAME || ""
         }));
     };
 
-    const removeFile = (docId) => {
-        setFiles((prev) => {
-            const updated = { ...prev };
-            delete updated[docId];
-            return updated;
+    const handleConnectionSizeChange = (value) => {
+        setForm((prev) => ({ ...prev, connSize: value }));
+    };
+
+    const handleFileChange = (documentId, file) => {
+        if (!file) return;
+
+        const extension = file.name.split(".").pop()?.toLowerCase();
+
+        if (!["jpg", "jpeg", "png", "pdf"].includes(extension)) {
+            Swal.fire("Invalid File", "Only JPG, JPEG, PNG and PDF files are allowed.", "warning");
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            Swal.fire("Invalid File", "File size should not exceed 5 MB.", "warning");
+            return;
+        }
+
+        setDocuments((prev) =>
+            prev.map((item) => String(item.DOCID) === String(documentId) ? { ...item, file } : item)
+        );
+    };
+
+    const uploadDocument = async (appNo, document) => {
+        const formData = new FormData();
+        formData.append("corpid", String(ulbId));
+        formData.append("serviceid", String(serviceId));
+        formData.append("appno", appNo);
+        formData.append("doctype", document.DOCTYPE || "A");
+        formData.append("documentid", String(document.DOCID));
+        formData.append("file", document.file);
+
+        return axios.post(`${baseUrl}/api/FrmWaterRegister/upload-document`, formData, {
+            headers: { Authorization: `Bearer ${token}` }
         });
     };
 
-    const extractApplicationNo = (message) => {
-        const match = message?.match(/Appli no:([^$]+)/i);
-        return match?.[1]?.trim() || "";
+    const formatOracleDate = (date) => {
+        if (!date) return null;
+
+        const [year, month, day] = date.split("-");
+
+        const months = [
+            "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+            "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
+        ];
+
+        return `${day}-${months[Number(month) - 1]}-${year}`;
     };
 
-    const uploadDocuments = async (applicationNo, selectedServiceId) => {
-        const uploadedFiles = Object.values(files);
+    const handleSubmit = async (event) => {
+    event.preventDefault();
 
-        if (!documents.length) return;
+    if (!form.detAppliName.trim()) {
+        Swal.fire("Required", "Please enter Applicant Name.", "warning");
+        return;
+    }
 
-        if (uploadedFiles.length !== documents.length) {
-            throw new Error("Please upload all required documents");
-        }
+    if (!/^\d{10}$/.test(form.detMobile)) {
+        Swal.fire("Invalid", "Please enter valid 10 digit Mobile No.", "warning");
+        return;
+    }
 
-        const results = await Promise.allSettled(
-            uploadedFiles.map((item) => {
-                const formData = new FormData();
-                formData.append("corpid", String(ulbId));
-                formData.append("serviceid", String(selectedServiceId));
-                formData.append("appno", applicationNo);
-                formData.append("doctype", item.docType);
-                formData.append("documentid", String(item.docId));
-                formData.append("file", item.file);
+    if (!/^\d{12}$/.test(form.detAadhaar)) {
+        Swal.fire("Invalid", "Please enter valid 12 digit Aadhar No.", "warning");
+        return;
+    }
 
-                return axios.post(
-                    `${BASE_URL}/api/FrmWaterRegister/upload-document`,
-                    formData,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            "Content-Type": "multipart/form-data",
-                        },
-                    }
-                );
-            })
+    if (!form.detEmail.trim()) {
+        Swal.fire("Required", "Please enter Email.", "warning");
+        return;
+    }
+
+    if (!form.detAddress.trim()) {
+        Swal.fire("Required", "Please enter Address.", "warning");
+        return;
+    }
+
+    if (!form.zoneId) {
+        Swal.fire("Required", "Please select Zone.", "warning");
+        return;
+    }
+
+    if (!form.consumerNo.trim()) {
+        Swal.fire("Required", "Please enter Consumer No.", "warning");
+        return;
+    }
+
+    if (!form.usageTypeId) {
+        Swal.fire("Required", "Please select Usage Type.", "warning");
+        return;
+    }
+
+    if (!form.connSize) {
+        Swal.fire("Required", "Please select Connection Size.", "warning");
+        return;
+    }
+
+    if (!form.disConId) {
+        Swal.fire("Required", "Please select Disconnection Type.", "warning");
+        return;
+    }
+
+    if (!form.reason.trim()) {
+        Swal.fire("Required", "Please enter Reason.", "warning");
+        return;
+    }
+
+    if (!form.remark.trim()) {
+        Swal.fire("Required", "Please enter Remark.", "warning");
+        return;
+    }
+
+    if (!form.erlDate) {
+        Swal.fire("Required", "Please select Earlier Connection Close Date.", "warning");
+        return;
+    }
+
+    if (!documents.length) {
+        Swal.fire(
+            "Document Required",
+            "No documents are configured for this service.",
+            "warning"
         );
+        return;
+    }
 
-        const failed = results.find(
-            (result) => result.status === "rejected"
+    const missingDocuments = documents.filter((item) => !item.file);
+
+    if (missingDocuments.length > 0) {
+        Swal.fire(
+            "Document Required",
+            "Please upload all required documents before submission.",
+            "warning"
         );
+        return;
+    }
 
-        if (failed) {
-            throw new Error(
-                failed.reason?.response?.data?.message ||
-                failed.reason?.response?.data?.error ||
-                failed.reason?.message ||
-                "One or more documents failed to upload"
-            );
-        }
+    const payload = {
+        userId: Number(userId),
+        wtregId: 0,
+        servId: Number(form.serviceId),
+        consNo: form.consumerNo.trim(),
+        disConId: Number(form.disConId),
+        reason: form.reason.trim(),
+        usageTypeId: Number(form.usageTypeId),
+        tarifRate: Number(form.tarifRate || 0),
+        connSize: Number(form.connSize),
+        remark: form.remark.trim(),
+        ulbid: Number(ulbId),
+        zoneId: Number(form.zoneId),
+        source,
+        ownerName: form.ownerName,
+        usageType: form.usageType,
+        detAppliName: form.detAppliName.trim(),
+        detMobile: Number(form.detMobile),
+        detAadhaar: form.detAadhaar.trim(),
+        detEmail: form.detEmail.trim(),
+        detAddress: form.detAddress.trim(),
+        conAddressSrch: form.conAddressSrch,
+        ownerNameSrch: form.ownerNameSrch,
+        curConSizeSrch: form.curConSizeSrch,
+        usageTypeNewSrch: form.usageTypeNewSrch,
+        erlDate: formatOracleDate(form.erlDate)
     };
 
-    const handleSubmit = async (values, { resetForm }) => {
-        if (!ulbId || !serviceId || !userId || !token) {
-            Swal.fire({
-                icon: "error",
-                text: "Required login information is missing",
-            });
-            return;
-        }
-
-        if (!values.zoneId) {
-            Swal.fire({
-                icon: "warning",
-                text: "Please select Zone",
-            });
-            return;
-        }
-
-        if (!values.consumerNo?.trim()) {
-            Swal.fire({
-                icon: "warning",
-                text: "Please enter Consumer No",
-            });
-            return;
-        }
-
-        if (!values.disConId) {
-            Swal.fire({
-                icon: "warning",
-                text: "Please select Disconnection Type",
-            });
-            return;
-        }
-
-        if (!values.usageTypeId) {
-            Swal.fire({
-                icon: "warning",
-                text: "Please select Usage Type",
-            });
-            return;
-        }
-
-        if (!values.connSize) {
-            Swal.fire({
-                icon: "warning",
-                text: "Please select Connection Size",
-            });
-            return;
-        }
-
-        if (!values.detAppliName?.trim()) {
-            Swal.fire({
-                icon: "warning",
-                text: "Please enter Applicant Name",
-            });
-            return;
-        }
-
-        if (!/^\d{10}$/.test(values.detMobile)) {
-            Swal.fire({
-                icon: "warning",
-                text: "Please enter valid 10 digit Mobile Number",
-            });
-            return;
-        }
-
-        if (!/^\d{12}$/.test(values.detAadhaar)) {
-            Swal.fire({
-                icon: "warning",
-                text: "Please enter valid 12 digit Aadhaar Number",
-            });
-            return;
-        }
-
-        if (!values.detEmail?.trim()) {
-            Swal.fire({
-                icon: "warning",
-                text: "Please enter Email",
-            });
-            return;
-        }
-
-        if (!values.detAddress?.trim()) {
-            Swal.fire({
-                icon: "warning",
-                text: "Please enter Address",
-            });
-            return;
-        }
-
-        if (!values.remark?.trim()) {
-            Swal.fire({
-                icon: "warning",
-                text: "Please enter Remark",
-            });
-            return;
-        }
-
-        if (
-            documents.length &&
-            Object.keys(files).length !== documents.length
-        ) {
-            Swal.fire({
-                icon: "warning",
-                title: "Documents Required",
-                text: "Please upload all required documents",
-            });
-            return;
-        }
-
-        setSubmitting(true);
-
+    try {
         Swal.fire({
             title: "Submitting...",
-            text: "Please wait",
+            text: "Saving water register application",
             allowOutsideClick: false,
-            showConfirmButton: false,
-            didOpen: () => Swal.showLoading(),
+            didOpen: () => Swal.showLoading()
         });
 
-        try {
-            const payload = {
-                userId: Number(userId),
-                wtregId: 0,
-                servId: Number(serviceId),
-                consNo: values.consumerNo.trim(),
-                disConId: Number(values.disConId),
-                reason: values.reason?.trim() || null,
-                usageTypeId: Number(values.usageTypeId),
-                tarifRate:
-                    values.tarifRate === ""
-                        ? null
-                        : Number(values.tarifRate),
-                connSize: Number(values.connSize),
-                remark: values.remark.trim(),
-                ulbid: Number(ulbId),
-                zoneId: Number(values.zoneId),
-                source: values.source || "WEB",
-                ownerName: values.ownerName || "",
-                usageType: values.usageType || "",
-                detAppliName: values.detAppliName.trim(),
-                detMobile: Number(values.detMobile),
-                detAadhaar: values.detAadhaar.trim(),
-                detEmail: values.detEmail.trim(),
-                detAddress: values.detAddress.trim(),
-                conAddressSrch: values.conAddressSrch || "",
-                ownerNameSrch: values.ownerNameSrch || "",
-                curConSizeSrch: values.curConSizeSrch || "",
-                usageTypeNewSrch: values.usageTypeNewSrch || "",
-                erlDate: values.erlDate,
-            };
-
-            console.log("Water Register Payload:", payload);
-
-            const response = await axios.post(
-                `${BASE_URL}/api/FrmWaterRegister/save-water-register`,
-                payload,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+        const response = await axios.post(
+            `${baseUrl}/api/FrmWaterRegister/save-water-register`,
+            payload,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
                 }
+            }
+        );
+
+        Swal.close();
+
+        const result = response?.data?.data;
+
+        if (!result?.success || Number(result?.errorCode) !== 9999) {
+            Swal.fire(
+                "Error",
+                result?.message || "Unable to save water register.",
+                "error"
             );
-
-            if (!response?.data?.ok) {
-                throw new Error(
-                    response?.data?.error ||
-                    response?.data?.message ||
-                    "Unable to save water register"
-                );
-            }
-
-            const result = response?.data?.data;
-            const message =
-                result?.message ||
-                response?.data?.message ||
-                "";
-
-            const applicationNo = extractApplicationNo(message);
-
-            if (!applicationNo) {
-                throw new Error(
-                    "Application number was not returned"
-                );
-            }
-
-            if (documents.length) {
-                Swal.update({
-                    title: "Uploading Documents...",
-                    text: "Please wait while documents are uploaded",
-                });
-
-                await uploadDocuments(
-                    applicationNo,
-                    serviceId
-                );
-            }
-
-            Swal.close();
-
-            await Swal.fire({
-                icon: "success",
-                title: "Application Submitted",
-                html: `Application No: <strong>${applicationNo}</strong>`,
-                confirmButtonText: "OK",
-            });
-
-            resetForm({
-                values: {
-                    ...initialValues,
-                    serviceId: String(serviceId),
-                    tarifRate: serviceRate,
-                },
-            });
-
-            setConnectionDetails(null);
-            setFiles({});
-        } catch (error) {
-            console.error(
-                "Water Register Submit Error:",
-                error
-            );
-
-            Swal.close();
-
-            Swal.fire({
-                icon: "error",
-                title: "Submission Failed",
-                text:
-                    error?.response?.data?.error ||
-                    error?.response?.data?.message ||
-                    error?.message ||
-                    "Unable to save water register",
-            });
-        } finally {
-            setSubmitting(false);
+            return;
         }
+
+        const message = result.message || "";
+
+        const appNo =
+            message
+                .split("Appli no:")[1]
+                ?.split("$")[0]
+                ?.trim() || "";
+
+        if (!appNo) {
+            Swal.fire(
+                "Warning",
+                "Application saved but Application No. was not returned.",
+                "warning"
+            );
+            return;
+        }
+
+        Swal.fire({
+            title: "Uploading Documents...",
+            text: "Please wait while documents are being uploaded",
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        const uploadResults = await Promise.allSettled(
+            documents.map((document) => uploadDocument(appNo, document))
+        );
+
+        Swal.close();
+
+        const failedUploads = uploadResults.filter(
+            (item) => item.status === "rejected"
+        );
+
+        if (failedUploads.length > 0) {
+            console.error("Document Upload Errors:", failedUploads);
+
+            Swal.fire(
+                "Upload Failed",
+                `${failedUploads.length} document(s) could not be uploaded. Application No: ${appNo}`,
+                "error"
+            );
+            return;
+        }
+
+        await Swal.fire({
+            icon: "success",
+            title: "Application Submitted",
+            text: message,
+            confirmButtonText: "OK"
+        });
+
+        resetForm();
+    } catch (error) {
+        Swal.close();
+
+        console.error("Water Register Submit Error:", error);
+
+        Swal.fire(
+            "Error",
+            error?.response?.data?.message ||
+                "Unable to save water register.",
+            "error"
+        );
+    }
+};
+
+    const resetForm = () => {
+        setConsumerSearch("");
+        setForm({
+            zoneId: "",
+            serviceId: String(serviceId),
+            consumerNo: "",
+            disConId: "",
+            reason: "",
+            usageTypeId: "",
+            tarifRate: "",
+            connSize: "",
+            remark: "",
+            ownerName: "",
+            usageType: "",
+            detAppliName: "",
+            detMobile: "",
+            detAadhaar: "",
+            detEmail: "",
+            detAddress: "",
+            conAddressSrch: "",
+            ownerNameSrch: "",
+            curConSizeSrch: "",
+            usageTypeNewSrch: "",
+            erlDate: new Date().toISOString().split("T")[0]
+        });
+        setDocuments((prev) => prev.map((item) => ({ ...item, file: null })));
     };
 
-    const documentHeaders = [
-        "Sr. No.",
-        "Document",
-        "Type",
-        "Upload",
-        "Status",
-    ];
-
-    const documentKeyMapping = {
-        "Sr. No.": "srNo",
-        Document: "docName",
-        Type: "docType",
-        Upload: "upload",
-        Status: "status",
-    };
-
-    const documentData = documents.map((item, index) => ({
-        ...item,
+    const tableData = documents.map((item, index) => ({
         srNo: index + 1,
-        docName: item.DOCNAME,
-        docType: item.DOCTYPE,
-        upload: item.DOCID,
-        status: files[item.DOCID]
-            ? "Uploaded"
-            : "Required",
+        documentName: item.DOCNAME,
+        image: (
+            <Input
+                type="file"
+                accept=".jpg,.jpeg,.png,.pdf"
+                onChange={(e) => handleFileChange(item.DOCID, e.target.files?.[0])}
+                className="h-9 w-full cursor-pointer"
+            />
+        )
     }));
 
     return (
-        <div className="w-full bg-[#f4f7fb] p-3 sm:p-4 md:p-5">
-            <div className="mx-auto w-full max-w-[1600px] overflow-hidden rounded-lg border bg-white shadow-sm">
-                <Formik
-                    initialValues={initialValues}
-                    onSubmit={handleSubmit}
-                >
-                    {({
-                        values,
-                        setFieldValue,
-                        resetForm,
-                    }) => (
-                        <Form>
-                            <div className="bg-[#083c76] px-4 py-3 sm:px-6">
-                                <h1 className="text-center text-lg font-bold text-white">
-                                    {serviceDisplayName ||
-                                        "Reconnection"}
-                                </h1>
+        <div className="w-full bg-[#f4f7fb] p-3 sm:p-4">
+            <div className="mx-auto w-full max-w-[1600px] rounded-lg bg-white shadow-sm">
+                <div className="border-b border-gray-200 px-4 py-3">
+                    <h1 className="text-lg font-semibold text-[#083c76] sm:text-xl">{serviceName}</h1>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-5 p-4 sm:p-5">
+                    <div className="grid grid-cols-1 gap-x-10 gap-y-3 md:grid-cols-2">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                            <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                <Label text="Applicant Name" required className="min-w-fit" />
+                                <span>:</span>
                             </div>
+                            <Input value={form.detAppliName} onChange={(e) => updateField("detAppliName", e.target.value)} className="w-full" placeholder="Enter Applicant Name" />
+                        </div>
 
-                            <div className="p-4 sm:p-6">
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[145px_minmax(0,1fr)] sm:items-center">
-                                        <Label>Zone :</Label>
-                                        <Select
-                                            value={
-                                                values.zoneId
-                                            }
-                                            onValueChange={(
-                                                value
-                                            ) =>
-                                                setFieldValue(
-                                                    "zoneId",
-                                                    value
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select Zone" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {zones.map(
-                                                    (
-                                                        item
-                                                    ) => (
-                                                        <SelectItem
-                                                            key={
-                                                                item.WARDID
-                                                            }
-                                                            value={String(
-                                                                item.WARDID
-                                                            )}
-                                                        >
-                                                            {
-                                                                item.WARDNAME
-                                                            }
-                                                        </SelectItem>
-                                                    )
-                                                )}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                            <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                <Label text="Mobile No" required className="min-w-fit" />
+                                <span>:</span>
+                            </div>
+                            <Input value={form.detMobile} maxLength={10} inputMode="numeric" onChange={(e) => updateField("detMobile", e.target.value.replace(/\D/g, ""))} className="w-full" placeholder="Enter Mobile No" />
+                        </div>
 
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[145px_minmax(0,1fr)] sm:items-center">
-                                        <Label>
-                                            Service Type :
-                                        </Label>
-                                        <Select
-                                            value={
-                                                values.serviceId
-                                            }
-                                            onValueChange={(
-                                                value
-                                            ) =>
-                                                setFieldValue(
-                                                    "serviceId",
-                                                    value
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select Service" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {services.map(
-                                                    (
-                                                        item
-                                                    ) => (
-                                                        <SelectItem
-                                                            key={
-                                                                item.NUM_SERVICE_SERVICEID
-                                                            }
-                                                            value={String(
-                                                                item.NUM_SERVICE_SERVICEID
-                                                            )}
-                                                        >
-                                                            {
-                                                                item.VAR_SERVICE_ENG_NAME
-                                                            }
-                                                        </SelectItem>
-                                                    )
-                                                )}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                            <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                <Label text="Aadhar No" required className="min-w-fit" />
+                                <span>:</span>
+                            </div>
+                            <Input value={form.detAadhaar} maxLength={12} inputMode="numeric" onChange={(e) => updateField("detAadhaar", e.target.value.replace(/\D/g, ""))} className="w-full" placeholder="Enter Aadhar No" />
+                        </div>
 
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[145px_minmax(0,1fr)] sm:items-center">
-                                        <Label>
-                                            Consumer No :
-                                        </Label>
-                                        <div className="flex gap-2">
-                                            <Input
-                                                value={
-                                                    values.consumerNo
-                                                }
-                                                onChange={(
-                                                    e
-                                                ) =>
-                                                    setFieldValue(
-                                                        "consumerNo",
-                                                        e.target
-                                                            .value
-                                                    )
-                                                }
-                                                placeholder="Enter Consumer No"
-                                            />
-                                            <Button
-                                                type="button"
-                                                onClick={() =>
-                                                    searchConnection(
-                                                        values.consumerNo,
-                                                        setFieldValue
-                                                    )
-                                                }
-                                                disabled={
-                                                    searching
-                                                }
-                                            >
-                                                {searching
-                                                    ? "..."
-                                                    : "Search"}
-                                            </Button>
-                                        </div>
-                                    </div>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                            <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                <Label text="Email" required className="min-w-fit" />
+                                <span>:</span>
+                            </div>
+                            <Input type="email" value={form.detEmail} onChange={(e) => updateField("detEmail", e.target.value)} className="w-full" placeholder="Enter Email" />
+                        </div>
 
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[145px_minmax(0,1fr)] sm:items-center">
-                                        <Label>
-                                            Disconnection Type :
-                                        </Label>
-                                        <Select
-                                            value={
-                                                values.disConId
-                                            }
-                                            onValueChange={(
-                                                value
-                                            ) =>
-                                                setFieldValue(
-                                                    "disConId",
-                                                    value
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select Type" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {disconnectionTypes.map(
-                                                    (
-                                                        item
-                                                    ) => (
-                                                        <SelectItem
-                                                            key={
-                                                                item.NUM_DISCONN_ID
-                                                            }
-                                                            value={String(
-                                                                item.NUM_DISCONN_ID
-                                                            )}
-                                                        >
-                                                            {
-                                                                item.VAR_DISCONN_NAME
-                                                            }
-                                                        </SelectItem>
-                                                    )
-                                                )}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-4 md:col-span-2">
+                            <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                <Label text="Address" required className="min-w-fit" />
+                                <span>:</span>
+                            </div>
+                            <Textarea value={form.detAddress} onChange={(e) => updateField("detAddress", e.target.value)} className="min-h-20 w-full" placeholder="Enter Address" />
+                        </div>
 
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[145px_minmax(0,1fr)] sm:items-center">
-                                        <Label>
-                                            Usage Type :
-                                        </Label>
-                                        <Select
-                                            value={
-                                                values.usageTypeId
-                                            }
-                                            onValueChange={(
-                                                value
-                                            ) =>
-                                                setFieldValue(
-                                                    "usageTypeId",
-                                                    value
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select Usage Type" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {usageTypes.map(
-                                                    (
-                                                        item
-                                                    ) => (
-                                                        <SelectItem
-                                                            key={
-                                                                item.NUM_USAGETYPE_ID
-                                                            }
-                                                            value={String(
-                                                                item.NUM_USAGETYPE_ID
-                                                            )}
-                                                        >
-                                                            {
-                                                                item.VAR_USAGETYPE_NAME
-                                                            }
-                                                        </SelectItem>
-                                                    )
-                                                )}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                            <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                <Label text="Zone" required className="min-w-fit" />
+                                <span>:</span>
+                            </div>
+                            <Select value={form.zoneId} onValueChange={(value) => updateField("zoneId", value)}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="-- Select Zone --" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {wards.map((item) => (
+                                        <SelectItem key={item.WARDID} value={String(item.WARDID)}>{item.WARDNAME}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[145px_minmax(0,1fr)] sm:items-center">
-                                        <Label>
-                                            New Connection Size :
-                                        </Label>
-                                        <Select
-                                            value={
-                                                values.connSize
-                                            }
-                                            onValueChange={(
-                                                value
-                                            ) =>
-                                                setFieldValue(
-                                                    "connSize",
-                                                    value
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select Size" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {connectionSizes.map(
-                                                    (
-                                                        item
-                                                    ) => (
-                                                        <SelectItem
-                                                            key={
-                                                                item.NUM_CONNSIZE_ID
-                                                            }
-                                                            value={String(
-                                                                item.NUM_CONNSIZE_ID
-                                                            )}
-                                                        >
-                                                            {
-                                                                item.NUM_CONNSIZE_SIZE
-                                                            }
-                                                        </SelectItem>
-                                                    )
-                                                )}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                            <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                <Label text="Service Type" required className="min-w-fit" />
+                                <span>:</span>
+                            </div>
+                            <Select value={form.serviceId} disabled>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="-- Select Service --" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {services.map((item) => (
+                                        <SelectItem key={item.NUM_SERVICE_SERVICEID} value={String(item.NUM_SERVICE_SERVICEID)}>{item.VAR_SERVICE_ENG_NAME}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[145px_minmax(0,1fr)] sm:items-center">
-                                        <Label>
-                                            Tariff Rate :
-                                        </Label>
-                                        <Input
-                                            type="number"
-                                            value={
-                                                values.tarifRate
-                                            }
-                                            onChange={(
-                                                e
-                                            ) =>
-                                                setFieldValue(
-                                                    "tarifRate",
-                                                    e.target
-                                                        .value
-                                                )
-                                            }
-                                            placeholder="Enter Tariff Rate"
-                                        />
-                                    </div>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                            <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                <Label text="Consumer No" required className="min-w-fit" />
+                                <span>:</span>
+                            </div>
+                            <div className="flex w-full gap-2">
+                                <Input value={consumerSearch} onChange={(e) => setConsumerSearch(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), fetchConnectionDetails())} className="w-full" placeholder="Enter Consumer No" />
+                                <Button type="button" onClick={fetchConnectionDetails} disabled={searching} className="shrink-0 bg-[#083c76] hover:bg-[#062f5d]">{searching ? "..." : "Search"}</Button>
+                            </div>
+                        </div>
+                    </div>
 
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[145px_minmax(0,1fr)] sm:items-center">
-                                        <Label>
-                                            Reason :
-                                        </Label>
-                                        <Input
-                                            value={
-                                                values.reason
-                                            }
-                                            onChange={(
-                                                e
-                                            ) =>
-                                                setFieldValue(
-                                                    "reason",
-                                                    e.target
-                                                        .value
-                                                )
-                                            }
-                                            placeholder="Enter Reason"
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[145px_minmax(0,1fr)] sm:items-center">
-                                        <Label>
-                                            Date :
-                                        </Label>
-                                        <Input
-                                            type="date"
-                                            value={
-                                                values.erlDate
-                                            }
-                                            onChange={(
-                                                e
-                                            ) =>
-                                                setFieldValue(
-                                                    "erlDate",
-                                                    e.target
-                                                        .value
-                                                )
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="md:col-span-2 xl:col-span-3">
-                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-[145px_minmax(0,1fr)] sm:items-center">
-                                            <Label>
-                                                Remark :
-                                            </Label>
-                                            <Input
-                                                value={
-                                                    values.remark
-                                                }
-                                                onChange={(
-                                                    e
-                                                ) =>
-                                                    setFieldValue(
-                                                        "remark",
-                                                        e.target
-                                                            .value
-                                                    )
-                                                }
-                                                placeholder="Enter Remark"
-                                            />
-                                        </div>
-                                    </div>
+                    <div className="border-t border-gray-200 pt-4">
+                        <div className="grid grid-cols-1 gap-x-10 gap-y-3 md:grid-cols-2">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4 md:col-span-2">
+                                <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                    <Label text="Consumer Address" className="min-w-fit" />
+                                    <span>:</span>
                                 </div>
+                                <Textarea value={form.conAddressSrch} onChange={(e) => updateField("conAddressSrch", e.target.value)} className="min-h-17 w-full" />
                             </div>
 
-                            <div className="border-t p-4 sm:p-6">
-                                <h2 className="mb-4 border-b pb-2 text-sm font-semibold text-gray-700 sm:text-base">
-                                    Existing Connection Details
-                                </h2>
-
-                                {connectionDetails ? (
-                                    <pre className="max-h-80 overflow-auto rounded-md bg-gray-50 p-4 text-xs text-gray-700">
-                                        {JSON.stringify(
-                                            connectionDetails,
-                                            null,
-                                            2
-                                        )}
-                                    </pre>
-                                ) : (
-                                    <div className="rounded-md bg-gray-50 p-4 text-center text-sm text-gray-500">
-                                        Enter Consumer No and click Search to fetch connection details.
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="border-t p-4 sm:p-6">
-                                <h2 className="mb-4 border-b pb-2 text-sm font-semibold text-gray-700 sm:text-base">
-                                    Applicant Details
-                                </h2>
-
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[145px_minmax(0,1fr)] sm:items-center">
-                                        <Label>
-                                            Applicant Name :
-                                        </Label>
-                                        <Input
-                                            value={
-                                                values.detAppliName
-                                            }
-                                            onChange={(
-                                                e
-                                            ) =>
-                                                setFieldValue(
-                                                    "detAppliName",
-                                                    e.target
-                                                        .value
-                                                )
-                                            }
-                                            placeholder="Enter Applicant Name"
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[145px_minmax(0,1fr)] sm:items-center">
-                                        <Label>
-                                            Mobile :
-                                        </Label>
-                                        <Input
-                                            value={
-                                                values.detMobile
-                                            }
-                                            maxLength={10}
-                                            onChange={(
-                                                e
-                                            ) =>
-                                                setFieldValue(
-                                                    "detMobile",
-                                                    e.target.value
-                                                        .replace(
-                                                            /\D/g,
-                                                            ""
-                                                        )
-                                                        .slice(
-                                                            0,
-                                                            10
-                                                        )
-                                                )
-                                            }
-                                            placeholder="Enter Mobile Number"
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[145px_minmax(0,1fr)] sm:items-center">
-                                        <Label>
-                                            Aadhaar :
-                                        </Label>
-                                        <Input
-                                            value={
-                                                values.detAadhaar
-                                            }
-                                            maxLength={12}
-                                            onChange={(
-                                                e
-                                            ) =>
-                                                setFieldValue(
-                                                    "detAadhaar",
-                                                    e.target.value
-                                                        .replace(
-                                                            /\D/g,
-                                                            ""
-                                                        )
-                                                        .slice(
-                                                            0,
-                                                            12
-                                                        )
-                                                )
-                                            }
-                                            placeholder="Enter Aadhaar Number"
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[145px_minmax(0,1fr)] sm:items-center">
-                                        <Label>
-                                            Email :
-                                        </Label>
-                                        <Input
-                                            value={
-                                                values.detEmail
-                                            }
-                                            onChange={(
-                                                e
-                                            ) =>
-                                                setFieldValue(
-                                                    "detEmail",
-                                                    e.target
-                                                        .value
-                                                )
-                                            }
-                                            placeholder="Enter Email"
-                                        />
-                                    </div>
-
-                                    <div className="md:col-span-2 xl:col-span-3">
-                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-[145px_minmax(0,1fr)] sm:items-center">
-                                            <Label>
-                                                Address :
-                                            </Label>
-                                            <Input
-                                                value={
-                                                    values.detAddress
-                                                }
-                                                onChange={(
-                                                    e
-                                                ) =>
-                                                    setFieldValue(
-                                                        "detAddress",
-                                                        e.target
-                                                            .value
-                                                    )
-                                                }
-                                                placeholder="Enter Address"
-                                            />
-                                        </div>
-                                    </div>
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                    <Label text="Owner Name" className="min-w-fit" />
+                                    <span>:</span>
                                 </div>
+                                <Input value={form.ownerName} onChange={(e) => updateField("ownerName", e.target.value)} className="w-full" />
                             </div>
 
-                            <div className="border-t p-4 sm:p-6">
-                                <h2 className="mb-4 border-b pb-2 text-sm font-semibold text-gray-700 sm:text-base">
-                                    Document Upload
-                                </h2>
-
-                                <ShadCNTable
-                                    headers={
-                                        documentHeaders
-                                    }
-                                    data={
-                                        documentData
-                                    }
-                                    keyMapping={
-                                        documentKeyMapping
-                                    }
-                                    pagination={false}
-                                    className="max-h-95"
-                                    columnStyles={{
-                                        "Sr. No.": {
-                                            width: "80px",
-                                        },
-                                        Document: {
-                                            width: "35%",
-                                        },
-                                        Type: {
-                                            width: "100px",
-                                        },
-                                        Upload: {
-                                            width: "30%",
-                                        },
-                                        Status: {
-                                            width: "130px",
-                                        },
-                                    }}
-                                />
-                            </div>
-
-                            {documents.length > 0 && (
-                                <div className="border-t p-4 sm:p-6">
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full border-collapse">
-                                            <tbody>
-                                                {documents.map(
-                                                    (
-                                                        item,
-                                                        index
-                                                    ) => (
-                                                        <tr
-                                                            key={
-                                                                item.DOCID
-                                                            }
-                                                            className="border-b"
-                                                        >
-                                                            <td className="p-2 text-center">
-                                                                {index +
-                                                                    1}
-                                                            </td>
-                                                            <td className="p-2">
-                                                                {
-                                                                    item.DOCNAME
-                                                                }
-                                                            </td>
-                                                            <td className="p-2 text-center">
-                                                                {
-                                                                    item.DOCTYPE
-                                                                }
-                                                            </td>
-                                                            <td className="p-2">
-                                                                <Input
-                                                                    type="file"
-                                                                    accept=".pdf,.jpg,.jpeg,.png"
-                                                                    onChange={(
-                                                                        e
-                                                                    ) =>
-                                                                        handleFileChange(
-                                                                            e,
-                                                                            item
-                                                                        )
-                                                                    }
-                                                                />
-                                                            </td>
-                                                            <td className="p-2 text-center">
-                                                                {files[
-                                                                    item
-                                                                        .DOCID
-                                                                ] ? (
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="outline"
-                                                                        size="sm"
-                                                                        onClick={() =>
-                                                                            removeFile(
-                                                                                item.DOCID
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        Remove
-                                                                    </Button>
-                                                                ) : (
-                                                                    <span className="text-red-600">
-                                                                        Required
-                                                                    </span>
-                                                                )}
-                                                            </td>
-                                                        </tr>
-                                                    )
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                    <Label text="Current Conn. Size" className="min-w-fit" />
+                                    <span>:</span>
                                 </div>
-                            )}
-
-                            {payFlag && (
-                                <div className="border-t px-4 py-4 sm:px-6">
-                                    <div className="rounded-md bg-gray-50 px-4 py-3 text-sm">
-                                        <span className="font-semibold">
-                                            Payment Required :
-                                        </span>{" "}
-                                        {payFlag === "Y"
-                                            ? "Yes"
-                                            : "No"}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="flex flex-col items-center justify-center gap-3 border-t p-4 sm:flex-row sm:p-6">
-                                <Button
-                                    type="submit"
-                                    disabled={
-                                        submitting
-                                    }
-                                >
-                                    {submitting
-                                        ? "Submitting..."
-                                        : "Submit"}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    disabled={
-                                        submitting
-                                    }
-                                    onClick={() => {
-                                        resetForm();
-                                        setConnectionDetails(
-                                            null
-                                        );
-                                        setFiles({});
-                                    }}
-                                >
-                                    Reset
-                                </Button>
+                                <Input value={form.curConSizeSrch} onChange={(e) => updateField("curConSizeSrch", e.target.value)} className="w-full" />
                             </div>
-                        </Form>
+
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                    <Label text="Usage Type" className="min-w-fit" />
+                                    <span>:</span>
+                                </div>
+                                <Input value={form.usageType} onChange={(e) => updateField("usageType", e.target.value)} className="w-full" />
+                            </div>
+
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                    <Label text="Earlier Conn. Close Date" required className="min-w-fit" />
+                                    <span>:</span>
+                                </div>
+                                <Input type="date" value={form.erlDate} onChange={(e) => updateField("erlDate", e.target.value)} className="w-full" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="border-t border-gray-200 pt-4">
+                        <div className="grid grid-cols-1 gap-x-10 gap-y-3 md:grid-cols-2">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                    <Label text="Changes Usage Type" className="min-w-fit" />
+                                    <span>:</span>
+                                </div>
+                                <Select value={form.usageTypeId} onValueChange={handleUsageTypeChange}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="-- Select Usage Type --" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {usageTypes.map((item) => (
+                                            <SelectItem key={item.NUM_USAGETYPE_ID} value={String(item.NUM_USAGETYPE_ID)}>{item.VAR_USAGETYPE_NAME}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                    <Label text="New Conn Size" className="min-w-fit" />
+                                    <span>:</span>
+                                </div>
+                                <Select value={form.connSize} onValueChange={handleConnectionSizeChange}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="-- Select Connection Size --" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {connectionSizes.map((item) => (
+                                            <SelectItem key={item.NUM_CONNSIZE_ID} value={String(item.NUM_CONNSIZE_ID)}>{item.NUM_CONNSIZE_SIZE}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                    <Label text="Disconnection Type" className="min-w-fit" />
+                                    <span>:</span>
+                                </div>
+                                <Select value={form.disConId} onValueChange={(value) => updateField("disConId", value)}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="-- Select Disconnection Type --" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {disconnectionTypes.map((item) => (
+                                            <SelectItem key={item.NUM_DISCONN_ID} value={String(item.NUM_DISCONN_ID)}>{item.VAR_DISCONN_NAME}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                    <Label text="Tariff Rate" className="min-w-fit" />
+                                    <span>:</span>
+                                </div>
+                                <Input type="number" value={form.tarifRate} onChange={(e) => updateField("tarifRate", e.target.value)} className="w-full" />
+                            </div>
+
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4 md:col-span-2">
+                                <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                    <Label text="Reason" className="min-w-fit" />
+                                    <span>:</span>
+                                </div>
+                                <Input value={form.reason} onChange={(e) => updateField("reason", e.target.value)} className="w-full" placeholder="Enter Reason" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="border-t border-gray-200 pt-4">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                            <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                <Label text="Remark" required className="min-w-fit" />
+                                <span>:</span>
+                            </div>
+                            <Textarea value={form.remark} onChange={(e) => updateField("remark", e.target.value)} className="min-h-20 w-full" placeholder="Enter Remark" />
+                        </div>
+                    </div>
+
+                    {documents.length > 0 && (
+                        <div className="border-t border-gray-200 pt-4">
+                            <ShadCNTable
+                                headers={["Sr. No.", "Document Name", "Image(jpg,png,pdf)"]}
+                                data={tableData}
+                                keyMapping={{
+                                    "Sr. No.": "srNo",
+                                    "Document Name": "documentName",
+                                    "Image(jpg,png,pdf)": "image"
+                                }}
+                                pagination={false}
+                            />
+                        </div>
                     )}
-                </Formik>
+
+                    <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                        <Button type="submit" className="bg-[#083c76] hover:bg-[#062f5d]">Submit</Button>
+                        <Button type="button" variant="outline" onClick={resetForm}>Reset</Button>
+                        <Button type="button" variant="outline" onClick={() => navigate(-1)}>Back</Button>
+                    </div>
+                </form>
             </div>
         </div>
     );

@@ -15,5 +15,5 @@ router.get("/register-details", auth(), controller.getWaterRegisterDetailsContro
 router.get("/service-pay-flag", auth(), controller.getServicePayFlagController);
 router.post("/save-water-register", auth(), controller.saveWaterRegisterController);
 router.post("/upload-document", auth(), upload.single("file"), controller.uploadWaterDocumentController);
-router.get("/connection-details",  controller.getConnectionDetailsController);
+router.get("/connection-details", auth(), controller.getConnectionDetailsController);
 module.exports = router;
