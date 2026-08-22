@@ -32,7 +32,7 @@ app.use(
       }
     },
     credentials: true,
-  }),
+  })
 );
 
 app.use(express.json({ limit: "1mb" }));
@@ -72,15 +72,17 @@ app.use("/api/FrmAssessmentCerti", require("./modules/Property/FrmAssessmentCert
 app.use("/api/FrmNewTaxAssesment", require("./modules/Property/FrmNewTaxAssesment/FrmNewTaxAssesment.route"));
 app.use("/api/FrmPropertyAppel", require("./modules/Property/FrmPropertyAppel/FrmPropertyAppel.route"));
 
-//Water module
-app.use("/api/watermodule", require("./modules/WaterModule/WaterBillCopy/Stepnew.route"));
+//Water module 
+app.use("/api/watermodule", require("./modules/WaterModule/WaterBillCopy/Stepnew.route"))
+app.use("/api/FrmWaterRegister", require("./modules/WaterModule/FrmWaterRegister/FrmWaterRegister.route"))
 
 //Trade
 app.use("/api/FrmMarketEntry", require("./modules/Trade/FrmMarketEntry/FrmMArketEntry.routes"));
 
-//Track Application
+
 app.use("/api/FrmTrackApplication", require("./modules/TrackApplication/FrmTrackApplication/FrmTrackApplication.routes"));
 
 app.use(errorMiddleware);
+
 
 module.exports = app;
