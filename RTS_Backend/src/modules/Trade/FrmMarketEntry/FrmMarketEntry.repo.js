@@ -1,6 +1,7 @@
-const { executeQuery } = require("../../../db/queryExecutor");
+const { executeQueryTMC, executeQueryANCL } = require("../../../db/queryExecutor");
 const oracledb = require("oracledb");
-const { withTx } = require("../../../db/tx");
+const { withTxTMC, withTxANCL } = require("../../../db/tx");
+const { getConnectionANCL } = require("../../../config/db");
 
 // ============================================================
 // GET BUSINESS PLACE
@@ -13,7 +14,7 @@ const getBusinessPlaceRepo = async () => {
     FROM aorts_busiplace_mas
   `;
 
-  const result = await executeQuery(query);
+  const result = await executeQueryTMC(query);
   return result.rows || [];
 };
 
@@ -28,7 +29,7 @@ const getJalanShilRepo = async () => {
     FROM aorts_jalanshil_mas
   `;
 
-  const result = await executeQuery(query);
+  const result = await executeQueryTMC(query);
 
   return result.rows || [];
 };
@@ -44,7 +45,7 @@ const getIllegalTypeRepo = async () => {
     FROM aorts_illegal_mas
   `;
 
-  const result = await executeQuery(query);
+  const result = await executeQueryTMC(query);
 
   return result.rows || [];
 };
@@ -62,7 +63,7 @@ const getApplicantTypeRepo = async (ulbId) => {
       AND var_applitype_flag = 'Y'
   `;
 
-  const result = await executeQuery(query, {
+  const result = await executeQueryTMC(query, {
     ulbId,
   });
 
@@ -81,7 +82,7 @@ const getWardRepo = async (ulbId) => {
     WHERE ulbid = :ulbId
   `;
 
-  const result = await executeQuery(query, {
+  const result = await executeQueryTMC(query, {
     ulbId,
   });
 
@@ -99,7 +100,7 @@ const getLicenseTypeRepo = async () => {
     FROM aorts_licensetype_mas
   `;
 
-  const result = await executeQuery(query);
+  const result = await executeQueryTMC(query);
 
   return result.rows || [];
 };
@@ -120,7 +121,7 @@ const getTradeCategoryRepo = async (licenseType, jalanShil) => {
       AND var_category_jwalanshilstat = :jalanShil
   `;
 
-  const result = await executeQuery(query, {
+  const result = await executeQueryTMC(query, {
     licenseType,
     jalanShil,
   });
@@ -142,7 +143,7 @@ const getTradeDetailsRepo = async (ulbId) => {
       AND num_trade_ulbid = :ulbId
   `;
 
-  const result = await executeQuery(query, {
+  const result = await executeQueryTMC(query, {
     ulbId,
   });
 
@@ -173,7 +174,7 @@ const getDocumentDetailsRepo = async (serviceId, ulbId) => {
       AND var_service_active = 'Y'
   `;
 
-  const result = await executeQuery(query, {
+  const result = await executeQueryTMC(query, {
     serviceId,
     ulbId,
   });
@@ -193,7 +194,7 @@ const getSelfDeclareDataRepo = async (serviceId) => {
     WHERE num_selfdeclare_servid = :serviceId
   `;
 
-  const result = await executeQuery(query, {
+  const result = await executeQueryTMC(query, {
     serviceId,
   });
 
@@ -223,7 +224,7 @@ const getTradeTypeDetailsRepo = async (ulbId, tradeCategoryId, tradeTypeId) => {
       AND num_tradetype_id = :tradeTypeId
   `;
 
-  const result = await executeQuery(query, {
+  const result = await executeQueryTMC(query, {
     ulbId,
     tradeCategoryId,
     tradeTypeId,
@@ -264,16 +265,17 @@ const getApplicationDetailsRepo = async (applicationId, ulbId) => {
       dat_appli_todt,
       NVL(num_appli_amount, 0) AS amount,
       num_appli_licensetypeid
-    FROM aomk_appli_mas
+    FROM market.aomk_appli_mas
     WHERE num_appli_id = :applicationId
       AND num_appli_ulbid = :ulbId
   `;
+  //console.log("Query :", query);
 
-  const result = await executeQuery(query, {
+  const result = await executeQueryANCL(query, {
     applicationId,
     ulbId,
   });
-
+  // console.log("result :", result);
   return result.rows || [];
 };
 
@@ -289,15 +291,15 @@ const getApplicationTradeTypeDetailsRepo = async (applicationId, ulbId) => {
       NVL(num_applitrade_traderate, 0) AS Rate,
       num_rate_tradetypename AS tradetype,
       num_rate_id AS tradetypeid
-    FROM aomk_applitradetyp_det
-    INNER JOIN aomk_rate_mas
+    FROM market.aomk_applitradetyp_det
+    INNER JOIN market.aomk_rate_mas
       ON num_rate_id = num_applitradetype_trdtypid
      AND num_rate_ulbid = num_applitradetyp_ulbid
     WHERE num_applitradetype_appliid = :applicationId
       AND num_applitradetyp_ulbid = :ulbId
   `;
 
-  const result = await executeQuery(query, {
+  const result = await executeQueryANCL(query, {
     applicationId,
     ulbId,
   });
@@ -314,11 +316,11 @@ const getApplicationTradeDetailsRepo = async (applicationId) => {
       num_applitrade_id,
       num_applitrade_appliid,
       num_applitrade_tradeid
-    FROM aomk_applitrade_det
+    FROM market.aomk_applitrade_det
     WHERE num_applitrade_appliid = :applicationId
   `;
 
-  const result = await executeQuery(query, {
+  const result = await executeQueryANCL(query, {
     applicationId,
   });
 
@@ -329,58 +331,148 @@ const getApplicationTradeDetailsRepo = async (applicationId) => {
 // GET APPLICATION DIRECTOR DETAILS
 // ============================================================
 const getApplicationDirectorDetailsRepo = async (applicationId) => {
-  const query = `
-    SELECT
-      num_applidirector_id AS directorId,
-      num_applidirector_aadhaarno AS adharno,
-      var_applidirector_name AS dirctorname,
-      Var_AppliDirector_VoterId AS VoterId,
-      num_applidirector_mobileno AS mobileno,
-      var_applidirector_emailid AS email,
-      var_applidirector_gender AS gender,
-      var_applidirector_address AS address,
-      num_applidirector_applitype AS applitypeid,
-      var_applitype_name AS applitypename,
-      blo_applitype_photo AS imgDirectorImage
-    FROM market.aomk_applidirector_det
-    INNER JOIN market.aomk_applitype_mas
-      ON num_applitype_id = num_applidirector_applitype
-     AND num_applidirector_ulbid = num_applitype_ulbid
-    WHERE num_applidirector_appliid = :applicationId
-  `;
+  let connection;
 
-  const result = await executeQuery(query, {
-    applicationId,
-  });
+  try {
+    connection = await getConnectionANCL();
 
-  return result.rows || [];
+    const query = `
+      SELECT
+        num_applidirector_id AS directorId,
+        num_applidirector_aadhaarno AS adharno,
+        var_applidirector_name AS dirctorname,
+        Var_AppliDirector_VoterId AS VoterId,
+        num_applidirector_mobileno AS mobileno,
+        var_applidirector_emailid AS email,
+        var_applidirector_gender AS gender,
+        var_applidirector_address AS address,
+        num_applidirector_applitype AS applitypeid,
+        var_applitype_name AS applitypename,
+        blo_applitype_photo AS imgDirectorImage
+      FROM market.aomk_applidirector_det
+      INNER JOIN market.aomk_applitype_mas
+        ON num_applitype_id = num_applidirector_applitype
+       AND num_applidirector_ulbid = num_applitype_ulbid
+      WHERE num_applidirector_appliid = :applicationId
+    `;
+
+    const result = await connection.execute(
+      query,
+      {
+        applicationId,
+      },
+      {
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+
+        fetchInfo: {
+          IMGDIRECTORIMAGE: {
+            type: oracledb.BUFFER,
+          },
+        },
+      },
+    );
+
+    const rows = result.rows || [];
+
+    // --------------------------------------------------------
+    // Convert Director Image BLOB -> Base64
+    // --------------------------------------------------------
+    for (const row of rows) {
+      if (Buffer.isBuffer(row.IMGDIRECTORIMAGE) && row.IMGDIRECTORIMAGE.length > 0) {
+        row.imgDirectorImage = row.IMGDIRECTORIMAGE.toString("base64");
+      } else {
+        row.imgDirectorImage = null;
+      }
+
+      delete row.IMGDIRECTORIMAGE;
+    }
+
+    return rows;
+  } catch (error) {
+    console.error("GET APPLICATION DIRECTOR DETAILS REPO ERROR:", error);
+
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (error) {
+        console.error("ERROR CLOSING ANCL CONNECTION:", error);
+      }
+    }
+  }
 };
 
 // ============================================================
 // GET APPLICATION DOCUMENT DETAILS
 // ============================================================
 const getApplicationDocumentDetailsRepo = async (applicationId, ulbId) => {
-  const query = `
-    SELECT
-      docid AS primaryDocId,
-      num_applidoc_appliid AS AppliId,
-      docid AS docId,
-      var_applidoc_doctype AS FileType,
-      blo_applidoc_image AS filebyte,
-      doctypename
-    FROM view_document_mas
-    LEFT JOIN aomk_applidoc_det
-      ON docid = num_applidoc_docid
-     AND num_applidoc_appliid = :applicationId
-    WHERE ulbid = :ulbId
-  `;
+  let connection;
 
-  const result = await executeQuery(query, {
-    applicationId,
-    ulbId,
-  });
+  try {
+    connection = await getConnectionANCL();
 
-  return result.rows || [];
+    const query = `
+      SELECT
+        docid AS primaryDocId,
+        num_applidoc_appliid AS AppliId,
+        docid AS docId,
+        var_applidoc_doctype AS FileType,
+        blo_applidoc_image AS filebyte,
+        doctypename
+      FROM view_document_mas
+      LEFT JOIN market.aomk_applidoc_det
+        ON docid = num_applidoc_docid
+       AND num_applidoc_appliid = :applicationId
+      WHERE ulbid = :ulbId
+    `;
+
+    const result = await connection.execute(
+      query,
+      {
+        applicationId,
+        ulbId,
+      },
+      {
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+
+        fetchInfo: {
+          FILEBYTE: {
+            type: oracledb.BUFFER,
+          },
+        },
+      },
+    );
+
+    const rows = result.rows || [];
+
+    // --------------------------------------------------------
+    // Convert Document BLOB -> Base64
+    // --------------------------------------------------------
+    for (const row of rows) {
+      if (Buffer.isBuffer(row.FILEBYTE) && row.FILEBYTE.length > 0) {
+        row.filebyte = row.FILEBYTE.toString("base64");
+      } else {
+        row.filebyte = null;
+      }
+
+      delete row.FILEBYTE;
+    }
+
+    return rows;
+  } catch (error) {
+    console.error("GET APPLICATION DOCUMENT DETAILS REPO ERROR:", error);
+
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (error) {
+        console.error("ERROR CLOSING ANCL CONNECTION:", error);
+      }
+    }
+  }
 };
 
 // ============================================================
@@ -392,7 +484,7 @@ const applicationEntryRepo = async (data) => {
 
     const toDate = data.toDate ? new Date(`${data.toDate}T00:00:00`) : null;
 
-    const result = await withTx(async (conn) => {
+    const result = await withTxTMC(async (conn) => {
       const res = await conn.execute(
         `
         BEGIN
@@ -516,7 +608,7 @@ const applicationEntryRepo = async (data) => {
           In_PlaceOwnerAddress: data.placeOwnerAddress,
 
           In_FromDate: fromDate,
-          
+
           In_ToDate: toDate,
 
           in_amount: data.amount,
@@ -599,6 +691,483 @@ const applicationEntryRepo = async (data) => {
   }
 };
 
+// ============================================================
+// UPDATE DIRECTOR IMAGE
+// ============================================================
+const updateDirectorImagesRepo = async (data) => {
+  try {
+    const result = await withTxTMC(async (conn) => {
+      let updatedCount = 0;
+
+      const directorIds = Array.isArray(data.directorIds) ? data.directorIds : [data.directorIds];
+
+      for (let i = 0; i < data.files.length; i++) {
+        const file = data.files[i];
+        const directorId = directorIds[i];
+
+        // Skip invalid file/director
+        if (!directorId || !file || !file.buffer) {
+          continue;
+        }
+
+        const query = `
+          UPDATE aorts_applidirector_det
+          SET blo_applitype_photo = :BlobDirectorImg
+          WHERE num_applidirector_id = :directorId
+            AND num_applidirector_appliid = :appid
+        `;
+
+        const result = await conn.execute(
+          query,
+          {
+            BlobDirectorImg: {
+              dir: oracledb.BIND_IN,
+              type: oracledb.BLOB,
+              val: file.buffer,
+            },
+
+            directorId: Number(directorId),
+            appid: Number(data.appid),
+          },
+          {
+            autoCommit: false,
+          },
+        );
+
+        updatedCount += result.rowsAffected || 0;
+      }
+
+      return {
+        updatedCount,
+      };
+    });
+
+    return {
+      success: true,
+      updatedCount: result.updatedCount,
+    };
+  } catch (err) {
+    console.error("UPDATE DIRECTOR IMAGES REPO ERROR:", err);
+
+    return {
+      success: false,
+      error: err.message,
+    };
+  }
+};
+// DOCUMENT INSERT
+// ============================================================
+const documentInsertRepo = async (data) => {
+  try {
+    const result = await withTxTMC(async (conn) => {
+      const sql = `
+        INSERT INTO aorts_appdoc_det
+        (
+          num_appdoc_corpid,
+          num_appdoc_serviceid,
+          var_appdoc_appno,
+          var_appdoc_doctype,
+          num_appdoc_documentid,
+          blob_appdoc_documentimg
+        )
+        VALUES
+        (
+          :corpId,
+          :serviceId,
+          :appNo,
+          :docType,
+          :documentId,
+          :documentImage
+        )
+      `;
+
+      const result = await conn.execute(
+        sql,
+        {
+          corpId: data.corpId || 10001,
+
+          serviceId: data.serviceId,
+
+          appNo: data.appno,
+
+          docType: data.doctype,
+
+          documentId: data.documentid,
+
+          documentImage: {
+            dir: oracledb.BIND_IN,
+            type: oracledb.BLOB,
+            val: data.file.buffer,
+          },
+        },
+        {
+          autoCommit: false,
+        },
+      );
+
+      return {
+        rowsAffected: result.rowsAffected || 0,
+      };
+    });
+
+    return {
+      success: true,
+      rowsAffected: result.rowsAffected,
+    };
+  } catch (err) {
+    console.error("DOCUMENT INSERT REPO ERROR:", err);
+
+    return {
+      success: false,
+      error: err.message,
+    };
+  }
+};
+
+// ============================================================
+// GET EXISTING LICENSE DETAILS
+// ============================================================
+const getExistingLicenseDetailsRepo = async (oldLicencNo, ulbId) => {
+  const query = `
+    SELECT
+      num_appli_id,
+      var_appli_applino,
+      var_appli_applidt,
+      var_appli_oldlicencno,
+      var_appli_shopname,
+      var_appli_panno,
+      num_appli_contactno,
+      var_appli_email,
+      var_appli_address,
+      num_appli_zoneid,
+      num_appli_wardid,
+      var_appli_isprod,
+      var_appli_ownspace,
+      var_appli_agrmentwith,
+      num_appli_area,
+      var_appli_iscorpnoc,
+      num_appli_busstartyr,
+      var_appli_shopactno,
+      var_appli_foodlicno,
+      num_appli_licdays,
+      var_appli_shopnamemar,
+      var_appli_placeownername,
+      var_appli_placeowneraddress,
+      dat_appli_fromdt,
+      dat_appli_todt,
+      NVL(num_appli_amount, 0) AS amount,
+      num_appli_licensetypeid
+    FROM market.aomk_appli_mas
+    WHERE var_appli_oldlicencno = :oldLicencNo
+      AND num_appli_ulbid = :ulbId
+    ORDER BY num_appli_id DESC
+  `;
+
+  const result = await executeQueryANCL(query, {
+    oldLicencNo,
+    ulbId,
+  });
+  console.log("getExistingLicenseDetailsRepo result :", result);
+  return result.rows || [];
+};
+
+// ============================================================
+// GET EXISTING LICENSE TRADE TYPE DETAILS
+// ============================================================
+
+const getExistingLicenseTradeTypeDetailsRepo = async (applicationId, ulbId) => {
+  const query = `
+    SELECT
+      num_applitradetype_id,
+      num_applitradetype_appliid,
+      num_applitradetype_trdtypid,
+      NVL(num_applitrade_traderate, 0) AS Rate,
+      num_rate_tradetypename AS tradetype,
+      num_rate_id AS tradetypeid
+    FROM market.aomk_applitradetyp_det
+    INNER JOIN market.aomk_rate_mas
+      ON num_rate_id = num_applitradetype_trdtypid
+     AND num_rate_ulbid = num_applitradetyp_ulbid
+    WHERE num_applitradetype_appliid = :applicationId
+      AND num_applitradetyp_ulbid = :ulbId
+  `;
+
+  const result = await executeQueryANCL(query, {
+    applicationId,
+    ulbId,
+  });
+
+  console.log("getExistingLicenseTradeTypeDetailsRepo result :", result);
+
+  return result.rows || [];
+};
+
+// ============================================================
+// GET EXISTING LICENSE TRADE DETAILS
+// ============================================================
+
+const getExistingLicenseTradeDetailsRepo = async (applicationId, ulbId) => {
+  const query = `
+    SELECT
+      num_applitrade_id,
+      num_applitrade_appliid,
+      num_applitrade_tradeid
+    FROM market.aomk_applitrade_det
+    WHERE num_applitrade_appliid = :applicationId
+      AND num_applitrade_ulbid = :ulbId
+  `;
+
+  const result = await executeQueryANCL(query, {
+    applicationId,
+    ulbId,
+  });
+
+  console.log("getExistingLicenseTradeDetailsRepo result :", result);
+
+  return result.rows || [];
+};
+
+// ============================================================
+// GET EXISTING LICENSE DIRECTOR DETAILS
+// ============================================================
+
+const getExistingLicenseDirectorDetailsRepo = async (applicationId, ulbId) => {
+  let connection;
+
+  try {
+    connection = await getConnectionANCL();
+
+    const query = `
+      SELECT
+        num_applidirector_id AS directorId,
+        num_applidirector_aadhaarno AS adharno,
+        var_applidirector_name AS dirctorname,
+        Var_AppliDirector_VoterId AS VoterId,
+        num_applidirector_mobileno AS mobileno,
+        var_applidirector_emailid AS email,
+        var_applidirector_gender AS gender,
+        var_applidirector_address AS address,
+        num_applidirector_applitype AS applitypeid,
+        var_applitype_name AS applitypename,
+        blo_applitype_photo AS imgDirectorImage
+      FROM market.aomk_applidirector_det
+      INNER JOIN market.aomk_applitype_mas
+        ON num_applitype_id = num_applidirector_applitype
+       AND num_applidirector_ulbid = num_applitype_ulbid
+      WHERE num_applidirector_appliid = :applicationId
+        AND num_applidirector_ulbid = :ulbId
+    `;
+
+    const result = await connection.execute(
+      query,
+      {
+        applicationId,
+        ulbId,
+      },
+      {
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+
+        // Oracle BLOB -> Buffer
+        fetchInfo: {
+          IMGDIRECTORIMAGE: {
+            type: oracledb.BUFFER,
+          },
+        },
+      },
+    );
+
+    const rows = result.rows || [];
+    console.log("getExistingLicenseDirectorDetailsRepo result :", rows);
+
+    for (const row of rows) {
+      if (Buffer.isBuffer(row.IMGDIRECTORIMAGE) && row.IMGDIRECTORIMAGE.length > 0) {
+        row.imgDirectorImage = row.IMGDIRECTORIMAGE.toString("base64");
+      } else {
+        row.imgDirectorImage = null;
+      }
+
+      delete row.IMGDIRECTORIMAGE;
+    }
+
+    return rows;
+  } catch (error) {
+    console.error("GET EXISTING LICENSE DIRECTOR DETAILS ERROR:", error);
+
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (error) {
+        console.error("ERROR CLOSING ANCL CONNECTION:", error.message);
+      }
+    }
+  }
+};
+
+// ============================================================
+// GET EXISTING LICENSE DOCUMENT DETAILS
+// ============================================================
+
+const getExistingLicenseDocumentDetailsRepo = async (applicationId, ulbId) => {
+  let connection;
+
+  try {
+    connection = await getConnectionANCL();
+
+    const query = `
+      SELECT
+        docid AS primaryDocId,
+        num_applidoc_appliid AS AppliId,
+        docid AS docId,
+        var_applidoc_doctype AS FileType,
+        blo_applidoc_image AS filebyte,
+        doctypename
+      FROM view_document_mas
+      LEFT JOIN market.aomk_applidoc_det
+        ON docid = num_applidoc_docid
+       AND num_applidoc_appliid = :applicationId
+      WHERE ulbid = :ulbId
+    `;
+
+    const result = await connection.execute(
+      query,
+      {
+        applicationId,
+        ulbId,
+      },
+      {
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+
+        // Oracle BLOB -> Buffer
+        fetchInfo: {
+          FILEBYTE: {
+            type: oracledb.BUFFER,
+          },
+        },
+      },
+    );
+
+    const rows = result.rows || [];
+    console.log("getExistingLicenseDocumentDetailsRepo result :", rows);
+    for (const row of rows) {
+      if (Buffer.isBuffer(row.FILEBYTE) && row.FILEBYTE.length > 0) {
+        row.filebyte = row.FILEBYTE.toString("base64");
+      } else {
+        row.filebyte = null;
+      }
+
+      delete row.FILEBYTE;
+    }
+
+    return rows;
+  } catch (error) {
+    console.error("GET EXISTING LICENSE DOCUMENT DETAILS ERROR:", error);
+
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (error) {
+        console.error("ERROR CLOSING ANCL CONNECTION:", error.message);
+      }
+    }
+  }
+};
+
+const checkLicenseCancelledRepo = async (oldLicencNo) => {
+  const query = `
+    SELECT COUNT(num_trade_id) AS id
+    FROM market.aomk_tradeservice_mas
+    WHERE var_trade_servicename = 'TLC'
+      AND var_trade_licenseno = :oldLicencNo
+  `;
+
+  const result = await executeQueryANCL(query, {
+    oldLicencNo,
+  });
+
+  return result.rows || [];
+};
+
+// ============================================================
+// GET TRADE TYPE RATES
+// ============================================================
+const getTradTypesRatesRepo = async (tradeTypes, fromDate, toDate, ulbId) => {
+  const query = `
+    SELECT
+      num_rate_id,
+      SUM(num_rate_rate) AS tradType_rate
+    FROM market.aomk_rate_mas
+    WHERE num_rate_id IN (${tradeTypes})
+      AND (
+        TRUNC(dat_rate_fromdate) >= :fromDate
+        OR dat_rate_todate IS NULL
+      )
+      AND num_rate_ulbid = :ulbId
+    GROUP BY num_rate_id
+  `;
+
+  const result = await executeQueryANCL(query, {
+    fromDate,
+    ulbId,
+  });
+
+  return result.rows || [];
+};
+
+// ============================================================
+// GET TRADE TYPES BY CATEGORY
+// ============================================================
+const getTradeTypesByCategoryRepo = async (categoryId, type) => {
+  const query = `
+    SELECT
+      var_tradetype_name,
+      num_categorytype_catgtypid
+    FROM aorts_categorytype_confg
+    INNER JOIN aorts_tradecategory_mas
+      ON num_tradecategory_id = num_categorytype_catgryid
+    INNER JOIN aorts_tradetypes_mas
+      ON num_tradetype_id = num_categorytype_catgtypid
+     AND aomk_tradetype_tradecategoryid = num_categorytype_catgryid
+    WHERE var_tradetype_flag = 'Y'
+      AND num_categorytype_catgryid = :categoryId
+      AND var_categorytype_type = :type
+  `;
+
+  const result = await executeQueryANCL(query, {
+    categoryId,
+    type,
+  });
+
+  return result.rows || [];
+};
+
+// ============================================================
+// GET TRADE CATEGORY BY JWALAN STATUS
+// ============================================================
+const getTradeCategoryByJwalanRepo = async (jwalanshilStatus, type) => {
+  const query = `
+    SELECT
+      var_tradecategory_name,
+      num_category_catgryid
+    FROM aorts_category_confg
+    INNER JOIN aorts_tradecategory_mas
+      ON num_tradecategory_id = num_category_catgryid
+    WHERE var_tradecategory_flag = 'Y'
+      AND var_category_type = :type
+      AND var_category_jwalanshilstat = :jwalanshilStatus
+  `;
+
+  const result = await executeQueryTMC(query, {
+    type,
+    jwalanshilStatus,
+  });
+
+  return result.rows || [];
+};
+
 module.exports = {
   getBusinessPlaceRepo,
   getJalanShilRepo,
@@ -617,4 +1186,15 @@ module.exports = {
   getApplicationDirectorDetailsRepo,
   getApplicationDocumentDetailsRepo,
   applicationEntryRepo,
+  updateDirectorImagesRepo,
+  documentInsertRepo,
+  getExistingLicenseDetailsRepo,
+  getExistingLicenseTradeTypeDetailsRepo,
+  getExistingLicenseTradeDetailsRepo,
+  getExistingLicenseDirectorDetailsRepo,
+  getExistingLicenseDocumentDetailsRepo,
+  checkLicenseCancelledRepo,
+  getTradTypesRatesRepo,
+  getTradeTypesByCategoryRepo,
+  getTradeCategoryByJwalanRepo
 };
