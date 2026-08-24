@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ShadCNTable from "@/components/ui/table";
+import config from "@/utils/config";
 
 const FrmWaterRegister = () => {
     const location = useLocation();
@@ -21,7 +22,7 @@ const FrmWaterRegister = () => {
     const ulbId = Number(location.state?.ulbId ?? user?.ulbId ?? 3);
     const userId = Number(location.state?.userId ?? user?.userId ?? 151);
     const serviceId = Number(location.state?.serviceId ?? user?.serviceId ?? 21);
-    const source = location.state?.source ?? "WEB";
+    const source = config?.source
 
     const [serviceName, setServiceName] = useState("Reconnection");
     const [wards, setWards] = useState([]);

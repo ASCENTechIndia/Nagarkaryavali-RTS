@@ -1,3 +1,4 @@
+import "./App.css"
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import Login from "./Pages/Login/UserID.Login";
 import OTPLogin from "./Pages/Login/OTP.Login";
@@ -15,6 +16,7 @@ import FrmPropertyTransfer from "./Pages/Property/FrmPropertyTransfer";
 import FrmNewTaxAssesment from "./Pages/Property/FrmNewTaxAssesment";
 import FrmMarketEntry from "./Pages/Trade/FrmMarketEntry/FrmMarketEntry";
 import FrmWaterRegister from "./Pages/WaterModule/FrmWaterRegister";
+import FrmPlumberLicense from "./Pages/WaterModule/FrmPlumberLicense";
 
 const router = createBrowserRouter([
   {
@@ -60,6 +62,10 @@ const router = createBrowserRouter([
       {
         path: "app/FrmWaterRegister",
         element: <FrmWaterRegister />
+      },
+      {
+        path: "app/FrmPlumberLicense",
+        element: <FrmPlumberLicense />
       },
       {
         path: "/app/FrmAssessmentCerti",
