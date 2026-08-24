@@ -55,9 +55,7 @@ const getAppealDetailsService = async (appno) => {
 // ============================================================
 // GET APPLICATION CERTIFICATE
 // ============================================================
-// ============================================================
-// GET APPLICATION CERTIFICATE
-// ============================================================
+
 const getApplicationCertificateService = async (applino) => {
   if (!applino) {
     throw new Error("Application Number is required.");
@@ -375,6 +373,40 @@ const generateAndDownloadCertificateService = async (applino, serviceId, userId,
   };
 };
 
+const generateCertificateReportService = async (payload) => {
+  const { serviceId, appNo, ulbId } = payload;
+
+  if (!serviceId) {
+    throw new Error("Service ID is required.");
+  }
+
+  if (!appNo) {
+    throw new Error("Application Number is required.");
+  }
+
+  if (!ulbId) {
+    throw new Error("ULB ID is required.");
+  }
+
+  const rows = await repo.getCertificateDataRepo(serviceId, appNo, ulbId);
+
+  //console.log("Certificate Data From Repo:", rows);
+
+  if (!rows || rows.length === 0) {
+    return {
+      status: "FAILED",
+      data: [],
+      message: "No Record Found For Print",
+    };
+  }
+
+  return {
+    status: "SUCCESS",
+    data: rows,
+    message: "Certificate data fetched successfully",
+  };
+};
+
 module.exports = {
   getApplicationDetailsService,
   getApplicationDocumentsService,
@@ -391,5 +423,6 @@ module.exports = {
   getCertificateDocService,
   getDocumentByIdService,
   generateAndDownloadCertificateService,
+  generateCertificateReportService
 
 };
