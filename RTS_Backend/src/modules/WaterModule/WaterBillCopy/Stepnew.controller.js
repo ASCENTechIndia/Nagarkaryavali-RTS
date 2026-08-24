@@ -382,10 +382,15 @@ exports.uploadAppDocument = asyncHandler(
     console.log(
       "Upload Application Document Request:",
       {
+        query: req.query,
         body: req.body,
         file: req.file?.originalname,
       }
     );
+
+    // =====================================================
+    // GET PARAMETERS FROM QUERY
+    // =====================================================
 
     const {
       CorpId,
@@ -393,33 +398,79 @@ exports.uploadAppDocument = asyncHandler(
       AppNo,
       DocType,
       DocumentId,
-    } = req.body;
+    } = req.query;
+
+    // =====================================================
+    // FILE
+    // =====================================================
 
     const file = req.file;
 
+    // =====================================================
+    // VALIDATION
+    // =====================================================
+
     if (!CorpId) {
-      return fail(res, "CorpId is required");
+      return fail(
+        res,
+        "CorpId is required"
+      );
     }
 
     if (!ServiceId) {
-      return fail(res, "ServiceId is required");
+      return fail(
+        res,
+        "ServiceId is required"
+      );
     }
 
     if (!AppNo) {
-      return fail(res, "AppNo is required");
+      return fail(
+        res,
+        "AppNo is required"
+      );
     }
 
     if (!DocType) {
-      return fail(res, "DocType is required");
+      return fail(
+        res,
+        "DocType is required"
+      );
     }
 
     if (!DocumentId) {
-      return fail(res, "DocumentId is required");
+      return fail(
+        res,
+        "DocumentId is required"
+      );
     }
 
     if (!file) {
-      return fail(res, "file is required");
+      return fail(
+        res,
+        "Document file is required"
+      );
     }
+
+    // =====================================================
+    // LOG BEFORE SERVICE
+    // =====================================================
+
+    console.log(
+      "Calling Upload Document Service:",
+      {
+        CorpId,
+        ServiceId,
+        AppNo,
+        DocType,
+        DocumentId,
+        fileName: file.originalname,
+      }
+    );
+
+    // =====================================================
+    // SERVICE
+    // =====================================================
 
     const data =
       await service.uploadAppDocument({
@@ -430,6 +481,10 @@ exports.uploadAppDocument = asyncHandler(
         DocumentId,
         file,
       });
+
+    // =====================================================
+    // RESPONSE
+    // =====================================================
 
     return ok(
       res,
