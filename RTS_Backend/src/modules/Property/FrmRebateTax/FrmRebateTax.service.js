@@ -65,7 +65,7 @@ async function submitTaxExemptionApplicationService(payload) {
     exempType: exempType || 0,
     remark,
     taxStr: taxStr || "",
-    appSource: appSource || "WEB",
+    appSource: appSource || "",
   });
 
   if (Number(appResult.out_errcode) !== 9999) {

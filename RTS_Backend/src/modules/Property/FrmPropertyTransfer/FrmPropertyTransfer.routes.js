@@ -5,25 +5,25 @@ const controller = require("./FrmPropertyTransfer.controller");
 
 router.post(
   "/transfer-types",
-  // auth(),
+  auth(),
   controller.getTransferTypes
 );
 
 router.post(
   "/submit",
-  // auth(),
+  auth(),
   controller.submitApplication
 );
 
 router.post(
   "/get-application",
-  // auth(),
+  auth(),
   controller.getPropertyTransferApplication
 );
 
 router.post(
   "/transfer-rate-config",
-  // auth(),
+  auth(),
   controller.getTransferRateConfig
 );
 
