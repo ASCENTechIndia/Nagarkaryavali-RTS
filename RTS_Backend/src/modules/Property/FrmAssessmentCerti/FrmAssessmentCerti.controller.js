@@ -33,8 +33,12 @@ exports.getMahaServiceId = asyncHandler(async (req, res) => {
 });
 
 exports.uploadDocument = asyncHandler(async (req, res) => {
-  const { serviceId, appNo, docType, documentId } = req.body;
+  const { corpId, serviceId, appNo, docType, documentId } = req.body;
   const fileBuffer = req.file?.buffer;
+
+  if (!corpId) {
+    return fail(res, "Corp ID is required");
+  }
 
   if (!serviceId) {
     return fail(res, "Service ID is required");
@@ -57,7 +61,7 @@ exports.uploadDocument = asyncHandler(async (req, res) => {
   }
 
   const result = await service.uploadDocumentService({
-    corpId: 10001,
+    corpId,
     serviceId,
     appNo,
     docType,
@@ -74,6 +78,7 @@ exports.uploadDocument = asyncHandler(async (req, res) => {
 
 exports.submitApplication = asyncHandler(async (req, res) => {
   const {
+    ulbId,
     propNo,
     subCode,
     landHolder,
@@ -100,6 +105,10 @@ exports.submitApplication = asyncHandler(async (req, res) => {
   const userId = req.user?.userId || req.body.userId;
   const zoneId = req.user?.zoneId || req.body.zoneId;
   const serviceId = req.body.serviceId;
+
+  if (!ulbId) {
+    return fail(res, "ULB ID is required");
+  }
 
   if (!userId) {
     return fail(res, "User ID is required");
@@ -139,6 +148,7 @@ exports.submitApplication = asyncHandler(async (req, res) => {
   }
 
   const result = await service.submitAssessmentApplicationService({
+    ulbId,
     userId,
     zoneId,
     serviceId,

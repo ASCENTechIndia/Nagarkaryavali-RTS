@@ -25,4 +25,16 @@ router.post("/getcertificatedata", auth(), controller.getCertificateData);
 
 router.post("/getreapplyservicedetails", auth(), controller.getReApplyServiceDetails);
 
+router.post("/getcertificatedoc", auth(), controller.getCertificateDoc);
+
+router.post("/insertcertificatedoc", auth(), controller.insertCertificateDoc);
+
+router.post("/updatecertificatestatus", auth(), controller.updateCertificateStatus);
+
+router.post("/downloaddocumentbyid", auth(), controller.downloadDocumentById);
+
+router.post("/generateanddownloadcertificate", auth(), controller.generateAndDownloadCertificate);
+
+router.post("/downloadcertificate", auth(), controller.generateAndDownloadCertificate);
+
 module.exports = router;

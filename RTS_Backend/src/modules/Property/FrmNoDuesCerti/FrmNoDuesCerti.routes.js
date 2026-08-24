@@ -5,13 +5,13 @@ const controller = require("./FrmNoDuesCerti.controller");
 
 router.post(
   "/property-details",
-  // auth(),
+  auth(),
   controller.getPropertyDetails
 )
 
 router.post(
   "/submit",
-  // auth(),
+  auth(),
   controller.submitApplication
 );
 

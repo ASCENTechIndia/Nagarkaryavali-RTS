@@ -75,7 +75,7 @@ exports.submitApplication = asyncHandler(async (req, res) => {
     exempType,
     remark,
     taxStr,
-    appSource: appSource || "WEB",
+    appSource: appSource || "",
   });
 
   if (!result.success) {

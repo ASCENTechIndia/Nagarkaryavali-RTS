@@ -107,7 +107,7 @@ async function submitPropertyTransferApplicationService(payload) {
     appliAddr,
     appliMobile,
     appliAadhar: appliAadhar || 0,
-    appSource: appSource || "WEB",
+    appSource: appSource || "",
   });
 
   if (Number(appResult.out_errcode) !== 9999) {

@@ -6,44 +6,44 @@ const controller = require("./FrmAssessmentCerti.controller");
 
 router.post(
   "/documents",
-  // auth(),
+  auth(),
   controller.getDocumentDefinitions
 );
 
 router.post(
   "/payment-flag",
-  // auth(),
+  auth(),
   controller.getServicePaymentFlag
 );
 
 router.post(
   "/maha-service-id",
-  // auth(),
+  auth(),
   controller.getMahaServiceId
 );
 
 router.post(
   "/upload-document",
-  // auth(),
+  auth(),
   upload.single("document"),
   controller.uploadDocument
 );
 
 router.post(
   "/submit",
-  // auth(),
+  auth(),
   controller.submitApplication
 );
 
 router.post(
   "/check-payment",
-  // auth(),
+  auth(),
   controller.checkPayment
 );
 
 router.post(
   "/maha-online-first-step",
-  // auth(),
+  auth(),
   controller.insertMahaOnlineFirstStep
 );
 

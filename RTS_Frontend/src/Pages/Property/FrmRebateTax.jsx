@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -88,8 +88,7 @@ const initialValues = {
 const FrmRebateTax = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
-  const token = user?.token;
+  const { user, token } = useAuth();
 
   const locationState = location.state || {};
 
@@ -113,6 +112,8 @@ const FrmRebateTax = () => {
   const [prabhagname, setPrabhagname] = useState("");
   const [zone, setZone] = useState("");
   const [wardno, setWardno] = useState("");
+
+  const originalDocumentDefs = useRef([]);
 
   console.log('serviceId', serviceId);
 
@@ -184,6 +185,7 @@ const FrmRebateTax = () => {
       if (response.data.ok && response.data.data?.rows) {
         const docs = response.data.data.rows;
         setDocumentDefs(docs);
+        originalDocumentDefs.current = docs;
         const tableRows = docs.map((doc, index) => ({
           id: doc.DOCID || index + 1,
           srNo: index + 1,
@@ -261,7 +263,85 @@ const FrmRebateTax = () => {
     }
   };
 
-  const handleSearchProperty = async (values, setFieldValue) => {
+  // const handleSearchProperty = async (values, setFieldValue) => {
+  //   const validationResult = propertySearchValidationSchema.safeParse({
+  //     ptn: values.ptn,
+  //     subcode: values.subcode,
+  //   });
+
+  //   if (!validationResult.success) {
+  //     const firstError = validationResult.error.issues[0];
+  //     Swal.fire({
+  //       text: firstError.message,
+  //       confirmButtonColor: '#1e3a8a',
+  //     });
+  //     return;
+  //   }
+
+  //   setIsSearching(true);
+  //   try {
+  //     let fullPropNo = values.ptn;
+  //     if (values.subcode && values.subcode.trim() !== "") {
+  //       fullPropNo = values.ptn + "/" + values.subcode;
+  //     }
+
+  //     const result = await getPropertyDetails(fullPropNo, userId);
+
+  //     if (result && result.propertyOwners) {
+  //       const propData = result.propertyOwners;
+
+  //       if (propData.payamt && parseFloat(propData.payamt) > 0) {
+  //         const payNowUrl = `https://propertytax.thanecity.gov.in/PropSearch.aspx?PTN=${values.ptn}`;
+  //         Swal.fire({
+  //           text: `Property tax payment of Rs.${propData.payamt} is due, please make the payment first`,
+  //           confirmButtonColor: '#1e3a8a',
+  //           showCancelButton: true,
+  //           cancelButtonText: "Pay Now",
+  //           cancelButtonColor: "#d33",
+  //         }).then((result) => {
+  //           if (result.isConfirmed) {
+  //             window.open(payNowUrl, '_blank');
+  //           }
+  //         });
+  //         setIsSearching(false);
+  //         return;
+  //       }
+
+  //       setFieldValue("landHolder", propData.land_Holder || "");
+  //       setFieldValue("structureHolder", propData.struct_Holder || "");
+  //       setFieldValue("ownerDetails", propData.owner_Details || "");
+  //       setFieldValue("address", propData.address || "");
+
+  //       setPrabhag(propData.prabhag || "");
+  //       setZoneid(propData.zoneid || "");
+  //       setWard(propData.wardno || "");
+  //       setPrabhagname(propData.prabhagname || "");
+  //       setZone(propData.zonename || "");
+  //       setWardno(propData.wardname || "");
+
+  //       Swal.fire({
+  //         text: "Property details fetched successfully!",
+  //         confirmButtonColor: '#1e3a8a',
+  //         timer: 1500,
+  //       });
+  //     } else {
+  //       Swal.fire({
+  //         text: "Property Not Found For This Prop No",
+  //         confirmButtonColor: '#1e3a8a',
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching property details:", error);
+  //     Swal.fire({
+  //       text: error?.response?.data?.error || "Error fetching property details. Please try again.",
+  //       confirmButtonColor: '#1e3a8a',
+  //     });
+  //   } finally {
+  //     setIsSearching(false);
+  //   }
+  // };
+
+  const handleSearchProperty = async (values, setFieldValue, resetForm) => {
     const validationResult = propertySearchValidationSchema.safeParse({
       ptn: values.ptn,
       subcode: values.subcode,
@@ -272,6 +352,8 @@ const FrmRebateTax = () => {
       Swal.fire({
         text: firstError.message,
         confirmButtonColor: '#1e3a8a',
+        confirmButtonText: "OK",
+        allowOutsideClick: false,
       });
       return;
     }
@@ -289,17 +371,13 @@ const FrmRebateTax = () => {
         const propData = result.propertyOwners;
 
         if (propData.payamt && parseFloat(propData.payamt) > 0) {
-          const payNowUrl = `https://propertytax.thanecity.gov.in/PropSearch.aspx?PTN=${values.ptn}`;
           Swal.fire({
-            text: `Property tax payment of Rs.${propData.payamt} is due, please make the payment first`,
+            text: `Your property tax payment of Rs.${propData.payamt} is due, please make the payment first`,
             confirmButtonColor: '#1e3a8a',
-            showCancelButton: true,
-            cancelButtonText: "Pay Now",
-            cancelButtonColor: "#d33",
-          }).then((result) => {
-            if (result.isConfirmed) {
-              window.open(payNowUrl, '_blank');
-            }
+            confirmButtonText: "OK",
+            allowOutsideClick: false,
+          }).then(() => {
+            resetFormAfterSearch(setFieldValue, resetForm);
           });
           setIsSearching(false);
           return;
@@ -321,11 +399,16 @@ const FrmRebateTax = () => {
           text: "Property details fetched successfully!",
           confirmButtonColor: '#1e3a8a',
           timer: 1500,
+          allowOutsideClick: false,
         });
       } else {
         Swal.fire({
           text: "Property Not Found For This Prop No",
           confirmButtonColor: '#1e3a8a',
+          confirmButtonText: "OK",
+          allowOutsideClick: false,
+        }).then(() => {
+          resetFormAfterSearch(setFieldValue, resetForm);
         });
       }
     } catch (error) {
@@ -333,14 +416,65 @@ const FrmRebateTax = () => {
       Swal.fire({
         text: error?.response?.data?.error || "Error fetching property details. Please try again.",
         confirmButtonColor: '#1e3a8a',
+        confirmButtonText: "OK",
+        allowOutsideClick: false,
       });
     } finally {
       setIsSearching(false);
     }
   };
+  
+  const resetFormAfterSearch = (setFieldValue, resetForm) => {
+    resetForm();
+    
+    setFieldValue("ptn", "");
+    setFieldValue("subcode", "");
+    setFieldValue("landHolder", "");
+    setFieldValue("structureHolder", "");
+    setFieldValue("ownerDetails", "");
+    setFieldValue("address", "");
+    setFieldValue("applicantName", "");
+    setFieldValue("mobileNo", "");
+    setFieldValue("emailId", "");
+    setFieldValue("aadharNo", "");
+    setFieldValue("pincode", "");
+    setFieldValue("rebateType", "");
+    setFieldValue("remark", "");
+    
+    setShowTaxGrid(false);
+    setSelectedTaxes([]);
+    setPrabhag("");
+    setZoneid("");
+    setWard("");
+    setPrabhagname("");
+    setZone("");
+    setWardno("");
+    
+    setTableData((prevTableData) => {
+      if (originalDocumentDefs.current && originalDocumentDefs.current.length > 0) {
+        return originalDocumentDefs.current.map((doc, index) => ({
+          id: doc.DOCID || index + 1,
+          srNo: index + 1,
+          documentName: doc.DOCNAME || doc.ENGDOCDESC || "Document",
+          docId: doc.DOCID,
+          docType: doc.DOCTYPE || "PDF",
+          file: null,
+          fileName: "No file chosen",
+          fileBuffer: null,
+        }));
+      }
+      return prevTableData.map((row) => ({
+        ...row,
+        file: null,
+        fileName: "No file chosen",
+        fileBuffer: null,
+      }));
+    });
+  };
 
   const uploadDocument = async (applicationNo, doc) => {
     const formData = new FormData();
+    formData.append("corpId", ulbId); 
     formData.append("serviceId", serviceId);
     formData.append("appNo", applicationNo);
     formData.append("docType", doc.docType || "PDF");
@@ -358,7 +492,7 @@ const FrmRebateTax = () => {
           },
         }
       );
-      return response.data.success;
+      return response.data.ok === true;
     } catch (error) {
       console.error("Error uploading document:", error);
       return false;
@@ -392,7 +526,7 @@ const FrmRebateTax = () => {
       );
 
       console.log("Maha Online Response:", response.data);
-      return response.data.success;
+      return response.data.data.success;
     } catch (error) {
       console.error("Error in Maha Online integration:", error);
       return false;
@@ -410,7 +544,7 @@ const FrmRebateTax = () => {
           headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
         }
       );
-      if (response.data.success && response.data.data?.rows) {
+      if (response.data.data.success && response.data.data?.rows) {
         return response.data.data.rows[0]?.VAR_SERVICE_PAYFLAG || "N";
       }
       return "N";
@@ -423,34 +557,19 @@ const FrmRebateTax = () => {
   const handleFileChange = (id, event) => {
     const file = event.currentTarget.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const arrayBuffer = e.target.result;
-        const buffer = Buffer.from(new Uint8Array(arrayBuffer));
-        setTableData((prev) =>
-          prev.map((row) =>
-            row.id === id
-              ? { ...row, file: file, fileName: file.name, fileBuffer: buffer }
-              : row
-          )
-        );
-      };
-      reader.readAsArrayBuffer(file);
+      setTableData((prev) =>
+        prev.map((row) =>
+          row.id === id
+            ? { ...row, file: file, fileName: file.name }
+            : row
+        )
+      );
     }
   };
 
   const handleSubmit = async (values, { resetForm }) => {
     setLoading(true);
     try {
-
-      const loader = Swal.fire({
-        title: "Submitting Application...",
-        text: "Please wait while we process your application.",
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        didOpen: () => Swal.showLoading(),
-      });
-
       const propertyValidation = propertySearchValidationSchema.safeParse({
         ptn: values.ptn,
         subcode: values.subcode,
@@ -514,15 +633,17 @@ const FrmRebateTax = () => {
 
       const documents = [];
       for (const row of tableData) {
-        if (row.fileBuffer) {
+        if (row.file) {
           documents.push({
             docId: row.docId,
             docName: row.documentName,
-            docType: row.docType,
-            fileBuffer: row.fileBuffer,
+            docType: row.docType || "PDF",
+            file: row.file,
           });
         }
       }
+
+      console.log("Documents to upload:", documents);
 
       // const hasAllDocuments = tableData.every(row => row.fileBuffer !== null);
       // if (!hasAllDocuments) {
@@ -533,6 +654,14 @@ const FrmRebateTax = () => {
       //   setLoading(false);
       //   return;
       // }
+
+      const loader = Swal.fire({
+        title: "Submitting Application...",
+        text: "Please wait while we process your application.",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading(),
+      });
 
       const buildRequestString = (appNo) => {
         return `TrackId:${Date.now()}|AppNo:${appNo}|ServiceId:${serviceId}|ULBId:${ulbId}|MahaULBId:${mahaUlbId || ulbId}|Timestamp:${Date.now()}`;
@@ -566,15 +695,15 @@ const FrmRebateTax = () => {
         taxStr: taxStr,
         appSource: config.source,
         documents: documents,
-        mahaData: {
-          ulbId: Number(ulbId),
-          mahaUlbId: Number(mahaUlbId || ulbId),
-          districtId: Number(0),
-          trackId: Date.now().toString(),
-          requestString: buildRequestString(""),
-          responseString: buildResponseString(""),
-          encryptedFinalString: buildEncryptedString("")
-        }
+        // mahaData: {
+        //   ulbId: Number(ulbId),
+        //   mahaUlbId: Number(mahaUlbId || ulbId),
+        //   districtId: Number(0),
+        //   trackId: Date.now().toString(),
+        //   requestString: buildRequestString(""),
+        //   responseString: buildResponseString(""),
+        //   encryptedFinalString: buildEncryptedString("")
+        // }
       };
 
       console.log("Submit Payload:", payload);
@@ -599,24 +728,22 @@ const FrmRebateTax = () => {
       const applicationNo = submitResponse.data.data.applicationNo;
       const message = submitResponse.data.data.message || "Application submitted successfully";
 
-      for (const doc of tableData) {
-        if (doc.file) {
-          const success = await uploadDocument(applicationNo, doc);
-          if (!success) {
-            Swal.fire({
-              text: `Failed to upload document: ${doc.documentName}`,
-              confirmButtonColor: '#1e3a8a',
-            });
-            setLoading(false);
-            return;
-          }
+      for (const doc of documents) {
+        const success = await uploadDocument(applicationNo, doc);
+        if (!success) {
+          Swal.fire({
+            text: `Failed to upload document: ${doc.docName}`,
+            confirmButtonColor: '#1e3a8a',
+          });
+          setLoading(false);
+          return;
         }
       }
 
-      const mahaSuccess = await insertMahaOnline(applicationNo);
-      if (!mahaSuccess) {
-        console.warn("Maha Online integration failed, but application was created");
-      }
+      // const mahaSuccess = await insertMahaOnline(applicationNo);
+      // if (!mahaSuccess) {
+      //   console.warn("Maha Online integration failed, but application was created");
+      // }
 
       const payFlag = await checkPaymentFlag();
 
@@ -626,49 +753,24 @@ const FrmRebateTax = () => {
         text: `${message}${payFlag === "Y" ? " Please proceed to payment." : ""}`,
         confirmButtonColor: '#1e3a8a',
       }).then(() => {
-        // resetFormFields(resetForm);
-        if (payFlag === "Y") {
-          navigate("/app/FrmAppliFee", { state: { applicationNo: applicationNo } });
-        } else {
-          navigate("/app/FrmRebateTax");
-        }
+        navigate("/app/FrmTrackApplication", { state: { applicationNo: applicationNo } });
+        // if (payFlag === "Y") {
+        //   navigate("/app/FrmAppliFee", { state: { applicationNo: applicationNo } });
+        // } else {
+        //   navigate("/app/FrmRebateTax");
+        // }
       });
 
     } catch (error) {
       console.error("Error submitting application:", error);
       Swal.fire({
-        text: error?.response?.data?.message || "Error submitting application. Please try again.",
+        text: error?.response?.data?.error || "Error submitting application. Please try again.",
         confirmButtonColor: '#1e3a8a',
       });
     } finally {
       setLoading(false);
     }
   };
-
-  // const resetFormFields = (resetForm) => {
-  //   resetForm();
-    
-  //   setShowTaxGrid(false);
-  //   setSelectedTaxes([]);
-  //   setPrabhag("");
-  //   setZoneid("");
-  //   setWard("");
-  //   setPrabhagname("");
-  //   setZone("");
-  //   setWardno("");
-    
-  //   const tableRows = documentDefs.map((doc, index) => ({
-  //     id: doc.DOCID || index + 1,
-  //     srNo: index + 1,
-  //     documentName: doc.DOCNAME || doc.ENGDOCDESC || "Document",
-  //     docId: doc.DOCID,
-  //     docType: doc.DOCTYPE || "PDF",
-  //     file: null,
-  //     fileName: "No file chosen",
-  //     fileBuffer: null,
-  //   }));
-  //   setTableData(tableRows);
-  // };
 
   const transformedTableData = tableData.map((item) => ({
     ...item,
@@ -680,9 +782,9 @@ const FrmRebateTax = () => {
           onChange={(e) => handleFileChange(item.id, e)}
           className="h-9 text-sm p-1 w-[50%]"
         />
-        {item.fileName && item.fileName !== "No file chosen" && (
+        {/* {item.fileName && item.fileName !== "No file chosen" && (
           <span className="text-xs text-gray-500 truncate max-w-[80px]">{item.fileName}</span>
-        )}
+        )} */}
       </div>
     ),
   }));
@@ -732,7 +834,7 @@ const FrmRebateTax = () => {
                     <Button
                       type="button"
                       className="bg-blue-900 hover:bg-blue-800 text-white"
-                      onClick={() => handleSearchProperty(values, setFieldValue)}
+                      onClick={() => handleSearchProperty(values, setFieldValue, resetForm)}
                       disabled={isSearching}
                     >
                       {isSearching ? "Searching..." : "Search"}
