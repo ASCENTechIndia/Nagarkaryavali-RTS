@@ -19,22 +19,35 @@ import {
 
 import axios from "axios";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import Swal from "sweetalert2";
 
 const FrmWaterConnectionApplication = () => {
-  // ============================================================
-  // LOCATION / SERVICE DETAILS
-  // ============================================================
-
-  const location = useLocation();
-
-const serviceId = location.state?.serviceId || 27
-const ulbId = location.state?.ulbId || 3;
 
 
-  console.log("Service ID:", serviceId);
-  console.log("ULB ID:", ulbId);
 
+const location = useLocation();
+const { user } = useAuth();
+
+const locationState = location.state || {};
+
+const ulbId =
+  locationState.ulbId ||
+  user?.ulbId ||
+  3;
+
+const userId =
+  locationState.userId ||
+  user?.userId ||
+  "1";
+
+const serviceId =
+  locationState.serviceId ||
+  "23";
+
+console.log("Service ID:", serviceId);
+console.log("ULB ID:", ulbId);
+console.log("User ID:", userId);
   // ============================================================
   // FORM DATA
   // ============================================================
@@ -66,32 +79,21 @@ const ulbId = location.state?.ulbId || 3;
     meterType: "",
   });
 
-  // ============================================================
-  // ZONE
-  // ============================================================
 
   const [zoneList, setZoneList] = useState([]);
   const [zoneLoading, setZoneLoading] = useState(false);
 
-  // ============================================================
-  // CONSUMER TYPE
-  // ============================================================
+
 
   const [consumerTypeList, setConsumerTypeList] = useState([]);
   const [consumerTypeLoading, setConsumerTypeLoading] =
     useState(false);
 
-  // ============================================================
-  // METER TYPE
-  // ============================================================
 
   const [meterTypeList, setMeterTypeList] = useState([]);
   const [meterTypeLoading, setMeterTypeLoading] =
     useState(false);
 
-  // ============================================================
-  // DOCUMENTS
-  // ============================================================
 
   const [documentList, setDocumentList] = useState([]);
   const [documentLoading, setDocumentLoading] =
@@ -100,9 +102,6 @@ const ulbId = location.state?.ulbId || 3;
 
   const [documentFiles, setDocumentFiles] = useState({});
 
-  // ============================================================
-  // COMMON CHANGE HANDLER
-  // ============================================================
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({
@@ -111,9 +110,7 @@ const ulbId = location.state?.ulbId || 3;
     }));
   };
 
-  // ============================================================
-  // DOCUMENT FILE CHANGE
-  // ============================================================
+
 
   const handleDocumentFileChange = (docId, file) => {
     setDocumentFiles((prev) => ({
@@ -122,9 +119,6 @@ const ulbId = location.state?.ulbId || 3;
     }));
   };
 
-  // ============================================================
-  // FETCH ZONES / WARDS
-  // ============================================================
 
   const fetchZones = async () => {
     try {
@@ -183,9 +177,6 @@ const ulbId = location.state?.ulbId || 3;
     }
   };
 
-  // ============================================================
-  // FETCH CONSUMER TYPES
-  // ============================================================
 
   const fetchConsumerTypes = async () => {
     try {
@@ -249,9 +240,7 @@ const ulbId = location.state?.ulbId || 3;
     }
   };
 
-  // ============================================================
-  // FETCH METER TYPES
-  // ============================================================
+
 
   const fetchMeterTypes = async () => {
     try {
@@ -315,9 +304,7 @@ const ulbId = location.state?.ulbId || 3;
     }
   };
 
-  // ============================================================
-  // FETCH SERVICE DOCUMENTS
-  // ============================================================
+
 
   const fetchServiceDocuments = async () => {
     try {
@@ -416,9 +403,6 @@ const ulbId = location.state?.ulbId || 3;
     }
   };
 
-  // ============================================================
-  // INITIAL DROPDOWN API CALLS
-  // ============================================================
 
   useEffect(() => {
     fetchZones();
@@ -426,9 +410,7 @@ const ulbId = location.state?.ulbId || 3;
     fetchMeterTypes();
   }, []);
 
-  // ============================================================
-  // DOCUMENT API
-  // ============================================================
+
 
   useEffect(() => {
     if (serviceId && ulbId) {
@@ -436,14 +418,10 @@ const ulbId = location.state?.ulbId || 3;
     }
   }, [serviceId, ulbId]);
 
-  // ============================================================
-  // SUBMIT
-  // ============================================================
+
 
  const handleSubmit = async () => {
-  // ============================================================
-  // BASIC VALIDATION
-  // ============================================================
+
 
   if (!formData.zone) {
     Swal.fire({
@@ -593,7 +571,7 @@ const ulbId = location.state?.ulbId || 3;
   const BASE_URL =
     import.meta.env.VITE_BASE_URL;
 
-  const userId = 15;
+
 
 
   const selectedDocuments = documentList
