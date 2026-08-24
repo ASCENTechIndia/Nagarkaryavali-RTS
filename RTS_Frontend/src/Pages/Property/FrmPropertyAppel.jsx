@@ -1,15 +1,9 @@
-import React, { useState } from "react";
+
+import React, { useEffect, useState } from "react";
 import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
-
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -20,10 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import { Textarea } from "@/components/ui/textarea";
 import ShadCNTable from "@/components/ui/table";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
+import config from "@/utils/config";
 
 const initialValues = {
   ptn: "",
@@ -43,15 +41,24 @@ const initialValues = {
 
 const FrmPropertyAppel = () => {
   const navigate = useNavigate();
-  const [tableData, setTableData] = useState([
-    {
-      id: 1,
-      srNo: 1,
-      documentName: "थकबाकी नसल्याचा दाखला",
-      file: null,
-      fileName: "No file chosen",
-    },
-  ]);
+  const location = useLocation();
+  const { user } = useAuth();
+  const token = user?.token;
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const locationState = location.state || {};
+  const ulbId = locationState.ulbId || user?.ulbId || "3";
+  const userId = locationState.userId || user?.userId || "151";
+  const zoneId = locationState.zoneId || user?.zoneId || "12";
+  const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId || ulbId;
+  const serviceId = locationState.serviceId || user?.serviceId || "290";
+
+
+  const [loading, setLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [objections, setObjections] = useState([]);
+  const [documentDefs, setDocumentDefs] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const [yearlyTax, setYearlyTax] = useState("0");
 
   const headers = ["Sr No.", "Document Name", "Image(jpg,png,pdf)"];
 
@@ -61,21 +68,594 @@ const FrmPropertyAppel = () => {
     "Image(jpg,png,pdf)": "fileUpload",
   };
 
+  const fetchObjections = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/api/FrmPropertyAppel/objections`,
+        {
+          headers: {
+            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      console.log("Objections Response:", response.data);
+
+      if (response.data?.ok && response.data?.data?.objections) {
+        setObjections(response.data.data.objections);
+      } else {
+        setObjections([]);
+      }
+    } catch (error) {
+      console.error("Error fetching objections:", error);
+
+      setObjections([]);
+
+      Swal.fire({
+        text:
+          error?.response?.data?.message || "Error fetching objection list.",
+        confirmButtonColor: "#1e3a8a",
+      });
+    }
+  };
+
+  const fetchDocumentDefinitions = async () => {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/api/FrmAssessmentCerti/documents`,
+        {
+          serviceId: String(serviceId),
+          ulbId: String(ulbId),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      console.log("Document Definition Response:", response.data);
+
+      if (response.data?.ok && response.data?.data?.rows) {
+        const docs = response.data.data.rows;
+
+        setDocumentDefs(docs);
+
+        const tableRows = docs.map((doc, index) => ({
+          id: doc.DOCID || doc.DocId || index + 1,
+
+          srNo: index + 1,
+
+          documentName:
+            doc.DOCNAME || doc.DocName || doc.ENGDOCDESC || "Document",
+
+          docId: doc.DOCID || doc.DocId,
+
+          docType: doc.DOCTYPE || doc.DocType || "PDF",
+
+          file: null,
+
+          fileName: "No file chosen",
+
+          fileBuffer: null,
+        }));
+
+        setTableData(tableRows);
+      } else {
+        setTableData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching document definitions:", error);
+
+      setTableData([]);
+
+      Swal.fire({
+        text:
+          error?.response?.data?.message ||
+          "Error fetching document definitions.",
+        confirmButtonColor: "#1e3a8a",
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchObjections();
+    fetchDocumentDefinitions();
+  }, [serviceId, ulbId]);
+
+
+  const getPropertyDetails = async (propNo, userId) => {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/api/FrmNoDuesCerti/property-details`,
+        {
+          propNo: propNo,
+          userId: userId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+          },
+          timeout: 30000,
+        },
+      );
+
+      console.log("Property Details Response:", response.data);
+
+      if (response.data?.ok && response.data?.data) {
+        return response.data.data;
+      }
+
+      return null;
+    } catch (error) {
+      console.error("getPropertyDetails Error:", error);
+
+      throw error;
+    }
+  };
+
+  const handleSearchProperty = async (values, setFieldValue) => {
+    if (!values.ptn?.trim()) {
+      Swal.fire({
+        text: "Please enter PTN.",
+        confirmButtonColor: "#1e3a8a",
+      });
+
+      return;
+    }
+
+    setIsSearching(true);
+
+    try {
+      let fullPropNo = values.ptn;
+
+      if (values.subcode && values.subcode.trim() !== "") {
+        fullPropNo = values.ptn + "/" + values.subcode;
+      }
+
+      const result = await getPropertyDetails(fullPropNo, userId);
+
+      if (result && result.propertyOwners) {
+        const propData = result.propertyOwners;
+
+        if (propData.payamt && parseFloat(propData.payamt) > 0) {
+          const payNowUrl = `https://propertytax.thanecity.gov.in/PropSearch.aspx?PTN=${values.ptn}`;
+
+          Swal.fire({
+            text: `Your property tax payment of Rs.${propData.payamt} is due, please make the payment first`,
+            confirmButtonColor: "#1e3a8a",
+            showCancelButton: true,
+            cancelButtonText: "Pay Now",
+            cancelButtonColor: "#d33",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              window.open(payNowUrl, "_blank");
+            }
+          });
+
+          return;
+        }
+
+        setFieldValue("landHolder", propData.land_Holder || "");
+        setFieldValue("structureHolder", propData.struct_Holder || "");
+        setFieldValue("ownerDetails", propData.owner_Details || "");
+        setFieldValue("address", propData.address || "");
+        setYearlyTax(propData.yearly_tax || "0");
+
+        Swal.fire({
+          text: "Property details fetched successfully!",
+          confirmButtonColor: "#1e3a8a",
+          timer: 1500,
+        });
+      } else {
+        Swal.fire({
+          text: "Property Not Found For This Prop No",
+          confirmButtonColor: "#1e3a8a",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching property details:", error);
+
+      Swal.fire({
+        text:
+          error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          "Error fetching property details. Please try again.",
+        confirmButtonColor: "#1e3a8a",
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+
   const handleFileChange = (id, event) => {
     const file = event.currentTarget.files?.[0];
-    if (file) {
+
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+
+    if (!allowedTypes.includes(file.type)) {
+      Swal.fire({
+        text: "Only JPG, PNG and PDF files are allowed.",
+        confirmButtonColor: "#1e3a8a",
+      });
+
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      Swal.fire({
+        text: "File size should not exceed 5 MB.",
+        confirmButtonColor: "#1e3a8a",
+      });
+
+      event.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const arrayBuffer = e.target.result;
+
+      const buffer = Buffer.from(new Uint8Array(arrayBuffer));
+
       setTableData((prev) =>
         prev.map((row) =>
           row.id === id
-            ? { ...row, file: file, fileName: file.name }
-            : row
-        )
+            ? {
+                ...row,
+                file: file,
+                fileName: file.name,
+                fileBuffer: buffer,
+              }
+            : row,
+        ),
       );
+    };
+
+    reader.readAsArrayBuffer(file);
+  };
+
+  const uploadDocument = async (applicationNo, doc) => {
+    try {
+      const formData = new FormData();
+
+      formData.append("serviceId", String(serviceId));
+      formData.append("appNo", applicationNo);
+      formData.append("docType", doc.docType || "PDF");
+      formData.append("documentId", String(doc.docId));
+      formData.append("document", doc.file);
+
+      console.log("Uploading Document:", {
+        applicationNo,
+        docId: doc.docId,
+        docName: doc.docName,
+      });
+
+      const response = await axios.post(
+        `${BASE_URL}/api/FrmPropertyAppel/upload-document`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+
+      console.log("Upload Response:", response.data);
+
+      return response.data?.success || response.data?.ok || false;
+    } catch (error) {
+      console.error("Error uploading document:", error);
+
+      return false;
+    }
+  };
+
+  const insertMahaOnline = async (applicationNo) => {
+    try {
+      const trackId = Date.now().toString();
+
+      const mahaPayload = {
+        mahaData: {
+          ulbId: ulbId,
+          mahaUlbId: mahaUlbId || ulbId,
+          trackId: trackId,
+          districtId: "0",
+          requestString: `TrackId:${trackId}|AppNo:${applicationNo}|ServiceId:${serviceId}|ULBId:${ulbId}|MahaULBId:${mahaUlbId || ulbId}|Timestamp:${Date.now()}`,
+          responseString: `Success|Application:${applicationNo}|Status:Processed|Timestamp:${Date.now()}`,
+          encryptedFinalString: `ENC_${applicationNo}_${Date.now()}`,
+        },
+
+        applicationNo: applicationNo,
+        serviceId: String(serviceId),
+      };
+
+      console.log("Maha Online Request Payload:", mahaPayload);
+
+      const response = await axios.post(
+        `${BASE_URL}/api/FrmPropertyAppel/maha-online-first-step`,
+        mahaPayload,
+        {
+          headers: {
+            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      console.log("Maha Online Response:", response.data);
+
+      return response.data?.success || response.data?.ok || false;
+    } catch (error) {
+      console.error("Error in Maha Online integration:", error);
+
+      return false;
+    }
+  };
+
+  const checkPaymentFlag = async () => {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/api/FrmPropertyAppel/payment-flag`,
+        {
+          serviceId: String(serviceId),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      console.log("Payment Flag Response:", response.data);
+
+      if (response.data?.success && response.data?.data?.rows) {
+        return response.data.data.rows[0]?.VAR_SERVICE_PAYFLAG || "N";
+      }
+
+      return "N";
+    } catch (error) {
+      console.error("Error checking payment flag:", error);
+
+      return "N";
+    }
+  };
+
+
+  const handleSubmit = async (values) => {
+    setLoading(true);
+
+    let loader;
+
+    try {
+
+      if (!values.ptn?.trim()) {
+        Swal.fire({
+          text: "Please enter PTN.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        setLoading(false);
+        return;
+      }
+
+      if (!values.applicantName?.trim()) {
+        Swal.fire({
+          text: "Please enter Applicant Name.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        setLoading(false);
+        return;
+      }
+
+      if (!values.mobileNo || values.mobileNo.length !== 10) {
+        Swal.fire({
+          text: "Please enter valid Mobile No.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        setLoading(false);
+        return;
+      }
+
+      if (!values.emailId?.trim()) {
+        Swal.fire({
+          text: "Please enter Email ID.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        setLoading(false);
+        return;
+      }
+
+      if (!values.objectionType) {
+        Swal.fire({
+          text: "Please select objection type.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        setLoading(false);
+        return;
+      }
+
+      if (!values.objectionDescription?.trim()) {
+        Swal.fire({
+          text: "Please enter objection description.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        setLoading(false);
+        return;
+      }
+
+      const documents = [];
+
+      for (const row of tableData) {
+        if (row.file) {
+          documents.push({
+            docId: row.docId,
+            docName: row.documentName,
+            docType: row.docType,
+            file: row.file,
+            fileBuffer: row.fileBuffer,
+          });
+        }
+      }
+
+      const payload = {
+        userId: String(userId),
+        zoneId: Number(zoneId),
+        serviceId: Number(serviceId),
+        propNo: values.ptn || "",
+        subCode: values.subcode || "",
+        landHolder: values.landHolder || "",
+        structHolder: values.structureHolder || "",
+        ownDetails: values.ownerDetails || "",
+        address: values.address || "",
+        appliName: values.applicantName || "",
+        mobile: Number(values.mobileNo) || 0,
+        email: values.emailId || "",
+        aadhar: Number(values.aadharNo) || 0,
+        objectType: Number(values.objectionType) || 0,
+        objectDesc: values.objectionDescription || "",
+
+        taxDate1: null,
+        taxDate2: null,
+        oldUsage: 0,
+        newUsage: 0,
+        oldSubUsage: 0,
+        newSubUsage: 0,
+        oldArea: 0,
+        newArea: 0,
+        oldYrKaryogya: 0,
+        newYrKaryogya: 0,
+        oldKaryogya: 0,
+        newKaryogya: 0,
+        appSource: config?.source || "WEB",
+      };
+
+      loader = Swal.fire({
+        title: "Submitting Application...",
+        text: "Please wait ...",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const submitResponse = await axios.post(
+        `${BASE_URL}/api/FrmPropertyAppel/prop-appeal`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      if (!submitResponse.data?.ok) {
+        loader.close();
+
+        Swal.fire({
+          text:
+            submitResponse.data?.message || "Application submission failed.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        setLoading(false);
+        return;
+      }
+
+      const applicationNo = submitResponse.data?.data?.applicationNo;
+
+      const message =
+        submitResponse.data?.data?.message ||
+        "Property Appeal submitted successfully.";
+
+      if (!applicationNo) {
+        loader.close();
+
+        Swal.fire({
+          text: "Application created but application number was not received.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        setLoading(false);
+        return;
+      }
+
+      for (const doc of documents) {
+        const success = await uploadDocument(applicationNo, doc);
+
+        if (!success) {
+          loader.close();
+
+          Swal.fire({
+            text: `Failed to upload document: ${doc.docName}`,
+            confirmButtonColor: "#1e3a8a",
+          });
+
+          setLoading(false);
+          return;
+        }
+      }
+
+      const mahaSuccess = await insertMahaOnline(applicationNo);
+
+      if (!mahaSuccess) {
+        console.warn(
+          "Maha Online integration failed, but application was created.",
+        );
+      }
+
+      const payFlag = await checkPaymentFlag();
+      console.log("Payment Flag:", payFlag);
+      loader.close();
+
+      Swal.fire({
+        text: message,
+        confirmButtonColor: "#1e3a8a",
+      }).then(() => {
+        if (payFlag === "Y") {
+          navigate("/app/FrmAppliFee", {
+            state: {
+              applicationNo: applicationNo,
+            },
+          });
+        } else {
+          navigate("/app/FrmPropertyAppel");
+        }
+      });
+    } catch (error) {
+      console.error("Error submitting Property Appeal:", error);
+
+      if (loader) {
+        loader.close();
+      }
+
+      Swal.fire({
+        text:
+          error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          "Error submitting application. Please try again.",
+        confirmButtonColor: "#1e3a8a",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   const transformedTableData = tableData.map((item) => ({
     ...item,
+
     fileUpload: (
       <div className="flex items-center justify-center gap-2">
         <Input
@@ -84,52 +664,29 @@ const FrmPropertyAppel = () => {
           onChange={(e) => handleFileChange(item.id, e)}
           className="h-9 text-sm p-1 w-[50%]"
         />
+
+        {item.fileName && item.fileName !== "No file chosen" && (
+          <span className="text-xs text-gray-500 truncate max-w-[120px]">
+            {item.fileName}
+          </span>
+        )}
       </div>
     ),
   }));
 
-  const handleSubmit = (values) => {
-    console.log("Property Appeal Data:", values);
-    Swal.fire({
-      text: "Property Appeal submitted successfully!",
-      confirmButtonColor: "#18b59f",
-    });
-  };
-
-  const handleReset = (resetForm) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "All entered data will be cleared!",
-      showCancelButton: true,
-      confirmButtonColor: "#18b59f",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, reset it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        resetForm();
-        setTableData([
-          {
-            id: 1,
-            srNo: 1,
-            documentName: "थकबाकी नसल्याचा दाखला",
-            file: null,
-            fileName: "No file chosen",
-          },
-        ]);
-        Swal.fire({
-          text: "Form has been reset successfully!",
-          confirmButtonColor: "#18b59f",
-          timer: 1500,
-        });
-      }
-    });
-  };
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
       {({ values, handleChange, setFieldValue, resetForm }) => (
         <Form>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <motion.div
+            initial={{
+              opacity: 0,
+            }}
+            animate={{
+              opacity: 1,
+            }}
+          >
             <Card className="border shadow-sm">
               <CardHeader className="border-b">
                 <CardTitle className="text-lg font-semibold">
@@ -144,6 +701,7 @@ const FrmPropertyAppel = () => {
                       <Label required text="PTN" />
                       <span>:</span>
                     </div>
+
                     <Input
                       name="ptn"
                       value={values.ptn}
@@ -151,11 +709,13 @@ const FrmPropertyAppel = () => {
                       className="w-full h-9"
                     />
                   </div>
+
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-24 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label text="Subcode" />
                       <span>:</span>
                     </div>
+
                     <Input
                       name="subcode"
                       value={values.subcode}
@@ -163,12 +723,17 @@ const FrmPropertyAppel = () => {
                       className="w-full h-9"
                     />
                   </div>
+
                   <div className="flex items-center">
                     <Button
                       type="button"
                       className="bg-blue-900 hover:bg-blue-800 text-white"
+                      onClick={() =>
+                        handleSearchProperty(values, setFieldValue)
+                      }
+                      disabled={isSearching}
                     >
-                      Search
+                      {isSearching ? "Searching..." : "Search"}
                     </Button>
                   </div>
                 </div>
@@ -179,33 +744,40 @@ const FrmPropertyAppel = () => {
                       <Label text="Land Holder" />
                       <span>:</span>
                     </div>
-                    <div className="w-full min-h-9 flex items-center  px-2">
+
+                    <div className="w-full min-h-9 flex items-center px-2">
                       {values.landHolder || ""}
                     </div>
                   </div>
+
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label text="Structure Holder" />
                       <span>:</span>
                     </div>
+
                     <div className="w-full min-h-9 flex items-center px-2">
                       {values.structureHolder || ""}
                     </div>
                   </div>
+
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label text="Owner Details" />
                       <span>:</span>
                     </div>
+
                     <div className="w-full min-h-9 flex items-center px-2">
                       {values.ownerDetails || ""}
                     </div>
                   </div>
+
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label text="Address" />
                       <span>:</span>
                     </div>
+
                     <div className="w-full min-h-9 flex items-center px-2">
                       {values.address || ""}
                     </div>
@@ -213,128 +785,152 @@ const FrmPropertyAppel = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label required text="Applicant Name" className="sm:whitespace-nowrap" />
-                        <span>:</span>
-                        </div>
-                        <Input
-                        name="applicantName"
-                        value={values.applicantName}
-                        onChange={handleChange}
-                        className="w-full h-9"
-                        />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label required text="Applicant Name" />
+                      <span>:</span>
                     </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label required text="Email ID" />
-                        <span>:</span>
-                        </div>
-                        <Input
-                        name="emailId"
-                        value={values.emailId}
-                        onChange={handleChange}
-                        className="w-full h-9"
-                        type="email"
-                        />
+
+                    <Input
+                      name="applicantName"
+                      value={values.applicantName}
+                      onChange={handleChange}
+                      className="w-full h-9"
+                    />
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label required text="Email ID" />
+                      <span>:</span>
                     </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label required text="Mobile No." />
-                        <span>:</span>
-                        </div>
-                        <Input
-                            name="mobileNo"
-                            value={values.mobileNo}
-                            onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, "").slice(0, 10);
-                            setFieldValue("mobileNo", value);
-                            }}
-                            className="w-full h-9"
-                            type="text"
-                            maxLength={10}
-                        />
+
+                    <Input
+                      name="emailId"
+                      value={values.emailId}
+                      onChange={handleChange}
+                      className="w-full h-9"
+                      type="email"
+                    />
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label required text="Mobile No." />
+                      <span>:</span>
                     </div>
-                    
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label text="Aadhar No." />
-                        <span>:</span>
-                        </div>
-                        <Input
-                            name="aadharNo"
-                            value={values.aadharNo}
-                            onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, "").slice(0, 12);
-                            setFieldValue("aadharNo", value);
-                            }}
-                            className="w-full h-9"
-                            type="text"
-                            maxLength={12}
-                        />
+
+                    <Input
+                      name="mobileNo"
+                      value={values.mobileNo}
+                      onChange={(e) => {
+                        const value = e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 10);
+
+                        setFieldValue("mobileNo", value);
+                      }}
+                      className="w-full h-9"
+                      type="text"
+                      maxLength={10}
+                    />
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label text="Aadhar No." />
+                      <span>:</span>
                     </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label required text="आक्षेपाचा कशावर" />
-                        <span>:</span>
-                        </div>
-                        <Select
-                            value={values.objectionType}
-                            onValueChange={(value) =>
-                                setFieldValue("objectionType", value)
-                            }
-                            >
-                            <SelectTrigger className="w-full h-9">
-                                <SelectValue placeholder="-- Select Option --" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="property">Property</SelectItem>
-                                <SelectItem value="assessment">Assessment</SelectItem>
-                                <SelectItem value="tax">Property Tax</SelectItem>
-                                <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                        </Select>
+
+                    <Input
+                      name="aadharNo"
+                      value={values.aadharNo}
+                      onChange={(e) => {
+                        const value = e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 12);
+
+                        setFieldValue("aadharNo", value);
+                      }}
+                      className="w-full h-9"
+                      type="text"
+                      maxLength={12}
+                    />
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label required text="आक्षेपाचा कशावर" />
+                      <span>:</span>
                     </div>
+
+                    <Select
+                      value={values.objectionType}
+                      onValueChange={(value) =>
+                        setFieldValue("objectionType", value)
+                      }
+                    >
+                      <SelectTrigger className="w-full h-9">
+                        <SelectValue placeholder="-- Select Option --" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {objections.map((item) => (
+                          <SelectItem
+                            key={item.objectionId}
+                            value={String(item.objectionId)}
+                          >
+                            {item.objectionName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-2">
-                        <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center pt-2">
-                            <Label required text="आक्षेपाचे वर्णन" />
-                            <span>:</span>
-                        </div>
-                        <Textarea
-                            name="objectionDescription"
-                            value={values.objectionDescription}
-                            onChange={handleChange}
-                            className="w-full min-h-[100px]"
-                            placeholder="Enter objection description..."
-                        />
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-2">
+                    <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center pt-2">
+                      <Label required text="आक्षेपाचे वर्णन" />
+                      <span>:</span>
                     </div>
+
+                    <Textarea
+                      name="objectionDescription"
+                      value={values.objectionDescription}
+                      onChange={handleChange}
+                      className="w-full min-h-[100px]"
+                      placeholder="Enter objection description..."
+                    />
+                  </div>
                 </div>
-                
+
                 <hr />
 
-                <ShadCNTable
+                {tableData.length > 0 && (
+                  <ShadCNTable
                     headers={headers}
                     data={transformedTableData}
                     keyMapping={keyMapping}
                     pagination={false}
                     className="max-md:min-w-380"
-                />
+                  />
+                )}
 
                 <div className="flex justify-center items-center gap-3 pt-4">
                   <Button
                     type="submit"
                     className="bg-blue-900 hover:bg-blue-800 text-white"
+                    disabled={loading}
                   >
-                    Submit
+                    {loading ? "Submitting..." : "Submit"}
                   </Button>
+
                   <Button
                     type="button"
                     variant="outline"
                     className="bg-gray-100 hover:bg-gray-200"
-                    path="/"
+                    onClick={() => navigate("/")}
                   >
                     Back
                   </Button>
