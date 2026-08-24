@@ -20,11 +20,7 @@ app.set("trust proxy", 1);
 
 // security & parsing
 // app.use(cors({ origin: NODE_ENV === "production" ? ["https://yourdomain.com"] : "*", credentials: true }));
-const allowedOrigins = [
-  "https://payroll.nagarkaryavalinewuat.com",
-  "https://nagarkaryavalinewuat.com",
-  "http://localhost:5173"
-];
+const allowedOrigins = ["https://payroll.nagarkaryavalinewuat.com", "https://nagarkaryavalinewuat.com", "http://localhost:5173"];
 
 app.use(
   cors({
@@ -78,10 +74,13 @@ app.use("/api/FrmPropertyAppel", require("./modules/Property/FrmPropertyAppel/Fr
 
 //Water module 
 app.use("/api/watermodule", require("./modules/WaterModule/WaterBillCopy/Stepnew.route"))
-
+app.use("/api/FrmWaterRegister", require("./modules/WaterModule/FrmWaterRegister/FrmWaterRegister.route"))
 
 //Trade
 app.use("/api/FrmMarketEntry", require("./modules/Trade/FrmMarketEntry/FrmMArketEntry.routes"));
+
+
+app.use("/api/FrmTrackApplication", require("./modules/TrackApplication/FrmTrackApplication/FrmTrackApplication.routes"));
 
 app.use(errorMiddleware);
 

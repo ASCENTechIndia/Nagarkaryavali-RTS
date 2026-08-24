@@ -14,6 +14,7 @@ import FrmAssessmentCerti from "./Pages/Property/FrmAssessmentCerti";
 import FrmPropertyTransfer from "./Pages/Property/FrmPropertyTransfer";
 import FrmNewTaxAssesment from "./Pages/Property/FrmNewTaxAssesment";
 import FrmMarketEntry from "./Pages/Trade/FrmMarketEntry/FrmMarketEntry";
+import FrmWaterRegister from "./Pages/WaterModule/FrmWaterRegister";
 
 const router = createBrowserRouter([
   {
@@ -55,6 +56,10 @@ const router = createBrowserRouter([
       {
         path: "app/Step0New",
         element: <Watermodule />
+      },
+      {
+        path: "app/FrmWaterRegister",
+        element: <FrmWaterRegister />
       },
       {
         path: "/app/FrmAssessmentCerti",
