@@ -119,7 +119,6 @@ async function getObjectionsService() {
     return { success: true, objections: [] };
   }
 
-  // Handle both object and array style rows
   if (rows[0] && rows[0].VAR_OBJECTION_NAME !== undefined) {
     return {
       success: true,

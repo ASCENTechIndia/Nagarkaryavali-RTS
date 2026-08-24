@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -19,6 +19,7 @@ import { DatePicker } from "@/components/ui/calendar";
 import ShadCNTable from "@/components/ui/table";
 import config from "@/utils/config";
 import Swal from "sweetalert2";
+import { useAuth } from "@/context/AuthContext";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const initialValues = {
@@ -42,18 +43,21 @@ const initialValues = {
 const FrmNewTaxAssesment = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { serviceID, mahaUlbId } = location.state || {};
-  const serviceid = serviceID || "43";
+  const { user, token } = useAuth();
+  const locationState = location.state || {};
 
   const [wards, setWards] = useState([]);
-  const [documents, setDocuments] = useState([]);
-  const [docFiles, setDocFiles] = useState({});
-  const [docErrors, setDocErrors] = useState({});
+  const [documentDefs, setDocumentDefs] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const originalDocumentDefs = useRef([]);
   const [loading, setLoading] = useState(false);
 
-  const token = localStorage.getItem("token");
-  const ulbId = 3;
-  const userId = localStorage.getItem("userId") || "3";
+  const ulbId = locationState.ulbId || user?.ulbId || "3";
+  const userId = locationState.userId || user?.userId || "151";
+  const zoneId = locationState.zoneId || user?.zoneId || "261";
+  const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId || ulbId;
+  const serviceid = locationState.serviceID || user?.serviceId || "43";
+
 
   const getHeaderTitle = () => {
     switch (String(serviceid)) {
@@ -68,14 +72,19 @@ const FrmNewTaxAssesment = () => {
 
   useEffect(() => {
     fetchWards();
-    fetchDocuments();
-  }, [serviceid]);
+    fetchDocumentDefinitions();
+  }, [serviceid, ulbId]);
 
   const fetchWards = async () => {
     try {
       const response = await axios.post(
         `${BASE_URL}/api/FrmNewTaxAssesment/wards`,
         { ulbid: ulbId },
+        {
+          headers: {
+            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+          },
+        },
       );
       if (response.data?.data?.wards) {
         setWards(response.data.data.wards);
@@ -85,59 +94,122 @@ const FrmNewTaxAssesment = () => {
     }
   };
 
-  const fetchDocuments = async () => {
+  const fetchDocumentDefinitions = async () => {
     try {
       const response = await axios.post(
         `${BASE_URL}/api/FrmAssessmentCerti/documents`,
-        { serviceId: Number(serviceid), ulbId: ulbId },
+        {
+          serviceId: String(serviceid),
+          ulbId: String(ulbId),
+        },
+        {
+          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
+        }
       );
-      if (response.data?.data?.rows) {
-        setDocuments(response.data.data.rows);
+
+      if (response.data.ok && response.data.data?.rows) {
+        const docs = response.data.data.rows;
+        setDocumentDefs(docs);
+        originalDocumentDefs.current = docs;
+        const tableRows = docs.map((doc, index) => ({
+          id: doc.DOCID || doc.DocId || index + 1,
+          srNo: index + 1,
+          documentName: doc.DOCNAME || doc.DocName || doc.ENGDOCDESC || "Document",
+          docId: doc.DOCID || doc.DocId,
+          docType: doc.DOCTYPE || doc.DocType || "PDF",
+          file: null,
+          fileName: "No file chosen",
+          fileBuffer: null,
+        }));
+        setTableData(tableRows);
       }
     } catch (error) {
-      console.error("Error fetching documents:", error);
+      console.error("Error fetching document definitions:", error);
     }
   };
 
-  const handleFileChange = (docId, event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  // const handleFileChange = (docId, event) => {
+  //   const file = event.target.files[0];
+  //   if (!file) return;
 
-    const allowedExtensions = ["image/jpeg", "image/png", "application/pdf"];
-    const maxSizeInBytes = 5 * 1024 * 1024; // 5 MB
+  //   const allowedExtensions = ["image/jpeg", "image/png", "application/pdf"];
+  //   const maxSizeInBytes = 5 * 1024 * 1024; // 5 MB
 
-    if (!allowedExtensions.includes(file.type)) {
-      setDocErrors((prev) => ({
-        ...prev,
-        [docId]:
-          "Document Should Be Acceptable In JPEG/JPG/PNG/PDF Format Only",
-      }));
-      event.target.value = "";
-      return;
+  //   if (!allowedExtensions.includes(file.type)) {
+  //     setDocErrors((prev) => ({
+  //       ...prev,
+  //       [docId]:
+  //         "Document Should Be Acceptable In JPEG/JPG/PNG/PDF Format Only",
+  //     }));
+  //     event.target.value = "";
+  //     return;
+  //   }
+
+  //   if (file.size > maxSizeInBytes) {
+  //     setDocErrors((prev) => ({
+  //       ...prev,
+  //       [docId]: "Document Size Should Be < 5 mb",
+  //     }));
+  //     event.target.value = "";
+  //     return;
+  //   }
+
+  //   setDocErrors((prev) => ({ ...prev, [docId]: null }));
+  //   setDocFiles((prev) => ({ ...prev, [docId]: file }));
+  // };
+
+
+  const handleFileChange = (id, event) => {
+    const file = event.currentTarget.files?.[0];
+    if (file) {
+      setTableData((prev) =>
+        prev.map((row) =>
+          row.id === id
+            ? { ...row, file: file, fileName: file.name }
+            : row
+        )
+      );
     }
-
-    if (file.size > maxSizeInBytes) {
-      setDocErrors((prev) => ({
-        ...prev,
-        [docId]: "Document Size Should Be < 5 mb",
-      }));
-      event.target.value = "";
-      return;
-    }
-
-    setDocErrors((prev) => ({ ...prev, [docId]: null }));
-    setDocFiles((prev) => ({ ...prev, [docId]: file }));
   };
 
-  const uploadDocument = async (applicationNo, docId, file) => {
-    if (!file) return true;
 
+  // const uploadDocument = async (applicationNo, docId, file) => {
+  //   if (!file) return true;
+
+  //   const formData = new FormData();
+  //   formData.append("serviceId", serviceid);
+  //   formData.append("appNo", applicationNo);
+  //   formData.append("docType", file.type.includes("pdf") ? "PDF" : "IMG");
+  //   formData.append("documentId", String(docId));
+  //   formData.append("document", file);
+
+  //   try {
+  //     const response = await axios.post(
+  //       `${BASE_URL}/api/FrmAssessmentCerti/upload-document`,
+  //       formData,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //           "Content-Type": "multipart/form-data",
+  //         },
+  //       },
+  //     );
+  //     return response.data?.success || response.data?.ok;
+  //   } catch (error) {
+  //     console.error(`Error uploading document ${docId}:`, error);
+  //     return false;
+  //   }
+  // };
+
+
+  const uploadDocument = async (applicationNo, doc) => {
     const formData = new FormData();
+    formData.append("corpId", ulbId);
     formData.append("serviceId", serviceid);
     formData.append("appNo", applicationNo);
-    formData.append("docType", file.type.includes("pdf") ? "PDF" : "IMG");
-    formData.append("documentId", String(docId));
-    formData.append("document", file);
+    formData.append("docType", doc.docType || "PDF");
+    formData.append("documentId", String(doc.docId));
+    formData.append("document", doc.file);
 
     try {
       const response = await axios.post(
@@ -145,14 +217,14 @@ const FrmNewTaxAssesment = () => {
         formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
             "Content-Type": "multipart/form-data",
           },
-        },
+        }
       );
-      return response.data?.success || response.data?.ok;
+      return response.data.ok === true;
     } catch (error) {
-      console.error(`Error uploading document ${docId}:`, error);
+      console.error("Error uploading document:", error);
       return false;
     }
   };
@@ -165,9 +237,8 @@ const FrmNewTaxAssesment = () => {
           mahaUlbId: Number(mahaUlbId || ulbId),
           trackId: Date.now().toString(),
           districtId: "0",
-          requestString: `TrackId:${Date.now()}|AppNo:${applicationNo}|ServiceId:${serviceid}|ULBId:${ulbId}|MahaULBId:${
-            mahaUlbId || ulbId
-          }|Timestamp:${Date.now()}`,
+          requestString: `TrackId:${Date.now()}|AppNo:${applicationNo}|ServiceId:${serviceid}|ULBId:${ulbId}|MahaULBId:${mahaUlbId || ulbId
+            }|Timestamp:${Date.now()}`,
           responseString: `Success|Application:${applicationNo}|Status:Processed|Timestamp:${Date.now()}`,
           encryptedFinalString: `ENC_${applicationNo}_${Date.now()}`,
         },
@@ -240,22 +311,35 @@ const FrmNewTaxAssesment = () => {
       );
     }
 
-    for (const doc of documents) {
-      if (!docFiles[doc.DOCID]) {
-        return Swal.fire(`Please upload document: ${doc.DOCNAME}`);
-      }
-      if (docErrors[doc.DOCID]) {
-        return Swal.fire(
-          `Invalid file for ${doc.DOCNAME}: ${docErrors[doc.DOCID]}`,
-        );
-      }
-    }
+    // for (const doc of documents) {
+    //   if (!docFiles[doc.DOCID]) {
+    //     return Swal.fire(`Please upload document: ${doc.DOCNAME}`);
+    //   }
+    //   if (docErrors[doc.DOCID]) {
+    //     return Swal.fire(
+    //       `Invalid file for ${doc.DOCNAME}: ${docErrors[doc.DOCID]}`,
+    //     );
+    //   }
+    // }
 
     setLoading(true);
 
+    const documents = [];
+    for (const row of tableData) {
+      if (row.file) {
+        documents.push({
+          docId: row.docId,
+          docName: row.documentName,
+          docType: row.docType || "PDF",
+          file: row.file,
+        });
+      }
+    }
+
+
     const payload = {
       userId: userId,
-      zoneId: 261,
+      zoneId: zoneId,
       serviceId: Number(serviceid),
       appliName: values.applicantName,
       appliAdd: values.applicantAddress,
@@ -282,6 +366,7 @@ const FrmNewTaxAssesment = () => {
       vikasName: values.developerName,
       taxesReceipt: values.advanceReceiptNo,
       appSource: config.source,
+      documents: documents,
     };
 
     try {
@@ -305,28 +390,42 @@ const FrmNewTaxAssesment = () => {
       if (response.data?.ok && response.data?.data?.applicationNo) {
         const appNo = response.data.data.applicationNo;
 
-        const uploadPromises = Object.keys(docFiles).map((docId) =>
-          uploadDocument(appNo, docId, docFiles[docId]),
-        );
+        const message = response.data.data.message || `Assessment Details Saved Successfully,Appli no: ${appNo}`;
 
-        const uploadResults = await Promise.all(uploadPromises);
-        const allUploaded = uploadResults.every((res) => res === true);
-
-        if (!allUploaded) {
-          console.warn("Some documents failed to upload.");
+        for (const doc of documents) {
+          const success = await uploadDocument(appNo, doc);
+          if (!success) {
+            Swal.fire({
+              text: `Failed to upload document: ${doc.docName}`,
+              confirmButtonColor: '#1e3a8a',
+              confirmButtonText: "OK",
+              allowOutsideClick: false,
+            });
+            setLoading(false);
+            return;
+          }
         }
 
-        const mahaSuccess = await insertMahaOnline(appNo);
-        if (!mahaSuccess) {
-          console.warn(
-            "Maha Online integration failed, but application was saved successfully.",
-          );
-        }
+        // const mahaSuccess = await insertMahaOnline(appNo);
+        // if (!mahaSuccess) {
+        //   console.warn(
+        //     "Maha Online integration failed, but application was saved successfully.",
+        //   );
+        // }
 
         Swal.fire({
-          text: `Assessment Details Saved Successfully,Appli no: ${appNo}`,
+          text: `${message}`,
+          confirmButtonColor: '#1e3a8a',
+        }).then(() => {
+          navigate("/app/FrmTrackApplication", { state: { applicationNo: appNo } });
+
+          // if (payFlag === "Y") {
+          //   navigate("/app/FrmAppliFee", { state: { applicationNo: applicationNo } });
+          // } else {
+          //   navigate("/app/FrmNoDuesCerti");
+          // }
         });
-        navigate("/");
+
       } else {
         Swal.fire({
           text: response.data?.message || "Failed to save assessment details.",
@@ -341,32 +440,25 @@ const FrmNewTaxAssesment = () => {
   };
 
   const headers = ["Sr No.", "Document Name", "Image(jpg,png,pdf)"];
-
   const keyMapping = {
     "Sr No.": "srNo",
-    "Document Name": "docName",
+    "Document Name": "documentName",
     "Image(jpg,png,pdf)": "fileUpload",
   };
 
-  const tableData = documents.map((doc, idx) => ({
-    srNo: idx + 1,
-    docName: doc.DOCNAME,
-    fileUpload: (
-      <div className="flex flex-col gap-1 items-start text-left">
-        <input
-          type="file"
-          accept=".jpg,.jpeg,.png,.pdf"
-          onChange={(e) => handleFileChange(doc.DOCID, e)}
-          className="text-xs sm:text-sm text-slate-700 file:mr-2 file:py-1 file:px-2 file:rounded file:border file:border-gray-300 file:text-xs file:bg-gray-100 hover:file:bg-gray-200 cursor-pointer"
-        />
-        {docErrors[doc.DOCID] && (
-          <span className="text-xs text-red-500 font-medium">
-            {docErrors[doc.DOCID]}
-          </span>
-        )}
-      </div>
-    ),
-  }));
+  const transformedTableData = tableData.map((item) => ({
+  ...item,
+  fileUpload: (
+    <div className="flex items-center justify-center gap-2">
+      <Input
+        type="file"
+        accept=".jpg,.jpeg,.png,.pdf"
+        onChange={(e) => handleFileChange(item.id, e)}
+        className="h-9 text-sm p-1 w-[50%]"
+      />
+    </div>
+  ),
+}));
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
@@ -757,7 +849,7 @@ const FrmNewTaxAssesment = () => {
                 <div className="border-t mt-6 sm:mt-7 pt-5 sm:pt-6">
                   <ShadCNTable
                     headers={headers}
-                    data={tableData}
+                    data={transformedTableData}
                     keyMapping={keyMapping}
                     pagination={false}
                     className="max-md:min-w-340"

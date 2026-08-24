@@ -24,7 +24,6 @@ async function submitNewTaxAssessmentService(payload) {
     appSource,
   } = payload;
 
-  // Basic validations
   if (!userId) throw new AppError("User ID is required", 400);
   if (!zoneId) throw new AppError("Zone ID is required", 400);
   if (!serviceId) throw new AppError("Service ID is required", 400);
@@ -82,7 +81,6 @@ async function getWardsByUlbService(ulbid) {
     return { success: true, wards: [] };
   }
 
-  // If executeQuery returns array of objects
   if (rows[0] && rows[0].WARDNAME !== undefined) {
     return {
       success: true,
@@ -93,7 +91,6 @@ async function getWardsByUlbService(ulbid) {
     };
   }
 
-  // If executeQuery returns array of arrays
   return {
     success: true,
     wards: rows.map(r => ({
