@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -90,8 +90,7 @@ const initialValues = {
 const FrmNoDuesCerti = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
-  const token = user?.token;
+  const { user, token } = useAuth();
 
   const locationState = location.state || {};
   
@@ -115,6 +114,8 @@ const FrmNoDuesCerti = () => {
   const [prabhagname, setPrabhagname] = useState("");
   const [zone, setZone] = useState("");
   const [wardno, setWardno] = useState("");
+
+  const originalDocumentDefs = useRef([]);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -150,6 +151,7 @@ const FrmNoDuesCerti = () => {
       if (response.data.ok && response.data.data?.rows) {
         const docs = response.data.data.rows;
         setDocumentDefs(docs);
+        originalDocumentDefs.current = docs;
         const tableRows = docs.map((doc, index) => ({
           id: doc.DOCID || doc.DocId || index + 1,
           srNo: index + 1,
@@ -227,7 +229,86 @@ const FrmNoDuesCerti = () => {
     }
   };
 
-  const handleSearchProperty = async (values, setFieldValue) => {
+  // const handleSearchProperty = async (values, setFieldValue) => {
+  //   const validationResult = propertySearchValidationSchema.safeParse({
+  //     ptn: values.ptn,
+  //     subcode: values.subcode,
+  //   });
+
+  //   if (!validationResult.success) {
+  //     const firstError = validationResult.error.issues[0];
+  //     Swal.fire({
+  //       text: firstError.message,
+  //       confirmButtonColor: '#1e3a8a',
+  //     });
+  //     return;
+  //   }
+
+  //   setIsSearching(true);
+  //   try {
+  //     let fullPropNo = values.ptn;
+  //     if (values.subcode && values.subcode.trim() !== "") {
+  //       fullPropNo = values.ptn + "/" + values.subcode;
+  //     }
+
+  //     const result = await getPropertyDetails(fullPropNo, userId);
+
+  //     if (result && result.propertyOwners) {
+  //       const propData = result.propertyOwners;
+
+  //       if (propData.payamt && parseFloat(propData.payamt) > 0) {
+  //         const payNowUrl = `https://propertytax.thanecity.gov.in/PropSearch.aspx?PTN=${values.ptn}`;
+  //         Swal.fire({
+  //           text: `Your property tax payment of Rs.${propData.payamt} is due, please make the payment first`,
+  //           confirmButtonColor: '#1e3a8a',
+  //           showCancelButton: true,
+  //           cancelButtonText: "Pay Now",
+  //           cancelButtonColor: "#d33",
+  //         }).then((result) => {
+  //           if (result.isConfirmed) {
+  //             window.open(payNowUrl, '_blank');
+  //           }
+  //         });
+  //         setIsSearching(false);
+  //         return;
+  //       }
+
+  //       setFieldValue("landHolder", propData.land_Holder || "");
+  //       setFieldValue("structureHolder", propData.struct_Holder || "");
+  //       setFieldValue("ownerDetails", propData.owner_Details || "");
+  //       setFieldValue("address", propData.address || "");
+
+  //       setYearlyTax(propData.yearly_tax || "0");
+  //       setPrabhag(propData.prabhag || "");
+  //       setZoneid(propData.zoneid || "");
+  //       setWard(propData.wardno || "");
+  //       setPrabhagname(propData.prabhagname || "");
+  //       setZone(propData.zonename || "");
+  //       setWardno(propData.wardname || "");
+
+  //       Swal.fire({
+  //         text: "Property details fetched successfully!",
+  //         confirmButtonColor: '#1e3a8a',
+  //         timer: 1500,
+  //       });
+  //     } else {
+  //       Swal.fire({
+  //         text: "Property Not Found For This Prop No",
+  //         confirmButtonColor: '#1e3a8a',
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching property details:", error);
+  //     Swal.fire({
+  //       text: error?.response?.data?.error || "Error fetching property details. Please try again.",
+  //       confirmButtonColor: '#1e3a8a',
+  //     });
+  //   } finally {
+  //     setIsSearching(false);
+  //   }
+  // };
+
+  const handleSearchProperty = async (values, setFieldValue, resetForm) => {
     const validationResult = propertySearchValidationSchema.safeParse({
       ptn: values.ptn,
       subcode: values.subcode,
@@ -238,6 +319,8 @@ const FrmNoDuesCerti = () => {
       Swal.fire({
         text: firstError.message,
         confirmButtonColor: '#1e3a8a',
+        confirmButtonText: "OK",
+        allowOutsideClick: false,
       });
       return;
     }
@@ -255,17 +338,13 @@ const FrmNoDuesCerti = () => {
         const propData = result.propertyOwners;
 
         if (propData.payamt && parseFloat(propData.payamt) > 0) {
-          const payNowUrl = `https://propertytax.thanecity.gov.in/PropSearch.aspx?PTN=${values.ptn}`;
           Swal.fire({
             text: `Your property tax payment of Rs.${propData.payamt} is due, please make the payment first`,
             confirmButtonColor: '#1e3a8a',
-            showCancelButton: true,
-            cancelButtonText: "Pay Now",
-            cancelButtonColor: "#d33",
-          }).then((result) => {
-            if (result.isConfirmed) {
-              window.open(payNowUrl, '_blank');
-            }
+            confirmButtonText: "OK",
+            allowOutsideClick: false,
+          }).then(() => {
+            resetFormAfterSearch(setFieldValue, resetForm);
           });
           setIsSearching(false);
           return;
@@ -288,11 +367,16 @@ const FrmNoDuesCerti = () => {
           text: "Property details fetched successfully!",
           confirmButtonColor: '#1e3a8a',
           timer: 1500,
+          allowOutsideClick: false,
         });
       } else {
         Swal.fire({
           text: "Property Not Found For This Prop No",
           confirmButtonColor: '#1e3a8a',
+          confirmButtonText: "OK",
+          allowOutsideClick: false,
+        }).then(() => {
+          resetFormAfterSearch(setFieldValue, resetForm);
         });
       }
     } catch (error) {
@@ -300,15 +384,89 @@ const FrmNoDuesCerti = () => {
       Swal.fire({
         text: error?.response?.data?.error || "Error fetching property details. Please try again.",
         confirmButtonColor: '#1e3a8a',
+        confirmButtonText: "OK",
+        allowOutsideClick: false,
       });
     } finally {
       setIsSearching(false);
     }
   };
+  
+  const resetFormAfterSearch = (setFieldValue, resetForm) => {
+
+    resetForm();
+    
+    setFieldValue("ptn", "");
+    setFieldValue("subcode", "");
+    setFieldValue("landHolder", "");
+    setFieldValue("structureHolder", "");
+    setFieldValue("ownerDetails", "");
+    setFieldValue("address", "");
+    setFieldValue("applicantName", "");
+    setFieldValue("mobileNo", "");
+    setFieldValue("emailId", "");
+    setFieldValue("aadharNo", "");
+    
+    setYearlyTax("");
+    setPrabhag("");
+    setZoneid("");
+    setWard("");
+    setPrabhagname("");
+    setZone("");
+    setWardno("");
+    
+    setTableData((prevTableData) => {
+      if (originalDocumentDefs.current && originalDocumentDefs.current.length > 0) {
+        return originalDocumentDefs.current.map((doc, index) => ({
+          id: doc.DOCID || doc.DocId || index + 1,
+          srNo: index + 1,
+          documentName: doc.DOCNAME || doc.DocName || doc.ENGDOCDESC || "Document",
+          docId: doc.DOCID || doc.DocId,
+          docType: doc.DOCTYPE || doc.DocType || "PDF",
+          file: null,
+          fileName: "No file chosen",
+          fileBuffer: null,
+        }));
+      }
+      return prevTableData.map((row) => ({
+        ...row,
+        file: null,
+        fileName: "No file chosen",
+        fileBuffer: null,
+      }));
+    });
+  };
+
+  // const uploadDocument = async (applicationNo, doc) => {
+  //   const formData = new FormData();
+  //   formData.append("serviceId", String(serviceId));
+  //   formData.append("appNo", applicationNo);
+  //   formData.append("docType", doc.docType || "PDF");
+  //   formData.append("documentId", String(doc.docId));
+  //   formData.append("document", doc.file);
+
+  //   try {
+  //     const response = await axios.post(
+  //       `${BASE_URL}/api/FrmAssessmentCerti/upload-document`,
+  //       formData,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+  //           "Content-Type": "multipart/form-data",
+  //         },
+  //       }
+  //     );
+  //     return response.data.success;
+  //   } catch (error) {
+  //     console.error("Error uploading document:", error);
+  //     return false;
+  //   }
+  // };
 
   const uploadDocument = async (applicationNo, doc) => {
     const formData = new FormData();
-    formData.append("serviceId", String(serviceId));
+    formData.append("corpId", ulbId); 
+    formData.append("serviceId", serviceId);
     formData.append("appNo", applicationNo);
     formData.append("docType", doc.docType || "PDF");
     formData.append("documentId", String(doc.docId));
@@ -325,46 +483,46 @@ const FrmNoDuesCerti = () => {
           },
         }
       );
-      return response.data.success;
+      return response.data.ok === true;
     } catch (error) {
       console.error("Error uploading document:", error);
       return false;
     }
   };
 
-  const insertMahaOnline = async (applicationNo) => {
-    try {
-      const mahaPayload = {
-        mahaData: {
-          ulbId: ulbId,
-          mahaUlbId: mahaUlbId || ulbId,
-          trackId: Date.now().toString(),
-          districtId: "0",
-          requestString: `TrackId:${Date.now()}|AppNo:${applicationNo}|ServiceId:${serviceId}|ULBId:${ulbId}|MahaULBId:${mahaUlbId || ulbId}|Timestamp:${Date.now()}`,
-          responseString: `Success|Application:${applicationNo}|Status:Processed|Timestamp:${Date.now()}`,
-          encryptedFinalString: `ENC_${applicationNo}_${Date.now()}`
-        },
-        applicationNo: applicationNo,
-        serviceId: String(serviceId),
-      };
+  // const insertMahaOnline = async (applicationNo) => {
+  //   try {
+  //     const mahaPayload = {
+  //       mahaData: {
+  //         ulbId: ulbId,
+  //         mahaUlbId: mahaUlbId || ulbId,
+  //         trackId: Date.now().toString(),
+  //         districtId: "0",
+  //         requestString: `TrackId:${Date.now()}|AppNo:${applicationNo}|ServiceId:${serviceId}|ULBId:${ulbId}|MahaULBId:${mahaUlbId || ulbId}|Timestamp:${Date.now()}`,
+  //         responseString: `Success|Application:${applicationNo}|Status:Processed|Timestamp:${Date.now()}`,
+  //         encryptedFinalString: `ENC_${applicationNo}_${Date.now()}`
+  //       },
+  //       applicationNo: applicationNo,
+  //       serviceId: String(serviceId),
+  //     };
 
-      console.log("Maha Online Request Payload:", mahaPayload);
+  //     console.log("Maha Online Request Payload:", mahaPayload);
 
-      const response = await axios.post(
-        `${BASE_URL}/api/FrmAssessmentCerti/maha-online-first-step`,
-        mahaPayload,
-        {
-          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
-        }
-      );
+  //     const response = await axios.post(
+  //       `${BASE_URL}/api/FrmAssessmentCerti/maha-online-first-step`,
+  //       mahaPayload,
+  //       {
+  //         headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
+  //       }
+  //     );
 
-      console.log("Maha Online Response:", response.data);
-      return response.data.success;
-    } catch (error) {
-      console.error("Error in Maha Online integration:", error);
-      return false;
-    }
-  };
+  //     console.log("Maha Online Response:", response.data);
+  //     return response.data.data.success;
+  //   } catch (error) {
+  //     console.error("Error in Maha Online integration:", error);
+  //     return false;
+  //   }
+  // };
 
   const checkPaymentFlag = async () => {
     try {
@@ -377,7 +535,8 @@ const FrmNoDuesCerti = () => {
           headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
         }
       );
-      if (response.data.success && response.data.data?.rows) {
+      console.log("response", response);
+      if (response.data.data.success && response.data.data?.rows) {
         return response.data.data.rows[0]?.VAR_SERVICE_PAYFLAG || "N";
       }
       return "N";
@@ -387,35 +546,41 @@ const FrmNoDuesCerti = () => {
     }
   };
 
+  // const handleFileChange = (id, event) => {
+  //   const file = event.currentTarget.files?.[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onload = (e) => {
+  //       const arrayBuffer = e.target.result;
+  //       const buffer = Buffer.from(new Uint8Array(arrayBuffer));
+  //       setTableData((prev) =>
+  //         prev.map((row) =>
+  //           row.id === id
+  //             ? { ...row, file: file, fileName: file.name, fileBuffer: buffer }
+  //             : row
+  //         )
+  //       );
+  //     };
+  //     reader.readAsArrayBuffer(file);
+  //   }
+  // };
+
   const handleFileChange = (id, event) => {
     const file = event.currentTarget.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const arrayBuffer = e.target.result;
-        const buffer = Buffer.from(new Uint8Array(arrayBuffer));
-        setTableData((prev) =>
-          prev.map((row) =>
-            row.id === id
-              ? { ...row, file: file, fileName: file.name, fileBuffer: buffer }
-              : row
-          )
-        );
-      };
-      reader.readAsArrayBuffer(file);
+      setTableData((prev) =>
+        prev.map((row) =>
+          row.id === id
+            ? { ...row, file: file, fileName: file.name }
+            : row
+        )
+      );
     }
   };
 
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      const loader = Swal.fire({
-        title: "Submitting Application...",
-        text: "Please wait while we process your application.",
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        didOpen: () => Swal.showLoading(),
-      });
 
       const propertyValidation = propertySearchValidationSchema.safeParse({
         ptn: values.ptn,
@@ -423,11 +588,18 @@ const FrmNoDuesCerti = () => {
       });
 
       if (!propertyValidation.success) {
-        const firstError = propertyValidation.error.issues[0];
-        Swal.fire({ text: firstError.message, confirmButtonColor: '#1e3a8a' });
-        setLoading(false);
-        return;
-      }
+          const firstError = propertyValidation.error.issues[0];
+          Swal.fire({
+            text: firstError.message,
+            confirmButtonColor: '#1e3a8a',
+            confirmButtonText: "OK",
+            allowOutsideClick: false,
+          });
+          setLoading(false);
+          return;
+        }
+
+
 
       const applicantValidation = applicantDetailsValidationSchema.safeParse({
         applicantName: values.applicantName,
@@ -437,37 +609,74 @@ const FrmNoDuesCerti = () => {
 
       if (!applicantValidation.success) {
         const firstError = applicantValidation.error.issues[0];
-        Swal.fire({ text: firstError.message, confirmButtonColor: '#1e3a8a' });
+        Swal.fire({
+          text: firstError.message,
+          confirmButtonColor: '#1e3a8a',
+          confirmButtonText: "OK",
+          allowOutsideClick: false,
+        });
         setLoading(false);
         return;
       }
 
       if (values.aadharNo && (values.aadharNo.length !== 12 || !/^\d+$/.test(values.aadharNo))) {
-        Swal.fire({ text: "Invalid Aadhar No", confirmButtonColor: '#1e3a8a' });
+        Swal.fire({
+          text: "Invalid Aadhar Number. Must be 12 digits.",
+          confirmButtonColor: '#1e3a8a',
+          confirmButtonText: "OK",
+          allowOutsideClick: false,
+        });
         setLoading(false);
         return;
       }
 
+      // const documents = [];
+      // for (const row of tableData) {
+      //   if (row.fileBuffer) {
+      //     documents.push({
+      //       docId: row.docId,
+      //       docName: row.documentName,
+      //       docType: row.docType,
+      //       fileBuffer: row.fileBuffer,
+      //     });
+      //   }
+      // }
+
       const documents = [];
       for (const row of tableData) {
-        if (row.fileBuffer) {
+        if (row.file) {
           documents.push({
             docId: row.docId,
             docName: row.documentName,
-            docType: row.docType,
-            fileBuffer: row.fileBuffer,
+            docType: row.docType || "PDF",
+            file: row.file,
           });
         }
       }
+
+      console.log("Documents to upload:", documents);
 
       // const documentValidation = documentValidationSchema.safeParse(documents);
 
       // if (!documentValidation.success) {
       //   const firstError = documentValidation.error.issues[0];
-      //   Swal.fire({ text: firstError.message, confirmButtonColor: '#1e3a8a' });
+      //   Swal.fire({
+      //     text: firstError.message,
+      //     confirmButtonColor: '#1e3a8a',
+      //     confirmButtonText: "OK",
+      //     allowOutsideClick: false,
+      //   });
       //   setLoading(false);
       //   return;
       // }
+
+      const loader = Swal.fire({
+        title: "Submitting Application...",
+        text: "Please wait while we process your application.",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading(),
+      });
 
       const buildRequestString = (appNo) => {
         return `TrackId:${Date.now()}|AppNo:${appNo}|ServiceId:${serviceId}|ULBId:${ulbId}|MahaULBId:${mahaUlbId || ulbId}|Timestamp:${Date.now()}`;
@@ -498,15 +707,15 @@ const FrmNoDuesCerti = () => {
         aadharNo: values.aadharNo || 0,
         appSource: config.source,
         documents: documents,
-        mahaData: {
-          ulbId: Number(ulbId),
-          mahaUlbId: Number(mahaUlbId || ulbId),
-          districtId: Number(0),
-          trackId: Date.now().toString(),
-          requestString: buildRequestString(""),
-          responseString: buildResponseString(""),
-          encryptedFinalString: buildEncryptedString("")
-        }
+        // mahaData: {
+        //   ulbId: Number(ulbId),
+        //   mahaUlbId: Number(mahaUlbId || ulbId),
+        //   districtId: Number(0),
+        //   trackId: Date.now().toString(),
+        //   requestString: buildRequestString(""),
+        //   responseString: buildResponseString(""),
+        //   encryptedFinalString: buildEncryptedString("")
+        // }
       };
 
       console.log("Submit Payload:", payload);
@@ -531,6 +740,18 @@ const FrmNoDuesCerti = () => {
       const applicationNo = submitResponse.data.data.applicationNo;
       const message = submitResponse.data.data.message || "Application submitted successfully";
 
+      // for (const doc of documents) {
+      //   const success = await uploadDocument(applicationNo, doc);
+      //   if (!success) {
+      //     Swal.fire({
+      //       text: `Failed to upload document: ${doc.docName}`,
+      //       confirmButtonColor: '#1e3a8a',
+      //     });
+      //     setLoading(false);
+      //     return;
+      //   }
+      // }
+
       for (const doc of documents) {
         const success = await uploadDocument(applicationNo, doc);
         if (!success) {
@@ -542,10 +763,11 @@ const FrmNoDuesCerti = () => {
           return;
         }
       }
-      const mahaSuccess = await insertMahaOnline(applicationNo);
-      if (!mahaSuccess) {
-        console.warn("Maha Online integration failed, but application was created");
-      }
+
+      // const mahaSuccess = await insertMahaOnline(applicationNo);
+      // if (!mahaSuccess) {
+      //   console.warn("Maha Online integration failed, but application was created");
+      // }
       const payFlag = await checkPaymentFlag();
 
       loader.close();
@@ -554,17 +776,19 @@ const FrmNoDuesCerti = () => {
         text: `${message}`,
         confirmButtonColor: '#1e3a8a',
       }).then(() => {
-        if (payFlag === "Y") {
-          navigate("/app/FrmAppliFee", { state: { applicationNo: applicationNo } });
-        } else {
-          navigate("/app/FrmNoDuesCerti");
-        }
+        navigate("/app/FrmTrackApplication", { state: { applicationNo: applicationNo } });
+
+        // if (payFlag === "Y") {
+        //   navigate("/app/FrmAppliFee", { state: { applicationNo: applicationNo } });
+        // } else {
+        //   navigate("/app/FrmNoDuesCerti");
+        // }
       });
 
     } catch (error) {
       console.error("Error submitting application:", error);
       Swal.fire({
-        text: error?.response?.data?.message || "Error submitting application. Please try again.",
+        text: error?.response?.data?.error || "Error submitting application. Please try again.",
         confirmButtonColor: '#1e3a8a',
       });
     } finally {
@@ -582,9 +806,9 @@ const FrmNoDuesCerti = () => {
           onChange={(e) => handleFileChange(item.id, e)}
           className="h-9 text-sm p-1 w-[50%]"
         />
-        {item.fileName && item.fileName !== "No file chosen" && (
+        {/* {item.fileName && item.fileName !== "No file chosen" && (
           <span className="text-xs text-gray-500 truncate max-w-[80px]">{item.fileName}</span>
-        )}
+        )} */}
       </div>
     ),
   }));
@@ -634,7 +858,7 @@ const FrmNoDuesCerti = () => {
                     <Button
                       type="button"
                       className="bg-blue-900 hover:bg-blue-800 text-white"
-                      onClick={() => handleSearchProperty(values, setFieldValue)}
+                      onClick={() => handleSearchProperty(values, setFieldValue, resetForm)}
                       disabled={isSearching}
                     >
                       {isSearching ? "Searching..." : "Search"}

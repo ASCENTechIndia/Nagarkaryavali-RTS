@@ -2,13 +2,21 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { Button } from "./ui/button";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const NavbarContent = ({ withSidebar }) => {
-    const { user, requestInitialized } = useAuth();
+    const { user, requestInitialized, logout } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
     const ulbID = user?.ulbId || 3;
     const [corpInfo, setCorpInfo] = useState({name: "", logo: ""});
+
+    const locationState = location.state || {};
+    const serviceId = locationState.serviceId || user?.serviceId;
+    const userId = user?.userId || locationState.userId;
 
     const fetchCorporationInfo = async () => {
         try {
@@ -27,6 +35,25 @@ const NavbarContent = ({ withSidebar }) => {
         } catch (error) {
             console.error("Corporation fetch error:", error);
         }
+    };
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+            navigate("/");
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
+    };
+
+    const handleTrackApplication = () => {
+        navigate("/app/FrmTrackApplication", {
+            state: { 
+                serviceId: serviceId,
+                userId: userId,
+                ulbId: ulbID
+            }
+        });
     };
 
     useEffect(() => {
@@ -57,10 +84,33 @@ const NavbarContent = ({ withSidebar }) => {
                         )}
                     </div>
 
-                    <h1 className="max-w-45 truncate text-sm font-bold text-white sm:max-w-125 sm:text-xl md:text-xl">
+                    <h1 className="flex-1 text-center truncate text-sm font-bold text-white sm:text-xl md:text-xl">
                         {corpInfo.name || "Municipal Corporation"}
                     </h1>
                     <div />
+                    {(user && serviceId) && (
+                        <div className="flex items-center gap-2 min-w-30 justify-end">
+                            <Button
+                                variant="default"
+                                size="sm"
+                                onClick={handleTrackApplication}
+                                className="text-white bg-[#1ab394] border-[#1ab394] px-3 py-1 h-8 text-xs sm:text-sm hover:bg-[#1ab394] hover:opacity-90"
+                            >
+                                <span className="hidden sm:inline">Application Tracking</span>
+                                <span className="sm:hidden">Track</span>
+                            </Button>
+                            
+                            <Button
+                                variant="default"
+                                size="sm"
+                                onClick={handleLogout}
+                                className="text-white bg-[#ed5565] border-[#ed5565] px-3 py-1 h-8 text-xs sm:text-sm hover:bg-[#ed5565] hover:opacity-90"
+                            >
+                                <span className="hidden sm:inline">Logout</span>
+                                <span className="sm:hidden">Logout</span>
+                            </Button>
+                        </div>
+                    )}
                 </div>
             </div>
         </header>

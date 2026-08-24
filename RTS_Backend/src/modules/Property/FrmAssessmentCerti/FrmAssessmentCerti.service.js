@@ -107,7 +107,7 @@ async function uploadDocumentService(params) {
   }
 
   const result = await repo.insertDocument({
-    corpId: corpId || 10001,
+    corpId: corpId,
     serviceId,
     appNo,
     docType,
@@ -127,6 +127,7 @@ async function uploadDocumentService(params) {
 
 async function submitAssessmentApplicationService(payload) {
   const {
+    ulbId,
     userId,
     zoneId,
     serviceId,
@@ -152,6 +153,10 @@ async function submitAssessmentApplicationService(payload) {
     documents,
     mahaData,
   } = payload;
+  
+  if (!ulbId) {
+    throw new AppError("User ID is required", 400);
+  }
 
   if (!userId) {
     throw new AppError("User ID is required", 400);
@@ -191,6 +196,7 @@ async function submitAssessmentApplicationService(payload) {
   }
 
   const appResult = await repo.insertAssessmentApplication({
+    ulbId,
     userId,
     zoneId,
     serviceId,
@@ -212,7 +218,7 @@ async function submitAssessmentApplicationService(payload) {
     applicantName,
     mobile,
     email,
-    appSource: appSource || "WEB",
+    appSource: appSource || "",
   });
 
   if (Number(appResult.out_errcode) !== 9999) {
@@ -246,7 +252,7 @@ async function submitAssessmentApplicationService(payload) {
           }
 
           await repo.insertDocument({
-            corpId: 10001,
+            corpId: ulbId,
             serviceId: Number(serviceId),
             appNo: applicationNo,
             docType: doc.docType || "PDF",
@@ -263,13 +269,13 @@ async function submitAssessmentApplicationService(payload) {
     }
   }
 
-  if (mahaData && mahaData.mahaUlbId) {
-    await insertMahaOnlineFirstStepService({
-      mahaData,
-      applicationNo,
-      serviceId,
-    });
-  }
+  // if (mahaData && mahaData.mahaUlbId) {
+  //   await insertMahaOnlineFirstStepService({
+  //     mahaData,
+  //     applicationNo,
+  //     serviceId,
+  //   });
+  // }
 
   const paymentFlagResult = await repo.getServicePaymentFlag(serviceId);
 

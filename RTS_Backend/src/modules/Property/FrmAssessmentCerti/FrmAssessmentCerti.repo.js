@@ -166,7 +166,7 @@ async function insertAssessmentApplication(params) {
     in_applicantName: applicantName || null,
     in_mobile: mobile || null,
     in_email: email || null,
-    in_appSource: appSource || "WEB",
+    in_appSource: appSource || "",
 
     out_errcode: {
       dir: oracledb.BIND_OUT,
@@ -243,6 +243,8 @@ async function insertDocument(params) {
     const result = await connection.execute(query, bindParams, {
       autoCommit: true,
     });
+
+    console.log("result: ", result);
 
     return {
       success: true,

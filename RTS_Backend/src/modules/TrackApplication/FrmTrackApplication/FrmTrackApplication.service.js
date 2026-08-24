@@ -254,6 +254,127 @@ const getReApplyServiceDetailsService = async (serviceId) => {
   };
 };
 
+// ============================================================
+// INSERT CERTIFICATE DOCUMENT SERVICE
+// ============================================================
+const insertCertificateDocService = async (applino, userId, pdfBuffer) => {
+  if (!applino) {
+    throw new Error("Application Number is required.");
+  }
+  if (!userId) {
+    throw new Error("User ID is required.");
+  }
+  if (!pdfBuffer) {
+    throw new Error("PDF buffer is required.");
+  }
+
+  const result = await repo.insertCertificateDocRepo(applino, userId, pdfBuffer);
+
+  return {
+    success: true,
+    data: result,
+  };
+};
+
+// ============================================================
+// UPDATE CERTIFICATE STATUS SERVICE
+// ============================================================
+const updateCertificateStatusService = async (serviceId, applino, userId) => {
+  if (!serviceId) {
+    throw new Error("Service ID is required.");
+  }
+  if (!applino) {
+    throw new Error("Application Number is required.");
+  }
+  if (!userId) {
+    throw new Error("User ID is required.");
+  }
+
+  const result = await repo.updateCertificateStatusRepo(serviceId, applino, userId);
+
+  return {
+    success: true,
+    data: result,
+  };
+};
+
+// ============================================================
+// GET CERTIFICATE DOCUMENT SERVICE
+// ============================================================
+const getCertificateDocService = async (applino) => {
+  if (!applino) {
+    throw new Error("Application Number is required.");
+  }
+
+  const result = await repo.getCertificateDocRepo(applino);
+
+  return {
+    success: true,
+    data: result,
+  };
+};
+
+// ============================================================
+// GET DOCUMENT BY ID SERVICE
+// ============================================================
+const getDocumentByIdService = async (docId) => {
+  if (!docId) {
+    throw new Error("Document ID is required.");
+  }
+
+  const result = await repo.getDocumentByIdRepo(docId);
+
+  return {
+    success: true,
+    data: result,
+  };
+};
+
+// ============================================================
+// GENERATE AND DOWNLOAD CERTIFICATE SERVICE (Complete Flow)
+// ============================================================
+const generateAndDownloadCertificateService = async (applino, serviceId, userId, ulbId) => {
+  if (!applino) {
+    throw new Error("Application Number is required.");
+  }
+  if (!serviceId) {
+    throw new Error("Service ID is required.");
+  }
+  if (!userId) {
+    throw new Error("User ID is required.");
+  }
+  if (!ulbId) {
+    throw new Error("ULB ID is required.");
+  }
+
+  // 1. Check if certificate already exists in your custom table
+  const existingCert = await repo.getCertificateDocRepo(applino);
+  
+  if (existingCert && existingCert.length > 0) {
+    return {
+      success: true,
+      exists: true,
+      data: existingCert[0],
+    };
+  }
+
+  const certData = await repo.getCertificateDataRepo(serviceId, applino, ulbId);
+  
+  if (!certData || certData.length === 0) {
+    return {
+      success: false,
+      exists: false,
+      message: "Certificate data not found for this application.",
+    };
+  }
+  
+  return {
+    success: true,
+    exists: false,
+    data: certData,
+  };
+};
+
 module.exports = {
   getApplicationDetailsService,
   getApplicationDocumentsService,
@@ -264,6 +385,11 @@ module.exports = {
   getApplicationPaymentDetailsService,
   getApplicationStepsService,
   getCertificateDataService,
-  getReApplyServiceDetailsService
+  getReApplyServiceDetailsService,
+  insertCertificateDocService,
+  updateCertificateStatusService,
+  getCertificateDocService,
+  getDocumentByIdService,
+  generateAndDownloadCertificateService,
 
 };

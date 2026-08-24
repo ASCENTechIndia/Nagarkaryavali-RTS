@@ -298,6 +298,249 @@ const getReApplyServiceDetails = asyncHandler(async (req, res) => {
   });
 });
 
+// ============================================================
+// INSERT CERTIFICATE DOCUMENT
+// ============================================================
+const insertCertificateDoc = asyncHandler(async (req, res) => {
+  const { applino, userId, pdfBuffer } = req.body;
+
+  console.log("📥 Insert Certificate Document", { applino, userId });
+
+  if (!applino) {
+    return res.status(400).json({
+      success: false,
+      message: "Application Number is required.",
+    });
+  }
+
+  if (!userId) {
+    return res.status(400).json({
+      success: false,
+      message: "User ID is required.",
+    });
+  }
+
+  if (!pdfBuffer) {
+    return res.status(400).json({
+      success: false,
+      message: "PDF buffer is required.",
+    });
+  }
+
+  const result = await service.insertCertificateDocService(applino, userId, pdfBuffer);
+
+  return res.status(200).json({
+    success: true,
+    message: "Certificate document inserted successfully.",
+    data: result.data,
+  });
+});
+
+// ============================================================
+// UPDATE CERTIFICATE STATUS
+// ============================================================
+const updateCertificateStatus = asyncHandler(async (req, res) => {
+  const { serviceId, applino, userId } = req.body;
+
+  console.log("📥 Update Certificate Status", { serviceId, applino, userId });
+
+  if (!serviceId) {
+    return res.status(400).json({
+      success: false,
+      message: "Service ID is required.",
+    });
+  }
+
+  if (!applino) {
+    return res.status(400).json({
+      success: false,
+      message: "Application Number is required.",
+    });
+  }
+
+  if (!userId) {
+    return res.status(400).json({
+      success: false,
+      message: "User ID is required.",
+    });
+  }
+
+  const result = await service.updateCertificateStatusService(serviceId, applino, userId);
+
+  return res.status(200).json({
+    success: true,
+    message: "Certificate status updated successfully.",
+    data: result.data,
+  });
+});
+
+// ============================================================
+// GET CERTIFICATE DOCUMENT
+// ============================================================
+const getCertificateDoc = asyncHandler(async (req, res) => {
+  const { applino } = req.body;
+
+  console.log("📥 Get Certificate Document", { applino });
+
+  if (!applino) {
+    return res.status(400).json({
+      success: false,
+      message: "Application Number is required.",
+    });
+  }
+
+  const result = await service.getCertificateDocService(applino);
+
+  return res.status(200).json({
+    success: true,
+    message: "Certificate document fetched successfully.",
+    data: result.data,
+  });
+});
+
+// ============================================================
+// DOWNLOAD DOCUMENT BY ID - Matches btnView_Click in DOTNET
+// ============================================================
+const downloadDocumentById = asyncHandler(async (req, res) => {
+  const { docId } = req.body;
+
+  console.log("📥 Download Document", { docId });
+
+  if (!docId) {
+    return res.status(400).json({
+      success: false,
+      message: "Document ID is required.",
+    });
+  }
+
+  const result = await service.getDocumentByIdService(docId);
+
+  if (!result.data || result.data.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "Document not found.",
+    });
+  }
+
+  const doc = result.data[0];
+  
+  if (!doc.filebytes) {
+    return res.status(404).json({
+      success: false,
+      message: "Document file not found.",
+    });
+  }
+
+  // Convert base64 to buffer
+  const pdfBuffer = Buffer.from(doc.filebytes, 'base64');
+  const filename = `${doc.docname || 'Document'}_${docId}.pdf`;
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+  res.setHeader('Content-Length', pdfBuffer.length);
+  
+  return res.send(pdfBuffer);
+});
+
+// ============================================================
+// GENERATE AND DOWNLOAD CERTIFICATE - Complete Flow
+// Matches NOCCerti() + lnkstatus_Click in DOTNET
+// ============================================================
+const generateAndDownloadCertificate = asyncHandler(async (req, res) => {
+  const { applino, serviceId, userId, ulbId } = req.body;
+
+  console.log("📥 Generate and Download Certificate", { applino, serviceId, userId, ulbId });
+
+  if (!applino) {
+    return res.status(400).json({
+      success: false,
+      message: "Application Number is required.",
+    });
+  }
+
+  if (!serviceId) {
+    return res.status(400).json({
+      success: false,
+      message: "Service ID is required.",
+    });
+  }
+
+  if (!userId) {
+    return res.status(400).json({
+      success: false,
+      message: "User ID is required.",
+    });
+  }
+
+  if (!ulbId) {
+    return res.status(400).json({
+      success: false,
+      message: "ULB ID is required.",
+    });
+  }
+
+  // 1. Check if certificate already exists in custom table
+  const existingCert = await service.getCertificateDocService(applino);
+  
+  if (existingCert.data && existingCert.data.length > 0) {
+    const cert = existingCert.data[0];
+    if (cert.filebytes) {
+      const pdfBuffer = Buffer.from(cert.filebytes, 'base64');
+      const filename = `Certificate_${applino}.pdf`;
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      
+      return res.send(pdfBuffer);
+    }
+  }
+
+  // 2. Get certificate data from service-specific tables
+  const certDataResult = await service.getCertificateDataService(serviceId, applino, ulbId);
+  
+  if (!certDataResult.data || certDataResult.data.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "Certificate data not found for this application.",
+    });
+  }
+
+  // 3. Generate PDF (you need to implement this with your PDF library)
+  // This should generate PDF with QR code, data, etc.
+  // For now, using a placeholder - you need to implement actual PDF generation
+  const pdfBuffer = await generateCertificatePDF(certDataResult.data, serviceId);
+
+  if (!pdfBuffer) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to generate certificate PDF.",
+    });
+  }
+
+  // 4. Insert certificate document into custom table
+  await service.insertCertificateDocService(applino, userId, pdfBuffer);
+
+  // 5. Update certificate status (tracking)
+  await service.updateCertificateStatusService(serviceId, applino, userId);
+
+  // 6. Download the certificate
+  const filename = `Certificate_${applino}.pdf`;
+  
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+  res.setHeader('Content-Length', pdfBuffer.length);
+  
+  return res.send(pdfBuffer);
+});
+
+const generateCertificatePDF = async (certData, serviceId) => {
+  console.log("Generating PDF for service:", serviceId, "with data:", certData);
+  const placeholderBuffer = Buffer.from("PDF content placeholder", 'utf-8');
+  return placeholderBuffer;
+};
+
+
 module.exports = {
   getApplicationDetails,
   getApplicationDocuments,
@@ -309,4 +552,9 @@ module.exports = {
   getApplicationSteps,
   getCertificateData,
   getReApplyServiceDetails,
+  insertCertificateDoc,
+  updateCertificateStatus,
+  getCertificateDoc,
+  downloadDocumentById,
+  generateAndDownloadCertificate,
 };
