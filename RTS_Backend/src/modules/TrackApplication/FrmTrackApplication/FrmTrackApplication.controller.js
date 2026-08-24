@@ -610,7 +610,7 @@ const generateCertificateReport = asyncHandler(async (req, res) => {
 
   let pdf;
 
-  if (String(filters.serviceId) === "2" || String(filters.serviceId) === "43") {
+  if (String(filters.serviceId) === "2" || String(filters.serviceId) === "43" || String(filters.serviceId) === "289" || String(filters.serviceId) === "44") {
     pdf = await ExtractOfPropertyReportHelper({
       rows: reportData,
 
@@ -625,16 +625,6 @@ const generateCertificateReport = asyncHandler(async (req, res) => {
       appNo: filters.appNo,
 
       ulbId: filters.ulbId,
-    });
-  } else if (String(filters.serviceId) === "289") {
-    return res.status(400).json({
-      success: false,
-      message: "Service 289 report is not implemented yet",
-    });
-  } else if (String(filters.serviceId) === "44") {
-    return res.status(400).json({
-      success: false,
-      message: "Service 44 report is not implemented yet",
     });
   } else if (String(filters.serviceId) === "56") {
     return res.status(400).json({

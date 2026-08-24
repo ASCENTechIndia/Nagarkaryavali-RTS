@@ -159,13 +159,16 @@ const ExtractOfPropertyReportHelper = async ({ rows, corporationName, ulbLogo, q
         printDate: formatDate(new Date()),
       },
     };
-
     let templateFile;
 
     if (String(serviceId) === "2") {
       templateFile = "CrtExtractofProperty.html";
     } else if (String(serviceId) === "43") {
       templateFile = "CrtNewAssesment.html";
+    } else if (String(serviceId) === "289") {
+      templateFile = "CrtSelfAssesment.html";
+    } else if (String(serviceId) === "44") {
+      templateFile = "CrtReAssesment.html";
     } else {
       throw new Error(`PDF template not configured for Service ID ${serviceId}`);
     }
