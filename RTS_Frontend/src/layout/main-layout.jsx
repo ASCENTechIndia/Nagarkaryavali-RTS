@@ -37,7 +37,7 @@ const ULB3_DEPARTMENTS = [
 
 const Layout = () => {
     const { user, requestInitialized } = useAuth();
-    const ulbId = Number(user?.ulbId);
+    const ulbId = Number(user?.ulbId) || 3;
     const [departments, setDepartments] = useState([]);
     const [selectedDepartment, setSelectedDepartment] = useState(null);
 
@@ -87,7 +87,7 @@ const Layout = () => {
                 setDepartments(mappedDepartments);
             } catch (error) {
                 console.error( "Department fetch error:", error);
-                seDepartments([]);
+                setDepartments([]);
 
                 await Swal.fire({
                     icon: "error",

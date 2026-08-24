@@ -1,4 +1,5 @@
 const service = require("./FrmMArketEntry.service");
+const asyncHandler = require("../../../libs/asyncHandler");
 
 // ============================================================
 // GET BUSINESS PLACE
@@ -290,6 +291,9 @@ const getApplicationDetails = async (req, res, next) => {
       ulbId,
     });
 
+    // --------------------------------------------------------
+    // VALIDATION
+    // --------------------------------------------------------
     if (!applicationId) {
       return res.status(400).json({
         ok: false,
@@ -304,8 +308,14 @@ const getApplicationDetails = async (req, res, next) => {
       });
     }
 
+    // --------------------------------------------------------
+    // SERVICE
+    // --------------------------------------------------------
     const result = await service.getApplicationDetailsService(applicationId, ulbId);
 
+    // --------------------------------------------------------
+    // NOT FOUND
+    // --------------------------------------------------------
     if (result.status === "NOT_FOUND") {
       return res.status(404).json({
         ok: false,
@@ -314,6 +324,9 @@ const getApplicationDetails = async (req, res, next) => {
       });
     }
 
+    // --------------------------------------------------------
+    // SUCCESS
+    // --------------------------------------------------------
     return res.status(200).json({
       ok: true,
       message: result.message,
@@ -324,7 +337,6 @@ const getApplicationDetails = async (req, res, next) => {
     next(error);
   }
 };
-
 // ============================================================
 // APPLICATION ENTRY
 // ============================================================
@@ -549,6 +561,209 @@ const applicationEntry = async (req, res, next) => {
   }
 };
 
+// ============================================================
+// UPDATE DIRECTOR IMAGES
+// ============================================================
+const updateDirectorImages = asyncHandler(async (req, res) => {
+  const { appid, directorIds } = req.body;
+
+  if (!appid) {
+    throw new AppError("Application ID is required.", 400);
+  }
+
+  if (!req.files || req.files.length === 0) {
+    throw new AppError("Director image is required.", 400);
+  }
+
+  const result = await marketEntryService.updateDirectorImagesService({
+    appid,
+    directorIds,
+    files: req.files,
+  });
+
+  if (!result.success) {
+    throw new AppError(result.error, 500);
+  }
+
+  return ok(res, "Director images updated successfully.", result);
+});
+
+// ============================================================
+// DOCUMENT INSERT
+// ============================================================
+const documentInsert = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    throw new AppError("Document file is required", 400);
+  }
+
+  const result = await service.documentInsertService({
+    ...req.body,
+    file: req.file,
+  });
+
+  if (!result.success) {
+    throw new AppError(result.errorMsg || result.error || "Failed to insert document", 400);
+  }
+
+  return ok(res, result, "Document inserted successfully");
+});
+
+// ============================================================
+// GET EXISTING LICENSE DETAILS
+// ============================================================
+
+const getExistingLicenseDetails = asyncHandler(async (req, res) => {
+  const { oldLicencNo, ulbId } = req.body;
+
+  console.log("📥 Get Existing License Details", {
+    oldLicencNo,
+    ulbId,
+  });
+
+  if (!oldLicencNo) {
+    return res.status(400).json({
+      success: false,
+      message: "Old License Number is required.",
+    });
+  }
+
+  if (!ulbId) {
+    return res.status(400).json({
+      success: false,
+      message: "ULB ID is required.",
+    });
+  }
+
+  const result = await service.getExistingLicenseDetailsService(oldLicencNo, ulbId);
+
+  // --------------------------------------------------------
+  // License not found
+  // --------------------------------------------------------
+
+  if (!result.found) {
+    return res.status(404).json({
+      success: false,
+      message: "No Licence Found",
+      data: null,
+    });
+  }
+
+  // --------------------------------------------------------
+  // Success
+  // --------------------------------------------------------
+
+  return res.status(200).json({
+    success: true,
+    message: "Existing license details fetched successfully.",
+    data: result,
+  });
+});
+
+// ============================================================
+// SEARCH LICENSE
+// ============================================================
+
+const checkLicenseCancelled = asyncHandler(async (req, res) => {
+  const { oldLicencNo } = req.body;
+
+  console.log("📥 Check License Cancelled", {
+    oldLicencNo,
+  });
+
+  const result = await service.checkLicenseCancelledService(oldLicencNo);
+
+  return res.status(200).json({
+    success: true,
+    cancelled: result.cancelled,
+    message: result.cancelled ? "License is Cancelled" : "License is not Cancelled",
+  });
+});
+
+
+// ============================================================
+// GET TRADE TYPE RATES
+// ============================================================
+const getTradTypesRates = asyncHandler(async (req, res) => {
+  const {
+    tradeTypes,
+    fromDate,
+    toDate,
+    ulbId,
+  } = req.body;
+
+  console.log("📥 Get Trade Type Rates", {
+    tradeTypes,
+    fromDate,
+    toDate,
+    ulbId,
+  });
+
+  const data = await service.getTradTypesRatesService(
+    tradeTypes,
+    fromDate,
+    toDate,
+    ulbId
+  );
+
+  return res.status(200).json({
+    success: true,
+    message: "Trade type rates fetched successfully.",
+    data,
+  });
+});
+
+// ============================================================
+// GET TRADE TYPES BY CATEGORY
+// ============================================================
+const getTradeTypesByCategory = asyncHandler(async (req, res) => {
+  const { categoryId, type } = req.body;
+
+  console.log("📥 Get Trade Types By Category", {
+    categoryId,
+    type,
+  });
+
+  const data = await service.getTradeTypesByCategoryService(
+    categoryId,
+    type
+  );
+
+  return res.status(200).json({
+    success: true,
+    message: "Trade types fetched successfully.",
+    data,
+  });
+});
+
+
+// ============================================================
+// GET TRADE CATEGORY BY JWALAN STATUS
+// ============================================================
+const getTradeCategoryByJwalan = asyncHandler(async (req, res) => {
+  const {
+    jwalanshilStatus,
+    type,
+  } = req.body;
+
+  console.log("📥 Get Trade Category By Jwalan", {
+    jwalanshilStatus,
+    type,
+  });
+
+  const data =
+    await service.getTradeCategoryByJwalanService(
+      jwalanshilStatus,
+      type
+    );
+
+  return res.status(200).json({
+    success: true,
+    message: "Trade category fetched successfully.",
+    data,
+  });
+});
+
+
 module.exports = {
   getBusinessPlace,
   getJalanShil,
@@ -563,4 +778,12 @@ module.exports = {
   getTradeTypeDetails,
   getApplicationDetails,
   applicationEntry,
+  updateDirectorImages,
+  documentInsert,
+  getExistingLicenseDetails,
+  checkLicenseCancelled,
+  getTradTypesRates,
+  getTradeTypesByCategory,
+  getTradeCategoryByJwalan
+
 };

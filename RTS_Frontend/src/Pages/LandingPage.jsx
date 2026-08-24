@@ -16,7 +16,7 @@ const LandingPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { selectedDepartment } = useOutletContext();
-    const ulbId = user?.ulbId;
+    const ulbId = user?.ulbId || 3;
 
     const [services, setServices] = useState([]);
     const [selectedService, setSelectedService] = useState(null);
