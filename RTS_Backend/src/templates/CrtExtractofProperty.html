@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="mr">
+  <head>
+    <meta charset="UTF-8" />
+
+    <title>मालमत्ता कर उतारा</title>
+
+    <style>
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 210mm;
+        height: 297mm;
+      }
+
+      body {
+        font-family: "Nirmala UI", "Mangal", "Noto Sans Devanagari", Arial, sans-serif;
+
+        color: #000;
+        font-size: 12px;
+        background: #fff;
+      }
+
+      .page {
+        width: 210mm;
+        height: 297mm;
+
+        padding: 7mm 7mm 5mm 7mm;
+
+        position: relative;
+      }
+
+      /* =====================================================
+       HEADER
+    ===================================================== */
+
+      .header {
+        width: 100%;
+        height: 30mm;
+        border-bottom: 1px solid #000;
+        position: relative;
+      }
+
+      .left-logo {
+        position: absolute;
+        left: 2mm;
+        top: 2mm;
+        width: 25mm;
+        height: 25mm;
+        object-fit: contain;
+      }
+
+      .right-logo {
+        position: absolute;
+        right: 2mm;
+        top: 2mm;
+        width: 25mm;
+        height: 25mm;
+        object-fit: contain;
+      }
+
+      .header-center {
+        position: absolute;
+        left: 30mm;
+        right: 30mm;
+        top: 3mm;
+        text-align: center;
+      }
+
+      .corporation-name {
+        font-size: 26px;
+        font-weight: bold;
+        line-height: 1.25;
+      }
+
+      .act-name {
+        font-size: 12px;
+        font-weight: bold;
+        margin-top: 2mm;
+      }
+      /* =====================================================
+       REFERENCE
+    ===================================================== */
+
+      .reference-row {
+        width: 100%;
+
+        height: 11mm;
+
+        display: table;
+
+        table-layout: fixed;
+
+        margin-top: 1mm;
+      }
+
+      .reference-left,
+      .reference-right {
+        display: table-cell;
+
+        vertical-align: top;
+
+        font-size: 12px;
+      }
+
+      .reference-left {
+        width: 50%;
+
+        text-align: left;
+
+        padding-left: 2mm;
+      }
+
+      .reference-right {
+        width: 50%;
+
+        text-align: right;
+
+        padding-right: 2mm;
+      }
+
+      /* =====================================================
+       TITLE
+    ===================================================== */
+
+      .main-title {
+        width: 100%;
+
+        text-align: center;
+
+        font-size: 15px;
+
+        font-weight: bold;
+
+        margin-top: -1mm;
+
+        margin-bottom: 7mm;
+      }
+
+      /* =====================================================
+       RECIPIENT
+    ===================================================== */
+
+      .recipient {
+        width: 100%;
+
+        min-height: 24mm;
+
+        padding-left: 2mm;
+
+        font-size: 12px;
+
+        line-height: 1.5;
+      }
+
+      .recipient-label {
+        margin-bottom: 1mm;
+      }
+
+      /* =====================================================
+       LETTER CONTENT
+    ===================================================== */
+
+      .letter-content {
+        width: 100%;
+
+        padding-left: 17mm;
+        padding-right: 8mm;
+
+        margin-top: 2mm;
+
+        font-size: 12px;
+
+        line-height: 1.65;
+      }
+
+      .subject-row {
+        margin-bottom: 1mm;
+      }
+
+      .reference-text {
+        margin-bottom: 4mm;
+      }
+
+      .salutation {
+        margin-left: -17mm;
+
+        margin-bottom: 2mm;
+      }
+
+      .paragraph {
+        text-align: left;
+
+        margin-bottom: 1mm;
+      }
+
+      /* =====================================================
+       PROPERTY TABLE
+    ===================================================== */
+
+      .property-table {
+        width: 100%;
+
+        border-collapse: collapse;
+
+        table-layout: fixed;
+
+        margin-top: 4mm;
+
+        font-size: 10.5px;
+      }
+
+      .property-table td {
+        border: 1px solid #000;
+
+        padding: 2mm 2mm;
+
+        vertical-align: middle;
+
+        line-height: 1.25;
+      }
+
+      .sr-col {
+        width: 7%;
+      }
+
+      .label-col {
+        width: 32%;
+      }
+
+      .value-col {
+        width: 61%;
+      }
+
+      .sr {
+        text-align: center;
+
+        vertical-align: middle !important;
+
+        font-size: 12px;
+      }
+
+      .property-label {
+        text-align: left;
+
+        vertical-align: middle !important;
+      }
+
+      .property-value {
+        text-align: left;
+
+        vertical-align: middle !important;
+
+        word-wrap: break-word;
+      }
+
+      .row-1 {
+        height: 9mm;
+      }
+
+      .row-2 {
+        height: 9mm;
+      }
+
+      .row-3 {
+        height: 15mm;
+      }
+
+      .row-4 {
+        height: 10mm;
+      }
+
+      .row-5 {
+        height: 9mm;
+      }
+
+      .row-6 {
+        height: 10mm;
+      }
+
+      .row-7 {
+        height: 9mm;
+      }
+
+      .row-8 {
+        height: 13mm;
+      }
+
+      .row-9 {
+        height: 9mm;
+      }
+
+      .row-10 {
+        height: 9mm;
+      }
+
+      .row-11 {
+        height: 9mm;
+      }
+
+      /* =====================================================
+       SLASH VALUE
+    ===================================================== */
+
+      .slash-value {
+        display: table;
+
+        width: 100%;
+
+        table-layout: fixed;
+      }
+
+      .slash-value .first {
+        display: table-cell;
+
+        width: 48%;
+      }
+
+      .slash-value .slash {
+        display: table-cell;
+
+        width: 4%;
+
+        text-align: center;
+      }
+
+      .slash-value .second {
+        display: table-cell;
+
+        width: 48%;
+      }
+
+      /* =====================================================
+       FOOTER
+    ===================================================== */
+
+      .report-footer {
+        position: absolute;
+
+        left: 7mm;
+        right: 7mm;
+
+        bottom: 9mm;
+
+        height: 42mm;
+      }
+
+      .footer-content {
+        width: 100%;
+
+        position: relative;
+
+        height: 100%;
+      }
+
+      .footer-address {
+        position: absolute;
+
+        left: 2mm;
+
+        top: 0;
+
+        width: 30%;
+
+        font-size: 12px;
+
+        line-height: 1.5;
+      }
+
+      .qr-container {
+        position: absolute;
+
+        left: 42%;
+
+        top: 0;
+
+        width: 18%;
+
+        text-align: center;
+      }
+
+      .qr-code {
+        width: 25mm;
+
+        height: 25mm;
+
+        object-fit: contain;
+      }
+
+      .place-date {
+        position: absolute;
+
+        left: 2mm;
+
+        bottom: 0;
+
+        width: 30%;
+
+        font-size: 12px;
+
+        line-height: 1.7;
+      }
+
+      .signature {
+        position: absolute;
+        right: 2mm;
+        bottom: 0;
+        width: 40%;
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <!-- =====================================================
+       HEADER
+  ====================================================== -->
+
+      <div class="header">
+        {{#if leftLogo}}
+        <img src="{{leftLogo}}" class="left-logo" alt="ULB Logo" />
+        {{/if}}
+
+        <div class="header-center">
+          <div class="corporation-name">{{corporationName}}</div>
+
+          <div class="act-name">महाराष्ट्र लोकसेवा हक्क अधिनियम, २०१५ अन्वये</div>
+        </div>
+
+        {{#if rightLogo}}
+        <img src="{{rightLogo}}" class="right-logo" alt="Aaple Seva Logo" />
+        {{/if}}
+      </div>
+
+      <!-- =====================================================
+       OUTWARD NO / DATE
+  ====================================================== -->
+
+      <div class="reference-row">
+        <div class="reference-left">
+          जा. क्र. :
+          <strong>{{OUTNO}}</strong>
+        </div>
+
+        <div class="reference-right">
+          दिनांक :
+          <strong>{{APPDATE}}</strong>
+        </div>
+      </div>
+
+      <!-- =====================================================
+       TITLE
+  ====================================================== -->
+
+      <div class="main-title">मालमत्ता कर उतारा</div>
+
+      <!-- =====================================================
+       RECIPIENT
+  ====================================================== -->
+
+      <div class="recipient">
+        <div class="recipient-label">प्रति,</div>
+
+        <div>{{APPLINAME}}</div>
+
+        <div>{{ADDRESS}}</div>
+      </div>
+
+      <!-- =====================================================
+       LETTER CONTENT
+  ====================================================== -->
+
+      <div class="letter-content">
+        <div class="subject-row">
+          <b>विषय :</b>
+          मालमत्ता कर उतारा मिळणेबाबत.
+        </div>
+
+        <div class="reference-text">
+          <b>संदर्भ :</b>
+
+          आपला दि. {{APPDATE}} रोजीचा अर्ज आवक क्र. {{APPNO}}
+        </div>
+
+        <div class="salutation">महोदय,</div>
+
+        <div class="paragraph">आपण मालमत्ता कर उतारा मिळणेकरीता संदर्भानुसार विनंती अर्ज सादर केला आहे.</div>
+
+        <div class="paragraph">सदर मिळकतीच्या कर आकारणी अहवालावरून आपणास खालीलप्रमाणे मालमत्ता कर उतारा देण्यात येत आहे.</div>
+      </div>
+
+      <!-- =====================================================
+       PROPERTY TABLE
+  ====================================================== -->
+
+      <table class="property-table">
+        <tbody>
+          <tr class="row-1">
+            <td class="sr-col sr">१</td>
+            <td class="label-col property-label">मालमत्ता कर क्र</td>
+            <td class="value-col property-value">{{certificate.propno}}</td>
+          </tr>
+
+          <tr class="row-2">
+            <td class="sr-col sr">२</td>
+            <td class="label-col property-label">सब कोड</td>
+            <td class="value-col property-value">{{certificate.subcode}}</td>
+          </tr>
+
+          <tr class="row-3">
+            <td class="sr-col sr">३</td>
+
+            <td class="label-col property-label">
+              जमीन / विकासक / स्ट्रक्चर<br />
+              मालकाचे नाव
+            </td>
+
+            <td class="value-col property-value">
+              <div class="slash-value">
+                <div class="first">{{certificate.landholder}}</div>
+
+                <div class="slash">/</div>
+
+                <div class="second">{{certificate.structholder}}</div>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="row-4">
+            <td class="sr-col sr">४</td>
+
+            <td class="label-col property-label">मिळकत धारकाचे नाव</td>
+
+            <td class="value-col property-value">{{certificate.owndtls}}</td>
+          </tr>
+
+          <tr class="row-5">
+            <td class="sr-col sr">५</td>
+
+            <td class="label-col property-label">सदनिका / गाळा / युनिट क्र</td>
+
+            <td class="value-col property-value">{{certificate.flatno}}</td>
+          </tr>
+
+          <tr class="row-6">
+            <td class="sr-col sr">६</td>
+
+            <td class="label-col property-label">मिळकतीचे स्वरूप व वापर</td>
+
+            <td class="value-col property-value">
+              <div class="slash-value">
+                <div class="first">{{certificate.structure}}</div>
+
+                <div class="slash">/</div>
+
+                <div class="second">{{certificate.usagetype}}</div>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="row-7">
+            <td class="sr-col sr">७</td>
+
+            <td class="label-col property-label">जागेचे क्षेत्रफळ (चौ.फु)</td>
+
+            <td class="value-col property-value">{{certificate.area}}</td>
+          </tr>
+
+          <tr class="row-8">
+            <td class="sr-col sr">८</td>
+
+            <td class="label-col property-label">
+              बाजारी भाडे (प्रति चौ.फु,<br />
+              प्रति महिना)
+            </td>
+
+            <td class="value-col property-value">{{certificate.lettingrate}}</td>
+          </tr>
+
+          <tr class="row-9">
+            <td class="sr-col sr">९</td>
+
+            <td class="label-col property-label">करयोग्य मूल्य (रु.)</td>
+
+            <td class="value-col property-value">{{certificate.rate}}</td>
+          </tr>
+
+          <tr class="row-10">
+            <td class="sr-col sr">१०</td>
+
+            <td class="label-col property-label">वार्षिक कर (रु.)</td>
+
+            <td class="value-col property-value">{{certificate.yeartax}}</td>
+          </tr>
+
+          <tr class="row-11">
+            <td class="sr-col sr">११</td>
+
+            <td class="label-col property-label">कर आकारणी वर्ष</td>
+
+            <td class="value-col property-value">{{certificate.assessyr}}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- =====================================================
+       FOOTER
+  ====================================================== -->
+
+      <div class="report-footer">
+        <div class="footer-content">
+          <!-- ADDRESS -->
+          <!-- QR -->
+
+          <div class="qr-container">
+            {{#if qrCode}}
+
+            <img src="{{qrCode}}" class="qr-code" alt="QR Code" />
+
+            {{/if}}
+          </div>
+
+          <!-- PLACE / DATE -->
+
+          <div class="place-date">
+            <div>ठिकाण : ठाणे</div>
+
+            <div>दिनांक : {{certificate.authdate}}</div>
+          </div>
+
+          <!-- SIGNATURE -->
+
+          <div class="signature">
+            <div>सहाय्यक आयुक्त</div>
+
+            <div>प्रभाग कार्यालय</div>
+
+            <div>ठाणे महानगरपालिका, ठाणे.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

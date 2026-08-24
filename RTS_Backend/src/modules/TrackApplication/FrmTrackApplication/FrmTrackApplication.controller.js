@@ -1,6 +1,11 @@
 const asyncHandler = require("../../../libs/asyncHandler");
 const service = require("./FrmTrackApplication.service");
 const { ok, fail } = require("../../../libs/response");
+const path = require("path");
+const { AppError } = require("../../../libs/errors");
+
+const { ExtractOfPropertyReportHelper } = require("../../../utils/pdfHelper/FrmTrackApplication");
+const { getCorporationDetailsService } = require("../../Dashboard/Dashboard.service");
 
 // ============================================================
 // GET APPLICATION DETAILS
@@ -423,7 +428,7 @@ const downloadDocumentById = asyncHandler(async (req, res) => {
   }
 
   const doc = result.data[0];
-  
+
   if (!doc.filebytes) {
     return res.status(404).json({
       success: false,
@@ -432,13 +437,13 @@ const downloadDocumentById = asyncHandler(async (req, res) => {
   }
 
   // Convert base64 to buffer
-  const pdfBuffer = Buffer.from(doc.filebytes, 'base64');
-  const filename = `${doc.docname || 'Document'}_${docId}.pdf`;
+  const pdfBuffer = Buffer.from(doc.filebytes, "base64");
+  const filename = `${doc.docname || "Document"}_${docId}.pdf`;
 
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
-  res.setHeader('Content-Length', pdfBuffer.length);
-  
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+  res.setHeader("Content-Length", pdfBuffer.length);
+
   return res.send(pdfBuffer);
 });
 
@@ -481,24 +486,24 @@ const generateAndDownloadCertificate = asyncHandler(async (req, res) => {
 
   // 1. Check if certificate already exists in custom table
   const existingCert = await service.getCertificateDocService(applino);
-  
+
   if (existingCert.data && existingCert.data.length > 0) {
     const cert = existingCert.data[0];
     if (cert.filebytes) {
-      const pdfBuffer = Buffer.from(cert.filebytes, 'base64');
+      const pdfBuffer = Buffer.from(cert.filebytes, "base64");
       const filename = `Certificate_${applino}.pdf`;
-      
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
-      res.setHeader('Content-Length', pdfBuffer.length);
-      
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+      res.setHeader("Content-Length", pdfBuffer.length);
+
       return res.send(pdfBuffer);
     }
   }
 
   // 2. Get certificate data from service-specific tables
   const certDataResult = await service.getCertificateDataService(serviceId, applino, ulbId);
-  
+
   if (!certDataResult.data || certDataResult.data.length === 0) {
     return res.status(404).json({
       success: false,
@@ -526,20 +531,185 @@ const generateAndDownloadCertificate = asyncHandler(async (req, res) => {
 
   // 6. Download the certificate
   const filename = `Certificate_${applino}.pdf`;
-  
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
-  res.setHeader('Content-Length', pdfBuffer.length);
-  
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
+  res.setHeader("Content-Length", pdfBuffer.length);
+
   return res.send(pdfBuffer);
 });
 
 const generateCertificatePDF = async (certData, serviceId) => {
   console.log("Generating PDF for service:", serviceId, "with data:", certData);
-  const placeholderBuffer = Buffer.from("PDF content placeholder", 'utf-8');
+  const placeholderBuffer = Buffer.from("PDF content placeholder", "utf-8");
   return placeholderBuffer;
 };
 
+const generateCertificateReport = asyncHandler(async (req, res) => {
+  console.log("Request: Generate Certificate Report");
+  console.log("Request Body:", req.body);
+
+  const filters = req.body;
+
+  // ------------------------------------------------------
+  // Validation
+  // ------------------------------------------------------
+
+  if (!filters.serviceId) {
+    throw new AppError("serviceId is required", 400);
+  }
+
+  if (!filters.appNo) {
+    throw new AppError("appNo is required", 400);
+  }
+
+  if (!filters.ulbId) {
+    throw new AppError("ulbId is required", 400);
+  }
+
+  // ------------------------------------------------------
+  // 1. Get Certificate Data
+  // ------------------------------------------------------
+
+  const serviceResult = await service.generateCertificateReportService(filters);
+
+  //console.log("Certificate Service Result:", serviceResult);
+
+  if (!serviceResult || serviceResult.status !== "SUCCESS" || !serviceResult.data || serviceResult.data.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: serviceResult?.message || "No Record Found For Print",
+    });
+  }
+
+  const reportData = serviceResult.data;
+
+  // ------------------------------------------------------
+  // 2. Get Corporation Information
+  // ------------------------------------------------------
+
+  const corporationResponse = await getCorporationDetailsService({
+    corporationId: filters.ulbId,
+  });
+
+  const corporationData = corporationResponse?.data || {};
+
+  const corporation = corporationData?.corporation || {};
+
+  const corporationName = corporation?.VAR_CORPORATION_NAME || "";
+
+  let ulbLogo = "";
+
+  if (corporationData?.logo) {
+    ulbLogo = `data:image/png;base64,${corporationData.logo}`;
+  }
+
+  // ------------------------------------------------------
+  // 3. Generate PDF
+  // ------------------------------------------------------
+
+  let pdf;
+
+  if (String(filters.serviceId) === "2" || String(filters.serviceId) === "43") {
+    pdf = await ExtractOfPropertyReportHelper({
+      rows: reportData,
+
+      corporationName: corporationName || "",
+
+      ulbLogo: ulbLogo || "",
+
+      reportName: "मालमत्ता कर उतारा",
+
+      serviceId: filters.serviceId,
+
+      appNo: filters.appNo,
+
+      ulbId: filters.ulbId,
+    });
+  } else if (String(filters.serviceId) === "289") {
+    return res.status(400).json({
+      success: false,
+      message: "Service 289 report is not implemented yet",
+    });
+  } else if (String(filters.serviceId) === "44") {
+    return res.status(400).json({
+      success: false,
+      message: "Service 44 report is not implemented yet",
+    });
+  } else if (String(filters.serviceId) === "56") {
+    return res.status(400).json({
+      success: false,
+      message: "Service 56 report is not implemented yet",
+    });
+  } else if (String(filters.serviceId) === "100") {
+    return res.status(400).json({
+      success: false,
+      message: "Service 100 report is not implemented yet",
+    });
+  } else if (String(filters.serviceId) === "4" || String(filters.serviceId) === "5") {
+    return res.status(400).json({
+      success: false,
+      message: `Service ${filters.serviceId} report is not implemented yet`,
+    });
+  } else if (String(filters.serviceId) === "287" || String(filters.serviceId) === "46") {
+    return res.status(400).json({
+      success: false,
+      message: `Service ${filters.serviceId} report is not implemented yet`,
+    });
+  } else if (String(filters.serviceId) === "290") {
+    return res.status(400).json({
+      success: false,
+      message: "Service 290 report is not implemented yet",
+    });
+  } else if (String(filters.serviceId) === "291") {
+    return res.status(400).json({
+      success: false,
+      message: "Service 291 report is not implemented yet",
+    });
+  } else if (String(filters.serviceId) === "51") {
+    return res.status(400).json({
+      success: false,
+      message: "Service 51 report is not implemented yet",
+    });
+  } else {
+    return res.status(400).json({
+      success: false,
+      message: `Certificate report not configured for Service ID ${filters.serviceId}`,
+    });
+  }
+
+  // ------------------------------------------------------
+  // 4. Validate PDF
+  // ------------------------------------------------------
+
+  if (!pdf || !pdf.filePath) {
+    return res.status(500).json({
+      success: false,
+      message: "PDF generation failed",
+    });
+  }
+
+  // ------------------------------------------------------
+  // 5. Construct PDF URL
+  // ------------------------------------------------------
+
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+  const pdfUrl = `${baseUrl}/pdf/${path.basename(pdf.filePath)}`;
+
+  // ------------------------------------------------------
+  // 6. Return Response
+  // ------------------------------------------------------
+
+  return res.json({
+    success: true,
+    message: "PDF Generated Successfully",
+    fileName: pdf.fileName,
+    pdfUrl,
+    serviceId: filters.serviceId,
+    appNo: filters.appNo,
+  });
+});
 
 module.exports = {
   getApplicationDetails,
@@ -557,4 +727,5 @@ module.exports = {
   getCertificateDoc,
   downloadDocumentById,
   generateAndDownloadCertificate,
+  generateCertificateReport,
 };

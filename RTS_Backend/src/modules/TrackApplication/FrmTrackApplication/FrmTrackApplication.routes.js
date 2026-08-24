@@ -4,7 +4,6 @@ const router = express.Router();
 const controller = require("./FrmTrackApplication.controller");
 const auth = require("../../../middlewares/auth.middleware");
 
-
 router.post("/getapplicationdetails", auth(), controller.getApplicationDetails);
 
 router.post("/getapplicationdocuments", auth(), controller.getApplicationDocuments);
@@ -36,5 +35,6 @@ router.post("/downloaddocumentbyid", auth(), controller.downloadDocumentById);
 router.post("/generateanddownloadcertificate", auth(), controller.generateAndDownloadCertificate);
 
 router.post("/downloadcertificate", auth(), controller.generateAndDownloadCertificate);
+router.post("/generate-certificate-report",  controller.generateCertificateReport);
 
 module.exports = router;

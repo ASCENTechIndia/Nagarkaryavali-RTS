@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="mr">
+  <head>
+    <meta charset="UTF-8" />
+
+    <title>नवीन कर आकारणी</title>
+
+    <style>
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 210mm;
+        height: 297mm;
+      }
+
+      body {
+        font-family: "Nirmala UI", "Mangal", "Noto Sans Devanagari", Arial, sans-serif;
+        color: #000;
+        background: #fff;
+        font-size: 12px;
+      }
+
+      .page {
+        position: relative;
+        width: 210mm;
+        height: 297mm;
+        padding: 7mm 10mm 7mm 10mm;
+      }
+
+      /* HEADER */
+
+      .header {
+        width: 100%;
+        height: 30mm;
+        border-bottom: 1px solid #000;
+        position: relative;
+      }
+
+      .left-logo {
+        position: absolute;
+        left: 2mm;
+        top: 2mm;
+        width: 24mm;
+        height: 25mm;
+        object-fit: contain;
+      }
+
+      .right-logo {
+        position: absolute;
+        right: 2mm;
+        top: 2mm;
+        width: 27mm;
+        height: 25mm;
+        object-fit: contain;
+      }
+
+      .header-center {
+        position: absolute;
+        left: 30mm;
+        right: 32mm;
+        top: 2mm;
+        text-align: center;
+      }
+
+      .corporation-name {
+        font-size: 24px;
+        font-weight: bold;
+        line-height: 1.25;
+        white-space: nowrap;
+      }
+
+      .act-name {
+        font-size: 12px;
+        font-weight: bold;
+        margin-top: 2mm;
+        white-space: nowrap;
+      }
+
+      .apleseva-logo {
+        position: absolute;
+        right: 2mm;
+        top: 1mm;
+        width: 28mm;
+        height: 29mm;
+        object-fit: contain;
+      }
+
+      /* REFERENCE */
+
+      .reference-row {
+        width: 100%;
+        height: 11mm;
+        position: relative;
+        font-size: 12px;
+      }
+
+      .reference-left {
+        position: absolute;
+        left: 2mm;
+        top: 3mm;
+      }
+
+      .reference-right {
+        position: absolute;
+        right: 2mm;
+        top: 3mm;
+      }
+
+      /* TITLE */
+
+      .title {
+        width: 100%;
+        text-align: center;
+        font-size: 15px;
+        font-weight: bold;
+        margin-top: 1mm;
+        margin-bottom: 4mm;
+      }
+
+      /* RECIPIENT */
+
+      .recipient {
+        margin-left: 2mm;
+        font-size: 12px;
+        line-height: 1.7;
+        min-height: 28mm;
+      }
+
+      .recipient-label {
+        margin-bottom: 1mm;
+      }
+
+      .recipient-name {
+        margin-bottom: 0;
+      }
+
+      .recipient-address {
+        width: 100%;
+        min-height: 16mm;
+      }
+
+      /* LETTER */
+
+      .letter {
+        width: 100%;
+        padding-left: 20mm;
+        padding-right: 8mm;
+        font-size: 12px;
+        line-height: 1.7;
+      }
+
+      .subject {
+        margin-bottom: 1mm;
+      }
+
+      .reference {
+        margin-bottom: 7mm;
+      }
+
+      .salutation {
+        margin-left: -20mm;
+        margin-bottom: 5mm;
+      }
+
+      .paragraph {
+        text-align: justify;
+        margin-bottom: 2mm;
+      }
+
+      /* FOOTER */
+
+      .footer {
+        position: absolute;
+        left: 10mm;
+        right: 10mm;
+        bottom: 10mm;
+        height: 42mm;
+      }
+
+      .footer-address {
+        position: absolute;
+        left: 2mm;
+        top: 0;
+        width: 30%;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .qr-container {
+        position: absolute;
+        left: 43%;
+        top: 0;
+        width: 18%;
+        text-align: center;
+      }
+
+      .qr-code {
+        width: 25mm;
+        height: 25mm;
+        object-fit: contain;
+      }
+
+      .place-date {
+        position: absolute;
+        left: 2mm;
+        bottom: 0;
+        width: 30%;
+        font-size: 12px;
+        line-height: 1.7;
+      }
+
+      .signature {
+        position: absolute;
+        right: 2mm;
+        bottom: 0;
+        width: 40%;
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .signature-space {
+        height: 8mm;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <div class="header">
+        {{#if leftLogo}}
+        <img src="{{leftLogo}}" class="left-logo" alt="ULB Logo" />
+        {{/if}}
+
+        <div class="header-center">
+          <div class="corporation-name">{{corporationName}}</div>
+
+          <div class="act-name">महाराष्ट्र लोकसेवा हक्क अधिनियम, २०१५ अन्वये</div>
+        </div>
+
+        {{#if rightLogo}}
+        <img src="{{rightLogo}}" class="right-logo" alt="Apleseva Logo" />
+        {{/if}}
+      </div>
+
+      <div class="reference-row">
+        <div class="reference-left">
+          <span>जा. क्र. :</span>
+          <strong>{{OUTNO}}</strong>
+        </div>
+
+        <div class="reference-right">
+          <span>दिनांक :</span>
+          <strong>{{APPDATE}}</strong>
+        </div>
+      </div>
+
+      <div class="title">नव्याने कर आकारणी</div>
+
+      <div class="recipient">
+        <div class="recipient-label">प्रति,</div>
+
+        <div class="recipient-name">{{APPLINAME}}</div>
+
+        <div class="recipient-address">{{ADDRESS}}</div>
+      </div>
+
+      <div class="letter">
+        <div class="subject">
+          <strong>विषय :</strong>
+          नव्याने कर आकारणी करणेबाबत
+        </div>
+
+        <div class="reference">
+          <strong>संदर्भ :</strong>
+          आपला दि. {{APPDATE}} रोजीचा अर्ज आवक क्र. {{APPNO}}
+        </div>
+
+        <div class="salutation">महोदय,</div>
+
+        <div class="paragraph">
+          आपण नव्याने कर आकारणी करून मिळणेकरिता संदर्भानुसार विनंती अर्ज सादर केला आहे. हे आपण सादर केलेल्या कागदपत्राच्या आधारे सदर मिळकतीच्या मालमत्ता कर आकारणीची महाराष्ट्र महानगरपालिका अधिनियम कराधान नियम ७(१) अन्वयेची विशेष नोटीस (Special Notice) या सोबत आपणास देण्यात
+          येत आहे.
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="qr-container">
+          {{#if qrCode}}
+
+          <img src="{{qrCode}}" class="qr-code" />
+
+          {{/if}}
+        </div>
+
+        <div class="place-date">
+          <div>ठिकाण : ठाणे</div>
+
+          <div>दिनांक : {{AUTHDATE}}</div>
+        </div>
+
+        <div class="signature">
+          <div>सहाय्यक आयुक्त</div>
+
+          <div>प्रभाग कार्यालय</div>
+
+          <div>ठाणे महानगरपालिका, ठाणे.</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
