@@ -87,7 +87,7 @@ async function insertNewTaxAssessment(params) {
     IN_propownname: propOwnName || null,
     IN_vikasname: vikasName || null,
     IN_taxesreceipt: taxesReceipt || null,
-    in_source: appSource || "WEB",
+    in_source: appSource,
 
     out_errcode: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
     out_ErrMsg: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 1000 },

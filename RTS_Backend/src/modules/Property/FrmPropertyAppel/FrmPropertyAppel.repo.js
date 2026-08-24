@@ -83,17 +83,14 @@ async function insertPropAppeal(params) {
 
   const binds = {
     IN_USERID: userId,
-
     IN_Zoneid: {
       val: Number(zoneId),
       type: oracledb.NUMBER,
     },
-
     IN_Serviceid: {
       val: Number(serviceId),
       type: oracledb.NUMBER,
     },
-
     IN_PropNO: propNo || null,
     IN_SubCode: subCode || null,
     IN_LandHolder: landHolder || null,
@@ -101,7 +98,6 @@ async function insertPropAppeal(params) {
     IN_OwnDetails: ownDetails || null,
     IN_Address: address || null,
     IN_Appliname: appliName || null,
-
     IN_Mobile:
       mobile !== undefined && mobile !== null && mobile !== ""
         ? {
@@ -109,9 +105,7 @@ async function insertPropAppeal(params) {
           type: oracledb.NUMBER,
         }
         : null,
-
     IN_Email: email || null,
-
     IN_Aadhar:
       aadhar !== undefined && aadhar !== null && aadhar !== ""
         ? {
@@ -119,7 +113,6 @@ async function insertPropAppeal(params) {
           type: oracledb.NUMBER,
         }
         : null,
-
     IN_Objecttype:
       objectType !== undefined &&
         objectType !== null &&
@@ -129,23 +122,19 @@ async function insertPropAppeal(params) {
           type: oracledb.NUMBER,
         }
         : null,
-
     IN_ObjectDesc: objectDesc || null,
-
     IN_TaxDate1: taxDate1
       ? {
         val: new Date(taxDate1),
         type: oracledb.DATE,
       }
       : null,
-
     IN_TaxDate2: taxDate2
       ? {
         val: new Date(taxDate2),
         type: oracledb.DATE,
       }
       : null,
-
     IN_OldUsage:
       oldUsage !== undefined && oldUsage !== null && oldUsage !== ""
         ? {
@@ -153,7 +142,6 @@ async function insertPropAppeal(params) {
           type: oracledb.NUMBER,
         }
         : null,
-
     IN_NewUsage:
       newUsage !== undefined && newUsage !== null && newUsage !== ""
         ? {
@@ -161,7 +149,6 @@ async function insertPropAppeal(params) {
           type: oracledb.NUMBER,
         }
         : null,
-
     IN_OldSubUsage:
       oldSubUsage !== undefined &&
         oldSubUsage !== null &&
@@ -171,7 +158,6 @@ async function insertPropAppeal(params) {
           type: oracledb.NUMBER,
         }
         : null,
-
     IN_NewSubUsage:
       newSubUsage !== undefined &&
         newSubUsage !== null &&
@@ -181,7 +167,6 @@ async function insertPropAppeal(params) {
           type: oracledb.NUMBER,
         }
         : null,
-
     IN_OldArea:
       oldArea !== undefined && oldArea !== null && oldArea !== ""
         ? {
@@ -189,7 +174,6 @@ async function insertPropAppeal(params) {
           type: oracledb.NUMBER,
         }
         : null,
-
     IN_NewArea:
       newArea !== undefined && newArea !== null && newArea !== ""
         ? {
@@ -197,7 +181,6 @@ async function insertPropAppeal(params) {
           type: oracledb.NUMBER,
         }
         : null,
-
     IN_OldYrKaryogya:
       oldYrKaryogya !== undefined &&
         oldYrKaryogya !== null &&
@@ -207,7 +190,6 @@ async function insertPropAppeal(params) {
           type: oracledb.NUMBER,
         }
         : null,
-
     IN_NewYrKaryogya:
       newYrKaryogya !== undefined &&
         newYrKaryogya !== null &&
@@ -217,7 +199,6 @@ async function insertPropAppeal(params) {
           type: oracledb.NUMBER,
         }
         : null,
-
     IN_OldKaryogya:
       oldKaryogya !== undefined &&
         oldKaryogya !== null &&
@@ -227,7 +208,6 @@ async function insertPropAppeal(params) {
           type: oracledb.NUMBER,
         }
         : null,
-
     IN_NewKaryogya:
       newKaryogya !== undefined &&
         newKaryogya !== null &&
@@ -237,9 +217,7 @@ async function insertPropAppeal(params) {
           type: oracledb.NUMBER,
         }
         : null,
-
-    // NEW PARAMETER
-    in_source: appSource || "WEB",
+    in_source: appSource,
 
     out_errcode: {
       dir: oracledb.BIND_OUT,

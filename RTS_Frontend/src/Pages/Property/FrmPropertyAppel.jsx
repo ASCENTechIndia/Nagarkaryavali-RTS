@@ -42,8 +42,7 @@ const initialValues = {
 const FrmPropertyAppel = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
-  const token = user?.token;
+  const { user, token  } = useAuth();
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   const locationState = location.state || {};
   const ulbId = locationState.ulbId || user?.ulbId || "3";
@@ -123,20 +122,13 @@ const FrmPropertyAppel = () => {
 
         const tableRows = docs.map((doc, index) => ({
           id: doc.DOCID || doc.DocId || index + 1,
-
           srNo: index + 1,
-
           documentName:
             doc.DOCNAME || doc.DocName || doc.ENGDOCDESC || "Document",
-
           docId: doc.DOCID || doc.DocId,
-
           docType: doc.DOCTYPE || doc.DocType || "PDF",
-
           file: null,
-
           fileName: "No file chosen",
-
           fileBuffer: null,
         }));
 
@@ -269,90 +261,133 @@ const FrmPropertyAppel = () => {
   };
 
 
+  // const handleFileChange = (id, event) => {
+  //   const file = event.currentTarget.files?.[0];
+
+  //   if (!file) return;
+
+  //   const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+
+  //   if (!allowedTypes.includes(file.type)) {
+  //     Swal.fire({
+  //       text: "Only JPG, PNG and PDF files are allowed.",
+  //       confirmButtonColor: "#1e3a8a",
+  //     });
+
+  //     event.target.value = "";
+  //     return;
+  //   }
+
+  //   if (file.size > 5 * 1024 * 1024) {
+  //     Swal.fire({
+  //       text: "File size should not exceed 5 MB.",
+  //       confirmButtonColor: "#1e3a8a",
+  //     });
+
+  //     event.target.value = "";
+  //     return;
+  //   }
+
+  //   const reader = new FileReader();
+
+  //   reader.onload = (e) => {
+  //     const arrayBuffer = e.target.result;
+
+  //     const buffer = Buffer.from(new Uint8Array(arrayBuffer));
+
+  //     setTableData((prev) =>
+  //       prev.map((row) =>
+  //         row.id === id
+  //           ? {
+  //               ...row,
+  //               file: file,
+  //               fileName: file.name,
+  //               fileBuffer: buffer,
+  //             }
+  //           : row,
+  //       ),
+  //     );
+  //   };
+
+  //   reader.readAsArrayBuffer(file);
+  // };
+
+
   const handleFileChange = (id, event) => {
     const file = event.currentTarget.files?.[0];
-
-    if (!file) return;
-
-    const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
-
-    if (!allowedTypes.includes(file.type)) {
-      Swal.fire({
-        text: "Only JPG, PNG and PDF files are allowed.",
-        confirmButtonColor: "#1e3a8a",
-      });
-
-      event.target.value = "";
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      Swal.fire({
-        text: "File size should not exceed 5 MB.",
-        confirmButtonColor: "#1e3a8a",
-      });
-
-      event.target.value = "";
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      const arrayBuffer = e.target.result;
-
-      const buffer = Buffer.from(new Uint8Array(arrayBuffer));
-
+    if (file) {
       setTableData((prev) =>
         prev.map((row) =>
           row.id === id
-            ? {
-                ...row,
-                file: file,
-                fileName: file.name,
-                fileBuffer: buffer,
-              }
-            : row,
-        ),
+            ? { ...row, file: file, fileName: file.name }
+            : row
+        )
       );
-    };
-
-    reader.readAsArrayBuffer(file);
+    }
   };
 
+
+  // const uploadDocument = async (applicationNo, doc) => {
+  //   try {
+  //     const formData = new FormData();
+
+  //     formData.append("serviceId", String(serviceId));
+  //     formData.append("appNo", applicationNo);
+  //     formData.append("docType", doc.docType || "PDF");
+  //     formData.append("documentId", String(doc.docId));
+  //     formData.append("document", doc.file);
+
+  //     console.log("Uploading Document:", {
+  //       applicationNo,
+  //       docId: doc.docId,
+  //       docName: doc.docName,
+  //     });
+
+  //     const response = await axios.post(
+  //       `${BASE_URL}/api/FrmAssessmentCerti/upload-document`,
+  //       formData,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+  //           "Content-Type": "multipart/form-data",
+  //         },
+  //       },
+  //     );
+
+  //     console.log("Upload Response:", response.data);
+
+  //     return response.data?.success || response.data?.ok || false;
+  //   } catch (error) {
+  //     console.error("Error uploading document:", error);
+
+  //     return false;
+  //   }
+  // };
+
+
   const uploadDocument = async (applicationNo, doc) => {
+    const formData = new FormData();
+    formData.append("corpId", ulbId);
+    formData.append("serviceId", serviceId);
+    formData.append("appNo", applicationNo);
+    formData.append("docType", doc.docType || "PDF");
+    formData.append("documentId", String(doc.docId));
+    formData.append("document", doc.file);
+
     try {
-      const formData = new FormData();
-
-      formData.append("serviceId", String(serviceId));
-      formData.append("appNo", applicationNo);
-      formData.append("docType", doc.docType || "PDF");
-      formData.append("documentId", String(doc.docId));
-      formData.append("document", doc.file);
-
-      console.log("Uploading Document:", {
-        applicationNo,
-        docId: doc.docId,
-        docName: doc.docName,
-      });
-
       const response = await axios.post(
-        `${BASE_URL}/api/FrmPropertyAppel/upload-document`,
+        `${BASE_URL}/api/FrmAssessmentCerti/upload-document`,
         formData,
         {
           headers: {
             Authorization: `Bearer ${token || localStorage.getItem("token")}`,
             "Content-Type": "multipart/form-data",
           },
-        },
+        }
       );
-
-      console.log("Upload Response:", response.data);
-
-      return response.data?.success || response.data?.ok || false;
+      return response.data.ok === true;
     } catch (error) {
       console.error("Error uploading document:", error);
-
       return false;
     }
   };
@@ -379,7 +414,7 @@ const FrmPropertyAppel = () => {
       console.log("Maha Online Request Payload:", mahaPayload);
 
       const response = await axios.post(
-        `${BASE_URL}/api/FrmPropertyAppel/maha-online-first-step`,
+        `${BASE_URL}/api/FrmAssessmentCerti/maha-online-first-step`,
         mahaPayload,
         {
           headers: {
@@ -401,7 +436,7 @@ const FrmPropertyAppel = () => {
   const checkPaymentFlag = async () => {
     try {
       const response = await axios.post(
-        `${BASE_URL}/api/FrmPropertyAppel/payment-flag`,
+        `${BASE_URL}/api/FrmAssessmentCerti/payment-flag`,
         {
           serviceId: String(serviceId),
         },
@@ -537,7 +572,7 @@ const FrmPropertyAppel = () => {
         newYrKaryogya: 0,
         oldKaryogya: 0,
         newKaryogya: 0,
-        appSource: config?.source || "WEB",
+        appSource: config?.source,
       };
 
       loader = Swal.fire({
@@ -608,32 +643,48 @@ const FrmPropertyAppel = () => {
         }
       }
 
-      const mahaSuccess = await insertMahaOnline(applicationNo);
+      // const mahaSuccess = await insertMahaOnline(applicationNo);
 
-      if (!mahaSuccess) {
-        console.warn(
-          "Maha Online integration failed, but application was created.",
-        );
-      }
+      // if (!mahaSuccess) {
+      //   console.warn(
+      //     "Maha Online integration failed, but application was created.",
+      //   );
+      // }
 
       const payFlag = await checkPaymentFlag();
       console.log("Payment Flag:", payFlag);
       loader.close();
 
+      // Swal.fire({
+      //   text: message,
+      //   confirmButtonColor: "#1e3a8a",
+      // }).then(() => {
+      //   if (payFlag === "Y") {
+      //     navigate("/app/FrmAppliFee", {
+      //       state: {
+      //         applicationNo: applicationNo,
+      //       },
+      //     });
+      //   } else {
+      //     navigate("/app/FrmNewTaxAssesment");
+      //   }
+      // });
+
+      
+
       Swal.fire({
-        text: message,
-        confirmButtonColor: "#1e3a8a",
+        text: `${message}`,
+        confirmButtonColor: '#1e3a8a',
       }).then(() => {
-        if (payFlag === "Y") {
-          navigate("/app/FrmAppliFee", {
-            state: {
-              applicationNo: applicationNo,
-            },
-          });
-        } else {
-          navigate("/app/FrmPropertyAppel");
-        }
+        navigate("/app/FrmTrackApplication", { state: { applicationNo: applicationNo } });
+
+        // if (payFlag === "Y") {
+        //   navigate("/app/FrmAppliFee", { state: { applicationNo: applicationNo } });
+        // } else {
+        //   navigate("/app/FrmNoDuesCerti");
+        // }
       });
+
     } catch (error) {
       console.error("Error submitting Property Appeal:", error);
 
