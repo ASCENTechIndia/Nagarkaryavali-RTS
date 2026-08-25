@@ -463,25 +463,37 @@ const FrmTrackApplication = () => {
 
     if (stepName === "Application Entry" && status === "Done") {
       if (action === "First Appeal") {
-        Swal.fire({
-          text: `Redirecting to First Appeal form for ${appNo}`,
-          confirmButtonColor: '#1e3a8a',
-        }).then(() => {
-          navigate("/app/FrmFirstAppeal", {
-            state: { applicationNo: appNo }
-          });
+        navigate("/app/FrmFirstAppeal", {
+          state: {
+            appNo: appNo,
+            serviceId: serviceId,
+            ulbId: ulbId,
+            corpId: user?.corpId,
+            userUniqueId: userId,
+            trackId: user?.trackId,
+            userIdMahaOnline: user?.mahaOnlineUserId || "MAHA123",
+            username: user?.username || user?.email,
+            userFullName: selectedApp?.applicantName,
+            serviceName: selectedApp?.serviceName
+          }
         });
         return;
       }
       
       if (action === "Second Appeal") {
-        Swal.fire({
-          text: `Redirecting to Second Appeal form for ${appNo}`,
-          confirmButtonColor: '#1e3a8a',
-        }).then(() => {
-          navigate("/app/FrmSecondAppeal", {
-            state: { applicationNo: appNo }
-          });
+        navigate("/app/FrmSecondAppeal", {
+          state: {
+            appNo: appNo,
+            serviceId: serviceId,
+            ulbId: ulbId,
+            corpId: user?.corpId,
+            userUniqueId: userId,
+            trackId: user?.trackId,
+            userIdMahaOnline: user?.mahaOnlineUserId || "MAHA123",
+            username: user?.username || user?.email,
+            userFullName: selectedApp?.applicantName,
+            serviceName: selectedApp?.serviceName,
+          }
         });
         return;
       }
@@ -500,16 +512,19 @@ const FrmTrackApplication = () => {
       Swal.close();
 
       if (eligible) {
-        Swal.fire({
-          text: "Redirecting to payment page",
-          confirmButtonColor: '#1e3a8a',
-        }).then(() => {
-          navigate("/app/FrmAppliFee", {
-            state: { 
-              applicationNo: appNo,
-              serviceId: serviceId 
-            }
-          });
+        navigate("/app/FrmAppliFee", {
+          state: {
+            appNo: appNo,
+            serviceId: serviceId,
+            ulbId: ulbId,
+            corpId: user?.corpId,
+            userUniqueId: userId,
+            trackId: user?.trackId,
+            userIdMahaOnline: user?.mahaOnlineUserId || "MAHA123",
+            username: user?.username || user?.email,
+            userFullName: selectedApp?.applicantName,
+            serviceName: selectedApp?.serviceName,
+          }
         });
       } else {
         Swal.fire({

@@ -128,6 +128,7 @@ async function uploadDocumentService(params) {
 async function submitAssessmentApplicationService(payload) {
   const {
     ulbId,
+    corpId,
     userId,
     zoneId,
     serviceId,
@@ -252,7 +253,7 @@ async function submitAssessmentApplicationService(payload) {
           }
 
           await repo.insertDocument({
-            corpId: ulbId,
+            corpId: corpId,
             serviceId: Number(serviceId),
             appNo: applicationNo,
             docType: doc.docType || "PDF",
