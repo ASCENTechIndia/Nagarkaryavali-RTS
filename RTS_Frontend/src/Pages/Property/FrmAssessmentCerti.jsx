@@ -527,6 +527,7 @@ const FrmAssessmentCerti = () => {
 
     const submitData = {
       ulbId: ulbId,
+      corpId: user.corpId,
       userId: userId,
       zoneId: zoneId,
       serviceId: serviceId,

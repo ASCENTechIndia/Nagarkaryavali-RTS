@@ -496,7 +496,7 @@ const FrmPropertyTransfer = () => {
 
   const uploadDocument = async (applicationNo, doc) => {
     const formData = new FormData();
-    formData.append("corpId", ulbId); 
+    formData.append("corpId", user.corpId); 
     formData.append("serviceId", serviceId);
     formData.append("appNo", applicationNo);
     formData.append("docType", doc.docType || "PDF");
