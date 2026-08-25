@@ -1,22 +1,9 @@
 import React, { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, } from "@/components/ui/select";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -24,93 +11,57 @@ import Swal from "sweetalert2";
 
 const FrmWaterConnectionApplication = () => {
 
+  const location = useLocation();
+  const { user } = useAuth();
+  console.log({ location })
+  const locationState = location.state || {};
+  const ulbId = locationState.ulbId || user?.ulbId
+  const userId = locationState.userId || user?.userId
+  const serviceId = locationState.serviceId
+  const serviceName = location.state?.serviceName
 
+  console.log("Service ID:", serviceId);
+  console.log("ULB ID:", ulbId);
+  console.log("User ID:", userId);
 
-const location = useLocation();
-const { user } = useAuth();
-
-const locationState = location.state || {};
-
-const ulbId =
-  locationState.ulbId ||
-  user?.ulbId ||
-  3;
-
-const userId =
-  locationState.userId ||
-  user?.userId ||
-  "1";
-
-const serviceId =
-  locationState.serviceId ||
-  "23";
-
-console.log("Service ID:", serviceId);
-console.log("ULB ID:", ulbId);
-console.log("User ID:", userId);
-  // ============================================================
-  // FORM DATA
-  // ============================================================
 
   const [formData, setFormData] = useState({
     zone: "",
-
     firstName: "",
     middleName: "",
     lastName: "",
-
     firstNameMarathi: "",
     middleNameMarathi: "",
     lastNameMarathi: "",
-
     mobileNo: "",
     aadharNo: "",
     email: "",
-
     address: "",
     addressMarathi: "",
-
     purpose: "",
     purposeMarathi: "",
-
     connectionNo: "",
-
     consumeType: "",
     meterType: "",
   });
 
-
   const [zoneList, setZoneList] = useState([]);
   const [zoneLoading, setZoneLoading] = useState(false);
-
-
-
   const [consumerTypeList, setConsumerTypeList] = useState([]);
-  const [consumerTypeLoading, setConsumerTypeLoading] =
-    useState(false);
-
-
+  const [consumerTypeLoading, setConsumerTypeLoading] =useState(false);
   const [meterTypeList, setMeterTypeList] = useState([]);
-  const [meterTypeLoading, setMeterTypeLoading] =
-    useState(false);
-
-
+  const [meterTypeLoading, setMeterTypeLoading] =useState(false);
   const [documentList, setDocumentList] = useState([]);
-  const [documentLoading, setDocumentLoading] =
-    useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [documentLoading, setDocumentLoading] =useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [documentFiles, setDocumentFiles] = useState({});
-
-
+ const BASE_URL = import.meta.env.VITE_BASE_URL;
   const handleChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
-
-
 
   const handleDocumentFileChange = (docId, file) => {
     setDocumentFiles((prev) => ({
@@ -119,13 +70,10 @@ console.log("User ID:", userId);
     }));
   };
 
-
   const fetchZones = async () => {
     try {
       setZoneLoading(true);
 
-      const BASE_URL =
-        import.meta.env.VITE_BASE_URL;
 
       const url =
         `${BASE_URL}/api/watermodule/wards`;
@@ -182,8 +130,7 @@ console.log("User ID:", userId);
     try {
       setConsumerTypeLoading(true);
 
-      const BASE_URL =
-        import.meta.env.VITE_BASE_URL;
+   
 
       const url =
         `${BASE_URL}/api/watermodule/water-consumer-types`;
@@ -246,8 +193,7 @@ console.log("User ID:", userId);
     try {
       setMeterTypeLoading(true);
 
-      const BASE_URL =
-        import.meta.env.VITE_BASE_URL;
+    
 
       const url =
         `${BASE_URL}/api/watermodule/water-meter-types`;
@@ -323,8 +269,7 @@ console.log("User ID:", userId);
 
       setDocumentLoading(true);
 
-      const BASE_URL =
-        import.meta.env.VITE_BASE_URL;
+   
 
       const url =
         `${BASE_URL}/api/watermodule/service-documents`;
@@ -370,7 +315,7 @@ console.log("User ID:", userId);
         setDocumentList([]);
 
         Swal.fire({
-          icon: "error",
+       
           title: "Unable to Load Documents",
           text:
             response?.data?.message ||
@@ -391,7 +336,7 @@ console.log("User ID:", userId);
       setDocumentList([]);
 
       Swal.fire({
-        icon: "error",
+    
         title: "Document Loading Failed",
         text:
           error?.response?.data?.message ||
@@ -420,600 +365,627 @@ console.log("User ID:", userId);
 
 
 
- const handleSubmit = async () => {
-
-
-  if (!formData.zone) {
-    Swal.fire({
-      icon: "warning",
-      text: "Please select Zone.",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-  if (!formData.firstName.trim()) {
-    Swal.fire({
-      icon: "warning",
-      text: "Please enter First Name.",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-  if (!formData.lastName.trim()) {
-    Swal.fire({
-      icon: "warning",
-      text: "Please enter Last Name.",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-  if (!formData.firstNameMarathi.trim()) {
-    Swal.fire({
-      icon: "warning",
-      text: "Please enter First Name in Marathi.",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-  if (!formData.lastNameMarathi.trim()) {
-    Swal.fire({
-      icon: "warning",
-      text: "Please enter Last Name in Marathi.",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-  if (!formData.mobileNo.trim()) {
-    Swal.fire({
-      icon: "warning",
-      text: "Please enter Mobile Number.",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-  if (formData.mobileNo.length !== 10) {
-    Swal.fire({
-      icon: "warning",
-      text: "Please enter a valid 10 digit Mobile Number.",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-  if (!formData.aadharNo.trim()) {
-    Swal.fire({
-      icon: "warning",
-      text: "Please enter Aadhar Card Number.",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-  if (formData.aadharNo.length !== 12) {
-    Swal.fire({
-      icon: "warning",
-      text: "Please enter a valid 12 digit Aadhar Number.",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-  if (!formData.email.trim()) {
-    Swal.fire({
-      icon: "warning",
-      text: "Please enter Email.",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-  if (!formData.address.trim()) {
-    Swal.fire({
-      icon: "warning",
-      text: "Please enter Address.",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-  if (!formData.addressMarathi.trim()) {
-    Swal.fire({
-      icon: "warning",
-      text: "Please enter Address in Marathi.",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-  if (!formData.purpose.trim()) {
-    Swal.fire({
-      icon: "warning",
-      text: "Please enter Purpose.",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-  if (!formData.purposeMarathi.trim()) {
-    Swal.fire({
-      icon: "warning",
-      text: "Please enter Purpose in Marathi.",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-  if (!formData.consumeType) {
-    Swal.fire({
-      icon: "warning",
-      text: "Please select Consumer Type.",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-  if (!formData.meterType) {
-    Swal.fire({
-      icon: "warning",
-      text: "Please select Meter Type.",
-      confirmButtonColor: "#1e3a8a",
-    });
-    return;
-  }
-
-
-  const BASE_URL =
-    import.meta.env.VITE_BASE_URL;
-
-
-
-
-  const selectedDocuments = documentList
-    .map((document) => {
-      const file =
-        documentFiles[document.DOCID];
-
-      if (!file) {
-        return null;
-      }
-
-      return {
-        documentId: document.DOCID,
-        documentName:
-          document.DOCNAME || "",
-        documentType:
-          document.DOCTYPE || "",
-        file: file,
-      };
-    })
-    .filter(Boolean);
-
-  console.log(
-    "Selected Documents:",
-    selectedDocuments
-  );
-
-  // ============================================================
-  // CONFIRM SUBMISSION
-  // ============================================================
-
-  const confirmResult =
-    await Swal.fire({
-      icon: "question",
-      title: "Submit Application?",
-      text: "Are you sure you want to submit this application?",
-      showCancelButton: true,
-      confirmButtonText: "Yes, Submit",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#1e3a8a",
-    });
-
-  if (!confirmResult.isConfirmed) {
-    return;
-  }
-
-  // ============================================================
-  // START SUBMISSION
-  // ============================================================
-
-  try {
-    setIsSubmitting(true);
-
-    Swal.fire({
-      title: "Submitting Application...",
-      text: "Please wait while your application is being processed.",
-      allowOutsideClick: false,
-      allowEscapeKey: false,
-      showConfirmButton: false,
-      didOpen: () => {
-        Swal.showLoading();
-      },
-    });
-
-    // ==========================================================
-    // PROCEDURE PAYLOAD
-    // ==========================================================
-
-    const savePayload = {
-      in_ulbid: Number(ulbId),
-      in_corpid: Number(ulbId),
-
-      in_serviceid: Number(serviceId),
-
-      in_userid: Number(userId),
-
-
-      in_firstname:
-        formData.firstName.trim(),
-
-      in_firstnameM:
-        formData.firstNameMarathi.trim(),
-
-      in_middlename:
-        formData.middleName.trim(),
-
-      in_middlenameM:
-        formData.middleNameMarathi.trim(),
-
-      in_lastname:
-        formData.lastName.trim(),
-
-      in_lastnameM:
-        formData.lastNameMarathi.trim(),
-
-      in_mobileno:
-        Number(formData.mobileNo),
-
-      in_adharno:
-        formData.aadharNo.trim(),
-
-      in_email:
-        formData.email.trim(),
-
-      in_address:
-        formData.address.trim(),
-
-      in_addressM:
-        formData.addressMarathi.trim(),
-
-      in_purpose:
-        formData.purpose.trim(),
-
-      in_purposeM:
-        formData.purposeMarathi.trim(),
-
-      in_zoneid:
-        Number(formData.zone),
-
-      in_wardno:
-        Number(formData.zone),
-
-      in_propertyno:
-        formData.connectionNo.trim(),
-
-
-      in_mode: 1,
-
-      in_PropertyUsage: 1,
-
-      in_SellerName: "",
-
-      in_TransferToWhom: "",
-
-      in_AgreementDate:
-        new Date()
-          .toISOString()
-          .split("T")[0],
-
-      in_AppNo: "",
-
-      in_wtsewrgtypeid: 1,
-
-      in_nocpurposeid: 1,
-
-      in_RegiNo: "",
-
-      in_UniqueNo: "",
-
-      in_appsource: "RTS",
-
-      in_deliveryflag: "N",
-
-      in_consumertypeid:
-        Number(formData.consumeType),
-
-      in_metertypeid:
-        Number(formData.meterType),
-    };
+  const handleSubmit = async () => {
+
+
+    if (!formData.zone) {
+      Swal.fire({
+       
+        text: "Please select Zone.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    if (!formData.firstName.trim()) {
+      Swal.fire({
+    
+        text: "Please enter First Name.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    if (!formData.lastName.trim()) {
+      Swal.fire({
+      
+        text: "Please enter Last Name.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    if (!formData.firstNameMarathi.trim()) {
+      Swal.fire({
+        
+        text: "Please enter First Name in Marathi.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    if (!formData.lastNameMarathi.trim()) {
+      Swal.fire({
+      
+        text: "Please enter Last Name in Marathi.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    if (!formData.mobileNo.trim()) {
+      Swal.fire({
+      
+        text: "Please enter Mobile Number.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    if (formData.mobileNo.length !== 10) {
+      Swal.fire({
+     
+        text: "Please enter a valid 10 digit Mobile Number.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    if (!formData.aadharNo.trim()) {
+      Swal.fire({
+      
+        text: "Please enter Aadhar Card Number.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    if (formData.aadharNo.length !== 12) {
+      Swal.fire({
+     
+        text: "Please enter a valid 12 digit Aadhar Number.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      Swal.fire({
+       
+        text: "Please enter Email.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    if (!formData.address.trim()) {
+      Swal.fire({
+  
+        text: "Please enter Address.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    if (!formData.addressMarathi.trim()) {
+      Swal.fire({
+       
+        text: "Please enter Address in Marathi.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    if (!formData.purpose.trim()) {
+      Swal.fire({
+       
+        text: "Please enter Purpose.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    if (!formData.purposeMarathi.trim()) {
+      Swal.fire({
+       
+        text: "Please enter Purpose in Marathi.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    if (!formData.consumeType) {
+      Swal.fire({
+       
+        text: "Please select Consumer Type.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    if (!formData.meterType) {
+      Swal.fire({
+       
+        text: "Please select Meter Type.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+
+    const BASE_URL =
+      import.meta.env.VITE_BASE_URL;
+
+
+
+
+    const selectedDocuments = documentList
+      .map((document) => {
+        const file =
+          documentFiles[document.DOCID];
+
+        if (!file) {
+          return null;
+        }
+
+        return {
+          documentId: document.DOCID,
+          documentName:
+            document.DOCNAME || "",
+          documentType:
+            document.DOCTYPE || "",
+          file: file,
+        };
+      })
+      .filter(Boolean);
 
     console.log(
-      "Water Save Payload:",
-      savePayload
+      "Selected Documents:",
+      selectedDocuments
     );
+if (documentList.length === 0) {
+  await Swal.fire({
+
+    title: "Document Required",
+    text: "No documents are configured for this service.",
+    confirmButtonColor: "#1e3a8a",
+  });
+
+  return;
+}
 
 
-    const saveResponse =
-      await axios.post(
-        `${BASE_URL}/api/watermodule/save`,
+// Find documents for which file is not selected
+const missingDocuments = documentList.filter(
+  (document) => !documentFiles[document.DOCID]
+);
+
+if (missingDocuments.length > 0) {
+
+  const missingDocumentNames = missingDocuments
+    .map(
+      (document, index) =>
+        `${index + 1}. ${document.DOCNAME || "Document"}`
+    )
+    .join("<br/>");
+
+  await Swal.fire({
+    
+    title: "Documents Required",
+    html: `
+      <div style="text-align:left">
+        <p>
+          <strong>All documents are compulsory for submission.</strong>
+        </p>
+
+        <p class="mt-2">
+          Please upload the following document(s):
+        </p>
+
+        <div style="margin-top:10px">
+          ${missingDocumentNames}
+        </div>
+      </div>
+    `,
+    confirmButtonColor: "#1e3a8a",
+  });
+
+  return;
+}
+
+
+    const confirmResult =
+      await Swal.fire({
+       
+        title: "Submit Application?",
+        text: "Are you sure you want to submit this application?",
+        showCancelButton: true,
+        confirmButtonText: "Yes, Submit",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#1e3a8a",
+      });
+
+    if (!confirmResult.isConfirmed) {
+      return;
+    }
+
+
+
+    try {
+      setIsSubmitting(true);
+
+      Swal.fire({
+        title: "Submitting Application...",
+        text: "Please wait while your application is being processed.",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+  
+
+      const savePayload = {
+        in_ulbid: Number(ulbId),
+        in_corpid: Number(ulbId),
+
+        in_serviceid: Number(serviceId),
+
+        in_userid: Number(userId),
+
+
+        in_firstname:
+          formData.firstName.trim(),
+
+        in_firstnameM:
+          formData.firstNameMarathi.trim(),
+
+        in_middlename:
+          formData.middleName.trim(),
+
+        in_middlenameM:
+          formData.middleNameMarathi.trim(),
+
+        in_lastname:
+          formData.lastName.trim(),
+
+        in_lastnameM:
+          formData.lastNameMarathi.trim(),
+
+        in_mobileno:
+          Number(formData.mobileNo),
+
+        in_adharno:
+          formData.aadharNo.trim(),
+
+        in_email:
+          formData.email.trim(),
+
+        in_address:
+          formData.address.trim(),
+
+        in_addressM:
+          formData.addressMarathi.trim(),
+
+        in_purpose:
+          formData.purpose.trim(),
+
+        in_purposeM:
+          formData.purposeMarathi.trim(),
+
+        in_zoneid:
+          Number(formData.zone),
+
+        in_wardno:
+          Number(formData.zone),
+
+        in_propertyno:
+          formData.connectionNo.trim(),
+
+
+        in_mode: 1,
+
+        in_PropertyUsage: 1,
+
+        in_SellerName: "",
+
+        in_TransferToWhom: "",
+
+        in_AgreementDate:
+          new Date()
+            .toISOString()
+            .split("T")[0],
+
+        in_AppNo: "",
+
+        in_wtsewrgtypeid: 1,
+
+        in_nocpurposeid: 1,
+
+        in_RegiNo: "",
+
+        in_UniqueNo: "",
+
+        in_appsource: "RTS",
+
+        in_deliveryflag: "N",
+
+        in_consumertypeid:
+          Number(formData.consumeType),
+
+        in_metertypeid:
+          Number(formData.meterType),
+      };
+
+      console.log(
+        "Water Save Payload:",
         savePayload
       );
 
-    console.log(
-      "Save API Response:",
-      saveResponse.data
-    );
 
-
-    if (
-      saveResponse?.data?.ok !== true
-    ) {
-      Swal.close();
-
-      await Swal.fire({
-        icon: "error",
-        title: "Application Failed",
-        text:
-          saveResponse?.data?.message ||
-          "Application could not be processed.",
-        confirmButtonColor: "#1e3a8a",
-      });
-
-      return;
-    }
-
-
-    const saveData =
-      saveResponse?.data?.data;
-
-    const procedureData =
-      saveData?.data;
-
-    const errorCode =
-      Number(
-        procedureData?.errorCode
-      );
-
-    const errorMessage =
-      procedureData?.message ||
-      saveData?.message ||
-      saveResponse?.data?.message ||
-      "";
-
-    const applicationNo =
-      procedureData?.appNo;
-
-    console.log(
-      "Procedure Error Code:",
-      errorCode
-    );
-
-    console.log(
-      "Procedure Message:",
-      errorMessage
-    );
-
-    console.log(
-      "Application No:",
-      applicationNo
-    );
-
-    if (
-      errorCode !== 9999 ||
-      !applicationNo
-    ) {
-      Swal.close();
-
-      await Swal.fire({
-        icon: "error",
-        title: "Application Failed",
-        text:
-          errorMessage ||
-          "Application could not be processed.",
-        confirmButtonColor: "#1e3a8a",
-      });
-
-      return;
-    }
-
-
-
-    console.log(
-      "Application Created:",
-      applicationNo
-    );
-
-
-
-    const uploadResults = [];
-
-    for (
-      const document
-      of selectedDocuments
-    ) {
-
-      try {
-
-        console.log(
-          "Uploading Document:",
-          {
-            applicationNo,
-            documentId:
-              document.documentId,
-            documentName:
-              document.documentName,
-            fileName:
-              document.file.name,
-          }
+      const saveResponse =
+        await axios.post(
+          `${BASE_URL}/api/watermodule/save`,
+          savePayload
         );
 
-        // ------------------------------------------------------
-        // DOCUMENT TYPE
-        // ------------------------------------------------------
+      console.log(
+        "Save API Response:",
+        saveResponse.data
+      );
 
-       // ------------------------------------------------------
-// DOCUMENT TYPE FROM ACTUAL FILE
-// ------------------------------------------------------
 
-const extension = document.file.name
-  .split(".")
-  .pop()
-  ?.toLowerCase();
+      if (
+        saveResponse?.data?.ok !== true
+      ) {
+        Swal.close();
 
-let docType = "PDF";
+        await Swal.fire({
+         
+          title: "Application Failed",
+          text:
+            saveResponse?.data?.message ||
+            "Application could not be processed.",
+          confirmButtonColor: "#1e3a8a",
+        });
 
-if (extension === "pdf") {
-  docType = "PDF";
-} else if (
-  extension === "jpg" ||
-  extension === "jpeg"
-) {
-  docType = "JPG";
-} else if (extension === "png") {
-  docType = "PNG";
-}
-   
+        return;
+      }
 
-        const uploadFormData =
-          new FormData();
 
-      uploadFormData.append(
-  "documents",
-  document.file,
-  document.file.name
-);
+      const saveData =
+        saveResponse?.data?.data;
 
-        const uploadResponse =
-          await axios.post(
-            `${BASE_URL}/api/watermodule/upload-app-doc`,
-            uploadFormData,
+      const procedureData =
+        saveData?.data;
+
+      const errorCode =
+        Number(
+          procedureData?.errorCode
+        );
+
+      const errorMessage =
+        procedureData?.message ||
+        saveData?.message ||
+        saveResponse?.data?.message ||
+        "";
+
+      const applicationNo =
+        procedureData?.appNo;
+
+      console.log(
+        "Procedure Error Code:",
+        errorCode
+      );
+
+      console.log(
+        "Procedure Message:",
+        errorMessage
+      );
+
+      console.log(
+        "Application No:",
+        applicationNo
+      );
+
+      if (
+        errorCode !== 9999 ||
+        !applicationNo
+      ) {
+        Swal.close();
+
+        await Swal.fire({
+         
+          title: "Application Failed",
+          text:
+            errorMessage ||
+            "Application could not be processed.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        return;
+      }
+
+
+
+      console.log(
+        "Application Created:",
+        applicationNo
+      );
+
+
+
+      const uploadResults = [];
+
+      for (
+        const document
+        of selectedDocuments
+      ) {
+
+        try {
+
+          console.log(
+            "Uploading Document:",
             {
-              params: {
-                CorpId:
-                  Number(ulbId),
-
-                ServiceId:
-                  Number(serviceId),
-
-                AppNo:
-                  applicationNo,
-
-                DocType:
-                  docType,
-
-                DocumentId:
-                  document.documentId,
-              },
-
-              headers: {
-                "Content-Type":
-                  "multipart/form-data",
-              },
+              applicationNo,
+              documentId:
+                document.documentId,
+              documentName:
+                document.documentName,
+              fileName:
+                document.file.name,
             }
           );
 
-        console.log(
-          "Document Upload Response:",
-          uploadResponse.data
-        );
 
-        // ------------------------------------------------------
-        // CHECK UPLOAD
-        // ------------------------------------------------------
+          const extension = document.file.name
+            .split(".")
+            .pop()
+            ?.toLowerCase();
 
-        if (
-          uploadResponse?.data?.ok !== true
-        ) {
+          let docType = "PDF";
 
-          throw new Error(
-            uploadResponse?.data?.message ||
-            `Failed to upload ${document.documentName}`
+          if (extension === "pdf") {
+            docType = "PDF";
+          } else if (
+            extension === "jpg" ||
+            extension === "jpeg"
+          ) {
+            docType = "JPG";
+          } else if (extension === "png") {
+            docType = "PNG";
+          }
+
+
+          const uploadFormData =
+            new FormData();
+
+          uploadFormData.append(
+            "documents",
+            document.file,
+            document.file.name
           );
 
+          const uploadResponse =
+            await axios.post(
+              `${BASE_URL}/api/watermodule/upload-app-doc`,
+              uploadFormData,
+              {
+                params: {
+                  CorpId:
+                    Number(ulbId),
+
+                  ServiceId:
+                    Number(serviceId),
+
+                  AppNo:
+                    applicationNo,
+
+                  DocType:
+                    docType,
+
+                  DocumentId:
+                    document.documentId,
+                },
+
+                headers: {
+                  "Content-Type":
+                    "multipart/form-data",
+                },
+              }
+            );
+
+          console.log(
+            "Document Upload Response:",
+            uploadResponse.data
+          );
+
+
+
+          if (
+            uploadResponse?.data?.ok !== true
+          ) {
+
+            throw new Error(
+              uploadResponse?.data?.message ||
+              `Failed to upload ${document.documentName}`
+            );
+
+          }
+
+          uploadResults.push({
+            documentId:
+              document.documentId,
+
+            documentName:
+              document.documentName,
+
+            fileName:
+              document.file.name,
+
+            success: true,
+
+            response:
+              uploadResponse.data,
+          });
+
+        } catch (uploadError) {
+
+          console.error(
+            "Document Upload Error:",
+            uploadError
+          );
+
+          uploadResults.push({
+            documentId:
+              document.documentId,
+
+            documentName:
+              document.documentName,
+
+            fileName:
+              document.file.name,
+
+            success: false,
+
+            message:
+              uploadError?.response?.data
+                ?.message ||
+              uploadError?.message ||
+              "Document upload failed.",
+          });
+
         }
+      }
 
-        uploadResults.push({
-          documentId:
-            document.documentId,
 
-          documentName:
-            document.documentName,
-
-          fileName:
-            document.file.name,
-
-          success: true,
-
-          response:
-            uploadResponse.data,
-        });
-
-      } catch (uploadError) {
-
-        console.error(
-          "Document Upload Error:",
-          uploadError
+      const failedUploads =
+        uploadResults.filter(
+          (item) =>
+            item.success !== true
         );
 
-        uploadResults.push({
-          documentId:
-            document.documentId,
+ 
+      if (
+        failedUploads.length > 0
+      ) {
 
-          documentName:
-            document.documentName,
+        Swal.close();
 
-          fileName:
-            document.file.name,
+        const failedNames =
+          failedUploads
+            .map(
+              (item) =>
+                item.documentName
+            )
+            .join(", ");
 
-          success: false,
-
-          message:
-            uploadError?.response?.data
-              ?.message ||
-            uploadError?.message ||
-            "Document upload failed.",
-        });
-
-      }
-    }
-
-    // ==========================================================
-    // CHECK DOCUMENT UPLOAD RESULTS
-    // ==========================================================
-
-    const failedUploads =
-      uploadResults.filter(
-        (item) =>
-          item.success !== true
-      );
-
-    // ==========================================================
-    // SOME DOCUMENTS FAILED
-    // ==========================================================
-
-    if (
-      failedUploads.length > 0
-    ) {
-
-      Swal.close();
-
-      const failedNames =
-        failedUploads
-          .map(
-            (item) =>
-              item.documentName
-          )
-          .join(", ");
-
-      await Swal.fire({
-        icon: "warning",
-        title: "Application Saved",
-        html: `
+        await Swal.fire({
+        
+          title: "Application Saved",
+          html: `
           <div style="text-align:left">
             <p>
               Application No:
@@ -1031,22 +1003,20 @@ if (extension === "pdf") {
             </p>
           </div>
         `,
-        confirmButtonColor: "#1e3a8a",
-      });
+          confirmButtonColor: "#1e3a8a",
+        });
 
-      return;
-    }
+        return;
+      }
 
-    // ==========================================================
-    // EVERYTHING SUCCESSFUL
-    // ==========================================================
+ 
 
-    Swal.close();
+      Swal.close();
 
-    await Swal.fire({
-      icon: "success",
-      title: "Application Submitted Successfully",
-      html: `
+      await Swal.fire({
+       
+        title: "Application Submitted Successfully",
+        html: `
         <div style="text-align:center">
           <p>
             Application No:
@@ -1059,106 +1029,89 @@ if (extension === "pdf") {
           </p>
         </div>
       `,
-      confirmButtonColor: "#1e3a8a",
-    });
+        confirmButtonColor: "#1e3a8a",
+      });
 
-    // ==========================================================
-    // OPTIONAL: CLEAR FORM
-    // ==========================================================
 
-    setFormData({
-      zone: "",
+      setFormData({
+        zone: "",
 
-      firstName: "",
-      middleName: "",
-      lastName: "",
+        firstName: "",
+        middleName: "",
+        lastName: "",
 
-      firstNameMarathi: "",
-      middleNameMarathi: "",
-      lastNameMarathi: "",
+        firstNameMarathi: "",
+        middleNameMarathi: "",
+        lastNameMarathi: "",
 
-      mobileNo: "",
-      aadharNo: "",
-      email: "",
+        mobileNo: "",
+        aadharNo: "",
+        email: "",
 
-      address: "",
-      addressMarathi: "",
+        address: "",
+        addressMarathi: "",
 
-      purpose: "",
-      purposeMarathi: "",
+        purpose: "",
+        purposeMarathi: "",
 
-      connectionNo: "",
+        connectionNo: "",
 
-      consumeType: "",
-      meterType: "",
-    });
+        consumeType: "",
+        meterType: "",
+      });
 
-    setDocumentFiles({});
+      setDocumentFiles({});
 
-    console.log(
-      "Final Upload Results:",
-      uploadResults
-    );
+      console.log(
+        "Final Upload Results:",
+        uploadResults
+      );
 
-  } catch (error) {
+    } catch (error) {
 
-    console.error(
-      "Water Application Submit Error:",
-      error
-    );
+      console.error(
+        "Water Application Submit Error:",
+        error
+      );
 
-    Swal.close();
+      Swal.close();
 
-    // ==========================================================
-    // GET PROPER ERROR MESSAGE
-    // ==========================================================
 
-    const errorMessage =
-      error?.response?.data?.message ||
-      error?.response?.data?.error ||
-      error?.message ||
-      "Unable to submit application.";
 
-    await Swal.fire({
-      icon: "error",
-      title: "Submission Failed",
-      text: errorMessage,
-      confirmButtonColor: "#1e3a8a",
-    });
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Unable to submit application.";
 
-  } finally {
+      await Swal.fire({
 
-    setIsSubmitting(false);
+        title: "Submission Failed",
+        text: errorMessage,
+        confirmButtonColor: "#1e3a8a",
+      });
 
-  }
-};
+    } finally {
+
+      setIsSubmitting(false);
+
+    }
+  };
   const handleClose = () => {
     window.history.back();
   };
 
-  // ============================================================
-  // UI
-  // ============================================================
 
   return (
     <div>
       <Card className="shadow-sm border">
 
-        {/* ====================================================
-            HEADER
-        ==================================================== */}
 
         <CardHeader className="border-b px-4 py-2">
-          <CardTitle className="text-lg font-semibold">
-            Water Connection Application
-          </CardTitle>
+          <CardTitle className="text-lg font-semibold text-[#083c76]">{serviceName}</CardTitle>
         </CardHeader>
 
         <CardContent className="p-4 sm:p-6 space-y-6">
-
-          {/* ====================================================
-              APPLICATION DETAILS
-          ==================================================== */}
 
           <div>
             <h4 className="text-md font-semibold mb-3">
@@ -1169,9 +1122,6 @@ if (extension === "pdf") {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
 
-              {/* =================================================
-                  ZONE
-              ================================================= */}
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1253,9 +1203,6 @@ if (extension === "pdf") {
 
               <div />
 
-              {/* =================================================
-                  FIRST NAME
-              ================================================= */}
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1285,9 +1232,6 @@ if (extension === "pdf") {
 
               </div>
 
-              {/* =================================================
-                  MIDDLE NAME
-              ================================================= */}
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1316,9 +1260,7 @@ if (extension === "pdf") {
 
               </div>
 
-              {/* =================================================
-                  LAST NAME
-              ================================================= */}
+  
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1350,9 +1292,6 @@ if (extension === "pdf") {
 
               <div />
 
-              {/* =================================================
-                  MARATHI FIRST NAME
-              ================================================= */}
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1382,9 +1321,7 @@ if (extension === "pdf") {
 
               </div>
 
-              {/* =================================================
-                  MARATHI MIDDLE NAME
-              ================================================= */}
+
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1412,10 +1349,6 @@ if (extension === "pdf") {
                 />
 
               </div>
-
-              {/* =================================================
-                  MARATHI LAST NAME
-              ================================================= */}
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1445,9 +1378,6 @@ if (extension === "pdf") {
 
               </div>
 
-              {/* =================================================
-                  MOBILE
-              ================================================= */}
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1479,9 +1409,6 @@ if (extension === "pdf") {
 
               </div>
 
-              {/* =================================================
-                  AADHAR
-              ================================================= */}
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1513,9 +1440,6 @@ if (extension === "pdf") {
 
               </div>
 
-              {/* =================================================
-                  EMAIL
-              ================================================= */}
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1546,9 +1470,6 @@ if (extension === "pdf") {
 
               </div>
 
-              {/* =================================================
-                  ADDRESS
-              ================================================= */}
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1578,9 +1499,7 @@ if (extension === "pdf") {
 
               </div>
 
-              {/* =================================================
-                  MARATHI ADDRESS
-              ================================================= */}
+
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1610,9 +1529,6 @@ if (extension === "pdf") {
 
               </div>
 
-              {/* =================================================
-                  PURPOSE
-              ================================================= */}
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1642,9 +1558,7 @@ if (extension === "pdf") {
 
               </div>
 
-              {/* =================================================
-                  MARATHI PURPOSE
-              ================================================= */}
+
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1674,9 +1588,6 @@ if (extension === "pdf") {
 
               </div>
 
-              {/* =================================================
-                  CONNECTION NO
-              ================================================= */}
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1706,9 +1617,6 @@ if (extension === "pdf") {
 
               </div>
 
-              {/* =================================================
-                  CONSUME TYPE
-              ================================================= */}
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1753,7 +1661,7 @@ if (extension === "pdf") {
                   <SelectContent>
 
                     {consumerTypeList.length >
-                    0 ? (
+                      0 ? (
 
                       consumerTypeList.map(
                         (consumerType) => (
@@ -1794,9 +1702,7 @@ if (extension === "pdf") {
 
               </div>
 
-              {/* =================================================
-                  METER TYPE
-              ================================================= */}
+
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1841,7 +1747,7 @@ if (extension === "pdf") {
                   <SelectContent>
 
                     {meterTypeList.length >
-                    0 ? (
+                      0 ? (
 
                       meterTypeList.map(
                         (meterType) => (
@@ -1885,9 +1791,7 @@ if (extension === "pdf") {
             </div>
           </div>
 
-          {/* ====================================================
-              DOCUMENT DETAILS
-          ==================================================== */}
+
 
           <div>
 
@@ -2016,7 +1920,7 @@ if (extension === "pdf") {
                                   document.DOCID,
                                   e.target
                                     .files?.[0] ||
-                                    null
+                                  null
                                 )
                               }
                               className="cursor-pointer"
@@ -2026,19 +1930,19 @@ if (extension === "pdf") {
                               document.DOCID
                             ] && (
 
-                              <p className="mt-1 text-xs text-green-600">
+                                <p className="mt-1 text-xs text-green-600">
 
-                                Selected:{" "}
+                                  Selected:{" "}
 
-                                {
-                                  documentFiles[
-                                    document.DOCID
-                                  ].name
-                                }
+                                  {
+                                    documentFiles[
+                                      document.DOCID
+                                    ].name
+                                  }
 
-                              </p>
+                                </p>
 
-                            )}
+                              )}
 
                           </td>
 
@@ -2055,21 +1959,18 @@ if (extension === "pdf") {
 
           </div>
 
-          {/* ====================================================
-              BUTTONS
-          ==================================================== */}
 
           <div className="flex items-center justify-center gap-3 border-t pt-5">
-<Button
-  type="button"
-  onClick={handleSubmit}
-  disabled={isSubmitting}
-  className="px-8 bg-teal-600 hover:bg-teal-700"
->
-  {isSubmitting
-    ? "Submitting..."
-    : "Submit"}
-</Button>
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="px-8 bg-teal-600 hover:bg-teal-700"
+            >
+              {isSubmitting
+                ? "Submitting..."
+                : "Submit"}
+            </Button>
 
             <Button
               type="button"
