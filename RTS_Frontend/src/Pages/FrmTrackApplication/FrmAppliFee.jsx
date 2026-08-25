@@ -16,15 +16,15 @@ const FrmAppliFee = () => {
     const baseUrl = import.meta.env.VITE_BASE_URL;
 
     const appNo = location.state?.appNo || "TMCPTXAC2502250002";
-    const serviceId = Number(location.state?.serviceId ?? 2);
-    const ulbId = Number(location.state?.ulbId ?? user?.ulbId ?? 3);
-    const corpId = Number(location.state?.corpId ?? user?.corpId ?? 10001);
-    const userUniqueId = Number(location.state?.userUniqueId ?? user?.userUniqueId ?? user?.userId ?? 53194);
-    const trackId = location.state?.trackId ?? user?.trackId ?? "123456";
-    const userIdMahaOnline = location.state?.userIdMahaOnline ?? user?.userIdMahaOnline ?? user?.mahaOnlineUserId ?? "YUJI";
-    const username = location.state?.username ?? user?.username ?? user?.email ?? "";
-    const userFullName = location.state?.userFullName ?? user?.fullName ?? user?.name ?? "";
-    const serviceName = location.state?.serviceName ?? "FrmAppliFee";
+    const serviceId = Number(location.state?.serviceId );
+    const ulbId = Number(location.state?.ulbId ?? user?.ulbId );
+    const corpId = Number(location.state?.corpId);
+    const userUniqueId = Number(location.state?.userUniqueId ?? user?.userUniqueId);
+    const trackId = location.state?.trackId ?? user?.trackId;
+    const userIdMahaOnline = location.state?.userIdMahaOnline ?? user?.mahaOnlineUserId ?? "MAHA123";
+    const username = location.state?.username ?? user?.username;
+    const userFullName = location.state?.userFullName;
+    const serviceName = location.state?.serviceName;
 
     const [application, setApplication] = useState(null);
     const [property, setProperty] = useState(null);
@@ -296,7 +296,7 @@ const FrmAppliFee = () => {
                 // lastLogout: formatOracleDate(location.state?.lastLogout ?? user?.lastLogout ?? Date()),
                 serviceId,
                 service: serviceName,
-                marrageregis: location.state?.marrageregis ?? "1~2~",
+                marrageregis: location.state?.marrageregis ?? "1~2~",  //HARDCODED IN UAT
                 step: 2,
                 appNo,
                 paymentReq: "NA",
