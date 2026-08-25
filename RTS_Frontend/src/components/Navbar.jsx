@@ -18,6 +18,8 @@ const NavbarContent = ({ withSidebar }) => {
     const serviceId = locationState.serviceId || user?.serviceId;
     const userId = user?.userId || locationState.userId;
 
+    const isAuthPage = ["/login", "/otp-login", "/registration", "/forgot-password"].includes(location.pathname);
+
     const fetchCorporationInfo = async () => {
         try {
             const res = await axios.get(`${BASE_URL}/api/Dashboard/corporation-details`,
@@ -88,7 +90,7 @@ const NavbarContent = ({ withSidebar }) => {
                         {corpInfo.name || "Municipal Corporation"}
                     </h1>
                     <div />
-                    {(user && serviceId) && (
+                    {(user && serviceId && !isAuthPage) && (
                         <div className="flex items-center gap-2 min-w-30 justify-end">
                             <Button
                                 variant="default"

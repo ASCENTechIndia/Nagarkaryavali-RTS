@@ -92,12 +92,12 @@ const FrmAssessmentCerti = () => {
 
   const locationState = location.state || {};
   
-  const ulbId = locationState.ulbId || user?.ulbId || 3;
-  const userId = locationState.userId || user?.userId || "1";
-  const zoneId = locationState.zoneId || user?.zoneId || "1";
-  const serviceId = locationState.serviceId || "2";
-  const serviceName = locationState.serviceName || "Assessment Certificate";
-  const serviceRate = locationState.serviceRate || null;
+  const ulbId = locationState.ulbId || user?.ulbId;
+  const userId = locationState.userId || user?.userId;
+  const zoneId = locationState.zoneId || user?.zoneId || "12";
+  const serviceId = locationState.serviceId;
+  const serviceName = locationState.serviceName;
+  const serviceRate = locationState.serviceRate;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);

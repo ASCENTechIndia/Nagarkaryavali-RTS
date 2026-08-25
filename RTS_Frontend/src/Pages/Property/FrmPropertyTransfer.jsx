@@ -97,12 +97,14 @@ const FrmPropertyTransfer = () => {
 
   const locationState = location.state || {};
 
-  const ulbId = locationState.ulbId || user?.ulbId || "3";
-  const userId = locationState.userId || user?.userId || "151";
+  const ulbId = locationState.ulbId || user?.ulbId;
+  const userId = locationState.userId || user?.userId;
   const zoneId = locationState.zoneId || user?.zoneId || "12";
-  const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId || "";
-  const serviceId = locationState.serviceId || user?.serviceId || "4";
-  const serviceName = locationState.serviceName || "Transfer of Property Certificate";
+  const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId;
+  const serviceId = locationState.serviceId;
+  const serviceName = locationState.serviceName;
+
+  console.log("locationState", locationState);
 
   const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -130,7 +132,7 @@ const FrmPropertyTransfer = () => {
 
   useEffect(() => {
     fetchDocumentDefinitions(serviceId, ulbId);
-    document.title = serviceId === "4"
+    document.title = serviceId == "4"
       ? "Transfer of Property Certificate - Sale based on documents"
       : "Transfer of Property Certificate - Heredity";
   }, [serviceId, ulbId]);
@@ -149,7 +151,7 @@ const FrmPropertyTransfer = () => {
         setTransferTypes(response.data.data.rows);
         let autoSelectType = null;
         
-        if (serviceId === "4") {
+        if (serviceId == "4") {
           autoSelectType = response.data.data.rows.find(
             type => type.NUM_TRANSFERTYPE_ID === 66
           );
@@ -158,7 +160,7 @@ const FrmPropertyTransfer = () => {
               type => type.VAR_TRANSFERTYPE_NAME?.toLowerCase() === "transfer by sale"
             );
           }
-        } else if (serviceId === "5") {
+        } else if (serviceId == "5") {
           autoSelectType = response.data.data.rows.find(
             type => type.NUM_TRANSFERTYPE_ID === 126
           );
@@ -233,7 +235,6 @@ const FrmPropertyTransfer = () => {
   //       headers: {
   //         'Content-Type': 'application/json'
   //       },
-  //       timeout: 30000
   //     });
   //     if (response?.data?.jsonData?.[0]?.encr_request) {
   //       const decryptedResponse = decryptString(
@@ -259,7 +260,6 @@ const FrmPropertyTransfer = () => {
         },
         {
           headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
-          timeout: 30000
         }
       );
 
@@ -337,10 +337,10 @@ const FrmPropertyTransfer = () => {
 
   //       const autoSelectType = transferTypes.find(
   //         type => {
-  //           if (serviceId === "4") {
+  //           if (serviceId == "4") {
   //             return type.TRANSFER_TYPE_NAME?.toLowerCase().includes("sale") ||
   //               type.TRANSFER_TYPE_ID === 66;
-  //           } else if (serviceId === "5") {
+  //           } else if (serviceId == "5") {
   //             return type.TRANSFER_TYPE_NAME?.toLowerCase().includes("heredity") ||
   //               type.TRANSFER_TYPE_ID === 126;
   //           }
@@ -463,7 +463,11 @@ const FrmPropertyTransfer = () => {
   };
 
   const resetFormAfterSearch = (setFieldValue, resetForm) => {
+    const currentTransferType = document.querySelector('select[name="transferType"]')?.value;
     resetForm();
+    if (currentTransferType) {
+      setFieldValue("transferType", currentTransferType);
+    }
     
     setConstType("0");
     setPrabhag("");
@@ -486,6 +490,8 @@ const FrmPropertyTransfer = () => {
       }));
       setTableData(resetTableData);
     }
+
+    fetchTransferTypes(setFieldValue);
   };
 
   const uploadDocument = async (applicationNo, doc) => {
@@ -799,7 +805,7 @@ const FrmPropertyTransfer = () => {
               <Card className="border shadow-sm">
                 <CardHeader className="border-b">
                   <CardTitle className="text-lg font-semibold">
-                    {serviceId === "4"
+                    {serviceId == "4"
                       ? "Transfer of Property Certificate - Sale based on documents"
                       : "Transfer of Property Certificate - Heredity"}
                   </CardTitle>
