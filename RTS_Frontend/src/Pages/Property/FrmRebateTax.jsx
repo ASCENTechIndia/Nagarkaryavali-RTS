@@ -24,7 +24,8 @@ import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import { 
   propertySearchValidationSchema,
-  propertyRebateValidationSchema 
+  propertyRebateValidationSchema,
+  documentValidationSchema
 } from "@/validations/global.validation";
 import config from "@/utils/config";
 
@@ -645,15 +646,19 @@ const FrmRebateTax = () => {
 
       console.log("Documents to upload:", documents);
 
-      // const hasAllDocuments = tableData.every(row => row.fileBuffer !== null);
-      // if (!hasAllDocuments) {
-      //   Swal.fire({ 
-      //     text: "Please Upload All Documents", 
-      //     confirmButtonColor: '#1e3a8a' 
-      //   });
-      //   setLoading(false);
-      //   return;
-      // }
+      const documentValidation = documentValidationSchema.safeParse(tableData);
+      
+      if (!documentValidation.success) {
+        const firstError = documentValidation.error.issues[0];
+        Swal.fire({
+          text: firstError.message,
+          confirmButtonColor: '#1e3a8a',
+          confirmButtonText: "OK",
+          allowOutsideClick: false,
+        });
+        setLoading(false);
+        return;
+      }
 
       const loader = Swal.fire({
         title: "Submitting Application...",

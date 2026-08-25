@@ -35,12 +35,18 @@ export const applicantDetailsValidationSchema = z.object({
 
 export const documentValidationSchema = z.array(
   z.object({
-    docId: z.number(),
-    docName: z.string(),
-    docType: z.string(),
+    id: z.union([z.number(), z.string()]).optional(),
+    docId: z.union([z.number(), z.string()]).optional(),
+    docName: z.string().optional().default(""),
+    docType: z.string().optional(),
     fileBuffer: z.any().optional(),
+    file: z.any().nullable().optional(),
   })
-).min(1, "Please upload at least one document");
+).refine((docs) => {
+  return docs && docs.length > 0 && docs.every(doc => doc.file !== null && doc.file !== undefined && doc.file !== "");
+}, {
+  message: "All documents are compulsory. Please upload all required documents.",
+});
 
 export const propertyTransferSearchSchema = z.object({
   ptn: z.string()
