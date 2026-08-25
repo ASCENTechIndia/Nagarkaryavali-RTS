@@ -161,16 +161,57 @@ const ExtractOfPropertyReportHelper = async ({ rows, corporationName, ulbLogo, q
     };
     let templateFile;
 
-    if (String(serviceId) === "2") {
-      templateFile = "CrtExtractofProperty.html";
-    } else if (String(serviceId) === "43") {
-      templateFile = "CrtNewAssesment.html";
-    } else if (String(serviceId) === "289") {
-      templateFile = "CrtSelfAssesment.html";
-    } else if (String(serviceId) === "44") {
-      templateFile = "CrtReAssesment.html";
-    } else {
-      throw new Error(`PDF template not configured for Service ID ${serviceId}`);
+    switch (String(serviceId)) {
+      case "2":
+        templateFile = "CrtExtractofProperty.html";
+        break;
+
+      case "43":
+        templateFile = "CrtNewAssesment.html";
+        break;
+
+      case "289":
+        templateFile = "CrtSelfAssesment.html";
+        break;
+
+      case "44":
+        templateFile = "CrtReAssesment.html";
+        break;
+
+      case "56":
+        templateFile = "CrtNoDuesCerti.html";
+        break;
+
+      case "100":
+        templateFile = "CrtPropertyTax.html";
+        break;
+
+      case "287":
+        templateFile = "CrtRebateOnTax.html";
+        break;
+
+      case "4":
+        templateFile = "CrtChngPropertyOwnership.html";
+        break;
+
+      case "46":
+        templateFile = "CrtRebateOnTaxVacantpro.html";
+        break;
+
+      case "290":
+        templateFile = "CrtObjectionsAppeal.html";
+        break;
+
+      case "291":
+        templateFile = "CrtDemolishandRedevelopment.html";
+        break;
+
+      case "51":
+        templateFile = "CrtPropertyDivision.html";
+        break;
+
+      default:
+        throw new Error(`PDF template not configured for Service ID ${serviceId}`);
     }
 
     const templatePath = path.resolve(__dirname, "../../templates", templateFile);
@@ -184,10 +225,6 @@ const ExtractOfPropertyReportHelper = async ({ rows, corporationName, ulbLogo, q
     const template = Handlebars.compile(htmlFile);
 
     const html = template(reportData);
-
-    const debugHtmlPath = path.resolve(__dirname, "../../templates/debug_CrtExtractofProperty.html");
-
-    fs.writeFileSync(debugHtmlPath, html, "utf8");
 
     const chromePath = path.resolve(__dirname, "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe");
 

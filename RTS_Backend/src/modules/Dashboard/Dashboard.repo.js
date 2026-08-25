@@ -417,6 +417,7 @@ async function getServiceDetails({ serviceId }) {
 }
 
 module.exports = {
+    lobToBuffer,
     decryptRequestRepo,
     getCorporationDetailsRepo,
     getDepartmentMenuRepo,
