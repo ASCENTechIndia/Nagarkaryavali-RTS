@@ -94,12 +94,12 @@ const FrmNoDuesCerti = () => {
 
   const locationState = location.state || {};
   
-  const ulbId = locationState.ulbId || user?.ulbId || "3";
-  const userId = locationState.userId || user?.userId || "151";
+  const ulbId = locationState.ulbId || user?.ulbId;
+  const userId = locationState.userId || user?.userId;
   const zoneId = locationState.zoneId || user?.zoneId || "12";
-  const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId || "3";
-  const serviceId = locationState.serviceId || user?.serviceId || "56";
-  const serviceName = locationState.serviceName || "No Dues Certificate";
+  const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId;
+  const serviceId = locationState.serviceId;
+  const serviceName = locationState.serviceName;
 
   const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -189,7 +189,6 @@ const FrmNoDuesCerti = () => {
   //       headers: {
   //         'Content-Type': 'application/json'
   //       },
-  //       timeout: 30000
   //     });
   //     if (response?.data?.jsonData?.[0]?.encr_request) {
   //       const decryptedResponse = decryptString(
@@ -215,7 +214,6 @@ const FrmNoDuesCerti = () => {
         },
         {
           headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
-          timeout: 30000
         }
       );
 
@@ -658,7 +656,7 @@ const FrmNoDuesCerti = () => {
 
       const documentValidation = documentValidationSchema.safeParse(tableData);
 
-      if (!documentValidation.success) {
+      if (tableData.length > 0 && !documentValidation.success) {
         const firstError = documentValidation.error.issues[0];
         Swal.fire({
           text: firstError.message,

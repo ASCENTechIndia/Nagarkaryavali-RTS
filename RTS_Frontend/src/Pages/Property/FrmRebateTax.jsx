@@ -93,11 +93,11 @@ const FrmRebateTax = () => {
 
   const locationState = location.state || {};
 
-  const ulbId = locationState.ulbId || user?.ulbId || "3";
-  const userId = locationState.userId || user?.userId || "151";
+  const ulbId = locationState.ulbId || user?.ulbId;
+  const userId = locationState.userId || user?.userId;
   const zoneId = locationState.zoneId || user?.zoneId || "12";
-  const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId || "";
-  const serviceId = locationState.serviceId || user?.serviceId || "287";
+  const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId;
+  const serviceId = locationState.serviceId;
 
   const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -131,7 +131,7 @@ const FrmRebateTax = () => {
     fetchRebateTypes();
     fetchTaxNames();
     fetchDocumentDefinitions(serviceId, ulbId);
-    document.title = serviceId === "287" ? "Rebate on Tax" : "Rebate to Vacant Properties";
+    document.title = serviceId == "287" ? "Rebate on Tax" : "Rebate to Vacant Properties";
   }, [serviceId, ulbId]);
 
   const fetchRebateTypes = async () => {
@@ -224,7 +224,6 @@ const FrmRebateTax = () => {
   //       headers: {
   //         'Content-Type': 'application/json'
   //       },
-  //       timeout: 30000
   //     });
   //     if (response?.data?.jsonData?.[0]?.encr_request) {
   //       const decryptedResponse = decryptString(
@@ -250,7 +249,6 @@ const FrmRebateTax = () => {
         },
         {
           headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
-          timeout: 30000
         }
       );
 
@@ -604,7 +602,7 @@ const FrmRebateTax = () => {
         return;
       }
 
-      if (serviceId === "287") {
+      if (serviceId == "287") {
         if (!values.rebateType || values.rebateType === "0") {
           Swal.fire({ 
             text: "Please Select Rebate Type", 
@@ -616,7 +614,7 @@ const FrmRebateTax = () => {
       }
 
       let taxStr = "";
-      if (serviceId === "287") {
+      if (serviceId == "287") {
         if (values.rebateType === "1") {
           taxStr = taxNames.map(tax => String(tax.ID)).join("#");
         } else if (values.rebateType === "2") {
@@ -805,7 +803,7 @@ const FrmRebateTax = () => {
             <Card className="border shadow-sm">
               <CardHeader className="border-b">
                 <CardTitle className="text-lg font-semibold">
-                  {serviceId === "287" ? "Rebate on Tax" : "Rebate to Vacant Properties"}
+                  {serviceId == "287" ? "Rebate on Tax" : "Rebate to Vacant Properties"}
                 </CardTitle>
               </CardHeader>
 
@@ -965,7 +963,7 @@ const FrmRebateTax = () => {
                       />
                     </div>
 
-                    {serviceId === "287" && (
+                    {serviceId == "287" && (
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
                           <Label required text="Rebate Type" />
