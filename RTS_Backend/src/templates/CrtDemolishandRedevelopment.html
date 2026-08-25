@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="mr">
+  <head>
+    <meta charset="UTF-8" />
+
+    <style>
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Noto Sans Devanagari", "Mangal", Arial, sans-serif;
+        color: #000;
+        font-size: 15px;
+      }
+
+      .page {
+        width: 210mm;
+        min-height: 297mm;
+        padding: 12mm 14mm 10mm 14mm;
+        position: relative;
+      }
+
+      .header {
+        height: 38mm;
+        border-bottom: 1px solid #000;
+        position: relative;
+      }
+
+      .left-logo {
+        position: absolute;
+        left: 2mm;
+        top: 1mm;
+        width: 27mm;
+        height: 27mm;
+        object-fit: contain;
+      }
+
+      .right-logo {
+        position: absolute;
+        right: 2mm;
+        top: 1mm;
+        width: 30mm;
+        height: 27mm;
+        object-fit: contain;
+      }
+
+      .header-title {
+        text-align: center;
+        font-size: 25px;
+        font-weight: 600;
+        padding-top: 2mm;
+      }
+
+      .header-subtitle {
+        text-align: center;
+        font-size: 14px;
+        font-weight: 600;
+        margin-top: 2mm;
+      }
+
+      .meta {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 4mm;
+        font-size: 14px;
+      }
+
+      .meta-left,
+      .meta-right {
+        width: 45%;
+      }
+
+      .meta-right {
+        text-align: right;
+      }
+
+      .title {
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 8mm;
+        margin-bottom: 8mm;
+      }
+
+      .recipient {
+        margin-top: 4mm;
+        line-height: 1.8;
+      }
+
+      .recipient-name {
+        margin-top: 1mm;
+      }
+
+      .address {
+        min-height: 20mm;
+        margin-top: 1mm;
+      }
+
+      .subject-reference {
+        margin-left: 25mm;
+        margin-top: 7mm;
+        line-height: 1.9;
+      }
+
+      .body {
+        margin-top: 6mm;
+        line-height: 1.9;
+        text-align: justify;
+      }
+
+      .footer {
+        position: absolute;
+        left: 14mm;
+        right: 14mm;
+        bottom: 13mm;
+        min-height: 45mm;
+      }
+
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+      }
+
+      .footer-left {
+        width: 35%;
+        line-height: 2;
+      }
+
+      .qr-section {
+        width: 30%;
+        text-align: center;
+      }
+
+      .qr-code {
+        width: 35mm;
+        height: 35mm;
+        object-fit: contain;
+      }
+
+      .footer-right {
+        width: 35%;
+        text-align: center;
+        line-height: 1.6;
+      }
+
+      .label {
+        font-weight: normal;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <!-- HEADER -->
+      <div class="header">
+        <img src="{{leftLogo}}" class="left-logo" alt="ULB Logo" />
+
+        <div class="header-title">{{corporationName}}</div>
+
+        <div class="header-subtitle">महाराष्ट्र लोकसेवा हक्क अधिनियम,२०१५ अन्वये</div>
+
+        <img src="{{rightLogo}}" class="right-logo" alt="Aaple Sarkar Logo" />
+      </div>
+
+      <!-- META -->
+      <div class="meta">
+        <div class="meta-left">जा.क्र.: ठा मपा / {{OUTNO}}</div>
+
+        <div class="meta-right">दिनांक : {{AUTHDATE}}</div>
+      </div>
+
+      <!-- TITLE -->
+      <div class="title">मालमत्ता पाडणे व पुनः बांधणी कर आकारणी</div>
+
+      <!-- RECIPIENT -->
+      <div class="recipient">
+        <div>प्रति,</div>
+
+        <div class="recipient-name">{{APPLINAME}}</div>
+
+        <div class="address">{{ADDRESS}}</div>
+      </div>
+
+      <!-- SUBJECT -->
+      <div class="subject-reference">
+        <div>विषय : मालमत्ता पाडणे व पुनः बांधणी कर आकारणी करणेबाबत.</div>
+
+        <div>संदर्भ : आपला दि. {{APPDATE}} रोजीचा अर्ज आवक क्र. {{APPNO}}</div>
+      </div>
+
+      <!-- BODY -->
+      <div class="body">
+        <div>महोदय,</div>
+
+        <p>
+          आपण मालमत्ता पाडणे व पुनः बांधणी कर आकारणी मिळणेकरिता संदर्भानुसार विनंती अर्ज सादर केला आहे. हे आपण सादर केलेल्या कागदपत्राच्या आधारे सदर मिळकतीच्या मालमत्ता कर आकारणीची महाराष्ट्र महानगरपालिका अधिनियम कराधान नियम ७(१) अन्वयेची विशेष नोटीस (Special Notice) यासोबत
+          आपणास देण्यात येत आहे
+        </p>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="footer">
+        <div class="footer-content">
+          <div class="footer-left">
+            <div>दिनांक : {{AUTHDATE}}</div>
+            <div>ठिकाण : ठाणे</div>
+          </div>
+
+          <div class="qr-section">
+            <!-- {{#if qrCode}}
+            <div>Qrcode</div>
+            <img src="{{qrCode}}" class="qr-code" alt="QR Code" />
+            {{/if}} -->
+          </div>
+
+          <div class="footer-right">
+            <div>सहाय्यक आयुक्त</div>
+            <div>प्रभाग कार्यालय</div>
+            <div>{{corporationName}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
