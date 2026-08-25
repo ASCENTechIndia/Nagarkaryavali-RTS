@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="mr">
+  <head>
+    <meta charset="UTF-8" />
+
+    <style>
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Noto Sans Devanagari", "Mangal", Arial, sans-serif;
+        color: #000;
+        font-size: 14px;
+      }
+
+      .page {
+        width: 210mm;
+        min-height: 297mm;
+        padding: 12mm 10mm 10mm 10mm;
+        position: relative;
+      }
+
+      .header {
+        position: relative;
+        height: 48mm;
+        border-bottom: 2px solid #000;
+      }
+
+      .left-logo {
+        position: absolute;
+        left: 5mm;
+        top: 3mm;
+        width: 27mm;
+        height: 27mm;
+        object-fit: contain;
+      }
+
+      .right-logo {
+        position: absolute;
+        right: 4mm;
+        top: 3mm;
+        width: 30mm;
+        height: 30mm;
+        object-fit: contain;
+      }
+
+      .header-center {
+        text-align: center;
+        padding-top: 4mm;
+        margin-left: 30mm;
+        margin-right: 30mm;
+      }
+
+      .corporation-name {
+        font-size: 25px;
+        font-weight: bold;
+        line-height: 1.4;
+        white-space: nowrap;
+      }
+
+      .act-name {
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 2mm;
+      }
+
+      .ref-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8mm;
+        padding: 0 3mm;
+        font-size: 14px;
+      }
+
+      .title {
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 7mm;
+        margin-bottom: 7mm;
+      }
+
+      .recipient {
+        margin-left: 3mm;
+        line-height: 1.8;
+        min-height: 25mm;
+      }
+
+      .recipient-name {
+        font-size: 14px;
+      }
+
+      .recipient-address {
+        white-space: pre-line;
+      }
+
+      .subject-block {
+        margin-left: 20mm;
+        margin-top: 6mm;
+        line-height: 1.9;
+      }
+
+      .subject {
+        font-weight: bold;
+      }
+
+      .reference {
+        font-weight: bold;
+      }
+
+      .body-text {
+        margin-top: 7mm;
+        line-height: 2;
+        text-align: justify;
+      }
+
+      .body-text p {
+        margin: 0 0 5mm 0;
+      }
+
+      .property-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 7mm;
+        font-size: 13px;
+      }
+
+      .property-table td {
+        border: 1px solid #000;
+        padding: 7px 8px;
+        vertical-align: middle;
+      }
+
+      .property-table .sr {
+        width: 8%;
+        text-align: center;
+      }
+
+      .property-table .label {
+        width: 35%;
+      }
+
+      .property-table .value {
+        width: 57%;
+      }
+
+      .property-details-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 18px;
+        font-family: "Noto Sans Devanagari", "Mangal", Arial, sans-serif;
+        font-size: 14px;
+      }
+
+      .property-details-table td {
+        border: 1px solid #000;
+        padding: 8px 10px;
+        vertical-align: middle;
+        height: 38px;
+      }
+
+      .property-details-table .sr-no {
+        width: 7%;
+        text-align: center;
+        font-size: 15px;
+      }
+
+      .property-details-table .label {
+        width: 35%;
+        text-align: left;
+      }
+
+      .property-details-table .value {
+        width: 58%;
+        text-align: left;
+      }
+
+      .property-details-table tr:nth-child(4) td {
+        height: 55px;
+      }
+
+      .footer {
+        position: absolute;
+        left: 10mm;
+        right: 10mm;
+        bottom: 12mm;
+        min-height: 45mm;
+      }
+
+      .footer-content {
+        position: relative;
+        min-height: 42mm;
+      }
+
+      .location {
+        position: absolute;
+        left: 4mm;
+        top: 2mm;
+        line-height: 1.8;
+      }
+
+      .date {
+        position: absolute;
+        left: 4mm;
+        top: 22mm;
+      }
+
+      .qr {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 0;
+        text-align: center;
+      }
+
+      .qr img {
+        width: 30mm;
+        height: 30mm;
+      }
+
+      .signature {
+        position: absolute;
+        right: 4mm;
+        top: 17mm;
+        text-align: center;
+        line-height: 1.5;
+        font-weight: bold;
+      }
+
+      .no-data {
+        color: #000;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <!-- HEADER -->
+      <div class="header">
+        {{#if leftLogo}}
+        <img src="{{leftLogo}}" class="left-logo" />
+        {{/if}}
+
+        <div class="header-center">
+          <div class="corporation-name">{{corporationName}}</div>
+
+          <div class="act-name">महाराष्ट्र लोकसेवा हक्क अधिनियम, २०१५ अन्वये</div>
+        </div>
+
+        {{#if rightLogo}}
+        <img src="{{rightLogo}}" class="right-logo" />
+        {{/if}}
+
+        <div class="ref-row">
+          <div>
+            जा. क्र. :
+            <strong>{{OUTNO}}</strong>
+          </div>
+
+          <div>
+            दिनांक :
+            <strong>{{AUTHDATE}}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- TITLE -->
+      <div class="title">मालमत्ता कर थकबाकी नसल्याचा दाखला</div>
+
+      <!-- RECIPIENT -->
+      <div class="recipient">
+        <div>प्रति,</div>
+
+        <div class="recipient-name">{{APPLINAME}}</div>
+
+        <div class="recipient-address">{{ADDRESS}}</div>
+      </div>
+
+      <!-- SUBJECT / REFERENCE -->
+      <div class="subject-block">
+        <div class="subject">विषय : मालमत्ता कर थकबाकी नसल्याचा दाखला मिळणेबाबत.</div>
+
+        <div class="reference">संदर्भ : आपला दि. {{APPDATE}} रोजीचा अर्ज आवक क्र. {{APPNO}}</div>
+      </div>
+
+      <!-- BODY -->
+      <div class="body-text">
+        <p>महोदय,</p>
+
+        <p>आपण मालमत्ता कराची थकबाकी नसल्याचा दाखला मिळणेबाबत संदर्भानुसार विनंती अर्ज सादर केला आहे.</p>
+
+        <p>या कार्यालयाकडील संगणकीय अभिलेखा नुसार आपणास सदर मालमत्ता कर थकबाकी बाबतचा दाखला देण्यात येत आहे.</p>
+      </div>
+
+      <!-- PROPERTY DETAILS -->
+      <table class="property-details-table">
+        <tr>
+          <td class="sr-no">१</td>
+          <td class="label">मालमत्ता कर क्र</td>
+          <td class="value">{{PROPNO}}</td>
+        </tr>
+
+        <tr>
+          <td class="sr-no">२</td>
+          <td class="label">सब कोड</td>
+          <td class="value">{{SUBCODE}}</td>
+        </tr>
+
+        <tr>
+          <td class="sr-no">३</td>
+          <td class="label">मालमत्ता धारकाचे नाव</td>
+          <td class="value">{{OWNDTLS}}</td>
+        </tr>
+
+        <tr>
+          <td class="sr-no">४</td>
+          <td class="label">
+            सन २०२४-२५ अखेर मालमत्ता<br />
+            कराचा तपशील
+          </td>
+          <td class="value">{{YEARTAX}}</td>
+        </tr>
+
+        <tr>
+          <td class="sr-no">५</td>
+          <td class="label">शेरा</td>
+          <td class="value"></td>
+        </tr>
+      </table>
+
+      <!-- FOOTER -->
+      <div class="footer">
+        <div class="footer-content">
+          {{#if qrCode}}
+          <div class="qr">
+            <img src="{{qrCode}}" />
+          </div>
+          {{/if}}
+
+          <div class="location">
+            <div><strong>ठिकाण :</strong> ठाणे</div>
+          </div>
+
+          <div class="date"><strong>दिनांक :</strong> {{AUTHDATE}}</div>
+
+          <div class="signature">
+            सहाय्यक आयुक्त<br />
+            प्रभाग कार्यालय<br />
+            {{corporationName}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

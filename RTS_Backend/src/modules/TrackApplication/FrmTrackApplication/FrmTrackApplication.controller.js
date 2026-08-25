@@ -610,63 +610,15 @@ const generateCertificateReport = asyncHandler(async (req, res) => {
 
   let pdf;
 
-  if (String(filters.serviceId) === "2" || String(filters.serviceId) === "43" || String(filters.serviceId) === "289" || String(filters.serviceId) === "44") {
-    pdf = await ExtractOfPropertyReportHelper({
-      rows: reportData,
-
-      corporationName: corporationName || "",
-
-      ulbLogo: ulbLogo || "",
-
-      reportName: "मालमत्ता कर उतारा",
-
-      serviceId: filters.serviceId,
-
-      appNo: filters.appNo,
-
-      ulbId: filters.ulbId,
-    });
-  } else if (String(filters.serviceId) === "56") {
-    return res.status(400).json({
-      success: false,
-      message: "Service 56 report is not implemented yet",
-    });
-  } else if (String(filters.serviceId) === "100") {
-    return res.status(400).json({
-      success: false,
-      message: "Service 100 report is not implemented yet",
-    });
-  } else if (String(filters.serviceId) === "4" || String(filters.serviceId) === "5") {
-    return res.status(400).json({
-      success: false,
-      message: `Service ${filters.serviceId} report is not implemented yet`,
-    });
-  } else if (String(filters.serviceId) === "287" || String(filters.serviceId) === "46") {
-    return res.status(400).json({
-      success: false,
-      message: `Service ${filters.serviceId} report is not implemented yet`,
-    });
-  } else if (String(filters.serviceId) === "290") {
-    return res.status(400).json({
-      success: false,
-      message: "Service 290 report is not implemented yet",
-    });
-  } else if (String(filters.serviceId) === "291") {
-    return res.status(400).json({
-      success: false,
-      message: "Service 291 report is not implemented yet",
-    });
-  } else if (String(filters.serviceId) === "51") {
-    return res.status(400).json({
-      success: false,
-      message: "Service 51 report is not implemented yet",
-    });
-  } else {
-    return res.status(400).json({
-      success: false,
-      message: `Certificate report not configured for Service ID ${filters.serviceId}`,
-    });
-  }
+  pdf = await ExtractOfPropertyReportHelper({
+    rows: reportData,
+    corporationName: corporationName || "",
+    ulbLogo: ulbLogo || "",
+    reportName: "मालमत्ता कर उतारा",
+    serviceId: filters.serviceId,
+    appNo: filters.appNo,
+    ulbId: filters.ulbId,
+  });
 
   // ------------------------------------------------------
   // 4. Validate PDF
