@@ -573,7 +573,7 @@ const generateCertificateReport = asyncHandler(async (req, res) => {
 
   const serviceResult = await service.generateCertificateReportService(filters);
 
-  //console.log("Certificate Service Result:", serviceResult);
+  console.log("Certificate Service Result:", serviceResult);
 
   if (!serviceResult || serviceResult.status !== "SUCCESS" || !serviceResult.data || serviceResult.data.length === 0) {
     return res.status(404).json({

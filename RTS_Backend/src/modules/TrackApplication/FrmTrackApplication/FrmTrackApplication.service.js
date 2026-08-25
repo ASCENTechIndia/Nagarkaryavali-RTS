@@ -390,7 +390,7 @@ const generateCertificateReportService = async (payload) => {
 
   const rows = await repo.getCertificateDataRepo(serviceId, appNo, ulbId);
 
-  //console.log("Certificate Data From Repo:", rows);
+  console.log("Certificate Data From Repo:", rows);
 
   if (!rows || rows.length === 0) {
     return {

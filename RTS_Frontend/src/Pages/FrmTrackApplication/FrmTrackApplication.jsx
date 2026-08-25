@@ -31,9 +31,9 @@ const FrmTrackApplication = () => {
 
   console.log("user", user);
   
-  const userId = user?.userId || "53194";
+  const userId = user?.userId;
   const ulbId = user?.ulbId;
-  const serviceUrl = user?.serviceUrl || "/app/dashboard";
+  const serviceUrl = user?.serviceUrl || "/";
 
   const [applications, setApplications] = useState([]);
   const [filteredApps, setFilteredApps] = useState([]);
@@ -316,28 +316,72 @@ const FrmTrackApplication = () => {
 
   const downloadCertificate = async (applino, serviceId, userId, ulbId) => {
     try {
-        const response = await axios.post(
-        `${BASE_URL}/api/FrmTrackApplication/downloadcertificate`,
-        { applino, serviceId, userId, ulbId },
+      debugger;
+      Swal.fire({
+        title: "Generating Certificate...",
+        text: "Please wait while your certificate is being prepared.",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      console.log({
+          serviceId: serviceId,
+          appNo: applino,
+          ulbId: ulbId
+        });
+
+      const response = await axios.post(
+        `${BASE_URL}/api/FrmTrackApplication/generate-certificate-report`,
         {
-            headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
-            responseType: 'blob',
+          serviceId: String(serviceId),
+          appNo: applino,
+          ulbId: ulbId,
+        },
+        {
+          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
         }
-        );
+      );
 
-        const blob = new Blob([response.data], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
+      console.log("Response: ", response);
 
-        window.open(url, '_blank');
+      Swal.close();
 
-        return true;
-    } catch (error) {
-        console.error("Error downloading certificate:", error);
+      if (response.data.success && response.data.pdfUrl) {
+        window.open(response.data.pdfUrl, '_blank');
+        
         Swal.fire({
-        text: "Error downloading certificate. Please try again.",
-        confirmButtonColor: '#1e3a8a',
+          text: "Certificate generated successfully!",
+          confirmButtonColor: '#1e3a8a',
+        });
+        
+        return true;
+      } else {
+        Swal.fire({
+          text: response.data.message || "Failed to generate certificate.",
+          confirmButtonColor: '#1e3a8a',
         });
         return false;
+      }
+    } catch (error) {
+      console.error("Error downloading certificate:", error);
+      console.log("Error Response:", error.response);
+      console.log("Error Response:", error.response.data);
+      console.log("Error Response:", error.response.data.message);
+      Swal.close();
+
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          error.message || 
+                          "Error downloading certificate. Please try again.";
+      
+      Swal.fire({
+        text: errorMessage,
+        confirmButtonColor: '#1e3a8a',
+      });
+      return false;
     }
   };
 
@@ -366,7 +410,6 @@ const FrmTrackApplication = () => {
       Swal.fire({
         text: "Document downloaded successfully!",
         confirmButtonColor: '#1e3a8a',
-        timer: 1500,
       });
     } catch (error) {
       console.error("Error downloading document:", error);
@@ -458,7 +501,7 @@ const FrmTrackApplication = () => {
 
       if (eligible) {
         Swal.fire({
-          text: "Redirecting to payment page...",
+          text: "Redirecting to payment page",
           confirmButtonColor: '#1e3a8a',
         }).then(() => {
           navigate("/app/FrmAppliFee", {
@@ -790,7 +833,8 @@ const FrmTrackApplication = () => {
                 type="button"
                 variant="outline"
                 className="bg-gray-100 hover:bg-gray-200"
-                onClick={() => navigate(serviceUrl)}
+                // onClick={() => navigate(serviceUrl)}
+                onClick={() => navigate(-1)}
               >
                 Back
               </Button>
