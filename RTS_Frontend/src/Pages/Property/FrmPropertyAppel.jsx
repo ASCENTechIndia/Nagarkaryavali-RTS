@@ -42,18 +42,18 @@ const initialValues = {
 const FrmPropertyAppel = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, token  } = useAuth();
+  const { user, token } = useAuth();
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   const locationState = location.state || {};
-  const ulbId = locationState.ulbId || user?.ulbId || "3";
-  const userId = locationState.userId || user?.userId || "151";
+  const ulbId = locationState.ulbId || user?.ulbId ;
+  const userId = locationState.userId || user?.userId ;
   const zoneId = locationState.zoneId || user?.zoneId || "12";
   const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId || ulbId;
-  const serviceId = locationState.serviceId || user?.serviceId || "290";
+  const serviceId = locationState.serviceId || user?.serviceId ;
 
 
   const [loading, setLoading] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);    
   const [objections, setObjections] = useState([]);
   const [documentDefs, setDocumentDefs] = useState([]);
   const [tableData, setTableData] = useState([]);
@@ -261,58 +261,6 @@ const FrmPropertyAppel = () => {
   };
 
 
-  // const handleFileChange = (id, event) => {
-  //   const file = event.currentTarget.files?.[0];
-
-  //   if (!file) return;
-
-  //   const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
-
-  //   if (!allowedTypes.includes(file.type)) {
-  //     Swal.fire({
-  //       text: "Only JPG, PNG and PDF files are allowed.",
-  //       confirmButtonColor: "#1e3a8a",
-  //     });
-
-  //     event.target.value = "";
-  //     return;
-  //   }
-
-  //   if (file.size > 5 * 1024 * 1024) {
-  //     Swal.fire({
-  //       text: "File size should not exceed 5 MB.",
-  //       confirmButtonColor: "#1e3a8a",
-  //     });
-
-  //     event.target.value = "";
-  //     return;
-  //   }
-
-  //   const reader = new FileReader();
-
-  //   reader.onload = (e) => {
-  //     const arrayBuffer = e.target.result;
-
-  //     const buffer = Buffer.from(new Uint8Array(arrayBuffer));
-
-  //     setTableData((prev) =>
-  //       prev.map((row) =>
-  //         row.id === id
-  //           ? {
-  //               ...row,
-  //               file: file,
-  //               fileName: file.name,
-  //               fileBuffer: buffer,
-  //             }
-  //           : row,
-  //       ),
-  //     );
-  //   };
-
-  //   reader.readAsArrayBuffer(file);
-  // };
-
-
   const handleFileChange = (id, event) => {
     const file = event.currentTarget.files?.[0];
     if (file) {
@@ -325,44 +273,6 @@ const FrmPropertyAppel = () => {
       );
     }
   };
-
-
-  // const uploadDocument = async (applicationNo, doc) => {
-  //   try {
-  //     const formData = new FormData();
-
-  //     formData.append("serviceId", String(serviceId));
-  //     formData.append("appNo", applicationNo);
-  //     formData.append("docType", doc.docType || "PDF");
-  //     formData.append("documentId", String(doc.docId));
-  //     formData.append("document", doc.file);
-
-  //     console.log("Uploading Document:", {
-  //       applicationNo,
-  //       docId: doc.docId,
-  //       docName: doc.docName,
-  //     });
-
-  //     const response = await axios.post(
-  //       `${BASE_URL}/api/FrmAssessmentCerti/upload-document`,
-  //       formData,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-  //           "Content-Type": "multipart/form-data",
-  //         },
-  //       },
-  //     );
-
-  //     console.log("Upload Response:", response.data);
-
-  //     return response.data?.success || response.data?.ok || false;
-  //   } catch (error) {
-  //     console.error("Error uploading document:", error);
-
-  //     return false;
-  //   }
-  // };
 
 
   const uploadDocument = async (applicationNo, doc) => {
@@ -529,6 +439,48 @@ const FrmPropertyAppel = () => {
         return;
       }
 
+      const missingDocuments = tableData.filter(row => !row.file);
+      if (missingDocuments.length > 0) {
+        const missingNames = missingDocuments.map(row => row.documentName).join(", ");
+        Swal.fire({
+          text: `Please upload all required documents. Missing: ${missingNames}`,
+          confirmButtonColor: "#1e3a8a",
+          confirmButtonText: "OK",
+          allowOutsideClick: false,
+        });
+        setLoading(false);
+        return;
+      }
+
+      const allowedExtensions = ["image/jpeg", "image/png", "application/pdf"];
+      const maxSizeInBytes = 5 * 1024 * 1024; // 5 MB
+
+      for (const row of tableData) {
+        if (row.file) {
+          if (!allowedExtensions.includes(row.file.type)) {
+            Swal.fire({
+              text: `Invalid file type for "${row.documentName}". Only JPEG, PNG, and PDF are allowed.`,
+              confirmButtonColor: "#1e3a8a",
+              confirmButtonText: "OK",
+              allowOutsideClick: false,
+            });
+            setLoading(false);
+            return;
+          }
+
+          if (row.file.size > maxSizeInBytes) {
+            Swal.fire({
+              text: `File size for "${row.documentName}" exceeds 5 MB limit.`,
+              confirmButtonColor: "#1e3a8a",
+              confirmButtonText: "OK",
+              allowOutsideClick: false,
+            });
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
       const documents = [];
 
       for (const row of tableData) {
@@ -547,19 +499,20 @@ const FrmPropertyAppel = () => {
         userId: String(userId),
         zoneId: Number(zoneId),
         serviceId: Number(serviceId),
-        propNo: values.ptn || "",
-        subCode: values.subcode || "",
-        landHolder: values.landHolder || "",
-        structHolder: values.structureHolder || "",
-        ownDetails: values.ownerDetails || "",
-        address: values.address || "",
-        appliName: values.applicantName || "",
-        mobile: Number(values.mobileNo) || 0,
-        email: values.emailId || "",
-        aadhar: Number(values.aadharNo) || 0,
-        objectType: Number(values.objectionType) || 0,
-        objectDesc: values.objectionDescription || "",
+        propNo: values.ptn,
+        subCode: values.subcode,
+        landHolder: values.landHolder,
+        structHolder: values.structureHolder,
+        ownDetails: values.ownerDetails,
+        address: values.address,
+        appliName: values.applicantName,
+        mobile: Number(values.mobileNo),
+        email: values.emailId,
+        aadhar: Number(values.aadharNo) ,
+        objectType: Number(values.objectionType),
+        objectDesc: values.objectionDescription,
 
+        // hardcoded beacause value not have in UI
         taxDate1: null,
         taxDate2: null,
         oldUsage: 0,
@@ -670,7 +623,7 @@ const FrmPropertyAppel = () => {
       //   }
       // });
 
-      
+
 
       Swal.fire({
         text: `${message}`,
