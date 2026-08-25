@@ -106,8 +106,7 @@ const Login = () => {
 
         setLoading(true);
         try {
-            const response = await axios.post(
-                `${import.meta.env.VITE_BASE_URL}/api/auth/login-proc`,
+            const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/auth/login-proc`,
                 {
                     corpId: 10001,
                     mobile: mobile,

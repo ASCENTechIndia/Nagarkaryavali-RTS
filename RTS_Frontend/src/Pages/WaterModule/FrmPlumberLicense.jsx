@@ -632,7 +632,7 @@ const FrmPlumberLicense = () => {
 
                                         <Input
                                             type="email"
-                                            maxLength={50}
+                                            maxLength={20}
                                             value={values.email}
                                             onChange={(e) =>
                                                 setFieldValue("email", e.target.value)
@@ -663,7 +663,7 @@ const FrmPlumberLicense = () => {
                                         </div>
 
                                         <Input
-                                            maxLength={16}
+                                            maxLength={10}
                                             value={values.panNo}
                                             onChange={(e) =>
                                                 setFieldValue("panNo", e.target.value.toUpperCase())
@@ -689,8 +689,7 @@ const FrmPlumberLicense = () => {
                                                 </SelectTrigger>
 
                                                 <SelectContent>
-                                                    {educationList.map(
-                                                        (item) => (
+                                                    {educationList.map((item) => (
                                                             <SelectItem
                                                                 key={item.EDUCATIONID}
                                                                 value={String(item.EDUCATIONID)}
@@ -913,8 +912,7 @@ const FrmPlumberLicense = () => {
                                                 "Document Name",
                                                 "Image(jpg,png,pdf)",
                                             ]}
-                                            data={documents.map(
-                                                (item, index) => ({
+                                            data={documents.map((item, index) => ({
                                                     srNo: index + 1,
                                                     documentName: item.DOCNAME,
                                                     image: (

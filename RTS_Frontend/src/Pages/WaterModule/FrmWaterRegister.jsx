@@ -19,9 +19,9 @@ const FrmWaterRegister = () => {
     const { user, token } = useAuth();
     const baseUrl = import.meta.env.VITE_BASE_URL;
 
-    const ulbId = Number(location.state?.ulbId ?? user?.ulbId ?? 3);
-    const userId = Number(location.state?.userId ?? user?.userId ?? 151);
-    const serviceId = Number(location.state?.serviceId ?? user?.serviceId ?? 21);
+    const ulbId = Number(location.state?.ulbId ?? user?.ulbId );
+    const userId = Number(location.state?.userId ?? user?.userId );
+    const serviceId = Number(location.state?.serviceId ?? user?.serviceId );
     const source = config?.source
 
     const [serviceName, setServiceName] = useState("Reconnection");
@@ -169,7 +169,7 @@ const FrmWaterRegister = () => {
             if (!details) {
                 Swal.fire({
                     // icon: "warning",
-                    text: "Connection details not found."
+                    text: response?.data?.data?.errors[0]?.detail
                 });
                 return;
             }
@@ -503,9 +503,7 @@ const FrmWaterRegister = () => {
                 <Form className="w-full">
                     <Card className="w-full">
                         <CardHeader className="border-b">
-                            <CardTitle className="text-lg font-semibold text-[#083c76]">
-                                {serviceName}
-                            </CardTitle>
+                            <CardTitle className="text-lg font-semibold text-[#083c76]">{serviceName}</CardTitle>
                         </CardHeader>
 
                         <CardContent className="p-5">
@@ -719,9 +717,10 @@ const FrmWaterRegister = () => {
                                         <span>:</span>
                                     </div>
                                     <Input
+                                        maxLength={5}
                                         value={values.curConSizeSrch}
                                         onChange={(e) =>
-                                            setFieldValue("curConSizeSrch", e.target.value)
+                                            setFieldValue("curConSizeSrch", e.target.value.replace(/\D/g, ""))
                                         }
                                         className="w-full"
                                     />
