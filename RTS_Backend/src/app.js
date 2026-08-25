@@ -83,6 +83,7 @@ app.use("/api/FrmMarketEntry", require("./modules/Trade/FrmMarketEntry/FrmMArket
 //TrackApplication
 app.use("/api/FrmTrackApplication", require("./modules/TrackApplication/FrmTrackApplication/FrmTrackApplication.routes"));
 app.use("/api/FrmAppeal", require("./modules/TrackApplication/FrmAppeal/FrmAppeal.route"));
+app.use("/api/FrmAppliFee", require("./modules/TrackApplication/FrmAppliFee/FrmAppliFee.route"));
 
 app.use(errorMiddleware);
 

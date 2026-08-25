@@ -1,5 +1,5 @@
-const { executeQueryANCL } = require("../../db/queryExecutor");
-const {getConnectionANCL} = require("../../config/db");
+const { executeQueryANCL, executeQueryTMC } = require("../../db/queryExecutor");
+const {getConnectionTMC} = require("../../config/db");
 const oracledb = require("oracledb");
 const { decryptString } = require("./encrypt.js");
 
@@ -99,15 +99,12 @@ const getCorporationDetailsRepo = async ({ corporationId }) => {
     let connection;
 
     try {
-        connection = await getConnectionANCL();
+        connection = await getConnectionTMC();
         const binds = { corporationId: Number(corporationId) };
 
         const corporationSql = `
-            SELECT
-                num_corporation_id,
-                var_corporation_name
-            FROM admins.aoma_corporation_mas
-            WHERE num_corporation_id = :corporationId
+            select num_corporation_id,var_corporation_name from aorts_corporation_mas
+            where num_corporation_id = :corporationId
         `;
 
         const logoSql = `
@@ -135,7 +132,7 @@ const getCorporationDetailsRepo = async ({ corporationId }) => {
 
         let logo = null;
 
-        console.log({ logo: logoResult })
+        console.log({ logo: logoResult.rows })
 
         if (logoRow?.BLOB_CORPORATION_IMG) {
             if (Buffer.isBuffer(logoRow.BLOB_CORPORATION_IMG)) {
@@ -204,56 +201,72 @@ const getDepartmentMenuRepo = async ({ ulbid }) => {
 const getServicesByDeptIdRepo = async ({ ulbid, deptId }) => {
     console.log("Repo: Fetch Services By Department", { ulbid, deptId });
 
-    const binds = { ulbid: Number(ulbid), deptId: Number(deptId) };
+    const binds = {  deptId: Number(deptId) };
 
-    let sql;
+    // let sql;
 
-    if (Number(ulbid) === 2) {
-        sql = `
-            SELECT DISTINCT
-                CASE
-                    WHEN var_service_displayname IS NULL
-                        THEN var_service_eng_name
-                    ELSE var_service_displayname
-                END AS displayname,
-                num_service_serviceid,
-                var_dept_engname,
-                num_dept_id
-            FROM aorts.aorts_service_def
-            INNER JOIN admins.aoms_dept_mas
-                ON num_dept_id = num_service_deptid
-            INNER JOIN aorts_service_config
-                ON num_serv_servid = num_service_serviceid
-               AND num_serv_deptid = num_service_deptid
-            WHERE num_service_deptid = :deptId
-              AND var_service_active = 'Y'
-              AND num_serv_ulbid = :ulbid
-            ORDER BY num_service_serviceid
-        `;
-    } else {
-        sql = `
-            SELECT
-                CASE
-                    WHEN var_serv_dispname IS NULL
-                        THEN var_service_eng_name
-                    ELSE var_serv_dispname
-                END AS displayname,
-                num_service_serviceid,
-                var_dept_engname,
-                num_dept_id
-            FROM aorts.aorts_service_def
-            INNER JOIN admins.aoms_dept_mas
-                ON num_dept_id = num_service_deptid
-            INNER JOIN aorts_service_config
-                ON num_serv_servid = num_service_serviceid
-               AND num_serv_deptid = num_service_deptid
-            WHERE num_service_deptid = :deptId
-              AND var_service_active = 'Y'
-              AND num_serv_ulbid = :ulbid
-            ORDER BY num_service_serviceid
-        `;
-    }
-    const result = await executeQueryANCL(sql, binds);
+    // if (Number(ulbid) === 2) {
+    //     sql = `
+    //         SELECT DISTINCT
+    //             CASE
+    //                 WHEN var_service_displayname IS NULL
+    //                     THEN var_service_eng_name
+    //                 ELSE var_service_displayname
+    //             END AS displayname,
+    //             num_service_serviceid,
+    //             var_dept_engname,
+    //             num_dept_id
+    //         FROM aorts.aorts_service_def
+    //         INNER JOIN admins.aoms_dept_mas
+    //             ON num_dept_id = num_service_deptid
+    //         INNER JOIN aorts_service_config
+    //             ON num_serv_servid = num_service_serviceid
+    //            AND num_serv_deptid = num_service_deptid
+    //         WHERE num_service_deptid = :deptId
+    //           AND var_service_active = 'Y'
+    //           AND num_serv_ulbid = :ulbid
+    //         ORDER BY num_service_serviceid
+    //     `;
+    // } else {
+    //     sql = `
+    //         SELECT
+    //             CASE
+    //                 WHEN var_serv_dispname IS NULL
+    //                     THEN var_service_eng_name
+    //                 ELSE var_serv_dispname
+    //             END AS displayname,
+    //             num_service_serviceid,
+    //             var_dept_engname,
+    //             num_dept_id
+    //         FROM aorts.aorts_service_def
+    //         INNER JOIN admins.aoms_dept_mas
+    //             ON num_dept_id = num_service_deptid
+    //         INNER JOIN aorts_service_config
+    //             ON num_serv_servid = num_service_serviceid
+    //            AND num_serv_deptid = num_service_deptid
+    //         WHERE num_service_deptid = :deptId
+    //           AND var_service_active = 'Y'
+    //           AND num_serv_ulbid = :ulbid
+    //         ORDER BY num_service_serviceid
+    //     `;
+    // }
+
+    const sql = `
+        SELECT 
+            var_service_eng_name, 
+            num_service_serviceid,
+            var_dept_engname,num_dept_id 
+        FROM aorts.aorts_tmcservice_def
+        inner join admins.aoms_dept_mas on num_dept_id = num_service_deptid
+        WHERE 
+            num_service_deptid = :deptId
+            AND var_service_active = 'Y' 
+        ORDER BY num_service_serviceid
+
+
+    
+    `;
+    const result = await executeQueryTMC(sql, binds);
 
     if (!result || !result.success) {
         throw new Error(result?.error || "Failed to fetch services by department");
@@ -268,32 +281,21 @@ const getDocumentsForServiceRepo = async ({ serviceId, ulbid }) => {
     const binds = { serviceId: Number(serviceId), ulbid: Number(ulbid) };
 
     const sql = `
-        SELECT
-            var_doc_engname,
-            num_serdoc_servid,
-            num_serdoc_ulbid,
-            CASE
-                WHEN var_serv_dispname IS NULL
-                    THEN var_service_eng_name
-                ELSE var_serv_dispname
-            END AS displayname,
+        SELECT 
+            var_doc_engname, 
+            num_serdoc_servid, 
+            num_serdoc_ulbid, 
+            var_service_eng_name, 
             num_service_serviceid
         FROM aorts.aorts_serv_doc_config
-        INNER JOIN aorts.aorts_service_def
-            ON num_service_serviceid = num_serdoc_servid
-        INNER JOIN aorts_service_config
-            ON num_serv_servid = num_service_serviceid
-           AND num_serv_deptid = num_service_deptid
-           AND num_serv_ulbid = num_serdoc_ulbid
-        INNER JOIN aorts.aorts_doc_def
-            ON num_doc_id = num_serdoc_docid
-           AND num_doc_serviceid = num_service_serviceid
+        INNER JOIN aorts.aorts_tmcservice_def on num_service_serviceid = num_serdoc_servid
+        INNER JOIN aorts.aorts_doc_def ON num_doc_id = num_serdoc_docid and num_doc_serviceid = num_service_serviceid
         WHERE num_serdoc_servid = :serviceId
-          AND var_service_active = 'Y'
-          AND num_serdoc_ulbid = :ulbid
+         AND var_service_active = 'Y' 
+         and num_serdoc_ulbid = :ulbid
     `;
 
-    const result = await executeQueryANCL(sql, binds);
+    const result = await executeQueryTMC(sql, binds);
 
     if (!result || !result.success) {
         throw new Error(result?.error || "Failed to fetch service documents");
@@ -336,20 +338,20 @@ const getDocumentsForServiceRepo = async ({ serviceId, ulbid }) => {
 const getDownloadDocsRepo = async ({ serviceName, ulbid }) => {
     console.log("Repo: Fetch Download Documents", { serviceName, ulbid });
 
-    const binds = { serviceName: String(serviceName), ulbid: Number(ulbid) };
+    const binds = { serviceName: String(serviceName) };
 
     const sql = `
-        SELECT
-            num_downlaoddoc_docid AS DocId,
-            var_downlaoddoc_docname AS DocName,
-            var_downlaoddoc_servname,
-            num_downlaoddoc_ulbid
-        FROM aorts_downlaoddoc_mas
-        WHERE var_downlaoddoc_servname = :serviceName
-          AND num_downlaoddoc_ulbid = :ulbid
+        select 
+            num_serdoc_id DocId, 
+            var_doc_engname DocName,
+            var_serdoc_downpath downpath 
+        from aorts_serv_doc_config
+        INNER JOIN aorts.aorts_doc_def ON num_doc_id = num_serdoc_docid and num_doc_serviceid = num_serdoc_servid
+        where num_serdoc_servid=:serviceName
+            and var_serdoc_downflag='Y'
     `;
 
-    const result = await executeQueryANCL(sql, binds);
+    const result = await executeQueryTMC(sql, binds);
 
     if (!result || !result.success) {
         throw new Error(result?.error || "Failed to fetch download documents");
@@ -394,7 +396,7 @@ async function getServiceDetails({ serviceId }) {
         WHERE num_service_serviceid = :serviceId
     `;
 
-    const result = await executeQueryANCL(sql, {
+    const result = await executeQueryTMC(sql, {
         serviceId: numericServiceId
     });
 

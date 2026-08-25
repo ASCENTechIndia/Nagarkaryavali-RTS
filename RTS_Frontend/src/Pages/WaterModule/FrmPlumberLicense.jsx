@@ -18,11 +18,11 @@ const FrmPlumberLicense = () => {
     const { user, token } = useAuth();
 
     const baseUrl = import.meta.env.VITE_BASE_URL;
-    const ulbId = Number(location.state?.ulbId ?? user?.ulbId ?? 3);
-    const userId = location.state?.userId ?? user?.userId ?? 123;
-    const serviceId = Number(location.state?.serviceId ?? user?.serviceId ?? 25);
+    const ulbId = Number(location.state?.ulbId ?? user?.ulbId );
+    const userId = location.state?.userId ?? user?.userId ;
+    const serviceId = Number(location.state?.serviceId ?? user?.serviceId);
     const source = config?.source;
-
+    console.log({location})
     const [mode, setMode] = useState(serviceId === 24 ? "N" : "R");
     const [serviceName, setServiceName] = useState("Plumber License");
     const [zones, setZones] = useState([]);
@@ -365,7 +365,7 @@ const FrmPlumberLicense = () => {
                 };
 
                 Swal.fire({
-                    title: "Submitting...",
+                    text: "Submitting...",
                     allowOutsideClick: false,
                     allowEscapeKey: false,
                     showConfirmButton: false,
@@ -402,7 +402,7 @@ const FrmPlumberLicense = () => {
                 };
 
                 Swal.fire({
-                    title: "Saving...",
+                    text: "Saving...",
                     allowOutsideClick: false,
                     allowEscapeKey: false,
                     showConfirmButton: false,
@@ -445,8 +445,8 @@ const FrmPlumberLicense = () => {
             }
 
             Swal.fire({
-                title: "Uploading Documents...",
-                text: `Application No: ${appNo}`,
+                text: "Uploading Documents...",
+                // text: `Application No: ${appNo}`,
                 allowOutsideClick: false,
                 allowEscapeKey: false,
                 showConfirmButton: false,
@@ -489,9 +489,9 @@ const FrmPlumberLicense = () => {
             Swal.close();
 
             await Swal.fire({
-                icon: "success",
-                title: "Success",
-                text: result?.message || "Plumber License Details Saved Successfully.",
+                // icon: "success",
+                // title: "Success",
+                text: `${result?.message} Application No: ${appNo}` || "Plumber License Details Saved Successfully.",
                 // footer: `Application No: ${appNo}`,
                 confirmButtonText: "OK",
             });
@@ -501,6 +501,7 @@ const FrmPlumberLicense = () => {
             });
 
             setDocuments((previous) => previous.map((item) => ({ ...item, file: null })));
+            
         } catch (error) {
             Swal.close();
             console.error("Plumber License Submit Error:", error);

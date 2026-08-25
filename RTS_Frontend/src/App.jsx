@@ -19,6 +19,7 @@ import FrmWaterRegister from "./Pages/WaterModule/FrmWaterRegister";
 import FrmPlumberLicense from "./Pages/WaterModule/FrmPlumberLicense";
 import FrmTrackApplication from "./Pages/FrmTrackApplication/FrmTrackApplication";
 import FrmAppeal from "./Pages/FrmTrackApplication/FrmAppeal";
+import FrmAppliFee from "./Pages/FrmTrackApplication/FrmAppliFee";
 
 const router = createBrowserRouter([
   {
@@ -64,6 +65,10 @@ const router = createBrowserRouter([
       {
         path: "/app/FrmAppeal",
         element: <FrmAppeal />
+      },
+      {
+        path: "/app/FrmAppliFee",
+        element: <FrmAppliFee />
       },
       {
         path: "app/Step0New",

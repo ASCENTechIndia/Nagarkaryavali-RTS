@@ -65,7 +65,7 @@ const LandingPage = () => {
 
                 const mappedServices = data.map((item) => ({
                     id: item.NUM_SERVICE_SERVICEID,
-                    name: item.DISPLAYNAME,
+                    name: item.VAR_SERVICE_ENG_NAME,
                     departmentId: item.NUM_DEPT_ID,
                     departmentName: item.VAR_DEPT_ENGNAME,
                 }));

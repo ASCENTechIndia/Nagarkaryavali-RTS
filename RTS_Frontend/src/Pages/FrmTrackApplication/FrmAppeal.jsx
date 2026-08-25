@@ -22,11 +22,7 @@ const FrmAppeal = () => {
     const userUniqueId = location.state?.userUniqueId ?? user?.userUniqueId ?? "1001";
 
     const [application, setApplication] = useState(null);
-
-    const initialValues = {
-        citizenRemark: "",
-        appealType: "",
-    };
+    const initialValues = {citizenRemark: "", appealType: ""};
 
     useEffect(() => {
         if (!token || !appNo) return;
