@@ -26,7 +26,8 @@ import config from "@/utils/config";
 import { 
   propertyTransferSearchSchema, 
   propertyTransferApplicantSchema,
-  propertyTransferDocumentValidationSchema 
+  propertyTransferDocumentValidationSchema,
+  documentValidationSchema
 } from "@/validations/global.validation";
 
 // const ENCRYPTION_KEY = "AS23N7E2H4V717DEAS23N7E2H4V717DE";
@@ -614,14 +615,19 @@ const FrmPropertyTransfer = () => {
         return;
       }
 
-      // const documentValidation = propertyTransferDocumentValidationSchema.safeParse(tableData);
-
-      // if (!documentValidation.success) {
-      //   const firstError = documentValidation.error.issues[0];
-      //   Swal.fire({ text: firstError.message, confirmButtonColor: '#1e3a8a' });
-      //   setLoading(false);
-      //   return;
-      // }
+      const documentValidation = documentValidationSchema.safeParse(tableData);
+      
+      if (!documentValidation.success) {
+        const firstError = documentValidation.error.issues[0];
+        Swal.fire({
+          text: firstError.message,
+          confirmButtonColor: '#1e3a8a',
+          confirmButtonText: "OK",
+          allowOutsideClick: false,
+        });
+        setLoading(false);
+        return;
+      }
 
       const documents = [];
       for (const row of tableData) {

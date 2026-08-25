@@ -656,19 +656,19 @@ const FrmNoDuesCerti = () => {
 
       console.log("Documents to upload:", documents);
 
-      // const documentValidation = documentValidationSchema.safeParse(documents);
+      const documentValidation = documentValidationSchema.safeParse(tableData);
 
-      // if (!documentValidation.success) {
-      //   const firstError = documentValidation.error.issues[0];
-      //   Swal.fire({
-      //     text: firstError.message,
-      //     confirmButtonColor: '#1e3a8a',
-      //     confirmButtonText: "OK",
-      //     allowOutsideClick: false,
-      //   });
-      //   setLoading(false);
-      //   return;
-      // }
+      if (!documentValidation.success) {
+        const firstError = documentValidation.error.issues[0];
+        Swal.fire({
+          text: firstError.message,
+          confirmButtonColor: '#1e3a8a',
+          confirmButtonText: "OK",
+          allowOutsideClick: false,
+        });
+        setLoading(false);
+        return;
+      }
 
       const loader = Swal.fire({
         title: "Submitting Application...",
