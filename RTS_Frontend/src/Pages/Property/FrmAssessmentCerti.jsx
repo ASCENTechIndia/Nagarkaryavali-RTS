@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -86,8 +86,9 @@ const initialValues = {
 const FrmAssessmentCerti = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
-  const token = user?.token;
+  const { user, token } = useAuth();
+
+  console.log("User, Token: ", user, token);
 
   const locationState = location.state || {};
   
@@ -104,6 +105,8 @@ const FrmAssessmentCerti = () => {
   const [tableData, setTableData] = useState([]);
   const [propertyFound, setPropertyFound] = useState(false);
   const [searchError, setSearchError] = useState("");
+
+  const originalDocumentDefs = useRef([]);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -124,14 +127,18 @@ const FrmAssessmentCerti = () => {
     try {
       setIsLoading(true);
       const response = await axios.post(`${BASE_URL}/api/FrmAssessmentCerti/documents`, {
-        serviceId: serviceId || 2,
-        ulbId: ulbId || 3,
-      });
+        serviceId: serviceId,
+        ulbId: ulbId,
+      },
+      {
+        headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
+      }
+    );
 
       if (response?.data?.ok && response?.data?.data?.rows) {
         const docs = response.data.data.rows;
         setDocumentDefs(docs);
-
+        originalDocumentDefs.current = docs;
         const tableRows = docs.map((doc, index) => ({
           id: doc.DocId,
           srNo: index + 1,
@@ -162,7 +169,7 @@ const FrmAssessmentCerti = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const arrayBuffer = e.target.result;
-        const buffer = Buffer.from(new Uint8Array(arrayBuffer));
+        const buffer = buffer.from(new Uint8Array(arrayBuffer));
         setTableData((prev) =>
           prev.map((row) =>
             row.id === id
@@ -257,8 +264,97 @@ const FrmAssessmentCerti = () => {
     }
   };
 
-  const handleSearchProperty = async (ptn, subcode, setFieldValue) => {
-     const validationResult = propertySearchValidationSchema.safeParse({
+  // const handleSearchProperty = async (ptn, subcode, setFieldValue) => {
+  //    const validationResult = propertySearchValidationSchema.safeParse({
+  //     ptn: ptn,
+  //     subcode: subcode,
+  //   });
+
+  //   if (!validationResult.success) {
+  //     const firstError = validationResult.error.issues[0];
+  //     Swal.fire({
+  //       text: firstError.message,
+  //       confirmButtonColor: '#1e3a8a',
+  //     });
+  //     return;
+  //   }
+
+
+  //   try {
+  //     setIsLoading(true);
+  //     setSearchError("");
+  //     setPropertyFound(false);
+
+  //     let fullPropNo = ptn;
+  //     if (subcode && subcode.trim() !== "") {
+  //       fullPropNo = ptn + "/" + subcode;
+  //     }
+
+  //     const result = await getPropertyDetails(fullPropNo, userId);
+
+  //     if (result && result.propertyOwners) {
+  //       const propData = result.propertyOwners;
+
+  //       if (propData.payamt && parseFloat(propData.payamt) > 0) {
+  //         const payNowUrl = `https://propertytax.thanecity.gov.in/PropSearch.aspx?PTN=${ptn}`;
+  //         Swal.fire({
+  //           text: `Your property tax payment of Rs.${propData.payamt} is due, please make the payment first`,
+  //           confirmButtonColor: '#1e3a8a',
+  //           showCancelButton: true,
+  //           cancelButtonText: 'Cancel',
+  //           confirmButtonText: 'Pay Now',
+  //         }).then((result) => {
+  //           if (result.isConfirmed) {
+  //             window.open(payNowUrl, '_blank');
+  //           }
+  //         });
+  //         setPropertyFound(false);
+  //         setIsLoading(false);
+  //         return;
+  //       }
+
+  //       setFieldValue("landHolder", propData.land_Holder ?? "");
+  //       setFieldValue("structureHolder", propData.struct_Holder ?? "");
+  //       setFieldValue("ownerDetails", propData.owner_Details ?? "");
+  //       setFieldValue("address", propData.address ?? "");
+  //       setFieldValue("flatNo", propData.flat_No || propData.flatno || "");
+  //       setFieldValue("strType", propData.usagetype_name ?? "");
+  //       setFieldValue("constrType", propData.consttype_name ?? "");
+  //       setFieldValue("area", propData.prop_area ?? "");
+  //       setFieldValue("lettingRate", propData.letting_rate ?? "");
+  //       setFieldValue("rateableValue", propData.retable_value ?? "");
+  //       setFieldValue("yearlyTax", propData.yearly_tax?.toString() || "");
+  //       setFieldValue("assessmentYear", propData.asses_year ?? "");
+
+  //       setPropertyFound(true);
+
+  //       Swal.fire({
+  //         text: "Property found successfully!",
+  //         confirmButtonColor: '#1e3a8a',
+  //         timer: 1500,
+  //       });
+  //     } else {
+  //       setSearchError("Property not found");
+  //       Swal.fire({
+  //         text: "Property not found. Please check the Property Number.",
+  //         confirmButtonColor: '#1e3a8a',
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Search Property Error:", error);
+  //     let errorMessage = "Error searching property. Please try again.";
+  //     setSearchError(errorMessage);
+  //     Swal.fire({
+  //       text: error?.response?.data?.error || errorMessage,
+  //       confirmButtonColor: '#1e3a8a',
+  //     });
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  const handleSearchProperty = async (ptn, subcode, setFieldValue, resetForm) => {
+    const validationResult = propertySearchValidationSchema.safeParse({
       ptn: ptn,
       subcode: subcode,
     });
@@ -268,13 +364,14 @@ const FrmAssessmentCerti = () => {
       Swal.fire({
         text: firstError.message,
         confirmButtonColor: '#1e3a8a',
+        confirmButtonText: "OK",
+        allowOutsideClick: false,
       });
       return;
     }
 
-
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       setSearchError("");
       setPropertyFound(false);
 
@@ -289,19 +386,14 @@ const FrmAssessmentCerti = () => {
         const propData = result.propertyOwners;
 
         if (propData.payamt && parseFloat(propData.payamt) > 0) {
-          const payNowUrl = `https://propertytax.thanecity.gov.in/PropSearch.aspx?PTN=${ptn}`;
           Swal.fire({
             text: `Your property tax payment of Rs.${propData.payamt} is due, please make the payment first`,
             confirmButtonColor: '#1e3a8a',
-            showCancelButton: true,
-            cancelButtonText: 'Cancel',
-            confirmButtonText: 'Pay Now',
-          }).then((result) => {
-            if (result.isConfirmed) {
-              window.open(payNowUrl, '_blank');
-            }
+            confirmButtonText: "OK",
+            allowOutsideClick: false,
+          }).then(() => {
+            resetFormAfterSearch(setFieldValue, resetForm);
           });
-          setPropertyFound(false);
           setIsLoading(false);
           return;
         }
@@ -325,35 +417,53 @@ const FrmAssessmentCerti = () => {
           text: "Property found successfully!",
           confirmButtonColor: '#1e3a8a',
           timer: 1500,
+          allowOutsideClick: false,
         });
       } else {
-        setSearchError("Property not found");
         Swal.fire({
-          text: "Property not found. Please check the Property Number.",
+          text: "Property Not Found For This Prop No",
           confirmButtonColor: '#1e3a8a',
+          confirmButtonText: "OK",
+          allowOutsideClick: false,
+        }).then(() => {
+          resetFormAfterSearch(setFieldValue, resetForm);
         });
       }
     } catch (error) {
       console.error("Search Property Error:", error);
-      let errorMessage = "Error searching property. Please try again.";
-      setSearchError(errorMessage);
       Swal.fire({
-        text: error?.response?.data?.error || errorMessage,
+        text: error?.response?.data?.error || "Error searching property. Please try again.",
         confirmButtonColor: '#1e3a8a',
+        confirmButtonText: "OK",
+        allowOutsideClick: false,
       });
     } finally {
       setIsLoading(false);
     }
   };
 
+  const resetFormAfterSearch = (setFieldValue, resetForm) => {
+    resetForm();
+    
+    setPropertyFound(false);
+    setSearchError("");
+    
+    if (originalDocumentDefs.current && originalDocumentDefs.current.length > 0) {
+      const resetTableData = originalDocumentDefs.current.map((doc, index) => ({
+        id: doc.DocId,
+        srNo: index + 1,
+        documentName: doc.DocName || doc.engdocdesc || "",
+        docId: doc.DocId,
+        docType: doc.DocType || "",
+        file: null,
+        fileName: "No file chosen",
+        fileBuffer: null,
+      }));
+      setTableData(resetTableData);
+    }
+  };
+
   const handleSubmit = async (values) => {
-    const loader = Swal.fire({
-      title: "Submitting Application...",
-      text: "Please wait while we process your application.",
-      allowOutsideClick: false,
-      showConfirmButton: false,
-      didOpen: () => Swal.showLoading(),
-    });
 
     const propertyValidation = propertySearchValidationSchema.safeParse({
       ptn: values.ptn,
@@ -407,7 +517,16 @@ const FrmAssessmentCerti = () => {
     //   return;
     // }
 
+    const loader = Swal.fire({
+      title: "Submitting Application...",
+      text: "Please wait while we process your application.",
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
     const submitData = {
+      ulbId: ulbId,
       userId: userId,
       zoneId: zoneId,
       serviceId: serviceId,
@@ -432,19 +551,24 @@ const FrmAssessmentCerti = () => {
       email: values.emailId,
       appSource: config.source,
       documents: documents,
-      mahaData: {
-        ulbId: ulbId,
-        mahaUlbId: user?.mahaUlbId || ulbId,
-        districtId: user?.districtId || 0,
-        trackId: Date.now().toString(),
-      },
+      // mahaData: {
+      //   ulbId: ulbId,
+      //   mahaUlbId: user?.mahaUlbId || ulbId,
+      //   districtId: user?.districtId || 0,
+      //   trackId: Date.now().toString(),
+      // },
     };
 
     console.log("Submit Data:", submitData);
 
     try {
       setIsSubmitting(true);
-      const response = await axios.post(`${BASE_URL}/api/FrmAssessmentCerti/submit`, submitData);
+      const response = await axios.post(`${BASE_URL}/api/FrmAssessmentCerti/submit`, 
+        submitData, 
+        {
+          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
+        }
+      );
 
       loader.close();
       
@@ -455,17 +579,18 @@ const FrmAssessmentCerti = () => {
           text: data.message || "Application submitted successfully!",
           confirmButtonColor: '#1e3a8a',
         }).then(() => {
-          if (data.payFlag === "N") {
-            navigate("/app/FrmAssessmentCerti");
-          } else {
-            navigate("/app/FrmAppliFee", {
-              state: {
-                applicationNo: data.applicationNo,
-                serviceId: serviceId,
-                propNo: values.ptn,
-              },
-            });
-          }
+          navigate("/app/FrmTrackApplication", { state: { applicationNo: data.applicationNo } });
+          // if (data.payFlag === "N") {
+          //   navigate("/app/FrmAssessmentCerti");
+          // } else {
+          //   navigate("/app/FrmAppliFee", {
+          //     state: {
+          //       applicationNo: data.applicationNo,
+          //       serviceId: serviceId,
+          //       propNo: values.ptn,
+          //     },
+          //   });
+          // }
         });
       } else {
         Swal.fire({
@@ -476,7 +601,7 @@ const FrmAssessmentCerti = () => {
     } catch (error) {
       console.error("Submit Error:", error);
       Swal.fire({
-        text: error?.response?.data?.message || "Error submitting application",
+        text: error?.response?.data?.error || "Error submitting application",
         confirmButtonColor: '#1e3a8a',
       });
     } finally {
@@ -528,7 +653,7 @@ const FrmAssessmentCerti = () => {
                     <Button
                       type="button"
                       className="bg-blue-900 hover:bg-blue-800 text-white"
-                      onClick={() => handleSearchProperty(values.ptn, values.subcode, setFieldValue)}
+                      onClick={() => handleSearchProperty(values.ptn, values.subcode, setFieldValue, resetForm)}
                       disabled={isLoading}
                     >
                       {isLoading ? "Searching..." : "Search"}

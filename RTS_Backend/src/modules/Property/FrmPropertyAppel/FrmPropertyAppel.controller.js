@@ -7,4 +7,9 @@ const createPropAppeal = asyncHandler(async (req, res) => {
   return ok(res, data);
 });
 
-module.exports = { createPropAppeal };
+const getObjections = asyncHandler(async (req, res) => {
+  const data = await service.getObjectionsService();
+  return ok(res, data);
+});
+
+module.exports = { createPropAppeal , getObjections };

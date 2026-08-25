@@ -10,43 +10,43 @@ const upload = require("../../../middlewares/upload.middleware");
 
 // GET BUSINESS PLACE
 
-router.post("/getbusinessplace", auth(), controller.getBusinessPlace);
+router.post("/getbusinessplace",  controller.getBusinessPlace);
 
 // GET JALAN SHIL
 
-router.post("/getjalanshil", auth(), controller.getJalanShil);
+router.post("/getjalanshil",  controller.getJalanShil);
 
 // GET ILLEGAL TYPE
 
-router.post("/getillegaltype", auth(), controller.getIllegalType);
+router.post("/getillegaltype",  controller.getIllegalType);
 
 // GET APPLICANT TYPE
 
-router.post("/getapplicanttype", auth(), controller.getApplicantType);
+router.post("/getapplicanttype",  controller.getApplicantType);
 
 // GET WARD
 
-router.post("/getward", auth(), controller.getWard);
+router.post("/getward",  controller.getWard);
 
 // GET LICENSE TYPE
 
-router.post("/getlicensetype", auth(), controller.getLicenseType);
+router.post("/getlicensetype",  controller.getLicenseType);
 
 // GET TRADE CATEGORY
 
-router.post("/gettradecategory", auth(), controller.getTradeCategory);
+router.post("/gettradecategory",  controller.getTradeCategory);
 
 // GET TRADE DETAILS
 
-router.post("/gettradedetails", auth(), controller.getTradeDetails);
+router.post("/gettradedetails",  controller.getTradeDetails);
 
 // GET DOCUMENT DETAILS
 
-router.post("/getdocumentdetails", auth(), controller.getDocumentDetails);
+router.post("/getdocumentdetails",  controller.getDocumentDetails);
 
 // GET SELF DECLARE DATA
 
-router.post("/getselfdeclaredata", auth(), controller.getSelfDeclareData);
+router.post("/getselfdeclaredata",  controller.getSelfDeclareData);
 
 // GET TRADE TYPE DETAILS
 
@@ -54,22 +54,22 @@ router.post("/getselfdeclaredata", auth(), controller.getSelfDeclareData);
 
 // GET APPLICATION DETAILS
 
-router.post("/getapplicationdetails", auth(), controller.getApplicationDetails);
+router.post("/getapplicationdetails", controller.getApplicationDetails);
 
-router.post("/applicationentry", auth(), controller.applicationEntry);
+router.post("/applicationentry", controller.applicationEntry);
 
-router.post("/updatedirectorimages", upload.array("directorImages", 10), auth(), controller.updateDirectorImages);
+router.post("/updatedirectorimages", upload.array("directorImages", 10), controller.updateDirectorImages);
 
-router.post("/documentinsert", upload.single("document"), auth(), controller.documentInsert);
+router.post("/documentinsert", upload.single("document"),  controller.documentInsert);
 
-router.post("/getexistinglicensedetails", auth(), controller.getExistingLicenseDetails);
+router.post("/getexistinglicensedetails",  controller.getExistingLicenseDetails);
 
-router.post("/checklicensecancelled", auth(), controller.checkLicenseCancelled);
+router.post("/checklicensecancelled",  controller.checkLicenseCancelled);
 
-router.post("/gettradtypesrates", auth(), controller.getTradTypesRates);
+router.post("/gettradtypesrates", controller.getTradTypesRates);
 
-router.post("/gettradetypesbycategory", auth(), controller.getTradeTypesByCategory);
+router.post("/gettradetypesbycategory",  controller.getTradeTypesByCategory);
 
-router.post("/gettradecategorybyjwalanshil", auth(), controller.getTradeCategoryByJwalan);
+router.post("/gettradecategorybyjwalanshil",  controller.getTradeCategoryByJwalan);
 
 module.exports = router;

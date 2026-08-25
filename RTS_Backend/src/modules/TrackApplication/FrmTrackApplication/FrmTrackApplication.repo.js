@@ -26,7 +26,7 @@ const getApplicationDetailsRepo = async (userId, ulbId) => {
     ORDER BY APLIDT DESC
   `;
 
-  const result = await executeQueryANCL(query, {
+  const result = await executeQueryTMC(query, {
     userId,
     ulbId,
   });
@@ -285,7 +285,7 @@ const getAppealDetailsRepo = async (appno) => {
         response.secondAppealAvailable = false;
       }
     }
-
+    console.log("response", response);
     return response;
   } catch (error) {
     console.error("GET APPEAL DETAILS REPO ERROR:", error);
@@ -480,7 +480,7 @@ const getApplicationStepsRepo = async (ulbId, applino, serviceId) => {
     ORDER BY mas.num_applstage_id
   `;
 
-  const stepsResult = await executeQueryANCL(stepsQuery, {
+  const stepsResult = await executeQueryTMC(stepsQuery, {
     ulbId,
     applino,
   });
@@ -495,9 +495,11 @@ const getApplicationStepsRepo = async (ulbId, applino, serviceId) => {
     WHERE num_service_serviceid = :serviceId
   `;
 
-  const departmentResult = await executeQueryANCL(departmentQuery, {
+  const departmentResult = await executeQueryTMC(departmentQuery, {
     serviceId,
   });
+
+  console.log("stepsResult", stepsResult);
 
   return {
     steps: stepsResult.rows || [],
@@ -730,7 +732,7 @@ const getCertificateDataRepo = async (serviceId, appNo, ulbId) => {
     return [];
   }
 
-  console.log("Certificate Data Query:", query);
+  // console.log("Certificate Data Query:", query);
 
   const result = await executeQueryTMC(query);
 
@@ -757,6 +759,258 @@ const getReApplyServiceDetailsRepo = async (serviceId) => {
   return result.rows || [];
 };
 
+
+// ============================================================
+// INSERT CERTIFICATE INTO aorts_appliCert_det (Your Custom Table)
+// Matches CertificateInsert in DOTNET but uses your table
+// ============================================================
+const insertCertificateDocRepo = async (applino, userId, pdfBuffer) => {
+  let connection;
+  
+  try {
+    connection = await getConnectionTMC();
+    
+    const query = `
+      INSERT INTO aorts_appliCert_det (
+        num_cert_id,
+        var_cert_applino,
+        var_cert_docname,
+        blob_cert_document,
+        dat_cert_insdt,
+        var_cert_insby
+      ) VALUES (
+        SEQ_AORTS_APPLICERT_DET.NEXTVAL,
+        :applino,
+        'CertificateORG',
+        :pdfBuffer,
+        SYSDATE,
+        :userId
+      )
+    `;
+    
+    const result = await connection.execute(
+      query,
+      {
+        applino,
+        pdfBuffer,
+        userId,
+      },
+      {
+        autoCommit: true,
+      }
+    );
+    
+    return {
+      success: true,
+      rowsAffected: result.rowsAffected || 0,
+    };
+  } catch (error) {
+    console.error("INSERT CERTIFICATE DOC REPO ERROR:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error("ERROR CLOSING CONNECTION:", err.message);
+      }
+    }
+  }
+};
+
+// ============================================================
+// UPDATE CERTIFICATE STATUS - Matches AppcertificateUpd in DOTNET
+// Updates tracking status for Certificate Generated stage
+// ============================================================
+const updateCertificateStatusRepo = async (serviceId, applino, userId) => {
+  let connection;
+  
+  try {
+    connection = await getConnectionTMC();
+    
+    // Update tracking status for Certificate Generated stage (stageid = 4)
+    const query = `
+      UPDATE aorts_applitracking_det
+      SET var_applitrack_status = 'Done',
+          dat_applitrack_updt = SYSDATE,
+          var_applitrack_updtby = :userId
+      WHERE var_applitrack_applno = :applino
+        AND num_applitrack_stageid = 4
+    `;
+    
+    const result = await connection.execute(
+      query,
+      {
+        applino,
+        userId,
+      },
+      {
+        autoCommit: true,
+      }
+    );
+    
+    return {
+      success: true,
+      rowsAffected: result.rowsAffected || 0,
+    };
+  } catch (error) {
+    console.error("UPDATE CERTIFICATE STATUS REPO ERROR:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error("ERROR CLOSING CONNECTION:", err.message);
+      }
+    }
+  }
+};
+
+// ============================================================
+// GET CERTIFICATE FROM aorts_appliCert_det (Your Custom Table)
+// ============================================================
+const getCertificateDocRepo = async (applino) => {
+  let connection;
+  
+  try {
+    connection = await getConnectionTMC();
+    
+    const query = `
+      SELECT
+        num_cert_id AS certId,
+        var_cert_applino AS applino,
+        var_cert_docname AS docname,
+        blob_cert_document AS filebytes,
+        dat_cert_insdt AS insdt
+      FROM aorts_appliCert_det
+      WHERE var_cert_applino = :applino
+        AND var_cert_docname = 'CertificateORG'
+      ORDER BY dat_cert_insdt DESC
+    `;
+    
+    const result = await connection.execute(
+      query,
+      {
+        applino,
+      },
+      {
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+        fetchInfo: {
+          FILEBYTES: {
+            type: oracledb.BUFFER,
+          },
+        },
+      }
+    );
+    
+    const rows = result.rows || [];
+    
+    // Convert BLOB to base64 for JSON response
+    for (const row of rows) {
+      if (Buffer.isBuffer(row.FILEBYTES) && row.FILEBYTES.length > 0) {
+        row.filebytes = row.FILEBYTES.toString("base64");
+      } else {
+        row.filebytes = null;
+      }
+      delete row.FILEBYTES;
+    }
+    
+    return rows;
+  } catch (error) {
+    console.error("GET CERTIFICATE DOC REPO ERROR:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error("ERROR CLOSING CONNECTION:", err.message);
+      }
+    }
+  }
+};
+
+// ============================================================
+// GET DOCUMENT BY ID - Matches btnView_Click in DOTNET
+// Fetches from ALL document tables
+// ============================================================
+const getDocumentByIdRepo = async (docId) => {
+  let connection;
+  
+  try {
+    connection = await getConnectionTMC();
+    
+    const query = `
+      SELECT * FROM (
+        SELECT
+          ROWNUM AS docId,
+          var_appverifdoc_applino AS applino,
+          var_appverifdoc_docname AS docname,
+          blob_appverifdoc_documentimg AS filebytes
+        FROM prop.aoms_appverifdoc_det
+        
+        UNION ALL
+        
+        SELECT
+          ROWNUM AS docId,
+          var_appverifdoc_applino AS applino,
+          var_appverifdoc_docname AS docname,
+          blob_appverifdoc_documentimg AS filebytes
+        FROM aorts_appverifdoc_det
+        
+        UNION ALL
+        
+        SELECT
+          ROWNUM AS docId,
+          var_cert_applino AS applino,
+          var_cert_docname AS docname,
+          blob_cert_document AS filebytes
+        FROM aorts_appliCert_det
+      ) WHERE docId = :docId
+    `;
+    
+    const result = await connection.execute(
+      query,
+      {
+        docId: Number(docId),
+      },
+      {
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+        fetchInfo: {
+          FILEBYTES: {
+            type: oracledb.BUFFER,
+          },
+        },
+      }
+    );
+    
+    const rows = result.rows || [];
+    
+    for (const row of rows) {
+      if (Buffer.isBuffer(row.FILEBYTES) && row.FILEBYTES.length > 0) {
+        row.filebytes = row.FILEBYTES.toString("base64");
+      } else {
+        row.filebytes = null;
+      }
+      delete row.FILEBYTES;
+    }
+    
+    return rows;
+  } catch (error) {
+    console.error("GET DOCUMENT BY ID REPO ERROR:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error("ERROR CLOSING CONNECTION:", err.message);
+      }
+    }
+  }
+};
+
 module.exports = {
   getApplicationDetailsRepo,
   getApplicationDocumentsRepo,
@@ -768,4 +1022,8 @@ module.exports = {
   getApplicationStepsRepo,
   getCertificateDataRepo,
   getReApplyServiceDetailsRepo,
+  insertCertificateDocRepo,
+  updateCertificateStatusRepo,
+  getCertificateDocRepo,
+  getDocumentByIdRepo,
 };

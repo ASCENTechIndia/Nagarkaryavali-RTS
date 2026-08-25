@@ -5,19 +5,19 @@ const controller = require("./FrmRebateTax.controller");
 
 router.post(
   "/rebate-types",
-  // auth(),
+  auth(),
   controller.getRebateTypes
 );
 
 router.post(
   "/tax-names",
-  // auth(),
+  auth(),
   controller.getTaxNames
 );
 
 router.post(
   "/submit",
-  // auth(),
+  auth(),
   controller.submitApplication
 );
 

@@ -68,7 +68,6 @@ app.use("/api/FrmAssessmentCerti", require("./modules/Property/FrmAssessmentCert
 app.use("/api/FrmPropertyTransfer", require("./modules/Property/FrmPropertyTransfer/FrmPropertyTransfer.routes"));
 app.use("/api/FrmRebateTax", require("./modules/Property/FrmRebateTax/FrmRebateTax.routes"));
 app.use("/api/FrmNoDuesCerti", require("./modules/Property/FrmNoDuesCerti/FrmNoDuesCerti.routes"));
-app.use("/api/FrmAssessmentCerti", require("./modules/Property/FrmAssessmentCerti/FrmAssessmentCerti.routes"));
 app.use("/api/FrmNewTaxAssesment", require("./modules/Property/FrmNewTaxAssesment/FrmNewTaxAssesment.route"));
 app.use("/api/FrmPropertyAppel", require("./modules/Property/FrmPropertyAppel/FrmPropertyAppel.route"));
 
@@ -81,7 +80,9 @@ app.use("/api/FrmPlumberLicense", require("./modules/WaterModule/FrmPlumberLicen
 app.use("/api/FrmMarketEntry", require("./modules/Trade/FrmMarketEntry/FrmMArketEntry.routes"));
 
 
+//TrackApplication
 app.use("/api/FrmTrackApplication", require("./modules/TrackApplication/FrmTrackApplication/FrmTrackApplication.routes"));
+app.use("/api/FrmAppeal", require("./modules/TrackApplication/FrmAppeal/FrmAppeal.route"));
 
 app.use(errorMiddleware);
 

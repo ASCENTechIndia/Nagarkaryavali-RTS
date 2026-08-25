@@ -112,6 +112,32 @@ async function submitPropAppealService(payload) {
     };
 }
 
+async function getObjectionsService() {
+  const rows = await repo.fetchObjections();
+
+  if (!rows || rows.length === 0) {
+    return { success: true, objections: [] };
+  }
+
+  if (rows[0] && rows[0].VAR_OBJECTION_NAME !== undefined) {
+    return {
+      success: true,
+      objections: rows.map(r => ({
+        objectionName: r.VAR_OBJECTION_NAME.trim(),
+        objectionId: r.NUM_OBJECTION_ID
+      }))
+    };
+  }
+
+  return {
+    success: true,
+    objections: rows.map(r => ({
+      objectionName: r[0].trim(),
+      objectionId: r[1]
+    }))
+  };
+}
+
 module.exports = {
-    submitPropAppealService,
+    submitPropAppealService, getObjectionsService
 };

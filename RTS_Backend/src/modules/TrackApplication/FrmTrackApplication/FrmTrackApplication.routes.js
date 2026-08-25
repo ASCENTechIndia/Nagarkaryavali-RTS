@@ -4,7 +4,6 @@ const router = express.Router();
 const controller = require("./FrmTrackApplication.controller");
 const auth = require("../../../middlewares/auth.middleware");
 
-
 router.post("/getapplicationdetails", auth(), controller.getApplicationDetails);
 
 router.post("/getapplicationdocuments", auth(), controller.getApplicationDocuments);
@@ -24,5 +23,18 @@ router.post("/getapplicationsteps", auth(), controller.getApplicationSteps);
 router.post("/getcertificatedata", auth(), controller.getCertificateData);
 
 router.post("/getreapplyservicedetails", auth(), controller.getReApplyServiceDetails);
+
+router.post("/getcertificatedoc", auth(), controller.getCertificateDoc);
+
+router.post("/insertcertificatedoc", auth(), controller.insertCertificateDoc);
+
+router.post("/updatecertificatestatus", auth(), controller.updateCertificateStatus);
+
+router.post("/downloaddocumentbyid", auth(), controller.downloadDocumentById);
+
+router.post("/generateanddownloadcertificate", auth(), controller.generateAndDownloadCertificate);
+
+router.post("/downloadcertificate", auth(), controller.generateAndDownloadCertificate);
+router.post("/generate-certificate-report",  controller.generateCertificateReport);
 
 module.exports = router;
