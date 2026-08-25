@@ -17,7 +17,6 @@ const Login = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
     const applicationState = location.state || {};
-    console.log({ applicationState })
     const ulbId = applicationState.ulbId || null;
     const deptId = applicationState.deptId || null;
     const serviceId = applicationState.serviceId || null;
