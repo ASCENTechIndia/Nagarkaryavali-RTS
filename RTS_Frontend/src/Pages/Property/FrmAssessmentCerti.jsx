@@ -95,8 +95,6 @@ const FrmAssessmentCerti = () => {
   const ulbId = locationState.ulbId || user?.ulbId;
   const userId = locationState.userId || user?.userId;
   const zoneId = locationState.zoneId || user?.zoneId || "12";
-  const serviceId = locationState.serviceId;
-  const serviceName = locationState.serviceName;
   const serviceRate = locationState.serviceRate;
 
   const [isLoading, setIsLoading] = useState(false);
