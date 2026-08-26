@@ -878,7 +878,7 @@ const FrmTrackApplication = () => {
               <h4 className="font-medium text-lg text-gray-800">Application Details</h4>
             </div>
 
-            <div>
+            <div className="overflow-x-auto">
               <ShadCNTable
                 headers={appHeaders}
                 data={appData}
@@ -918,7 +918,7 @@ const FrmTrackApplication = () => {
 
           <CardContent className="p-4 sm:p-6 space-y-6">
             <div className="space-y-6">
-              <div>
+              <div className="overflow-x-auto">
                 <ShadCNTable
                   headers={stepsHeaders}
                   data={stepsData}
@@ -936,7 +936,7 @@ const FrmTrackApplication = () => {
             {documents.length > 0 && (
               <div>
                 <h3 className="font-bold text-lg mb-3 text-gray-800">Uploaded Documents</h3>
-                <div>
+                <div className="overflow-x-auto">
                   <ShadCNTable
                     headers={docHeaders}
                     data={docsData}

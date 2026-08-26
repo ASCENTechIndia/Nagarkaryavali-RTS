@@ -1012,47 +1012,50 @@ const FrmRebateTax = () => {
                 {showTaxGrid && (
                   <>
                     <hr />
-                      <ShadCNTable
-                        headers={["Select", "Tax Id", "Tax Name"]}
-                        data={taxNames.map((tax) => ({
-                          id: tax.ID,
-                          taxId: tax.ID,
-                          taxName: tax.NAME || tax.VAR_TAXNAME_NAME || "",
-                          select: (
-                            <input
-                              type="checkbox"
-                              onChange={(e) => {
-                                const checked = e.target.checked;
-                                if (checked) {
-                                  setSelectedTaxes([...selectedTaxes, tax.ID]);
-                                } else {
-                                  setSelectedTaxes(selectedTaxes.filter(id => id !== tax.ID));
-                                }
-                              }}
-                              checked={selectedTaxes.includes(tax.ID)}
-                            />
-                          ),
-                        }))}
-                        keyMapping={{
-                          "Select": "select",
-                          "Tax Id": "taxId",
-                          "Tax Name": "taxName",
-                        }}
-                        pagination={false}
-                        className="max-md:min-w-380"
-                      />
+                      <div className="overflow-x-auto">
+                        <ShadCNTable
+                          headers={["Select", "Tax Id", "Tax Name"]}
+                          data={taxNames.map((tax) => ({
+                            id: tax.ID,
+                            taxId: tax.ID,
+                            taxName: tax.NAME || tax.VAR_TAXNAME_NAME || "",
+                            select: (
+                              <input
+                                type="checkbox"
+                                onChange={(e) => {
+                                  const checked = e.target.checked;
+                                  if (checked) {
+                                    setSelectedTaxes([...selectedTaxes, tax.ID]);
+                                  } else {
+                                    setSelectedTaxes(selectedTaxes.filter(id => id !== tax.ID));
+                                  }
+                                }}
+                                checked={selectedTaxes.includes(tax.ID)}
+                              />
+                            ),
+                          }))}
+                          keyMapping={{
+                            "Select": "select",
+                            "Tax Id": "taxId",
+                            "Tax Name": "taxName",
+                          }}
+                          pagination={false}
+                          className="max-md:min-w-380"
+                        />
+                      </div>
                   </>
                 )}
 
                 <hr />
-
-                <ShadCNTable
-                  headers={headers}
-                  data={transformedTableData}
-                  keyMapping={keyMapping}
-                  pagination={false}
-                  className="max-md:min-w-380"
-                />
+                <div className="overflow-x-auto">
+                  <ShadCNTable
+                    headers={headers}
+                    data={transformedTableData}
+                    keyMapping={keyMapping}
+                    pagination={false}
+                    className="max-md:min-w-380"
+                  />
+                </div>
 
                 <div className="flex justify-center items-center gap-3 pt-4">
                   <Button

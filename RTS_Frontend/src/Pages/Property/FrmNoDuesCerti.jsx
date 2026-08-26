@@ -968,13 +968,15 @@ const FrmNoDuesCerti = () => {
                 <hr />
 
                 {tableData.length > 0 && (
-                  <ShadCNTable
-                    headers={headers}
-                    data={transformedTableData}
-                    keyMapping={keyMapping}
-                    pagination={false}
-                    className="max-md:min-w-380"
-                  />
+                  <div className="overflow-x-auto">
+                    <ShadCNTable
+                      headers={headers}
+                      data={transformedTableData}
+                      keyMapping={keyMapping}
+                      pagination={false}
+                      className="max-md:min-w-380"
+                    />
+                  </div>
                 )}
 
                 <div className="flex justify-center items-center gap-3 pt-4">
