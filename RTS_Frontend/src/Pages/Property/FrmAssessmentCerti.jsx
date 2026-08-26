@@ -21,6 +21,13 @@ import {
   documentValidationSchema 
 } from "@/validations/global.validation";
 import config from "@/utils/config";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // const ENCRYPTION_KEY = "AS23N7E2H4V717DEAS23N7E2H4V717DE";
 // const EXTERNAL_API_URL = "http://ptaxtmccollection.thanecity.gov.in/TMC_IGRClient/Service.svc/GetDataDetails_TMC";
@@ -81,6 +88,7 @@ const initialValues = {
   applicantName: "",
   mobileNo: "",
   emailId: "",
+  zoneId: "",
 };
 
 const FrmAssessmentCerti = () => {
@@ -94,7 +102,8 @@ const FrmAssessmentCerti = () => {
   
   const ulbId = locationState.ulbId || user?.ulbId;
   const userId = locationState.userId || user?.userId;
-  const zoneId = locationState.zoneId || user?.zoneId || "12";
+  const serviceId = locationState.serviceId;
+  const serviceName = locationState.serviceName;
   const serviceRate = locationState.serviceRate;
 
   const [isLoading, setIsLoading] = useState(false);
@@ -103,6 +112,7 @@ const FrmAssessmentCerti = () => {
   const [tableData, setTableData] = useState([]);
   const [propertyFound, setPropertyFound] = useState(false);
   const [searchError, setSearchError] = useState("");
+  const [zoneList, setZoneList] = useState([]);
 
   const originalDocumentDefs = useRef([]);
 
@@ -118,8 +128,26 @@ const FrmAssessmentCerti = () => {
   useEffect(() => {
     if (ulbId && serviceId) {
       fetchDocumentDefinitions();
+      fetchZones();
     }
   }, [ulbId, serviceId]);
+
+  const fetchZones = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/api/FrmWaterRegister/ward-dropdown?ulbid=${ulbId}`,
+        {
+          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
+        }
+      );
+
+      if (response?.data?.ok && response?.data?.data?.data) {
+        setZoneList(response.data.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching zones:", error);
+    }
+  };
 
   const fetchDocumentDefinitions = async () => {
     try {
@@ -445,6 +473,8 @@ const FrmAssessmentCerti = () => {
     
     setPropertyFound(false);
     setSearchError("");
+
+    setFieldValue("zoneId", "");
     
     if (originalDocumentDefs.current && originalDocumentDefs.current.length > 0) {
       const resetTableData = originalDocumentDefs.current.map((doc, index) => ({
@@ -481,6 +511,7 @@ const FrmAssessmentCerti = () => {
       applicantName: values.applicantName,
       mobileNo: values.mobileNo,
       emailId: values.emailId,
+      zoneId: values.zoneId,
     });
 
     if (!applicantValidation.success) {
@@ -527,7 +558,7 @@ const FrmAssessmentCerti = () => {
       ulbId: ulbId,
       corpId: user.corpId,
       userId: userId,
-      zoneId: zoneId,
+      zoneId: values.zoneId,
       serviceId: serviceId,
       ulbId: ulbId,
       propNo: values.ptn,
@@ -781,6 +812,29 @@ const FrmAssessmentCerti = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label required text="Zone" />
+                      <span>:</span>
+                    </div>
+                    <Select
+                      value={values.zoneId}
+                      onValueChange={(value) => {
+                        setFieldValue("zoneId", value);
+                      }}
+                    >
+                      <SelectTrigger className="w-full h-9">
+                        <SelectValue placeholder="-- Select Zone --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {zoneList.map((zone) => (
+                          <SelectItem key={zone.WARDID} value={String(zone.WARDID)}>
+                            {zone.WARDNAME}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label required text="Applicant Name" />
                       <span>:</span>
                     </div>
@@ -836,13 +890,15 @@ const FrmAssessmentCerti = () => {
                     {isLoading ? (
                       <div className="text-center py-4">Loading documents...</div>
                     ) : (
-                      <ShadCNTable
-                        headers={headers}
-                        data={transformedTableData}
-                        keyMapping={keyMapping}
-                        pagination={false}
-                        className="max-md:min-w-380"
-                      />
+                      <div className="overflow-x-auto">
+                        <ShadCNTable
+                          headers={headers}
+                          data={transformedTableData}
+                          keyMapping={keyMapping}
+                          pagination={false}
+                          className="max-md:min-w-380"
+                        />
+                      </div>
                     )}
                   </div>
                 )}
