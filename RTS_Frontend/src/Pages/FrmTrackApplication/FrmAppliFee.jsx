@@ -14,13 +14,13 @@ const FrmAppliFee = () => {
     const navigate = useNavigate();
     const { user, token } = useAuth();
     const baseUrl = import.meta.env.VITE_BASE_URL;
-
+    console.log({location})
     const appNo = location.state?.appNo || "TMCPTXAC2502250002";
-    const serviceId = Number(location.state?.serviceId );
-    const ulbId = Number(location.state?.ulbId ?? user?.ulbId );
+    const serviceId = Number(location.state?.serviceId);
+    const ulbId = Number(location.state?.ulbId ?? user?.ulbId);
     const corpId = Number(location.state?.corpId);
     const userUniqueId = Number(location.state?.userUniqueId ?? user?.userUniqueId);
-    const trackId = location.state?.trackId ?? user?.trackId;
+    const trackId = location.state?.trackId ?? user?.trackId ?? "0";
     const userIdMahaOnline = location.state?.userIdMahaOnline ?? user?.mahaOnlineUserId ?? "MAHA123";
     const username = location.state?.username ?? user?.username;
     const userFullName = location.state?.userFullName;
@@ -201,74 +201,42 @@ const FrmAppliFee = () => {
 
     const createPaymentSession = async () => {
         if (!appNo) {
-            await Swal.fire({
-                // icon: "warning",
-                text: "Application No. can not be blank."
-            });
-            return null;
-        }
-
-        if (!amount || amount <= 0) {
-            await Swal.fire({
-                // icon: "warning",
-                text: "Valid payment amount is not available."
-            });
+            await Swal.fire({ text: "Application No. can not be blank." });
             return null;
         }
 
         if (!userUniqueId) {
-            await Swal.fire({
-                // icon: "warning",
-                text: "User Unique Id can not be blank."
-            });
+            await Swal.fire({ text: "User Unique Id can not be blank." });
             return null;
         }
 
         if (!username) {
-            await Swal.fire({
-                // icon: "warning",
-                text: "Username can not be blank."
-            });
+            await Swal.fire({ text: "Username can not be blank." });
             return null;
         }
 
         if (!userFullName) {
-            await Swal.fire({
-                // icon: "warning",
-                text: "User Full Name can not be blank."
-            });
+            await Swal.fire({ text: "User Full Name can not be blank." });
             return null;
         }
 
         if (!trackId) {
-            await Swal.fire({
-                // icon: "warning",
-                text: "Track Id can not be blank."
-            });
+            await Swal.fire({ text: "Track Id can not be blank." });
             return null;
         }
 
         if (!userIdMahaOnline) {
-            await Swal.fire({
-                // icon: "warning",
-                text: "MahaOnline User Id can not be blank."
-            });
+            await Swal.fire({ text: "MahaOnline User Id can not be blank." });
             return null;
         }
 
         if (!serviceId) {
-            await Swal.fire({
-                // icon: "warning",
-                text: "Service Id can not be blank."
-            });
+            await Swal.fire({ text: "Service Id can not be blank." });
             return null;
         }
 
         if (!serviceName) {
-            await Swal.fire({
-                // icon: "warning",
-                text: "Service can not be blank."
-            });
+            await Swal.fire({ text: "Service can not be blank." });
             return null;
         }
 
@@ -279,7 +247,6 @@ const FrmAppliFee = () => {
             showConfirmButton: false,
             didOpen: () => Swal.showLoading()
         });
-
 
         try {
             const payload = {
@@ -292,18 +259,17 @@ const FrmAppliFee = () => {
                 userIdMahaOnline,
                 lastLogin: formatOracleDate(location.state?.lastLogin ?? user?.lastLogin),
                 lastLogout: formatOracleDate(location.state?.lastLogout ?? new Date()),
-                // lastLogin: formatOracleDate(location.state?.lastLogin ?? user?.lastLogin ?? ""),
-                // lastLogout: formatOracleDate(location.state?.lastLogout ?? user?.lastLogout ?? Date()),
                 serviceId,
                 service: serviceName,
-                marrageregis: location.state?.marrageregis ?? "1~2~",  //HARDCODED IN UAT
+                marrageregis: location.state?.marrageregis ?? "1~2~",
                 step: 2,
                 appNo,
                 paymentReq: "NA",
                 amount
             };
 
-            const response = await axios.post(`${baseUrl}/api/FrmAppliFee/payment-session`,
+            const response = await axios.post(
+                `${baseUrl}/api/FrmAppliFee/payment-session`,
                 payload,
                 {
                     headers: {
@@ -315,7 +281,11 @@ const FrmAppliFee = () => {
             const result = response?.data?.data;
 
             if (!result?.success || Number(result?.errorCode) !== 9999) {
-                throw new Error( result?.message || response?.data?.message || "Unable to create payment session." );
+                throw new Error(
+                    result?.message ||
+                    response?.data?.message ||
+                    "Unable to create payment session."
+                );
             }
 
             Swal.close();
@@ -326,7 +296,10 @@ const FrmAppliFee = () => {
 
             await Swal.fire({
                 icon: "error",
-                text: error?.response?.data?.message || error?.message || "Unable to create payment session."
+                text:
+                    error?.response?.data?.message ||
+                    error?.message ||
+                    "Unable to create payment session."
             });
 
             return null;
@@ -334,36 +307,81 @@ const FrmAppliFee = () => {
     };
 
     const handlePayment = async () => {
-        const transactionId = await createPaymentSession();
+    const transactionId = await createPaymentSession();
 
-        if (!transactionId) {
-            return;
-        }
+    if (!transactionId) {
+        return;
+    }
 
+    const paymentUrl = import.meta.env.VITE_PAYMENT_POST_URL;
+    const companyCode = import.meta.env.VITE_PAYMENT_COMPANY_CODE;
+    const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
+    console.log({paymentUrl, companyCode, frontendUrl})
+    if (!paymentUrl) {
         await Swal.fire({
-            icon: "success",
-            // title: "Payment Session Created",
-            text: `Transaction No. : ${transactionId}`,
-            confirmButtonText: "Continue"
+            icon: "error",
+            text: "Payment gateway URL is not configured."
         });
+        return;
+    }
+    if (!frontendUrl) {
+        await Swal.fire({
+            icon: "error",
+            text: "Frontend URL is not configured."
+        });
+        return;
+    }
 
-        if (location.state?.paymentUrl) {
-            const form = document.createElement("form");
-            form.method = "POST";
-            form.action = location.state.paymentUrl;
-            form.style.display = "none";
+    if (!companyCode) {
+        await Swal.fire({
+            icon: "error",
+            text: "Payment company code is not configured."
+        });
+        return;
+    }
 
-            const message = document.createElement("input");
-            message.type = "hidden";
-            message.name = "msg";
-            message.value = [corpId, transactionId, amount, appNo, username, userFullName, mobileNo, email].join("|");
-            form.appendChild(message);
-            document.body.appendChild(form);
-            form.submit();
-        }else{
-            navigate("/")
-        }
-    };
+    const returnUrl = `${frontendUrl}/app/FrmAfterTransactionTMC`;
+
+    const address = "";
+    const city = "";
+    const state = "";
+    const pincode = "";
+
+    const paymentEmail = email;
+    const paymentMobile = mobileNo;
+
+    const msg = [companyCode, transactionId, amount, returnUrl, username , address, city, state, pincode, paymentEmail, paymentMobile].join("|");
+
+    console.log("Payment Gateway Request", {paymentUrl, transactionId, returnUrl, msg});
+
+    const confirmed = await Swal.fire({
+        icon: "success",
+        text: `Transaction No. : ${transactionId}`,
+        confirmButtonText: "Continue",
+        allowOutsideClick: false
+    });
+
+    if (!confirmed.isConfirmed) {
+        return;
+    }
+
+    const form = document.createElement("form");
+
+    form.method = "POST";
+    form.action = paymentUrl;
+    form.style.display = "none";
+
+    const input = document.createElement("input");
+
+    input.type = "hidden";
+    input.name = "msg";
+    input.value = msg;
+
+    form.appendChild(input);
+    document.body.appendChild(form);
+
+    form.submit();
+};
 
     const handleAaplePayment = async () => {
         if (!appNo) {

@@ -14,30 +14,31 @@ import {
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-const ULB3_DEPARTMENTS = [
-    { id: 1, key: "BirthDeath", name: "Birth & Death" },
-    { id: 7, key: "Property", name: "Property" },
-    { id: 23, key: "Town Planning", name: "Town Planning" },
-    { id: 18, key: "Market", name: "Market" },
-    { id: 25, key: "Marraige", name: "Marriage" },
-    { id: 10, key: "FireBrigade", name: "Fire Brigade" },
-    { id: 290, key: "NOC", name: "NOC" },
-    { id: 1901, key: "Bombay Nursing", name: "Bombay Nursing" },
-    { id: 24, key: "Water", name: "Water" },
-    { id: 841, key: "TradeLicense", name: "Trade License" },
-    { id: 26, key: "PWD", name: "PWD" },
-    { id: 1041, key: "Sewerage", name: "Sewerage" },
-    { id: 503, key: "Health", name: "Health" },
-    { id: 1042, key: "TreeCutting", name: "Tree Cutting" },
-    { id: 725, key: "InformationRelations", name: "Information Relations" },
-    { id: 689, key: "Encroachment", name: "Encroachment" },
-    { id: 683, key: "SolidWaste", name: "Solid Waste" },
-    { id: 3, key: "Advertisement", name: "Advertisement" },
-];
+// const ULB3_DEPARTMENTS = [
+//     { id: 1, key: "BirthDeath", name: "Birth & Death" },
+//     { id: 7, key: "Property", name: "Property" },
+//     { id: 23, key: "Town Planning", name: "Town Planning" },
+//     { id: 18, key: "Market", name: "Market" },
+//     { id: 25, key: "Marraige", name: "Marriage" },
+//     { id: 10, key: "FireBrigade", name: "Fire Brigade" },
+//     { id: 290, key: "NOC", name: "NOC" },
+//     { id: 1901, key: "Bombay Nursing", name: "Bombay Nursing" },
+//     { id: 24, key: "Water", name: "Water" },
+//     { id: 841, key: "TradeLicense", name: "Trade License" },
+//     { id: 26, key: "PWD", name: "PWD" },
+//     { id: 1041, key: "Sewerage", name: "Sewerage" },
+//     { id: 503, key: "Health", name: "Health" },
+//     { id: 1042, key: "TreeCutting", name: "Tree Cutting" },
+//     { id: 725, key: "InformationRelations", name: "Information Relations" },
+//     { id: 689, key: "Encroachment", name: "Encroachment" },
+//     { id: 683, key: "SolidWaste", name: "Solid Waste" },
+//     { id: 3, key: "Advertisement", name: "Advertisement" },
+// ];
 
 const Layout = () => {
     const { user, requestInitialized } = useAuth();
-    const ulbId = user?.ulbId || 3;
+    console.log({user})
+    const ulbId = user?.ulbId;
     const [departments, setDepartments] = useState([]);
     const [selectedDepartment, setSelectedDepartment] = useState(null);
 
@@ -47,13 +48,13 @@ const Layout = () => {
         }
 
         const fetchDepartments = async () => {
-            if (ulbId === 3) {
-                setDepartments(ULB3_DEPARTMENTS.map((department) => ({...department, icon: Building2, ulbId: 3})));
-                return;
-            }
+            // if (ulbId === 3) {
+            //     setDepartments(ULB3_DEPARTMENTS.map((department) => ({...department, icon: Building2, ulbId: 3})));
+            //     return;
+            // }
 
             Swal.fire({
-            title: "Loading departments..",
+            text: "Loading departments..",
             allowOutsideClick: false,
             allowEscapeKey: false,
             showConfirmButton: false,

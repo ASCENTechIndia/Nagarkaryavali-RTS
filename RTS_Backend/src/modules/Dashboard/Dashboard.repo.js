@@ -1,4 +1,4 @@
-const { executeQueryANCL, executeQueryTMC } = require("../../db/queryExecutor");
+const { executeQueryTMC } = require("../../db/queryExecutor");
 const { getConnectionTMC } = require("../../config/db");
 const oracledb = require("oracledb");
 const { decryptString } = require("./encrypt.js");
@@ -190,7 +190,7 @@ const getDepartmentMenuRepo = async ({ ulbid }) => {
         ORDER BY deptid
     `;
 
-    const result = await executeQueryANCL(sql, binds);
+    const result = await executeQueryTMC(sql, binds);
 
     if (!result || !result.success) {
         throw new Error(result?.error || "Failed to fetch department menu");

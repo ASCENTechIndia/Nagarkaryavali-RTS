@@ -5,17 +5,28 @@ import { jwtDecode } from "jwt-decode";
 
 const AuthContext = createContext(null);
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+const DEFAULT_ULB_ID = import.meta.env.VITE_DEFAULT_ULB_ID;
 
 const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(() => {
         const storedUser = sessionStorage.getItem("user");
-        if (!storedUser) return null;
+        if (!storedUser) {
+            return {
+                ulbId: DEFAULT_ULB_ID,
+            }
+        };
 
         try {
-            return JSON.parse(storedUser);
+            const parsedUser = JSON.parse(storedUser);
+            return {
+                ...parsedUser,
+                ulbId: Number(parsedUser?.ulbId || DEFAULT_ULB_ID),
+            }
         } catch {
             sessionStorage.removeItem("user");
-            return null;
+            return {
+                ulbId: DEFAULT_ULB_ID,
+            }
         }
     });
 
@@ -184,12 +195,12 @@ const AuthProvider = ({ children }) => {
                 }
 
                 const response = await axios.get(`${BASE_URL}/api/Dashboard/decrypt-request`,
-                    {params: {request: encryptedRequest}}
+                    { params: { request: encryptedRequest } }
                 );
 
                 const resolved = response.data?.data?.data;
                 const resolvedUser = {
-                    ulbId: resolved?.ulbId,
+                    ulbId: resolved?.ulbId || DEFAULT_ULB_ID,
                     corpCode: resolved?.corpCode || "",
                     decryptedRequest: resolved?.decryptedRequest || "",
                     resolvedEncryptedRequest: resolved?.resolvedEncryptedRequest || encryptedRequest
@@ -236,8 +247,8 @@ const AuthProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        if (!token) { clearTokenTimers(); return}
-        if (isTokenExpired(token)) { logout("Your login session has expired.", true); return}
+        if (!token) { clearTokenTimers(); return }
+        if (isTokenExpired(token)) { logout("Your login session has expired.", true); return }
         sessionStorage.setItem("accessToken", token);
         startTokenSession(token);
 
@@ -263,7 +274,7 @@ const AuthProvider = ({ children }) => {
                 return;
             }
 
-            const authenticatedUser = { ...userData, ulbId: Number( userData?.ulbId || user?.ulbId || 3)};
+            const authenticatedUser = { ...userData, ulbId: userData?.ulbId || user?.ulbId || DEFAULT_ULB_ID };
             setUser(authenticatedUser);
             setToken(accessToken);
             sessionStorage.setItem("user", JSON.stringify(authenticatedUser));
