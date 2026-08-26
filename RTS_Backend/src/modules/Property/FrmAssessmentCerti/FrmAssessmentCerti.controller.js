@@ -79,6 +79,7 @@ exports.uploadDocument = asyncHandler(async (req, res) => {
 exports.submitApplication = asyncHandler(async (req, res) => {
   const {
     ulbId,
+    corpId,
     propNo,
     subCode,
     landHolder,
@@ -149,6 +150,7 @@ exports.submitApplication = asyncHandler(async (req, res) => {
 
   const result = await service.submitAssessmentApplicationService({
     ulbId,
+    corpId,
     userId,
     zoneId,
     serviceId,

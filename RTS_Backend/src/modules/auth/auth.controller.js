@@ -25,8 +25,8 @@ exports.loginProc = asyncHandler(async (req, res) => {
 
 exports.sendLoginOtp = asyncHandler(async (req, res) => {
   const data = await service.sendLoginOtp({
-    userId: req.body.userId || "SMCTT",
-    ulbId: req.body.ulbId || 3,
+    userId: req.body.userId,
+    ulbId: req.body.ulbId,
     mobileNumber: req.body.mobileNumber
   });
 
@@ -55,8 +55,8 @@ exports.changePassword = asyncHandler(async (req, res) => {
 
 exports.loginWithOtp = asyncHandler(async (req, res) => {
   const data = await service.loginWithOtp({
-    userId: req.body.userId || "SMCTT",
-    ulbId: req.body.ulbId || 3,
+    userId: req.body.userId ,
+    ulbId: req.body.ulbId ,
     mobileNumber: req.body.mobileNumber,
     otp: req.body.otp
   });

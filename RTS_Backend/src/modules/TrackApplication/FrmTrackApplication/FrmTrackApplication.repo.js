@@ -735,6 +735,8 @@ const getCertificateDataRepo = async (serviceId, appNo, ulbId) => {
   // console.log("Certificate Data Query:", query);
 
   const result = await executeQueryTMC(query);
+  console.log("SQL query: ", query);
+  console.log("SQL result: ", result);
 
   return result.rows || [];
 };

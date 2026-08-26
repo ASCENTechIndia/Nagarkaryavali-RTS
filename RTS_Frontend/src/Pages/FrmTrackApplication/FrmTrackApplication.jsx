@@ -31,9 +31,9 @@ const FrmTrackApplication = () => {
 
   console.log("user", user);
   
-  const userId = user?.userId || "53194";
+  const userId = user?.userId;
   const ulbId = user?.ulbId;
-  const serviceUrl = user?.serviceUrl || "/app/dashboard";
+  const serviceUrl = user?.serviceUrl || "/";
 
   const [applications, setApplications] = useState([]);
   const [filteredApps, setFilteredApps] = useState([]);
@@ -105,6 +105,23 @@ const FrmTrackApplication = () => {
     "Download": "download",
   };
 
+  const formatDateToIndian = (dateValue) => {
+    if (!dateValue) return "-";
+    
+    try {
+      const date = new Date(dateValue);
+      if (isNaN(date.getTime())) return "-";
+      
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+      
+      return `${day}-${month}-${year}`;
+    } catch (error) {
+      return "-";
+    }
+  };
+
   const fetchApplications = async () => {
     setLoading(true);
 
@@ -127,6 +144,8 @@ const FrmTrackApplication = () => {
         }
       );
 
+      console.log("response", response);
+
       if (response.data.success) {
         const data = response.data.data.map((app, index) => ({
           srNo: index + 1,
@@ -138,7 +157,7 @@ const FrmTrackApplication = () => {
           applicantName: app.NAME,
           mobileNo: app.MOBNO,
           email: app.EMAIL,
-          applicationDate: app.APLIDT,
+          applicationDate: formatDateToIndian(app.APLIDT),
           status: app.APPLISTATUS,
         }));
         setApplications(data);
@@ -178,7 +197,7 @@ const FrmTrackApplication = () => {
         }
         );
 
-        console.log("response", response);
+        console.log("fetchTrackingSteps", response);
 
         if (response.data.ok || response.data.data.success) {
         const steps = response.data.data.data.steps.map((step, index) => ({
@@ -191,6 +210,14 @@ const FrmTrackApplication = () => {
         }));
         setTrackingSteps(steps);
         setAppAuth(response.data.data.appAuth || "");
+
+        const departmentId = response.data.data.data?.departmentId || 
+                           response.data.data?.departmentId;
+      
+        setSelectedApp(prev => ({
+          ...prev,
+          departmentId: departmentId
+        }));
 
         const appealData = await getAppealDetails(applino);
         if (appealData) {
@@ -316,28 +343,107 @@ const FrmTrackApplication = () => {
 
   const downloadCertificate = async (applino, serviceId, userId, ulbId) => {
     try {
-        const response = await axios.post(
-        `${BASE_URL}/api/FrmTrackApplication/downloadcertificate`,
-        { applino, serviceId, userId, ulbId },
+      debugger;
+      Swal.fire({
+        title: "Generating Certificate...",
+        text: "Please wait while your certificate is being prepared.",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      console.log({
+          serviceId: serviceId,
+          appNo: applino,
+          ulbId: ulbId
+        });
+
+      const response = await axios.post(
+        `${BASE_URL}/api/FrmTrackApplication/generate-certificate-report`,
         {
-            headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
-            responseType: 'blob',
+          serviceId: String(serviceId),
+          appNo: applino,
+          ulbId: ulbId,
+        },
+        {
+          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
         }
-        );
+      );
 
-        const blob = new Blob([response.data], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
+      console.log("Response: ", response);
 
-        window.open(url, '_blank');
+      Swal.close();
 
-        return true;
-    } catch (error) {
-        console.error("Error downloading certificate:", error);
+      if (response.data.success && response.data.pdfUrl) {
+        window.open(response.data.pdfUrl, '_blank');
+        
         Swal.fire({
-        text: "Error downloading certificate. Please try again.",
-        confirmButtonColor: '#1e3a8a',
+          text: "Certificate generated successfully!",
+          confirmButtonColor: '#1e3a8a',
+        });
+        
+        return true;
+      } else {
+        Swal.fire({
+          text: response.data.message || "Failed to generate certificate.",
+          confirmButtonColor: '#1e3a8a',
         });
         return false;
+      }
+    } catch (error) {
+      console.error("Error downloading certificate:", error);
+      console.log("Error Response:", error.response);
+      console.log("Error Response:", error.response.data);
+      console.log("Error Response:", error.response.data.message);
+      Swal.close();
+
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          error.message || 
+                          "Error downloading certificate. Please try again.";
+      
+      Swal.fire({
+        text: errorMessage,
+        confirmButtonColor: '#1e3a8a',
+      });
+      return false;
+    }
+  };
+
+  const fetchExistingCertificate = async (applino) => {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/api/FrmTrackApplication/getapplicationcertificate`,
+        { applino },
+        {
+          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
+        }
+      );
+
+      if (response.data.success && response.data.data && response.data.data.length > 0) {
+        const certData = response.data.data[0];
+        
+        if (certData.fileBytes) {
+          const byteCharacters = atob(certData.fileBytes);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: 'application/pdf' });
+          const url = window.URL.createObjectURL(blob);
+          
+          window.open(url, '_blank');
+          
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error("Error fetching existing certificate:", error);
+      return false;
     }
   };
 
@@ -366,7 +472,6 @@ const FrmTrackApplication = () => {
       Swal.fire({
         text: "Document downloaded successfully!",
         confirmButtonColor: '#1e3a8a',
-        timer: 1500,
       });
     } catch (error) {
       console.error("Error downloading document:", error);
@@ -418,27 +523,41 @@ const FrmTrackApplication = () => {
     const appNo = selectedApp?.applicationNo;
     const serviceId = selectedApp?.serviceId;
 
+    console.log("selectedApp", selectedApp);
+
     if (stepName === "Application Entry" && status === "Done") {
       if (action === "First Appeal") {
-        Swal.fire({
-          text: `Redirecting to First Appeal form for ${appNo}`,
-          confirmButtonColor: '#1e3a8a',
-        }).then(() => {
-          navigate("/app/FrmFirstAppeal", {
-            state: { applicationNo: appNo }
-          });
+        navigate("/app/FrmFirstAppeal", {
+          state: {
+            appNo: appNo,
+            serviceId: serviceId,
+            ulbId: ulbId,
+            corpId: user?.corpId,
+            userUniqueId: userId,
+            trackId: user?.trackId,
+            userIdMahaOnline: user?.mahaOnlineUserId || "MAHA123",
+            username: user?.username || user?.email,
+            userFullName: selectedApp?.applicantName,
+            serviceName: selectedApp?.serviceName
+          }
         });
         return;
       }
       
       if (action === "Second Appeal") {
-        Swal.fire({
-          text: `Redirecting to Second Appeal form for ${appNo}`,
-          confirmButtonColor: '#1e3a8a',
-        }).then(() => {
-          navigate("/app/FrmSecondAppeal", {
-            state: { applicationNo: appNo }
-          });
+        navigate("/app/FrmSecondAppeal", {
+          state: {
+            appNo: appNo,
+            serviceId: serviceId,
+            ulbId: ulbId,
+            corpId: user?.corpId,
+            userUniqueId: userId,
+            trackId: user?.trackId,
+            userIdMahaOnline: user?.mahaOnlineUserId || "MAHA123",
+            username: user?.username || user?.email,
+            userFullName: selectedApp?.applicantName,
+            serviceName: selectedApp?.serviceName,
+          }
         });
         return;
       }
@@ -457,16 +576,19 @@ const FrmTrackApplication = () => {
       Swal.close();
 
       if (eligible) {
-        Swal.fire({
-          text: "Redirecting to payment page...",
-          confirmButtonColor: '#1e3a8a',
-        }).then(() => {
-          navigate("/app/FrmAppliFee", {
-            state: { 
-              applicationNo: appNo,
-              serviceId: serviceId 
-            }
-          });
+        navigate("/app/FrmAppliFee", {
+          state: {
+            appNo: appNo,
+            serviceId: serviceId,
+            ulbId: ulbId,
+            corpId: user?.corpId,
+            userUniqueId: userId,
+            trackId: user?.trackId,
+            userIdMahaOnline: user?.mahaOnlineUserId || "MAHA123",
+            username: user?.username || user?.email,
+            userFullName: selectedApp?.applicantName,
+            serviceName: selectedApp?.serviceName,
+          }
         });
       } else {
         Swal.fire({
@@ -483,34 +605,99 @@ const FrmTrackApplication = () => {
       return;
     }
 
+    // if (stepName === "Certificate Generated") {
+    //   if (status === "Done" || appAuth === "Done") {
+    //     Swal.fire({
+    //       text: "Generating certificate...",
+    //       allowOutsideClick: false,
+    //       showConfirmButton: false,
+    //       didOpen: () => Swal.showLoading(),
+    //     });
+
+    //     const success = await downloadCertificate(appNo, serviceId, userId, ulbId);
+
+    //     Swal.close();
+
+    //     if (success) {
+    //       Swal.fire({
+    //         text: "Certificate downloaded successfully!",
+    //         confirmButtonColor: '#1e3a8a',
+    //         timer: 2000,
+    //       });
+    //     } else {
+    //       Swal.fire({
+    //         text: "Error downloading certificate. Please try again.",
+    //         confirmButtonColor: '#1e3a8a',
+    //       });
+    //     }
+    //     return;
+    //   }
+      
+    //   if (appAuth === "Rejected") {
+    //     Swal.fire({
+    //       text: "Application was rejected. Certificate cannot be generated.",
+    //       confirmButtonColor: '#1e3a8a',
+    //     });
+    //     return;
+    //   }
+    // }
+
     if (stepName === "Certificate Generated") {
       if (status === "Done" || appAuth === "Done") {
-        Swal.fire({
-          text: "Generating certificate...",
-          allowOutsideClick: false,
-          showConfirmButton: false,
-          didOpen: () => Swal.showLoading(),
-        });
-
-        const success = await downloadCertificate(appNo, serviceId, userId, ulbId);
-
-        Swal.close();
-
-        if (success) {
+        const departmentId = selectedApp?.departmentId ;
+        
+        if (departmentId === 7) {
           Swal.fire({
-            text: "Certificate downloaded successfully!",
-            confirmButtonColor: '#1e3a8a',
-            timer: 2000,
+            text: "Generating certificate...",
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => Swal.showLoading(),
           });
+
+          const success = await downloadCertificate(appNo, serviceId, userId, ulbId);
+
+          Swal.close();
+
+          if (success) {
+            Swal.fire({
+              text: "Certificate downloaded successfully!",
+              confirmButtonColor: '#1e3a8a',
+              timer: 2000,
+            });
+          } else {
+            Swal.fire({
+              text: "Error downloading certificate. Please try again.",
+              confirmButtonColor: '#1e3a8a',
+            });
+          }
         } else {
           Swal.fire({
-            text: "Error downloading certificate. Please try again.",
-            confirmButtonColor: '#1e3a8a',
+            text: "Fetching certificate...",
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => Swal.showLoading(),
           });
+
+          const success = await fetchExistingCertificate(appNo);
+
+          Swal.close();
+
+          if (success) {
+            Swal.fire({
+              text: "Certificate downloaded successfully!",
+              confirmButtonColor: '#1e3a8a',
+              timer: 2000,
+            });
+          } else {
+            Swal.fire({
+              text: "Certificate not found.",
+              confirmButtonColor: '#1e3a8a',
+            });
+          }
         }
         return;
       }
-      
+    
       if (appAuth === "Rejected") {
         Swal.fire({
           text: "Application was rejected. Certificate cannot be generated.",
@@ -790,7 +977,8 @@ const FrmTrackApplication = () => {
                 type="button"
                 variant="outline"
                 className="bg-gray-100 hover:bg-gray-200"
-                onClick={() => navigate(serviceUrl)}
+                // onClick={() => navigate(serviceUrl)}
+                onClick={() => navigate(-1)}
               >
                 Back
               </Button>
@@ -800,7 +988,7 @@ const FrmTrackApplication = () => {
               <h4 className="font-medium text-lg text-gray-800">Application Details</h4>
             </div>
 
-            <div>
+            <div className="overflow-x-auto">
               <ShadCNTable
                 headers={appHeaders}
                 data={appData}
@@ -840,7 +1028,7 @@ const FrmTrackApplication = () => {
 
           <CardContent className="p-4 sm:p-6 space-y-6">
             <div className="space-y-6">
-              <div>
+              <div className="overflow-x-auto">
                 <ShadCNTable
                   headers={stepsHeaders}
                   data={stepsData}
@@ -858,7 +1046,7 @@ const FrmTrackApplication = () => {
             {documents.length > 0 && (
               <div>
                 <h3 className="font-bold text-lg mb-3 text-gray-800">Uploaded Documents</h3>
-                <div>
+                <div className="overflow-x-auto">
                   <ShadCNTable
                     headers={docHeaders}
                     data={docsData}

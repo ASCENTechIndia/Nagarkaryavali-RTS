@@ -1,4 +1,4 @@
-const service = require("./FrmMArketEntry.service");
+const service = require("./FrmMarketEntry.service");
 const asyncHandler = require("../../../libs/asyncHandler");
 
 // ============================================================
@@ -282,61 +282,61 @@ const getTradeTypeDetails = async (req, res, next) => {
 // ============================================================
 // GET APPLICATION DETAILS
 // ============================================================
-const getApplicationDetails = async (req, res, next) => {
-  try {
-    const { applicationId, ulbId } = req.body;
+// const getApplicationDetails = async (req, res, next) => {
+//   try {
+//     const { applicationId, ulbId } = req.body;
 
-    console.log("📥 Get Application Details", {
-      applicationId,
-      ulbId,
-    });
+//     console.log("📥 Get Application Details", {
+//       applicationId,
+//       ulbId,
+//     });
 
-    // --------------------------------------------------------
-    // VALIDATION
-    // --------------------------------------------------------
-    if (!applicationId) {
-      return res.status(400).json({
-        ok: false,
-        message: "Application ID is required",
-      });
-    }
+//     // --------------------------------------------------------
+//     // VALIDATION
+//     // --------------------------------------------------------
+//     if (!applicationId) {
+//       return res.status(400).json({
+//         ok: false,
+//         message: "Application ID is required",
+//       });
+//     }
 
-    if (!ulbId) {
-      return res.status(400).json({
-        ok: false,
-        message: "ULB ID is required",
-      });
-    }
+//     if (!ulbId) {
+//       return res.status(400).json({
+//         ok: false,
+//         message: "ULB ID is required",
+//       });
+//     }
 
-    // --------------------------------------------------------
-    // SERVICE
-    // --------------------------------------------------------
-    const result = await service.getApplicationDetailsService(applicationId, ulbId);
+//     // --------------------------------------------------------
+//     // SERVICE
+//     // --------------------------------------------------------
+//     const result = await service.getApplicationDetailsService(applicationId, ulbId);
 
-    // --------------------------------------------------------
-    // NOT FOUND
-    // --------------------------------------------------------
-    if (result.status === "NOT_FOUND") {
-      return res.status(404).json({
-        ok: false,
-        message: result.message,
-        data: null,
-      });
-    }
+//     // --------------------------------------------------------
+//     // NOT FOUND
+//     // --------------------------------------------------------
+//     if (result.status === "NOT_FOUND") {
+//       return res.status(404).json({
+//         ok: false,
+//         message: result.message,
+//         data: null,
+//       });
+//     }
 
-    // --------------------------------------------------------
-    // SUCCESS
-    // --------------------------------------------------------
-    return res.status(200).json({
-      ok: true,
-      message: result.message,
-      status: result.status,
-      data: result.data,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+//     // --------------------------------------------------------
+//     // SUCCESS
+//     // --------------------------------------------------------
+//     return res.status(200).json({
+//       ok: true,
+//       message: result.message,
+//       status: result.status,
+//       data: result.data,
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 // ============================================================
 // APPLICATION ENTRY
 // ============================================================
@@ -612,128 +612,128 @@ const documentInsert = asyncHandler(async (req, res) => {
 // GET EXISTING LICENSE DETAILS
 // ============================================================
 
-const getExistingLicenseDetails = asyncHandler(async (req, res) => {
-  const { oldLicencNo, ulbId } = req.body;
+// const getExistingLicenseDetails = asyncHandler(async (req, res) => {
+//   const { oldLicencNo, ulbId } = req.body;
 
-  console.log("📥 Get Existing License Details", {
-    oldLicencNo,
-    ulbId,
-  });
+//   console.log("📥 Get Existing License Details", {
+//     oldLicencNo,
+//     ulbId,
+//   });
 
-  if (!oldLicencNo) {
-    return res.status(400).json({
-      success: false,
-      message: "Old License Number is required.",
-    });
-  }
+//   if (!oldLicencNo) {
+//     return res.status(400).json({
+//       success: false,
+//       message: "Old License Number is required.",
+//     });
+//   }
 
-  if (!ulbId) {
-    return res.status(400).json({
-      success: false,
-      message: "ULB ID is required.",
-    });
-  }
+//   if (!ulbId) {
+//     return res.status(400).json({
+//       success: false,
+//       message: "ULB ID is required.",
+//     });
+//   }
 
-  const result = await service.getExistingLicenseDetailsService(oldLicencNo, ulbId);
+//   const result = await service.getExistingLicenseDetailsService(oldLicencNo, ulbId);
 
-  // --------------------------------------------------------
-  // License not found
-  // --------------------------------------------------------
+//   // --------------------------------------------------------
+//   // License not found
+//   // --------------------------------------------------------
 
-  if (!result.found) {
-    return res.status(404).json({
-      success: false,
-      message: "No Licence Found",
-      data: null,
-    });
-  }
+//   if (!result.found) {
+//     return res.status(404).json({
+//       success: false,
+//       message: "No Licence Found",
+//       data: null,
+//     });
+//   }
 
-  // --------------------------------------------------------
-  // Success
-  // --------------------------------------------------------
+//   // --------------------------------------------------------
+//   // Success
+//   // --------------------------------------------------------
 
-  return res.status(200).json({
-    success: true,
-    message: "Existing license details fetched successfully.",
-    data: result,
-  });
-});
+//   return res.status(200).json({
+//     success: true,
+//     message: "Existing license details fetched successfully.",
+//     data: result,
+//   });
+// });
 
 // ============================================================
 // SEARCH LICENSE
 // ============================================================
 
-const checkLicenseCancelled = asyncHandler(async (req, res) => {
-  const { oldLicencNo } = req.body;
+// const checkLicenseCancelled = asyncHandler(async (req, res) => {
+//   const { oldLicencNo } = req.body;
 
-  console.log("📥 Check License Cancelled", {
-    oldLicencNo,
-  });
+//   console.log("📥 Check License Cancelled", {
+//     oldLicencNo,
+//   });
 
-  const result = await service.checkLicenseCancelledService(oldLicencNo);
+//   const result = await service.checkLicenseCancelledService(oldLicencNo);
 
-  return res.status(200).json({
-    success: true,
-    cancelled: result.cancelled,
-    message: result.cancelled ? "License is Cancelled" : "License is not Cancelled",
-  });
-});
+//   return res.status(200).json({
+//     success: true,
+//     cancelled: result.cancelled,
+//     message: result.cancelled ? "License is Cancelled" : "License is not Cancelled",
+//   });
+// });
 
 
 // ============================================================
 // GET TRADE TYPE RATES
 // ============================================================
-const getTradTypesRates = asyncHandler(async (req, res) => {
-  const {
-    tradeTypes,
-    fromDate,
-    toDate,
-    ulbId,
-  } = req.body;
+// const getTradTypesRates = asyncHandler(async (req, res) => {
+//   const {
+//     tradeTypes,
+//     fromDate,
+//     toDate,
+//     ulbId,
+//   } = req.body;
 
-  console.log("📥 Get Trade Type Rates", {
-    tradeTypes,
-    fromDate,
-    toDate,
-    ulbId,
-  });
+//   console.log("📥 Get Trade Type Rates", {
+//     tradeTypes,
+//     fromDate,
+//     toDate,
+//     ulbId,
+//   });
 
-  const data = await service.getTradTypesRatesService(
-    tradeTypes,
-    fromDate,
-    toDate,
-    ulbId
-  );
+//   const data = await service.getTradTypesRatesService(
+//     tradeTypes,
+//     fromDate,
+//     toDate,
+//     ulbId
+//   );
 
-  return res.status(200).json({
-    success: true,
-    message: "Trade type rates fetched successfully.",
-    data,
-  });
-});
+//   return res.status(200).json({
+//     success: true,
+//     message: "Trade type rates fetched successfully.",
+//     data,
+//   });
+// });
 
 // ============================================================
 // GET TRADE TYPES BY CATEGORY
 // ============================================================
-const getTradeTypesByCategory = asyncHandler(async (req, res) => {
-  const { categoryId, type } = req.body;
+// const getTradeTypesByCategory = asyncHandler(async (req, res) => {
+//   const { categoryId, type } = req.body;
 
-  console.log("📥 Get Trade Types By Category", {
-    categoryId,
-    type,
-  });
+//   console.log("📥 Get Trade Types By Category", {
+//     categoryId,
+//     type,
+//   });
 
-  const data = await service.getTradeTypesByCategoryService(
-    categoryId,
-    type
-  );
+//   const data = await service.getTradeTypesByCategoryService(
+//     categoryId,
+//     type
+//   );
 
-  return res.status(200).json({
-    success: true,
-    message: "Trade types fetched successfully.",
-    data,
-  });
-});
+//   return res.status(200).json({
+//     success: true,
+//     message: "Trade types fetched successfully.",
+//     data,
+//   });
+// });
 
 
 // ============================================================
@@ -776,14 +776,14 @@ module.exports = {
   getDocumentDetails,
   getSelfDeclareData,
   getTradeTypeDetails,
-  getApplicationDetails,
+ // getApplicationDetails,
   applicationEntry,
   updateDirectorImages,
   documentInsert,
-  getExistingLicenseDetails,
-  checkLicenseCancelled,
-  getTradTypesRates,
-  getTradeTypesByCategory,
+  //getExistingLicenseDetails,
+  // checkLicenseCancelled,
+  // getTradTypesRates,
+  // getTradeTypesByCategory,
   getTradeCategoryByJwalan
 
 };

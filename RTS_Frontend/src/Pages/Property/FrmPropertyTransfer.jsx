@@ -26,7 +26,8 @@ import config from "@/utils/config";
 import { 
   propertyTransferSearchSchema, 
   propertyTransferApplicantSchema,
-  propertyTransferDocumentValidationSchema 
+  propertyTransferDocumentValidationSchema,
+  documentValidationSchema
 } from "@/validations/global.validation";
 
 // const ENCRYPTION_KEY = "AS23N7E2H4V717DEAS23N7E2H4V717DE";
@@ -87,6 +88,7 @@ const initialValues = {
   emailId: "",
   newAddress: "",
   aadharNo: "",
+  zoneId: "",
 };
 
 const FrmPropertyTransfer = () => {
@@ -96,12 +98,14 @@ const FrmPropertyTransfer = () => {
 
   const locationState = location.state || {};
 
-  const ulbId = locationState.ulbId || user?.ulbId || "3";
-  const userId = locationState.userId || user?.userId || "151";
+  const ulbId = locationState.ulbId || user?.ulbId;
+  const userId = locationState.userId || user?.userId;
   const zoneId = locationState.zoneId || user?.zoneId || "12";
-  const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId || "";
-  const serviceId = locationState.serviceId || user?.serviceId || "4";
-  const serviceName = locationState.serviceName || "Transfer of Property Certificate";
+  const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId;
+  const serviceId = locationState.serviceId;
+  const serviceName = locationState.serviceName;
+
+  console.log("locationState", locationState);
 
   const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -115,6 +119,7 @@ const FrmPropertyTransfer = () => {
   const [prabhagname, setPrabhagname] = useState("");
   const [zone, setZone] = useState("");
   const [wardno, setWardno] = useState("");
+  const [zoneList, setZoneList] = useState([]);
 
   const originalDocumentDefs = useRef([]);
 
@@ -129,10 +134,28 @@ const FrmPropertyTransfer = () => {
 
   useEffect(() => {
     fetchDocumentDefinitions(serviceId, ulbId);
-    document.title = serviceId === "4"
+    fetchZones();
+    document.title = serviceId == "4"
       ? "Transfer of Property Certificate - Sale based on documents"
       : "Transfer of Property Certificate - Heredity";
   }, [serviceId, ulbId]);
+
+  const fetchZones = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/api/FrmWaterRegister/ward-dropdown?ulbid=${ulbId}`,
+        {
+          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
+        }
+      );
+
+      if (response?.data?.ok && response?.data?.data?.data) {
+        setZoneList(response.data.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching zones:", error);
+    }
+  };
 
   const fetchTransferTypes = async (setFieldValue) => {
     try {
@@ -148,7 +171,7 @@ const FrmPropertyTransfer = () => {
         setTransferTypes(response.data.data.rows);
         let autoSelectType = null;
         
-        if (serviceId === "4") {
+        if (serviceId == "4") {
           autoSelectType = response.data.data.rows.find(
             type => type.NUM_TRANSFERTYPE_ID === 66
           );
@@ -157,7 +180,7 @@ const FrmPropertyTransfer = () => {
               type => type.VAR_TRANSFERTYPE_NAME?.toLowerCase() === "transfer by sale"
             );
           }
-        } else if (serviceId === "5") {
+        } else if (serviceId == "5") {
           autoSelectType = response.data.data.rows.find(
             type => type.NUM_TRANSFERTYPE_ID === 126
           );
@@ -232,7 +255,6 @@ const FrmPropertyTransfer = () => {
   //       headers: {
   //         'Content-Type': 'application/json'
   //       },
-  //       timeout: 30000
   //     });
   //     if (response?.data?.jsonData?.[0]?.encr_request) {
   //       const decryptedResponse = decryptString(
@@ -258,7 +280,6 @@ const FrmPropertyTransfer = () => {
         },
         {
           headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
-          timeout: 30000
         }
       );
 
@@ -336,10 +357,10 @@ const FrmPropertyTransfer = () => {
 
   //       const autoSelectType = transferTypes.find(
   //         type => {
-  //           if (serviceId === "4") {
+  //           if (serviceId == "4") {
   //             return type.TRANSFER_TYPE_NAME?.toLowerCase().includes("sale") ||
   //               type.TRANSFER_TYPE_ID === 66;
-  //           } else if (serviceId === "5") {
+  //           } else if (serviceId == "5") {
   //             return type.TRANSFER_TYPE_NAME?.toLowerCase().includes("heredity") ||
   //               type.TRANSFER_TYPE_ID === 126;
   //           }
@@ -462,7 +483,13 @@ const FrmPropertyTransfer = () => {
   };
 
   const resetFormAfterSearch = (setFieldValue, resetForm) => {
+    const currentTransferType = document.querySelector('select[name="transferType"]')?.value;
     resetForm();
+    if (currentTransferType) {
+      setFieldValue("transferType", currentTransferType);
+    }
+
+    setFieldValue("zoneId", "");
     
     setConstType("0");
     setPrabhag("");
@@ -485,11 +512,13 @@ const FrmPropertyTransfer = () => {
       }));
       setTableData(resetTableData);
     }
+
+    fetchTransferTypes(setFieldValue);
   };
 
   const uploadDocument = async (applicationNo, doc) => {
     const formData = new FormData();
-    formData.append("corpId", ulbId); 
+    formData.append("corpId", user.corpId); 
     formData.append("serviceId", serviceId);
     formData.append("appNo", applicationNo);
     formData.append("docType", doc.docType || "PDF");
@@ -593,6 +622,7 @@ const FrmPropertyTransfer = () => {
         mobileNo: values.mobileNo,
         aadharNo: values.aadharNo,
         transferType: values.transferType,
+        zoneId: values.zoneId,
       });
 
       if (!validationResult.success) {
@@ -614,14 +644,19 @@ const FrmPropertyTransfer = () => {
         return;
       }
 
-      // const documentValidation = propertyTransferDocumentValidationSchema.safeParse(tableData);
-
-      // if (!documentValidation.success) {
-      //   const firstError = documentValidation.error.issues[0];
-      //   Swal.fire({ text: firstError.message, confirmButtonColor: '#1e3a8a' });
-      //   setLoading(false);
-      //   return;
-      // }
+      const documentValidation = documentValidationSchema.safeParse(tableData);
+      
+      if (!documentValidation.success) {
+        const firstError = documentValidation.error.issues[0];
+        Swal.fire({
+          text: firstError.message,
+          confirmButtonColor: '#1e3a8a',
+          confirmButtonText: "OK",
+          allowOutsideClick: false,
+        });
+        setLoading(false);
+        return;
+      }
 
       const documents = [];
       for (const row of tableData) {
@@ -659,7 +694,7 @@ const FrmPropertyTransfer = () => {
 
       const payload = {
         userId: userId,
-        zoneId: zoneId,
+        zoneId: values.zoneId,
         serviceId: serviceId,
         propNo: values.ptn,
         subCode: values.subcode || "",
@@ -793,7 +828,7 @@ const FrmPropertyTransfer = () => {
               <Card className="border shadow-sm">
                 <CardHeader className="border-b">
                   <CardTitle className="text-lg font-semibold">
-                    {serviceId === "4"
+                    {serviceId == "4"
                       ? "Transfer of Property Certificate - Sale based on documents"
                       : "Transfer of Property Certificate - Heredity"}
                   </CardTitle>
@@ -950,6 +985,29 @@ const FrmPropertyTransfer = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                          <Label required text="Zone" />
+                          <span>:</span>
+                        </div>
+                        <Select
+                          value={values.zoneId}
+                          onValueChange={(value) => {
+                            setFieldValue("zoneId", value);
+                          }}
+                        >
+                          <SelectTrigger className="w-full h-9">
+                            <SelectValue placeholder="-- Select Zone --" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {zoneList.map((zone) => (
+                              <SelectItem key={zone.WARDID} value={String(zone.WARDID)}>
+                                {zone.WARDNAME}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
                           <Label required text="Owner Name" />
                           <span>:</span>
                         </div>
@@ -1023,14 +1081,16 @@ const FrmPropertyTransfer = () => {
                   </div>
 
                   <hr />
-
-                  <ShadCNTable
-                    headers={headers}
-                    data={transformedTableData}
-                    keyMapping={keyMapping}
-                    pagination={false}
-                    className="max-md:min-w-380"
-                  />
+                  
+                  <div className="overflow-x-auto">
+                    <ShadCNTable
+                      headers={headers}
+                      data={transformedTableData}
+                      keyMapping={keyMapping}
+                      pagination={false}
+                      className="max-md:min-w-380"
+                    />
+                  </div>
 
                   <div className="flex justify-center items-center gap-3 pt-4">
                     <Button

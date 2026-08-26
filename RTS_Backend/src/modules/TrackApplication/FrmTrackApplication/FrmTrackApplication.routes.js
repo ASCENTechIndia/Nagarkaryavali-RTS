@@ -35,6 +35,6 @@ router.post("/downloaddocumentbyid", auth(), controller.downloadDocumentById);
 router.post("/generateanddownloadcertificate", auth(), controller.generateAndDownloadCertificate);
 
 router.post("/downloadcertificate", auth(), controller.generateAndDownloadCertificate);
-router.post("/generate-certificate-report",  controller.generateCertificateReport);
+router.post("/generate-certificate-report", auth(), controller.generateCertificateReport);
 
 module.exports = router;

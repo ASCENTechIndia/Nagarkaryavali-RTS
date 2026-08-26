@@ -24,7 +24,8 @@ import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import { 
   propertySearchValidationSchema,
-  propertyRebateValidationSchema 
+  propertyRebateValidationSchema,
+  documentValidationSchema
 } from "@/validations/global.validation";
 import config from "@/utils/config";
 
@@ -83,6 +84,7 @@ const initialValues = {
   pincode: "",
   rebateType: "",
   remark: "",
+  zoneId: "",
 };
 
 const FrmRebateTax = () => {
@@ -92,11 +94,11 @@ const FrmRebateTax = () => {
 
   const locationState = location.state || {};
 
-  const ulbId = locationState.ulbId || user?.ulbId || "3";
-  const userId = locationState.userId || user?.userId || "151";
+  const ulbId = locationState.ulbId || user?.ulbId;
+  const userId = locationState.userId || user?.userId;
   const zoneId = locationState.zoneId || user?.zoneId || "12";
-  const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId || "";
-  const serviceId = locationState.serviceId || user?.serviceId || "287";
+  const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId;
+  const serviceId = locationState.serviceId;
 
   const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -112,6 +114,7 @@ const FrmRebateTax = () => {
   const [prabhagname, setPrabhagname] = useState("");
   const [zone, setZone] = useState("");
   const [wardno, setWardno] = useState("");
+  const [zoneList, setZoneList] = useState([]);
 
   const originalDocumentDefs = useRef([]);
 
@@ -127,11 +130,29 @@ const FrmRebateTax = () => {
   };
 
   useEffect(() => {
+    fetchZones();
     fetchRebateTypes();
     fetchTaxNames();
     fetchDocumentDefinitions(serviceId, ulbId);
-    document.title = serviceId === "287" ? "Rebate on Tax" : "Rebate to Vacant Properties";
+    document.title = serviceId == "287" ? "Rebate on Tax" : "Rebate to Vacant Properties";
   }, [serviceId, ulbId]);
+
+  const fetchZones = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/api/FrmWaterRegister/ward-dropdown?ulbid=${ulbId}`,
+        {
+          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
+        }
+      );
+
+      if (response?.data?.ok && response?.data?.data?.data) {
+        setZoneList(response.data.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching zones:", error);
+    }
+  };
 
   const fetchRebateTypes = async () => {
     try {
@@ -223,7 +244,6 @@ const FrmRebateTax = () => {
   //       headers: {
   //         'Content-Type': 'application/json'
   //       },
-  //       timeout: 30000
   //     });
   //     if (response?.data?.jsonData?.[0]?.encr_request) {
   //       const decryptedResponse = decryptString(
@@ -249,7 +269,6 @@ const FrmRebateTax = () => {
         },
         {
           headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
-          timeout: 30000
         }
       );
 
@@ -440,6 +459,7 @@ const FrmRebateTax = () => {
     setFieldValue("pincode", "");
     setFieldValue("rebateType", "");
     setFieldValue("remark", "");
+    setFieldValue("zoneId", "");
     
     setShowTaxGrid(false);
     setSelectedTaxes([]);
@@ -474,7 +494,7 @@ const FrmRebateTax = () => {
 
   const uploadDocument = async (applicationNo, doc) => {
     const formData = new FormData();
-    formData.append("corpId", ulbId); 
+    formData.append("corpId", user.corpId); 
     formData.append("serviceId", serviceId);
     formData.append("appNo", applicationNo);
     formData.append("docType", doc.docType || "PDF");
@@ -594,6 +614,7 @@ const FrmRebateTax = () => {
         structureHolder: values.structureHolder,
         ownerDetails: values.ownerDetails,
         address: values.address,
+        zoneId: values.zoneId,
       });
 
       if (!applicantValidation.success) {
@@ -603,7 +624,7 @@ const FrmRebateTax = () => {
         return;
       }
 
-      if (serviceId === "287") {
+      if (serviceId == "287") {
         if (!values.rebateType || values.rebateType === "0") {
           Swal.fire({ 
             text: "Please Select Rebate Type", 
@@ -615,7 +636,7 @@ const FrmRebateTax = () => {
       }
 
       let taxStr = "";
-      if (serviceId === "287") {
+      if (serviceId == "287") {
         if (values.rebateType === "1") {
           taxStr = taxNames.map(tax => String(tax.ID)).join("#");
         } else if (values.rebateType === "2") {
@@ -645,15 +666,19 @@ const FrmRebateTax = () => {
 
       console.log("Documents to upload:", documents);
 
-      // const hasAllDocuments = tableData.every(row => row.fileBuffer !== null);
-      // if (!hasAllDocuments) {
-      //   Swal.fire({ 
-      //     text: "Please Upload All Documents", 
-      //     confirmButtonColor: '#1e3a8a' 
-      //   });
-      //   setLoading(false);
-      //   return;
-      // }
+      const documentValidation = documentValidationSchema.safeParse(tableData);
+      
+      if (!documentValidation.success) {
+        const firstError = documentValidation.error.issues[0];
+        Swal.fire({
+          text: firstError.message,
+          confirmButtonColor: '#1e3a8a',
+          confirmButtonText: "OK",
+          allowOutsideClick: false,
+        });
+        setLoading(false);
+        return;
+      }
 
       const loader = Swal.fire({
         title: "Submitting Application...",
@@ -677,7 +702,7 @@ const FrmRebateTax = () => {
 
       const payload = {
         userId: userId,
-        zoneId: zoneId,
+        zoneId: values.zoneId,
         serviceId: serviceId,
         propNo: values.ptn,
         subCode: values.subcode || "",
@@ -800,7 +825,7 @@ const FrmRebateTax = () => {
             <Card className="border shadow-sm">
               <CardHeader className="border-b">
                 <CardTitle className="text-lg font-semibold">
-                  {serviceId === "287" ? "Rebate on Tax" : "Rebate to Vacant Properties"}
+                  {serviceId == "287" ? "Rebate on Tax" : "Rebate to Vacant Properties"}
                 </CardTitle>
               </CardHeader>
 
@@ -885,6 +910,29 @@ const FrmRebateTax = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                       <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label required text="Zone" />
+                        <span>:</span>
+                      </div>
+                      <Select
+                        value={values.zoneId}
+                        onValueChange={(value) => {
+                          setFieldValue("zoneId", value);
+                        }}
+                      >
+                        <SelectTrigger className="w-full h-9">
+                          <SelectValue placeholder="-- Select Zone --" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {zoneList.map((zone) => (
+                            <SelectItem key={zone.WARDID} value={String(zone.WARDID)}>
+                              {zone.WARDNAME}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
                         <Label required text="Applicant Name" />
                         <span>:</span>
                       </div>
@@ -960,7 +1008,7 @@ const FrmRebateTax = () => {
                       />
                     </div>
 
-                    {serviceId === "287" && (
+                    {serviceId == "287" && (
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
                           <Label required text="Rebate Type" />
@@ -1009,47 +1057,50 @@ const FrmRebateTax = () => {
                 {showTaxGrid && (
                   <>
                     <hr />
-                      <ShadCNTable
-                        headers={["Select", "Tax Id", "Tax Name"]}
-                        data={taxNames.map((tax) => ({
-                          id: tax.ID,
-                          taxId: tax.ID,
-                          taxName: tax.NAME || tax.VAR_TAXNAME_NAME || "",
-                          select: (
-                            <input
-                              type="checkbox"
-                              onChange={(e) => {
-                                const checked = e.target.checked;
-                                if (checked) {
-                                  setSelectedTaxes([...selectedTaxes, tax.ID]);
-                                } else {
-                                  setSelectedTaxes(selectedTaxes.filter(id => id !== tax.ID));
-                                }
-                              }}
-                              checked={selectedTaxes.includes(tax.ID)}
-                            />
-                          ),
-                        }))}
-                        keyMapping={{
-                          "Select": "select",
-                          "Tax Id": "taxId",
-                          "Tax Name": "taxName",
-                        }}
-                        pagination={false}
-                        className="max-md:min-w-380"
-                      />
+                      <div className="overflow-x-auto">
+                        <ShadCNTable
+                          headers={["Select", "Tax Id", "Tax Name"]}
+                          data={taxNames.map((tax) => ({
+                            id: tax.ID,
+                            taxId: tax.ID,
+                            taxName: tax.NAME || tax.VAR_TAXNAME_NAME || "",
+                            select: (
+                              <input
+                                type="checkbox"
+                                onChange={(e) => {
+                                  const checked = e.target.checked;
+                                  if (checked) {
+                                    setSelectedTaxes([...selectedTaxes, tax.ID]);
+                                  } else {
+                                    setSelectedTaxes(selectedTaxes.filter(id => id !== tax.ID));
+                                  }
+                                }}
+                                checked={selectedTaxes.includes(tax.ID)}
+                              />
+                            ),
+                          }))}
+                          keyMapping={{
+                            "Select": "select",
+                            "Tax Id": "taxId",
+                            "Tax Name": "taxName",
+                          }}
+                          pagination={false}
+                          className="max-md:min-w-380"
+                        />
+                      </div>
                   </>
                 )}
 
                 <hr />
-
-                <ShadCNTable
-                  headers={headers}
-                  data={transformedTableData}
-                  keyMapping={keyMapping}
-                  pagination={false}
-                  className="max-md:min-w-380"
-                />
+                <div className="overflow-x-auto">
+                  <ShadCNTable
+                    headers={headers}
+                    data={transformedTableData}
+                    keyMapping={keyMapping}
+                    pagination={false}
+                    className="max-md:min-w-380"
+                  />
+                </div>
 
                 <div className="flex justify-center items-center gap-3 pt-4">
                   <Button

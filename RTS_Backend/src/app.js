@@ -77,7 +77,7 @@ app.use("/api/FrmWaterRegister", require("./modules/WaterModule/FrmWaterRegister
 app.use("/api/FrmPlumberLicense", require("./modules/WaterModule/FrmPlumberLicense/FrmPlumberLicense.route"))
 
 //Trade
-app.use("/api/FrmMarketEntry", require("./modules/Trade/FrmMarketEntry/FrmMArketEntry.routes"));
+app.use("/api/FrmMarketEntry", require("./modules/Trade/FrmMarketEntry/FrmMarketEntry.routes"));
 
 
 //TrackApplication

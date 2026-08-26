@@ -31,16 +31,27 @@ export const applicantDetailsValidationSchema = z.object({
     .refine((val) => val !== undefined && val !== null && val !== "", {
       message: "Please enter Email ID",
     }),
+  zoneId: z.string()
+    .min(1, "Please select a Zone")
+    .refine((val) => val !== undefined && val !== null && val !== "" && val !== "0" && val !== "-1", {
+      message: "Please select a Zone",
+    }),
 });
 
 export const documentValidationSchema = z.array(
   z.object({
-    docId: z.number(),
-    docName: z.string(),
-    docType: z.string(),
+    id: z.union([z.number(), z.string()]).optional(),
+    docId: z.union([z.number(), z.string()]).optional(),
+    docName: z.string().optional().default(""),
+    docType: z.string().optional(),
     fileBuffer: z.any().optional(),
+    file: z.any().nullable().optional(),
   })
-).min(1, "Please upload at least one document");
+).refine((docs) => {
+  return docs && docs.length > 0 && docs.every(doc => doc.file !== null && doc.file !== undefined && doc.file !== "");
+}, {
+  message: "All documents are compulsory. Please upload all required documents.",
+});
 
 export const propertyTransferSearchSchema = z.object({
   ptn: z.string()
@@ -80,6 +91,11 @@ export const propertyTransferApplicantSchema = z.object({
     .min(1, "Please select Transfer Type")
     .default("")
     .refine((val) => val && val.trim() !== "", "Please select Transfer Type"),
+  zoneId: z.string()
+    .min(1, "Please select a Zone")
+    .refine((val) => val !== undefined && val !== null && val !== "" && val !== "0" && val !== "-1", {
+      message: "Please select a Zone",
+    }),
 });
 
 export const propertyTransferDocumentValidationSchema = z.array(
@@ -125,4 +141,9 @@ export const propertyRebateValidationSchema = z.object({
   structureHolder: z.string().optional(),
   ownerDetails: z.string().optional(),
   address: z.string().optional(),
+  zoneId: z.string()
+    .min(1, "Please select a Zone")
+    .refine((val) => val !== undefined && val !== null && val !== "" && val !== "0" && val !== "-1", {
+      message: "Please select a Zone",
+    }),
 });

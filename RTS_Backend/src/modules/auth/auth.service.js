@@ -126,7 +126,7 @@ async function loginProc({ corpId, mobile, password, ulbId, logflag }) {
     user: {
       userId: out.userId,
       username: out.username,
-      fullName: out.username,
+      // fullName: out.username,
       ulbId: out.ulbId,
       corpId: Number(corpId),
       email: out.email,

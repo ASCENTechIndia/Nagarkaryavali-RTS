@@ -30,7 +30,7 @@ const initialValues = {
   usePermission: "yes",
   useCertificateNo: "",
   certificateDate: "",
-  propertyType: "residential",
+  propertyType: "Rent",
   prabhagOffice: "",
   sectorNo: "",
   surveyNo: "",
@@ -52,23 +52,12 @@ const FrmNewTaxAssesment = () => {
   const originalDocumentDefs = useRef([]);
   const [loading, setLoading] = useState(false);
 
-  const ulbId = locationState.ulbId || user?.ulbId || "3";
-  const userId = locationState.userId || user?.userId || "151";
-  const zoneId = locationState.zoneId || user?.zoneId || "261";
+  const ulbId = locationState.ulbId || user?.ulbId;
+  const userId = locationState.userId || user?.userId;
+  const zoneId = locationState.zoneId || user?.zoneId || "12";
   const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId || ulbId;
-  const serviceid = locationState.serviceID || user?.serviceId || "43";
-
-
-  const getHeaderTitle = () => {
-    switch (String(serviceid)) {
-      case "43":
-        return "New Assessment";
-      case "289":
-        return "Self Assessment";
-      default:
-        return "New Assessment";
-    }
-  };
+  const serviceid = locationState.serviceId || user?.serviceId;
+  const servicename = locationState.serviceName;
 
   useEffect(() => {
     fetchWards();
@@ -103,8 +92,10 @@ const FrmNewTaxAssesment = () => {
           ulbId: String(ulbId),
         },
         {
-          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
-        }
+          headers: {
+            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+          },
+        },
       );
 
       if (response.data.ok && response.data.data?.rows) {
@@ -114,7 +105,7 @@ const FrmNewTaxAssesment = () => {
         const tableRows = docs.map((doc, index) => ({
           id: doc.DOCID || doc.DocId || index + 1,
           srNo: index + 1,
-          documentName: doc.DOCNAME || doc.DocName || doc.ENGDOCDESC || "Document",
+          documentName: doc.DOCNAME || doc.DocName || doc.ENGDOCDESC,
           docId: doc.DOCID || doc.DocId,
           docType: doc.DOCTYPE || doc.DocType || "PDF",
           file: null,
@@ -128,86 +119,23 @@ const FrmNewTaxAssesment = () => {
     }
   };
 
-  // const handleFileChange = (docId, event) => {
-  //   const file = event.target.files[0];
-  //   if (!file) return;
-
-  //   const allowedExtensions = ["image/jpeg", "image/png", "application/pdf"];
-  //   const maxSizeInBytes = 5 * 1024 * 1024; // 5 MB
-
-  //   if (!allowedExtensions.includes(file.type)) {
-  //     setDocErrors((prev) => ({
-  //       ...prev,
-  //       [docId]:
-  //         "Document Should Be Acceptable In JPEG/JPG/PNG/PDF Format Only",
-  //     }));
-  //     event.target.value = "";
-  //     return;
-  //   }
-
-  //   if (file.size > maxSizeInBytes) {
-  //     setDocErrors((prev) => ({
-  //       ...prev,
-  //       [docId]: "Document Size Should Be < 5 mb",
-  //     }));
-  //     event.target.value = "";
-  //     return;
-  //   }
-
-  //   setDocErrors((prev) => ({ ...prev, [docId]: null }));
-  //   setDocFiles((prev) => ({ ...prev, [docId]: file }));
-  // };
-
-
   const handleFileChange = (id, event) => {
     const file = event.currentTarget.files?.[0];
     if (file) {
       setTableData((prev) =>
         prev.map((row) =>
-          row.id === id
-            ? { ...row, file: file, fileName: file.name }
-            : row
-        )
+          row.id === id ? { ...row, file: file, fileName: file.name } : row,
+        ),
       );
     }
   };
 
-
-  // const uploadDocument = async (applicationNo, docId, file) => {
-  //   if (!file) return true;
-
-  //   const formData = new FormData();
-  //   formData.append("serviceId", serviceid);
-  //   formData.append("appNo", applicationNo);
-  //   formData.append("docType", file.type.includes("pdf") ? "PDF" : "IMG");
-  //   formData.append("documentId", String(docId));
-  //   formData.append("document", file);
-
-  //   try {
-  //     const response = await axios.post(
-  //       `${BASE_URL}/api/FrmAssessmentCerti/upload-document`,
-  //       formData,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //           "Content-Type": "multipart/form-data",
-  //         },
-  //       },
-  //     );
-  //     return response.data?.success || response.data?.ok;
-  //   } catch (error) {
-  //     console.error(`Error uploading document ${docId}:`, error);
-  //     return false;
-  //   }
-  // };
-
-
   const uploadDocument = async (applicationNo, doc) => {
     const formData = new FormData();
-    formData.append("corpId", ulbId);
+    formData.append("corpId", user.corpId);
     formData.append("serviceId", serviceid);
     formData.append("appNo", applicationNo);
-    formData.append("docType", doc.docType || "PDF");
+    formData.append("docType", doc.docType);
     formData.append("documentId", String(doc.docId));
     formData.append("document", doc.file);
 
@@ -220,7 +148,7 @@ const FrmNewTaxAssesment = () => {
             Authorization: `Bearer ${token || localStorage.getItem("token")}`,
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return response.data.ok === true;
     } catch (error) {
@@ -237,8 +165,9 @@ const FrmNewTaxAssesment = () => {
           mahaUlbId: Number(mahaUlbId || ulbId),
           trackId: Date.now().toString(),
           districtId: "0",
-          requestString: `TrackId:${Date.now()}|AppNo:${applicationNo}|ServiceId:${serviceid}|ULBId:${ulbId}|MahaULBId:${mahaUlbId || ulbId
-            }|Timestamp:${Date.now()}`,
+          requestString: `TrackId:${Date.now()}|AppNo:${applicationNo}|ServiceId:${serviceid}|ULBId:${ulbId}|MahaULBId:${
+            mahaUlbId || ulbId
+          }|Timestamp:${Date.now()}`,
           responseString: `Success|Application:${applicationNo}|Status:Processed|Timestamp:${Date.now()}`,
           encryptedFinalString: `ENC_${applicationNo}_${Date.now()}`,
         },
@@ -311,16 +240,45 @@ const FrmNewTaxAssesment = () => {
       );
     }
 
-    // for (const doc of documents) {
-    //   if (!docFiles[doc.DOCID]) {
-    //     return Swal.fire(`Please upload document: ${doc.DOCNAME}`);
-    //   }
-    //   if (docErrors[doc.DOCID]) {
-    //     return Swal.fire(
-    //       `Invalid file for ${doc.DOCNAME}: ${docErrors[doc.DOCID]}`,
-    //     );
-    //   }
-    // }
+    if (serviceid == 43) {
+      const missingDocuments = tableData.filter((row) => !row.file);
+      if (missingDocuments.length > 0) {
+        const missingNames = missingDocuments
+          .map((row) => row.documentName)
+          .join(", ");
+        return Swal.fire({
+          text: `Please upload all required documents. Missing: ${missingNames}`,
+          confirmButtonColor: "#1e3a8a",
+          confirmButtonText: "OK",
+          allowOutsideClick: false,
+        });
+      }
+
+      const allowedExtensions = ["image/jpeg", "image/png", "application/pdf"];
+      const maxSizeInBytes = 5 * 1024 * 1024;
+
+      for (const row of tableData) {
+        if (row.file) {
+          if (!allowedExtensions.includes(row.file.type)) {
+            return Swal.fire({
+              text: `Invalid file type for "${row.documentName}". Only JPEG, PNG, and PDF are allowed.`,
+              confirmButtonColor: "#1e3a8a",
+              confirmButtonText: "OK",
+              allowOutsideClick: false,
+            });
+          }
+
+          if (row.file.size > maxSizeInBytes) {
+            return Swal.fire({
+              text: `File size for "${row.documentName}" exceeds 5 MB limit.`,
+              confirmButtonColor: "#1e3a8a",
+              confirmButtonText: "OK",
+              allowOutsideClick: false,
+            });
+          }
+        }
+      }
+    }
 
     setLoading(true);
 
@@ -336,7 +294,6 @@ const FrmNewTaxAssesment = () => {
       }
     }
 
-
     const payload = {
       userId: userId,
       zoneId: zoneId,
@@ -350,14 +307,7 @@ const FrmNewTaxAssesment = () => {
       parvanaDate: values.certificateDate
         ? new Date(values.certificateDate).toISOString().split("T")[0]
         : "",
-      propTypeFlag:
-        values.propertyType === "residential"
-          ? "RES"
-          : values.propertyType === "shop"
-            ? "COMM"
-            : values.propertyType === "office"
-              ? "OFF"
-              : "LAND",
+      propTypeFlag: values.propertyType,
       sectorNo: values.sectorNo,
       remarkSurvey: values.surveyNo,
       prabhagKarType: Number(values.prabhagOffice) || 1,
@@ -390,14 +340,16 @@ const FrmNewTaxAssesment = () => {
       if (response.data?.ok && response.data?.data?.applicationNo) {
         const appNo = response.data.data.applicationNo;
 
-        const message = response.data.data.message || `Assessment Details Saved Successfully,Appli no: ${appNo}`;
+        const message =
+          response.data.data.message ||
+          `Assessment Details Saved Successfully,Appli no: ${appNo}`;
 
         for (const doc of documents) {
           const success = await uploadDocument(appNo, doc);
           if (!success) {
             Swal.fire({
               text: `Failed to upload document: ${doc.docName}`,
-              confirmButtonColor: '#1e3a8a',
+              confirmButtonColor: "#1e3a8a",
               confirmButtonText: "OK",
               allowOutsideClick: false,
             });
@@ -415,9 +367,11 @@ const FrmNewTaxAssesment = () => {
 
         Swal.fire({
           text: `${message}`,
-          confirmButtonColor: '#1e3a8a',
+          confirmButtonColor: "#1e3a8a",
         }).then(() => {
-          navigate("/app/FrmTrackApplication", { state: { applicationNo: appNo } });
+          navigate("/app/FrmTrackApplication", {
+            state: { applicationNo: appNo },
+          });
 
           // if (payFlag === "Y") {
           //   navigate("/app/FrmAppliFee", { state: { applicationNo: applicationNo } });
@@ -425,7 +379,6 @@ const FrmNewTaxAssesment = () => {
           //   navigate("/app/FrmNoDuesCerti");
           // }
         });
-
       } else {
         Swal.fire({
           text: response.data?.message || "Failed to save assessment details.",
@@ -447,18 +400,18 @@ const FrmNewTaxAssesment = () => {
   };
 
   const transformedTableData = tableData.map((item) => ({
-  ...item,
-  fileUpload: (
-    <div className="flex items-center justify-center gap-2">
-      <Input
-        type="file"
-        accept=".jpg,.jpeg,.png,.pdf"
-        onChange={(e) => handleFileChange(item.id, e)}
-        className="h-9 text-sm p-1 w-[50%]"
-      />
-    </div>
-  ),
-}));
+    ...item,
+    fileUpload: (
+      <div className="flex items-center justify-center gap-2">
+        <Input
+          type="file"
+          accept=".jpg,.jpeg,.png,.pdf"
+          onChange={(e) => handleFileChange(item.id, e)}
+          className="h-9 text-sm p-1 w-[50%]"
+        />
+      </div>
+    ),
+  }));
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
@@ -472,7 +425,7 @@ const FrmNewTaxAssesment = () => {
             <Card className="w-full border shadow-sm">
               <CardHeader className="border-b px-3 sm:px-5 md:px-6 py-3 sm:py-4">
                 <CardTitle className="text-base sm:text-lg md:text-xl">
-                  {getHeaderTitle()}
+                  {servicename}
                 </CardTitle>
               </CardHeader>
 
@@ -662,8 +615,8 @@ const FrmNewTaxAssesment = () => {
                         <Input
                           type="radio"
                           name="propertyType"
-                          value="residential"
-                          checked={values.propertyType === "residential"}
+                          value="Rent"
+                          checked={values.propertyType === "Rent"}
                           onChange={handleChange}
                           className="h-4 w-4"
                         />
@@ -674,8 +627,8 @@ const FrmNewTaxAssesment = () => {
                         <Input
                           type="radio"
                           name="propertyType"
-                          value="shop"
-                          checked={values.propertyType === "shop"}
+                          value="Shop"
+                          checked={values.propertyType === "Shop"}
                           onChange={handleChange}
                           className="h-4 w-4"
                         />
@@ -686,8 +639,8 @@ const FrmNewTaxAssesment = () => {
                         <Input
                           type="radio"
                           name="propertyType"
-                          value="office"
-                          checked={values.propertyType === "office"}
+                          value="Ofc"
+                          checked={values.propertyType === "Ofc"}
                           onChange={handleChange}
                           className="h-4 w-4"
                         />
@@ -698,8 +651,8 @@ const FrmNewTaxAssesment = () => {
                         <Input
                           type="radio"
                           name="propertyType"
-                          value="landTax"
-                          checked={values.propertyType === "landTax"}
+                          value="Proptax"
+                          checked={values.propertyType === "Proptax"}
                           onChange={handleChange}
                           className="h-4 w-4"
                         />
@@ -846,15 +799,17 @@ const FrmNewTaxAssesment = () => {
                   </div>
                 </div>
 
-                <div className="border-t mt-6 sm:mt-7 pt-5 sm:pt-6">
-                  <ShadCNTable
-                    headers={headers}
-                    data={transformedTableData}
-                    keyMapping={keyMapping}
-                    pagination={false}
-                    className="max-md:min-w-340"
-                  />
-                </div>
+                {serviceid == 43 && (
+                  <div className="border-t mt-6 sm:mt-7 pt-5 sm:pt-6">
+                    <ShadCNTable
+                      headers={headers}
+                      data={transformedTableData}
+                      keyMapping={keyMapping}
+                      pagination={false}
+                      className="max-md:min-w-340"
+                    />
+                  </div>
+                )}
 
                 <div className="flex flex-col sm:flex-row justify-center items-stretch sm:items-center gap-3 pt-7">
                   <Button

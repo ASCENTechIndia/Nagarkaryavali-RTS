@@ -11,12 +11,14 @@ const NavbarContent = ({ withSidebar }) => {
     const { user, requestInitialized, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const ulbID = user?.ulbId || 3;
+    const ulbID = user?.ulbId;
     const [corpInfo, setCorpInfo] = useState({name: "", logo: ""});
 
     const locationState = location.state || {};
     const serviceId = locationState.serviceId || user?.serviceId;
     const userId = user?.userId || locationState.userId;
+
+    const isAuthPage = ["/login", "/otp-login", "/registration", "/forgot-password"].includes(location.pathname);
 
     const fetchCorporationInfo = async () => {
         try {
@@ -88,7 +90,7 @@ const NavbarContent = ({ withSidebar }) => {
                         {corpInfo.name || "Municipal Corporation"}
                     </h1>
                     <div />
-                    {(user && serviceId) && (
+                    {(user && serviceId && !isAuthPage) && (
                         <div className="flex items-center gap-2 min-w-30 justify-end">
                             <Button
                                 variant="default"

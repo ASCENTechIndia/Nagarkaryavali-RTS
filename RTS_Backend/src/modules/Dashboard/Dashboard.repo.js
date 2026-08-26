@@ -1,5 +1,5 @@
-const { executeQueryANCL, executeQueryTMC } = require("../../db/queryExecutor");
-const {getConnectionTMC} = require("../../config/db");
+const { executeQueryTMC } = require("../../db/queryExecutor");
+const { getConnectionTMC } = require("../../config/db");
 const oracledb = require("oracledb");
 const { decryptString } = require("./encrypt.js");
 
@@ -57,7 +57,7 @@ const decryptRequestRepo = async ({ encryptedRequest }) => {
     `;
 
     const ulbResult =
-        await executeQueryANCL(ulbSql, { corpCode });
+        await executeQueryTMC(ulbSql, { corpCode });
 
     if (!ulbResult.success) {
         throw new Error(ulbResult.error || "Failed to fetch corporation ID");
@@ -190,7 +190,7 @@ const getDepartmentMenuRepo = async ({ ulbid }) => {
         ORDER BY deptid
     `;
 
-    const result = await executeQueryANCL(sql, binds);
+    const result = await executeQueryTMC(sql, binds);
 
     if (!result || !result.success) {
         throw new Error(result?.error || "Failed to fetch department menu");
@@ -201,7 +201,7 @@ const getDepartmentMenuRepo = async ({ ulbid }) => {
 const getServicesByDeptIdRepo = async ({ ulbid, deptId }) => {
     console.log("Repo: Fetch Services By Department", { ulbid, deptId });
 
-    const binds = {  deptId: Number(deptId) };
+    const binds = { deptId: Number(deptId) };
 
     // let sql;
 
@@ -296,43 +296,8 @@ const getDocumentsForServiceRepo = async ({ serviceId, ulbid }) => {
     `;
 
     const result = await executeQueryTMC(sql, binds);
+    return result.rows;
 
-    if (!result || !result.success) {
-        throw new Error(result?.error || "Failed to fetch service documents");
-    }
-
-    if (result.rows && result.rows.length > 0) {
-        return result.rows;
-    }
-
-    const fallbackBinds = { serviceId: Number(serviceId), ulbid: Number(ulbid) };
-
-    const fallbackSql = `
-        SELECT
-            NULL AS var_doc_engname,
-            num_service_serviceid AS num_serdoc_servid,
-            CASE
-                WHEN var_serv_dispname IS NULL
-                    THEN var_service_eng_name
-                ELSE var_serv_dispname
-            END AS displayname,
-            num_service_serviceid
-        FROM aorts.aorts_service_def
-        INNER JOIN aorts_service_config
-            ON num_serv_servid = num_service_serviceid
-           AND num_serv_deptid = num_service_deptid
-        WHERE num_service_serviceid = :serviceId
-          AND var_service_active = 'Y'
-          AND num_serv_ulbid = :ulbid
-    `;
-
-    const fallbackResult = await executeQueryANCL(fallbackSql, fallbackBinds);
-
-    if (!fallbackResult || !fallbackResult.success) {
-        throw new Error(fallbackResult?.error || "Failed to fetch fallback service documents");
-    }
-
-    return fallbackResult.rows;
 };
 
 const getDownloadDocsRepo = async ({ serviceName, ulbid }) => {

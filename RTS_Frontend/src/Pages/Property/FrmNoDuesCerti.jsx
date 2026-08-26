@@ -21,6 +21,13 @@ import {
   documentValidationSchema 
 } from "@/validations/global.validation";
 import config from "@/utils/config";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // const ENCRYPTION_KEY = "AS23N7E2H4V717DEAS23N7E2H4V717DE";
 // const EXTERNAL_API_URL = "http://ptaxtmccollection.thanecity.gov.in/TMC_IGRClient/Service.svc/GetDataDetails_TMC";
@@ -85,6 +92,7 @@ const initialValues = {
   mobileNo: "",
   emailId: "",
   aadharNo: "",
+  zoneId: "",
 };
 
 const FrmNoDuesCerti = () => {
@@ -94,12 +102,12 @@ const FrmNoDuesCerti = () => {
 
   const locationState = location.state || {};
   
-  const ulbId = locationState.ulbId || user?.ulbId || "3";
-  const userId = locationState.userId || user?.userId || "151";
+  const ulbId = locationState.ulbId || user?.ulbId;
+  const userId = locationState.userId || user?.userId;
   const zoneId = locationState.zoneId || user?.zoneId || "12";
-  const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId || "3";
-  const serviceId = locationState.serviceId || user?.serviceId || "56";
-  const serviceName = locationState.serviceName || "No Dues Certificate";
+  const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId;
+  const serviceId = locationState.serviceId;
+  const serviceName = locationState.serviceName;
 
   const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -114,6 +122,7 @@ const FrmNoDuesCerti = () => {
   const [prabhagname, setPrabhagname] = useState("");
   const [zone, setZone] = useState("");
   const [wardno, setWardno] = useState("");
+  const [zoneList, setZoneList] = useState([]);
 
   const originalDocumentDefs = useRef([]);
 
@@ -132,8 +141,26 @@ const FrmNoDuesCerti = () => {
     document.title = title;
     if (ulbId && serviceId) {
       fetchDocumentDefinitions(serviceId, ulbId);
+      fetchZones();
     }
   }, [serviceId, ulbId]);
+
+  const fetchZones = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/api/FrmWaterRegister/ward-dropdown?ulbid=${ulbId}`,
+        {
+          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
+        }
+      );
+
+      if (response?.data?.ok && response?.data?.data?.data) {
+        setZoneList(response.data.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching zones:", error);
+    }
+  };
 
   const fetchDocumentDefinitions = async (serviceId, ulbId) => {
     try {
@@ -189,7 +216,6 @@ const FrmNoDuesCerti = () => {
   //       headers: {
   //         'Content-Type': 'application/json'
   //       },
-  //       timeout: 30000
   //     });
   //     if (response?.data?.jsonData?.[0]?.encr_request) {
   //       const decryptedResponse = decryptString(
@@ -215,7 +241,6 @@ const FrmNoDuesCerti = () => {
         },
         {
           headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
-          timeout: 30000
         }
       );
 
@@ -406,6 +431,7 @@ const FrmNoDuesCerti = () => {
     setFieldValue("mobileNo", "");
     setFieldValue("emailId", "");
     setFieldValue("aadharNo", "");
+    setFieldValue("zoneId", "");
     
     setYearlyTax("");
     setPrabhag("");
@@ -465,7 +491,7 @@ const FrmNoDuesCerti = () => {
 
   const uploadDocument = async (applicationNo, doc) => {
     const formData = new FormData();
-    formData.append("corpId", ulbId); 
+    formData.append("corpId", user.corpId); 
     formData.append("serviceId", serviceId);
     formData.append("appNo", applicationNo);
     formData.append("docType", doc.docType || "PDF");
@@ -605,6 +631,7 @@ const FrmNoDuesCerti = () => {
         applicantName: values.applicantName,
         mobileNo: values.mobileNo,
         emailId: values.emailId,
+        zoneId: values.zoneId,
       });
 
       if (!applicantValidation.success) {
@@ -656,19 +683,19 @@ const FrmNoDuesCerti = () => {
 
       console.log("Documents to upload:", documents);
 
-      // const documentValidation = documentValidationSchema.safeParse(documents);
+      const documentValidation = documentValidationSchema.safeParse(tableData);
 
-      // if (!documentValidation.success) {
-      //   const firstError = documentValidation.error.issues[0];
-      //   Swal.fire({
-      //     text: firstError.message,
-      //     confirmButtonColor: '#1e3a8a',
-      //     confirmButtonText: "OK",
-      //     allowOutsideClick: false,
-      //   });
-      //   setLoading(false);
-      //   return;
-      // }
+      if (tableData.length > 0 && !documentValidation.success) {
+        const firstError = documentValidation.error.issues[0];
+        Swal.fire({
+          text: firstError.message,
+          confirmButtonColor: '#1e3a8a',
+          confirmButtonText: "OK",
+          allowOutsideClick: false,
+        });
+        setLoading(false);
+        return;
+      }
 
       const loader = Swal.fire({
         title: "Submitting Application...",
@@ -692,7 +719,7 @@ const FrmNoDuesCerti = () => {
 
       const payload = {
         userId: userId,
-        zoneId: zoneId,
+        zoneId: values.zoneId,
         serviceId: String(serviceId),
         propNo: values.ptn || "",
         subCode: values.subcode || "",
@@ -908,6 +935,29 @@ const FrmNoDuesCerti = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label required text="Zone" />
+                      <span>:</span>
+                    </div>
+                    <Select
+                      value={values.zoneId}
+                      onValueChange={(value) => {
+                        setFieldValue("zoneId", value);
+                      }}
+                    >
+                      <SelectTrigger className="w-full h-9">
+                        <SelectValue placeholder="-- Select Zone --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {zoneList.map((zone) => (
+                          <SelectItem key={zone.WARDID} value={String(zone.WARDID)}>
+                            {zone.WARDNAME}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label required text="Applicant Name" />
                       <span>:</span>
                     </div>
@@ -970,13 +1020,15 @@ const FrmNoDuesCerti = () => {
                 <hr />
 
                 {tableData.length > 0 && (
-                  <ShadCNTable
-                    headers={headers}
-                    data={transformedTableData}
-                    keyMapping={keyMapping}
-                    pagination={false}
-                    className="max-md:min-w-380"
-                  />
+                  <div className="overflow-x-auto">
+                    <ShadCNTable
+                      headers={headers}
+                      data={transformedTableData}
+                      keyMapping={keyMapping}
+                      pagination={false}
+                      className="max-md:min-w-380"
+                    />
+                  </div>
                 )}
 
                 <div className="flex justify-center items-center gap-3 pt-4">
