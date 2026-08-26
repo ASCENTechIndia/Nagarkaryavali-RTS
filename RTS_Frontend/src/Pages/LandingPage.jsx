@@ -25,9 +25,9 @@ const LandingPage = () => {
     const [search, setSearch] = useState("");
     const [mobileDetails, setMobileDetails] = useState(false);
 
-    const showLoader = (title) => {
+    const showLoader = (text) => {
         Swal.fire({
-            title,
+            text,
             allowOutsideClick: false,
             allowEscapeKey: false,
             showConfirmButton: false,
@@ -111,12 +111,13 @@ const LandingPage = () => {
             if (documentsResponse.status === "fulfilled") {
                 const documentData = documentsResponse.value?.data?.data?.data || [];
 
-                const mappedDocuments = documentData.filter((item) => item?.VAR_DOC_ENGNAME).map((item, index) => ({
-                    id: item.NUM_SERDOC_SERVID || item.NUM_SERVICE_SERVICEID || index,
-                    name: item.VAR_DOC_ENGNAME,
+                const mappedDocuments = [...new Set(documentData.filter((item) => item?.VAR_DOC_ENGNAME).map((item) => item.VAR_DOC_ENGNAME.trim())),].map((name, index) => ({
+                    id: `${service.id}-${index}`,
+                    name,
                 }));
 
                 setDocuments(mappedDocuments);
+
             } else {
                 console.error("Documents API error:", documentsResponse.reason);
                 setDocuments([]);
@@ -207,7 +208,7 @@ const LandingPage = () => {
                 Swal.close();
             }
 
-            const serviceUrl = serviceDetails.serviceUrl ? serviceDetails.serviceUrl .replace(/^~\/?/, "/") .replace(/\.aspx(?=\?|$)/i, "") : "";
+            const serviceUrl = serviceDetails.serviceUrl ? serviceDetails.serviceUrl.replace(/^~\/?/, "/").replace(/\.aspx(?=\?|$)/i, "") : "";
 
             navigate("/login", {
                 state: {

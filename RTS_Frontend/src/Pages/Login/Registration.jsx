@@ -23,7 +23,7 @@ const Registration = () => {
     const navigate = useNavigate();
     const applicationState = location.state || {};
     console.log({applicationState})
-    const ulbId = applicationState.ulbId || 3;
+    const ulbId = applicationState.ulbId;
     const serviceUrl = applicationState.serviceUrl || "";
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);

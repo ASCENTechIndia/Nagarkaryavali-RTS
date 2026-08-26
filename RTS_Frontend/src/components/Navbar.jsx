@@ -11,7 +11,7 @@ const NavbarContent = ({ withSidebar }) => {
     const { user, requestInitialized, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const ulbID = user?.ulbId || 3;
+    const ulbID = user?.ulbId;
     const [corpInfo, setCorpInfo] = useState({name: "", logo: ""});
 
     const locationState = location.state || {};

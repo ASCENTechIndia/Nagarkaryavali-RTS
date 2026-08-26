@@ -37,7 +37,7 @@ const ULB3_DEPARTMENTS = [
 
 const Layout = () => {
     const { user, requestInitialized } = useAuth();
-    const ulbId = Number(user?.ulbId) || 3;
+    const ulbId = user?.ulbId || 3;
     const [departments, setDepartments] = useState([]);
     const [selectedDepartment, setSelectedDepartment] = useState(null);
 

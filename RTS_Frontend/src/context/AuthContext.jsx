@@ -189,7 +189,7 @@ const AuthProvider = ({ children }) => {
 
                 const resolved = response.data?.data?.data;
                 const resolvedUser = {
-                    ulbId: Number(resolved?.ulbId),
+                    ulbId: resolved?.ulbId,
                     corpCode: resolved?.corpCode || "",
                     decryptedRequest: resolved?.decryptedRequest || "",
                     resolvedEncryptedRequest: resolved?.resolvedEncryptedRequest || encryptedRequest
@@ -263,7 +263,7 @@ const AuthProvider = ({ children }) => {
                 return;
             }
 
-            const authenticatedUser = { ...userData, ulbId: Number( userData?.ulbId || user?.ulbId || 0)};
+            const authenticatedUser = { ...userData, ulbId: Number( userData?.ulbId || user?.ulbId || 3)};
             setUser(authenticatedUser);
             setToken(accessToken);
             sessionStorage.setItem("user", JSON.stringify(authenticatedUser));
