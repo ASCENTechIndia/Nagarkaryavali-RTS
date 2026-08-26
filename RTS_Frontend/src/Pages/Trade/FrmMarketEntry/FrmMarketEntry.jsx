@@ -5,12 +5,14 @@ import Swal from "sweetalert2";
 import { Formik, Form } from "formik";
 
 import { useAuth } from "@/context/AuthContext";
+import { useLocation } from "react-router-dom";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DatePicker } from "@/components/ui/calendar";
 
 import {
   Select,
@@ -96,9 +98,96 @@ const initialValues = {
 };
 
 const FrmMarketEntry = () => {
-  const { user, token, requestInitialized } = useAuth();
-  const ulbId = Number(user?.ulbId || 0);
-  const serviceId = 304;
+  const { user, token } = useAuth();
+  const location = useLocation();
+  const locationState = location.state || {};
+
+  const getContextValue = (stateValue, userValue, ...storageKeys) => {
+    if (stateValue !== undefined && stateValue !== null && stateValue !== "") {
+      return stateValue;
+    }
+
+    if (userValue !== undefined && userValue !== null && userValue !== "") {
+      return userValue;
+    }
+
+    for (const key of storageKeys) {
+      const value = sessionStorage.getItem(key);
+      if (value !== null && value !== "") {
+        return value;
+      }
+    }
+
+    return "";
+  };
+
+  const ulbId = Number(
+    getContextValue(
+      locationState.ulbId ?? locationState.ULBID,
+      user?.ulbId ?? user?.ULBID,
+      "ulbId",
+      "ULBID",
+    ) || 0,
+  );
+
+  const userId = getContextValue(
+    locationState.userId ?? locationState.USERID,
+    user?.userId ?? user?.USERID,
+    "userId",
+    "USERID",
+  );
+
+  const corpId = Number(
+    getContextValue(
+      locationState.corpId ??
+        locationState.corporationId ??
+        locationState.CORPID,
+      user?.corpId ?? user?.corporationId ?? user?.CORPID,
+      "corpId",
+      "corporationId",
+      "CORPID",
+    ) || 0,
+  );
+
+  const zoneId = Number(
+    getContextValue(
+      locationState.zoneId ?? locationState.zoneID ?? locationState.ZONEID,
+      user?.zoneId ?? user?.zoneID ?? user?.ZONEID,
+      "zoneId",
+      "zoneID",
+      "ZONEID",
+    ) || 0,
+  );
+
+  const serviceId = Number(
+    getContextValue(
+      locationState.serviceId ??
+        locationState.serviceID ??
+        locationState.SERVICEID,
+      user?.serviceId ?? user?.serviceID ?? user?.SERVICEID,
+      "serviceId",
+      "serviceID",
+      "SERVICEID",
+    ) || 0,
+  );
+
+  const serviceName = getContextValue(
+    locationState.serviceName,
+    user?.serviceName,
+    "serviceName",
+    "SERVICENAME",
+  );
+
+  const searchParams = new URLSearchParams(window.location.search);
+
+  const applicationId =
+    locationState.applicationId ??
+    locationState.appId ??
+    searchParams.get("applicationId") ??
+    searchParams.get("appid") ??
+    sessionStorage.getItem("applicationId") ??
+    sessionStorage.getItem("appid") ??
+    "";
 
   const [activeTab, setActiveTab] = useState("primary");
   const [tradeCategoryOptions, setTradeCategoryOptions] = useState([]);
@@ -118,15 +207,21 @@ const FrmMarketEntry = () => {
   const [jalanShilOptions, setJalanShilOptions] = useState([]);
   const [illegalTypeOptions, setIllegalTypeOptions] = useState([]);
 
+  const authToken =
+    token ||
+    sessionStorage.getItem("accessToken") ||
+    sessionStorage.getItem("token") ||
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("token") ||
+    "";
+
   const axiosConfig = useMemo(
     () => ({
       headers: {
-        Authorization: `Bearer ${
-          token || sessionStorage.getItem("accessToken") || ""
-        }`,
+        Authorization: authToken ? `Bearer ${authToken}` : "",
       },
     }),
-    [token],
+    [authToken],
   );
 
   const getBusinessPlace = useCallback(async () => {
@@ -264,170 +359,6 @@ const FrmMarketEntry = () => {
       setLicenseTypeOptions([]);
     }
   }, [axiosConfig]);
-
-  // const getExistingLicenseDetails = async (oldLicencNo, setFieldValue) => {
-  //   if (!oldLicencNo) {
-  //     Swal.fire({
-  //       icon: "warning",
-  //       text: "Please enter Old License No.",
-  //     });
-  //     return null;
-  //   }
-
-  //   const response = await axios.post(
-  //     `${BASE_URL}/api/FrmMarketEntry/getexistinglicensedetails`,
-  //     {
-  //       oldLicencNo,
-  //       ulbId: Number(ulbId),
-  //     },
-  //     axiosConfig,
-  //   );
-
-  //   const result = response.data?.data;
-
-  //   if (!response.data?.success || !result?.found) {
-  //     Swal.fire({
-  //       icon: "warning",
-  //       text: response.data?.message || "License details not found.",
-  //     });
-  //     return null;
-  //   }
-
-  //   const application = result.application;
-
-  //   if (application) {
-  //     setFieldValue("applicationType", "renewal");
-  //     setFieldValue(
-  //       "oldLicenseNo",
-  //       application.VAR_APPLI_OLDLICENCNO || oldLicencNo,
-  //     );
-  //     setFieldValue("shopNameEnglish", application.VAR_APPLI_SHOPNAME || "");
-  //     setFieldValue("shopNameMarathi", application.VAR_APPLI_SHOPNAMEMAR || "");
-  //     setFieldValue("panCardNo", application.VAR_APPLI_PANNO || "");
-  //     setFieldValue(
-  //       "contactNo",
-  //       application.NUM_APPLI_CONTACTNO != null
-  //         ? String(application.NUM_APPLI_CONTACTNO)
-  //         : "",
-  //     );
-  //     setFieldValue("email", application.VAR_APPLI_EMAIL || "");
-  //     setFieldValue("shopAddress", application.VAR_APPLI_ADDRESS || "");
-  //     setFieldValue(
-  //       "zoneNo",
-  //       application.NUM_APPLI_ZONEID != null
-  //         ? String(application.NUM_APPLI_ZONEID)
-  //         : "",
-  //     );
-  //     setFieldValue(
-  //       "wardNo",
-  //       application.NUM_APPLI_WARDID != null
-  //         ? String(application.NUM_APPLI_WARDID)
-  //         : "",
-  //     );
-  //     setFieldValue(
-  //       "isManufactured",
-  //       application.VAR_APPLI_ISPROD === "Y" ? "yes" : "no",
-  //     );
-  //     setFieldValue(
-  //       "isOwnerDoingBusiness",
-  //       application.VAR_APPLI_OWNSPACE === "Y" ? "yes" : "no",
-  //     );
-  //     setFieldValue(
-  //       "rentAgreementWithWhom",
-  //       application.VAR_APPLI_AGRMENTWITH || "",
-  //     );
-  //     setFieldValue(
-  //       "usedArea",
-  //       application.NUM_APPLI_AREA != null
-  //         ? String(application.NUM_APPLI_AREA)
-  //         : "",
-  //     );
-  //     setFieldValue(
-  //       "corporationNoc",
-  //       application.VAR_APPLI_ISCORPNOC === "Y" ? "yes" : "no",
-  //     );
-  //     setFieldValue(
-  //       "businessStartYear",
-  //       application.NUM_APPLI_BUSSTARTYR != null
-  //         ? String(application.NUM_APPLI_BUSSTARTYR)
-  //         : "",
-  //     );
-  //     setFieldValue(
-  //       "shopActRegistrationNo",
-  //       application.VAR_APPLI_SHOPACTNO || "",
-  //     );
-  //     setFieldValue(
-  //       "otherAdministrationRegistrationNo",
-  //       application.VAR_APPLI_FOODLICNO || "",
-  //     );
-  //     setFieldValue(
-  //       "licenseType",
-  //       application.NUM_APPLI_LICENSETYPEID != null
-  //         ? String(application.NUM_APPLI_LICENSETYPEID)
-  //         : "",
-  //     );
-  //     setFieldValue(
-  //       "fromDate",
-  //       formatDateForInput(application.DAT_APPLI_FROMDT),
-  //     );
-  //     setFieldValue("toDate", formatDateForInput(application.DAT_APPLI_TODT));
-  //     setFieldValue(
-  //       "amount",
-  //       application.AMOUNT != null ? String(application.AMOUNT) : "0",
-  //     );
-  //   }
-
-  //   setTradeTypeOptions(
-  //     (result.tradeTypeDetails || []).map((item) => ({
-  //       value: String(
-  //         item.NUM_APPLITRADETYPE_TRDTYPID || item.TRADETYPEID || "",
-  //       ),
-  //       label: item.TRADETYPE || "",
-  //     })),
-  //   );
-
-  //   const existingTradeIds = (result.tradeDetails || []).map((item) =>
-  //     String(item.NUM_APPLITRADE_TRADEID),
-  //   );
-
-  //   setTradeRows((previous) =>
-  //     previous.map((item) => ({
-  //       ...item,
-  //       checked: existingTradeIds.includes(String(item.tradeId)),
-  //     })),
-  //   );
-
-  //   setTradeTypeRateRows(
-  //     (result.tradeTypeDetails || []).map((item) => ({
-  //       id: item.NUM_APPLITRADETYPE_ID || `${item.TRADETYPEID}-${Date.now()}`,
-  //       tradeTypeId: String(
-  //         item.NUM_APPLITRADETYPE_TRDTYPID || item.TRADETYPEID || "",
-  //       ),
-  //       tradeType: item.TRADETYPE || "",
-  //       rate: String(item.RATE ?? 0),
-  //       tradeCategoryId: "",
-  //       tradeCategory: "",
-  //     })),
-  //   );
-
-  //   setDirectorRows(
-  //     (result.directorDetails || []).map((item) => ({
-  //       id: item.DIRECTORID || Date.now(),
-  //       aadharNo: item.ADHARNO != null ? String(item.ADHARNO) : "",
-  //       directorName: item.DIRCTORNAME || "",
-  //       mobileNo: item.MOBILENO != null ? String(item.MOBILENO) : "",
-  //       email: item.EMAIL || "",
-  //       gender: item.GENDER || "",
-  //       address: item.ADDRESS || "",
-  //       applicantTypeId:
-  //         item.APPLITYPEID != null ? String(item.APPLITYPEID) : "",
-  //       applicantType: item.APPLITYPENAME || "",
-  //       image: null,
-  //     })),
-  //   );
-
-  //   return result;
-  // };
 
   const getTradeCategoryByJwalan = async (jwalanshilStatus, type) => {
     if (!jwalanshilStatus || !type) {
@@ -568,18 +499,30 @@ const FrmMarketEntry = () => {
   }, [ulbId, serviceId, axiosConfig]);
 
   const getSelfDeclare = useCallback(async () => {
+    if (!serviceId) {
+      setSelfDeclareRows([]);
+      return;
+    }
+
     try {
       const response = await axios.post(
         `${BASE_URL}/api/FrmMarketEntry/getselfdeclaredata`,
         {
-          serviceId,
+          serviceId: Number(serviceId),
         },
         axiosConfig,
       );
 
-      console.log("Self Declare:", response.data);
+      console.log("Self Declare Response:", response.data);
 
-      setSelfDeclareRows(response.data?.data || []);
+      const data = response.data?.data || [];
+
+      setSelfDeclareRows(
+        data.map((item) => ({
+          id: String(item.ID ?? ""),
+          message: item.MESSAGE ?? "",
+        })),
+      );
     } catch (error) {
       console.error("Self Declare Error:", error?.response?.data || error);
 
@@ -597,6 +540,7 @@ const FrmMarketEntry = () => {
           {
             applicationId: Number(appId),
             ulbId,
+            serviceId,
           },
           axiosConfig,
         );
@@ -612,24 +556,20 @@ const FrmMarketEntry = () => {
         return null;
       }
     },
-    [ulbId, axiosConfig],
+    [ulbId, serviceId, axiosConfig],
   );
 
   useEffect(() => {
-    if (!requestInitialized) return;
-
-    if (!ulbId) {
-      console.warn("ULB ID is not available");
+    if (!ulbId || !serviceId) {
+      console.warn("Required dynamic ULB or Service ID is not available", {
+        ulbId,
+        serviceId,
+      });
       return;
     }
 
     const loadData = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const appId =
-        params.get("applicationId") ||
-        params.get("appid") ||
-        sessionStorage.getItem("applicationId") ||
-        "";
+      const appId = applicationId;
 
       Swal.fire({
         title: "Loading...",
@@ -710,8 +650,11 @@ const FrmMarketEntry = () => {
 
     loadData();
   }, [
-    requestInitialized,
     ulbId,
+    corpId,
+    zoneId,
+    serviceId,
+    applicationId,
     getBusinessPlace,
     getJalanShil,
     getIllegalType,
@@ -1261,10 +1204,10 @@ const FrmMarketEntry = () => {
 
   const submitApplication = async (values, { setSubmitting, resetForm }) => {
     try {
-      if (!ulbId) {
+      if (!ulbId || !userId || !serviceId) {
         Swal.fire({
           icon: "warning",
-          text: "ULB ID is not available.",
+          text: "Required ULB, User, or Service ID is not available.",
         });
 
         return;
@@ -1278,6 +1221,16 @@ const FrmMarketEntry = () => {
 
         setActiveTab("primary");
 
+        return;
+      }
+
+      if (selfDeclareRows.length > 0 && !values.declarationAccepted) {
+        Swal.fire({
+          icon: "warning",
+          text: "Please accept the self declaration before submitting.",
+        });
+
+        setActiveTab("primary");
         return;
       }
 
@@ -1299,9 +1252,10 @@ const FrmMarketEntry = () => {
         .join("#");
 
       const payload = {
-        userId: String(user?.userId || sessionStorage.getItem("userId") || ""),
-
-        appid: 0,
+        userId: String(userId || ""),
+        corpId,
+        zoneId: values.zoneNo ? Number(values.zoneNo) : zoneId || 0,
+        appid: applicationId ? Number(applicationId) : 0,
 
         appliNo: "",
 
@@ -1318,8 +1272,6 @@ const FrmMarketEntry = () => {
         email: values.email,
 
         address: values.shopAddress,
-
-        zoneId: values.zoneNo ? Number(values.zoneNo) : 0,
 
         wardId: values.wardNo ? Number(values.wardNo) : 0,
 
@@ -1459,220 +1411,44 @@ const FrmMarketEntry = () => {
     }
   };
 
+  const formatDateForInput = (value) => {
+    if (!value) return "";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) return "";
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const parseDateForPicker = (value) => {
+    if (!value) return undefined;
+
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? undefined : value;
+    }
+
+    const date = new Date(`${value}T00:00:00`);
+    return Number.isNaN(date.getTime()) ? undefined : date;
+  };
+
+  const formatDateForFormik = (date) => {
+    if (!date || Number.isNaN(date.getTime())) return "";
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
   return (
     <Formik initialValues={initialValues} onSubmit={submitApplication}>
       {({ values, setFieldValue, resetForm, isSubmitting }) => {
-        useEffect(() => {
-          const applicationId =
-            new URLSearchParams(window.location.search).get("applicationId") ||
-            sessionStorage.getItem("applicationId");
-
-          if (!applicationId || !ulbId) return;
-
-          let mounted = true;
-
-          const loadApplicationDetails = async () => {
-            try {
-              Swal.fire({
-                title: "Loading...",
-                text: "Fetching application details",
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                  Swal.showLoading();
-                },
-              });
-
-              const response = await getApplicationDetails(applicationId);
-
-              if (!mounted) return;
-
-              if (response?.ok && response?.status === "FOUND") {
-                const application = response?.data?.application;
-
-                if (application) {
-                  setFieldValue(
-                    "applicationType",
-                    application.VAR_APPLI_OLDLICENCNO ? "renewal" : "new",
-                  );
-                  setFieldValue(
-                    "oldLicenseNo",
-                    application.VAR_APPLI_OLDLICENCNO || "",
-                  );
-                  setFieldValue(
-                    "shopNameEnglish",
-                    application.VAR_APPLI_SHOPNAME || "",
-                  );
-                  setFieldValue(
-                    "shopNameMarathi",
-                    application.VAR_APPLI_SHOPNAMEMAR || "",
-                  );
-                  setFieldValue("panCardNo", application.VAR_APPLI_PANNO || "");
-                  setFieldValue(
-                    "contactNo",
-                    application.NUM_APPLI_CONTACTNO != null
-                      ? String(application.NUM_APPLI_CONTACTNO)
-                      : "",
-                  );
-                  setFieldValue("email", application.VAR_APPLI_EMAIL || "");
-                  setFieldValue(
-                    "shopAddress",
-                    application.VAR_APPLI_ADDRESS || "",
-                  );
-                  setFieldValue(
-                    "zoneNo",
-                    application.NUM_APPLI_ZONEID != null
-                      ? String(application.NUM_APPLI_ZONEID)
-                      : "",
-                  );
-                  setFieldValue(
-                    "wardNo",
-                    application.NUM_APPLI_WARDID != null
-                      ? String(application.NUM_APPLI_WARDID)
-                      : "",
-                  );
-                  setFieldValue(
-                    "isManufactured",
-                    application.VAR_APPLI_ISPROD === "Y" ? "yes" : "no",
-                  );
-                  setFieldValue(
-                    "isOwnerDoingBusiness",
-                    application.VAR_APPLI_OWNSPACE === "Y" ? "yes" : "no",
-                  );
-                  setFieldValue(
-                    "rentAgreementWithWhom",
-                    application.VAR_APPLI_AGRMENTWITH || "",
-                  );
-                  setFieldValue(
-                    "usedArea",
-                    application.NUM_APPLI_AREA != null
-                      ? String(application.NUM_APPLI_AREA)
-                      : "",
-                  );
-                  setFieldValue(
-                    "corporationNoc",
-                    application.VAR_APPLI_ISCORPNOC === "Y" ? "yes" : "no",
-                  );
-                  setFieldValue(
-                    "businessStartYear",
-                    application.NUM_APPLI_BUSSTARTYR != null
-                      ? String(application.NUM_APPLI_BUSSTARTYR)
-                      : "",
-                  );
-                  setFieldValue(
-                    "shopActRegistrationNo",
-                    application.VAR_APPLI_SHOPACTNO || "",
-                  );
-                  setFieldValue(
-                    "otherAdministrationRegistrationNo",
-                    application.VAR_APPLI_FOODLICNO || "",
-                  );
-                  setFieldValue(
-                    "licenseType",
-                    application.NUM_APPLI_LICENSETYPEID != null
-                      ? String(application.NUM_APPLI_LICENSETYPEID)
-                      : "",
-                  );
-                  setFieldValue(
-                    "fromDate",
-                    formatDateForInput(application.DAT_APPLI_FROMDT),
-                  );
-                  setFieldValue(
-                    "toDate",
-                    formatDateForInput(application.DAT_APPLI_TODT),
-                  );
-                  setFieldValue(
-                    "amount",
-                    application.AMOUNT != null
-                      ? String(application.AMOUNT)
-                      : "0",
-                  );
-                }
-
-                const details = response.data;
-
-                setTradeTypeOptions(
-                  (details.tradeTypeDetails || []).map((item) => ({
-                    value: String(
-                      item.NUM_APPLITRADETYPE_TRDTYPID ||
-                        item.TRADETYPEID ||
-                        "",
-                    ),
-                    label: item.TRADETYPE || "",
-                  })),
-                );
-
-                const selectedTradeIds = (details.tradeDetails || []).map(
-                  (item) => String(item.NUM_APPLITRADE_TRADEID),
-                );
-
-                setTradeRows((previous) =>
-                  previous.map((item) => ({
-                    ...item,
-                    checked: selectedTradeIds.includes(String(item.tradeId)),
-                  })),
-                );
-
-                setTradeTypeRateRows(
-                  (details.tradeTypeDetails || []).map((item) => ({
-                    id: item.NUM_APPLITRADETYPE_ID || Date.now(),
-                    tradeTypeId: String(
-                      item.NUM_APPLITRADETYPE_TRDTYPID ||
-                        item.TRADETYPEID ||
-                        "",
-                    ),
-                    tradeType: item.TRADETYPE || "",
-                    rate: String(item.RATE ?? 0),
-                    tradeCategoryId: "",
-                    tradeCategory: "",
-                  })),
-                );
-
-                setDirectorRows(
-                  (details.directorDetails || []).map((item) => ({
-                    id: item.DIRECTORID || Date.now(),
-                    aadharNo: item.ADHARNO != null ? String(item.ADHARNO) : "",
-                    directorName: item.DIRCTORNAME || "",
-                    mobileNo:
-                      item.MOBILENO != null ? String(item.MOBILENO) : "",
-                    email: item.EMAIL || "",
-                    gender: item.GENDER || "",
-                    address: item.ADDRESS || "",
-                    applicantTypeId:
-                      item.APPLITYPEID != null ? String(item.APPLITYPEID) : "",
-                    applicantType: item.APPLITYPENAME || "",
-                    image: null,
-                  })),
-                );
-              }
-            } catch (error) {
-              if (mounted) {
-                console.error(
-                  "Fetch Application Details Error:",
-                  error?.response?.data || error,
-                );
-
-                Swal.fire({
-                  icon: "error",
-                  text:
-                    error?.response?.data?.message ||
-                    "Unable to fetch application details.",
-                });
-              }
-            } finally {
-              if (mounted) {
-                Swal.close();
-              }
-            }
-          };
-
-          loadApplicationDetails();
-
-          return () => {
-            mounted = false;
-          };
-        }, [ulbId]);
-
         return (
           <Form className="w-full">
             <Card className="w-full rounded-xl border border-gray-300 bg-white shadow-sm">
@@ -1743,7 +1519,7 @@ const FrmMarketEntry = () => {
                           <div className="flex shrink-0 items-start md:w-[300px]">
                             <Label
                               text="जुना परवाना क्रमांक"
-                              className="!w-full text-[15px] font-medium sm:text-[16px]"
+                              className="!w-full text-[15px] font-medium sm:text-[14px]"
                             />
 
                             <span className="ml-4 hidden md:block">:</span>
@@ -1788,7 +1564,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="दुकानाचे नाव इंग्रजी"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -1806,7 +1582,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="दुकानाचे नाव मराठी"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -1824,7 +1600,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="पॅन कार्ड नं."
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -1846,7 +1622,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="संपर्क क्र."
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -1869,7 +1645,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="ई-मेल"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -1888,7 +1664,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="दुकानाचा पत्ता"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -1908,7 +1684,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="झोन क्र."
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -1939,7 +1715,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="वार्ड क्र."
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -1970,7 +1746,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="व्यवसायाचा प्रकार"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2030,7 +1806,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="ज्वलनशील पदार्थांचा / इंधनाचा वापर व साठवणूक करीत आहे?"
                           required
-                          className="!w-full text-[16px] font-medium leading-5"
+                          className="!w-full text-[14px] font-medium leading-5"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2070,7 +1846,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="Trade Category"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2107,7 +1883,7 @@ const FrmMarketEntry = () => {
                       <div className="grid grid-cols-1 gap-2 md:grid-cols-[280px_20px_minmax(0,1fr)] md:items-center">
                         <Label
                           text="License Type"
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2138,7 +1914,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="व्यवसायाची जागा"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2169,7 +1945,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="Illegal Property"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2200,7 +1976,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="Property No"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2219,7 +1995,7 @@ const FrmMarketEntry = () => {
                       <div className="grid grid-cols-1 gap-2 md:grid-cols-[280px_20px_minmax(0,1fr)] md:items-center">
                         <Label
                           text="शॉप अक्ट नोंदणी क्र."
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2244,7 +2020,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="Trade Type"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2273,7 +2049,7 @@ const FrmMarketEntry = () => {
                       <div className="grid grid-cols-1 gap-2 md:grid-cols-[280px_20px_minmax(0,1fr)] md:items-center">
                         <Label
                           text="Rate"
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2291,16 +2067,15 @@ const FrmMarketEntry = () => {
                       <div className="grid grid-cols-1 gap-2 md:grid-cols-[280px_20px_minmax(0,1fr)] md:items-center">
                         <Label
                           text="From Date"
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
 
-                        <Input
-                          type="date"
-                          value={values.fromDate}
-                          onChange={(e) =>
-                            setFieldValue("fromDate", e.target.value)
+                        <DatePicker
+                          value={parseDateForPicker(values.fromDate)}
+                          onChange={(date) =>
+                            setFieldValue("fromDate", formatDateForFormik(date))
                           }
                           className="h-10 w-full"
                         />
@@ -2309,16 +2084,15 @@ const FrmMarketEntry = () => {
                       <div className="grid grid-cols-1 gap-2 md:grid-cols-[280px_20px_minmax(0,1fr)] md:items-center">
                         <Label
                           text="To Date"
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
 
-                        <Input
-                          type="date"
-                          value={values.toDate}
-                          onChange={(e) =>
-                            setFieldValue("toDate", e.target.value)
+                        <DatePicker
+                          value={parseDateForPicker(values.toDate)}
+                          onChange={(date) =>
+                            setFieldValue("toDate", formatDateForFormik(date))
                           }
                           className="h-10 w-full"
                         />
@@ -2337,49 +2111,60 @@ const FrmMarketEntry = () => {
                     {/* TRADE TYPE TABLE */}
 
                     {tradeTypeRateRows.length > 0 && (
-                      <div className="mt-5 w-full overflow-x-auto">
-                        <Table className="min-w-[700px] border">
+                      <div className="w-full">
+                        <Table className="w-full table-fixed border">
                           <TableHeader>
                             <TableRow>
-                              <TableHead className="bg-[#184aa6] text-white">
-                                Trade Type
+                              <TableHead className="w-[80px] bg-[#184aa6] text-center text-white">
+                                <div className="flex justify-center">
+                                  <Checkbox
+                                    checked={allTradesSelected}
+                                    onCheckedChange={(checked) =>
+                                      handleSelectAll(checked === true)
+                                    }
+                                  />
+                                </div>
                               </TableHead>
 
-                              <TableHead className="bg-[#184aa6] text-white">
-                                Category
-                              </TableHead>
-
-                              <TableHead className="bg-[#184aa6] text-white">
-                                Rate
-                              </TableHead>
-
-                              <TableHead className="bg-[#184aa6] text-white">
-                                Action
+                              <TableHead className="w-full bg-[#184aa6] text-center text-white">
+                                Trade
                               </TableHead>
                             </TableRow>
                           </TableHeader>
 
                           <TableBody>
-                            {tradeTypeRateRows.map((item) => (
-                              <TableRow key={item.id}>
-                                <TableCell>{item.tradeType}</TableCell>
+                            {tradeRows.length > 0 ? (
+                              tradeRows.map((item) => (
+                                <TableRow key={item.id}>
+                                  <TableCell className="w-[80px] text-center">
+                                    <div className="flex justify-center">
+                                      <Checkbox
+                                        checked={item.checked}
+                                        onCheckedChange={(checked) =>
+                                          handleTradeCheck(
+                                            item.tradeId,
+                                            checked === true,
+                                          )
+                                        }
+                                      />
+                                    </div>
+                                  </TableCell>
 
-                                <TableCell>{item.tradeCategory}</TableCell>
-
-                                <TableCell>{item.rate}</TableCell>
-
-                                <TableCell>
-                                  <Button
-                                    type="button"
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => removeTradeType(item.id)}
-                                  >
-                                    Remove
-                                  </Button>
+                                  <TableCell className="w-full text-left">
+                                    {item.tradeName}
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                            ) : (
+                              <TableRow>
+                                <TableCell
+                                  colSpan={2}
+                                  className="py-5 text-center"
+                                >
+                                  No Trade Details Found
                                 </TableCell>
                               </TableRow>
-                            ))}
+                            )}
                           </TableBody>
                         </Table>
                       </div>
@@ -2397,7 +2182,7 @@ const FrmMarketEntry = () => {
                           <div className="grid grid-cols-1 gap-2 md:grid-cols-[280px_20px_minmax(0,1fr)] md:items-center">
                             <Label
                               text="वस्तू निर्मित आहे का"
-                              className="!w-full text-[16px] font-medium"
+                              className="!w-full text-[14px] font-medium"
                             />
 
                             <span className="hidden md:block">:</span>
@@ -2432,7 +2217,7 @@ const FrmMarketEntry = () => {
                           <div className="grid grid-cols-1 gap-2 md:grid-cols-[280px_20px_minmax(0,1fr)] md:items-center">
                             <Label
                               text="जागा मालकाचे नाव"
-                              className="!w-full text-[16px] font-medium"
+                              className="!w-full text-[14px] font-medium"
                             />
 
                             <span className="hidden md:block">:</span>
@@ -2449,7 +2234,7 @@ const FrmMarketEntry = () => {
                           <div className="grid grid-cols-1 gap-2 md:grid-cols-[280px_20px_minmax(0,1fr)] md:items-center">
                             <Label
                               text="भाडे करार कोणासोबत केले आहे"
-                              className="!w-full text-[16px] font-medium"
+                              className="!w-full text-[14px] font-medium"
                             />
 
                             <span className="hidden md:block">:</span>
@@ -2469,7 +2254,7 @@ const FrmMarketEntry = () => {
                           <div className="grid grid-cols-1 gap-2 md:grid-cols-[280px_20px_minmax(0,1fr)] md:items-center">
                             <Label
                               text="म.न.पा. नाहरकत प्रमाणपत्र"
-                              className="!w-full text-[16px] font-medium"
+                              className="!w-full text-[14px] font-medium"
                             />
 
                             <span className="hidden md:block">:</span>
@@ -2504,7 +2289,7 @@ const FrmMarketEntry = () => {
                           <div className="grid grid-cols-1 gap-2 md:grid-cols-[280px_20px_minmax(0,1fr)] md:items-center">
                             <Label
                               text="व्यवसाय सुरू केल्याचे वर्ष"
-                              className="!w-full text-[16px] font-medium"
+                              className="!w-full text-[14px] font-medium"
                             />
 
                             <span className="hidden md:block">:</span>
@@ -2590,7 +2375,7 @@ const FrmMarketEntry = () => {
                           <div className="grid grid-cols-1 gap-2 md:grid-cols-[280px_20px_minmax(0,1fr)] md:items-center">
                             <Label
                               text="स्वतःच्या मालकीच्या जागेत व्यवसाय करीत आहे का"
-                              className="!w-full text-[16px] font-medium"
+                              className="!w-full text-[14px] font-medium"
                             />
 
                             <span className="hidden md:block">:</span>
@@ -2627,7 +2412,7 @@ const FrmMarketEntry = () => {
                           <div className="grid grid-cols-1 gap-2 md:grid-cols-[280px_20px_minmax(0,1fr)] md:items-center">
                             <Label
                               text="जागा मालकाचा पत्ता"
-                              className="!w-full text-[16px] font-medium"
+                              className="!w-full text-[14px] font-medium"
                             />
 
                             <span className="hidden md:block">:</span>
@@ -2644,7 +2429,7 @@ const FrmMarketEntry = () => {
                           <div className="grid grid-cols-1 gap-2 md:grid-cols-[280px_20px_minmax(0,1fr)] md:items-center">
                             <Label
                               text="वापरात आलेले क्षेत्र चौ. फु."
-                              className="!w-full text-[16px] font-medium"
+                              className="!w-full text-[14px] font-medium"
                             />
 
                             <span className="hidden md:block">:</span>
@@ -2669,8 +2454,8 @@ const FrmMarketEntry = () => {
                         <h3 className="mb-4 font-semibold">स्वयंघोषणा</h3>
 
                         {selfDeclareRows.map((item) => (
-                          <p key={item.ID} className="text-sm leading-7">
-                            {item.MESSAGE}
+                          <p key={item.id} className="text-sm leading-7">
+                            {item.message}
                           </p>
                         ))}
 
@@ -2712,17 +2497,13 @@ const FrmMarketEntry = () => {
                     </div>
                   </TabsContent>
 
-                  {/* =================================================
-                    DIRECTOR TAB
-                ================================================== */}
-
                   <TabsContent value="director" className="px-4 py-5 sm:px-6">
                     <div className="grid grid-cols-1 gap-x-8 gap-y-5 xl:grid-cols-2">
                       <div className="grid grid-cols-1 gap-2 md:grid-cols-[280px_20px_minmax(0,1fr)] md:items-center">
                         <Label
                           text="संचालकांचा आधार क्रमांक"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2744,7 +2525,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="संचालकांचे नाव"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2762,7 +2543,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="संपर्क क्र."
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2784,7 +2565,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="ई-मेल"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2803,7 +2584,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="लिंग"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2851,7 +2632,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="अर्जदार प्रकार"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2880,7 +2661,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="पत्ता"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -2898,7 +2679,7 @@ const FrmMarketEntry = () => {
                         <Label
                           text="संचालकांचा फोटो"
                           required
-                          className="!w-full text-[16px] font-medium"
+                          className="!w-full text-[14px] font-medium"
                         />
 
                         <span className="hidden md:block">:</span>
@@ -3026,9 +2807,6 @@ const FrmMarketEntry = () => {
                     </div>
                   </TabsContent>
 
-                  {/* =================================================
-                    DOCUMENT TAB
-                ================================================== */}
 
                   <TabsContent value="documents" className="px-4 py-5 sm:px-6">
                     <div className="w-full overflow-x-auto">
@@ -3147,53 +2925,6 @@ const FrmMarketEntry = () => {
       }}
     </Formik>
   );
-};
-
-/*
- * =========================================================
- * DATE HELPERS
- * =========================================================
- */
-
-const formatDateForInput = (value) => {
-  if (!value) return "";
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  const year = date.getFullYear();
-
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-};
-
-const formatDateForApi = (value) => {
-  if (!value) return "";
-
-  const [year, month, day] = value.split("-");
-
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-
-  return `${day}-${months[Number(month) - 1]}-${year}`;
 };
 
 export default FrmMarketEntry;
