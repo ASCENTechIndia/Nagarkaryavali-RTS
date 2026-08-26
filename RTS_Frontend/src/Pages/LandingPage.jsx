@@ -207,7 +207,7 @@ const LandingPage = () => {
                 Swal.close();
             }
 
-            const serviceUrl = serviceDetails.serviceUrl ? serviceDetails.serviceUrl.replace(/^~\/?/, "/").replace(/\.aspx$/i, "") : "";
+            const serviceUrl = serviceDetails.serviceUrl ? serviceDetails.serviceUrl .replace(/^~\/?/, "/") .replace(/\.aspx(?=\?|$)/i, "") : "";
 
             navigate("/login", {
                 state: {
