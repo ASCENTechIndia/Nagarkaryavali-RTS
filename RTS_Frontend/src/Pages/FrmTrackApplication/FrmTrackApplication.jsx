@@ -105,6 +105,23 @@ const FrmTrackApplication = () => {
     "Download": "download",
   };
 
+  const formatDateToIndian = (dateValue) => {
+    if (!dateValue) return "-";
+    
+    try {
+      const date = new Date(dateValue);
+      if (isNaN(date.getTime())) return "-";
+      
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+      
+      return `${day}-${month}-${year}`;
+    } catch (error) {
+      return "-";
+    }
+  };
+
   const fetchApplications = async () => {
     setLoading(true);
 
@@ -127,6 +144,8 @@ const FrmTrackApplication = () => {
         }
       );
 
+      console.log("response", response);
+
       if (response.data.success) {
         const data = response.data.data.map((app, index) => ({
           srNo: index + 1,
@@ -138,7 +157,7 @@ const FrmTrackApplication = () => {
           applicantName: app.NAME,
           mobileNo: app.MOBNO,
           email: app.EMAIL,
-          applicationDate: app.APLIDT,
+          applicationDate: formatDateToIndian(app.APLIDT),
           status: app.APPLISTATUS,
         }));
         setApplications(data);
