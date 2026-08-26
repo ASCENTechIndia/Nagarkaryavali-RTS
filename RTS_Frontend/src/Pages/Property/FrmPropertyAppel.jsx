@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
@@ -22,6 +21,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import config from "@/utils/config";
+import { propertySearchValidationSchema } from "@/validations/global.validation";
 
 const initialValues = {
   ptn: "",
@@ -45,19 +45,20 @@ const FrmPropertyAppel = () => {
   const { user, token } = useAuth();
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   const locationState = location.state || {};
-  const ulbId = locationState.ulbId || user?.ulbId ;
-  const userId = locationState.userId || user?.userId ;
+  const ulbId = locationState.ulbId || user?.ulbId;
+  const userId = locationState.userId || user?.userId;
   const zoneId = locationState.zoneId || user?.zoneId || "12";
   const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId || ulbId;
-  const serviceId = locationState.serviceId || user?.serviceId ;
+  const serviceId = locationState.serviceId || user?.serviceId;
 
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [propertyFound, setPropertyFound] = useState(false);
+  const [searchError, setSearchError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);    
+  const [isSearching, setIsSearching] = useState(false);
   const [objections, setObjections] = useState([]);
   const [documentDefs, setDocumentDefs] = useState([]);
   const [tableData, setTableData] = useState([]);
-  const [yearlyTax, setYearlyTax] = useState("0");
 
   const headers = ["Sr No.", "Document Name", "Image(jpg,png,pdf)"];
 
@@ -123,10 +124,9 @@ const FrmPropertyAppel = () => {
         const tableRows = docs.map((doc, index) => ({
           id: doc.DOCID || doc.DocId || index + 1,
           srNo: index + 1,
-          documentName:
-            doc.DOCNAME || doc.DocName || doc.ENGDOCDESC || "Document",
+          documentName: doc.DOCNAME || doc.DocName || doc.ENGDOCDESC,
           docId: doc.DOCID || doc.DocId,
-          docType: doc.DOCTYPE || doc.DocType || "PDF",
+          docType: doc.DOCTYPE || doc.DocType,
           file: null,
           fileName: "No file chosen",
           fileBuffer: null,
@@ -154,7 +154,6 @@ const FrmPropertyAppel = () => {
     fetchObjections();
     fetchDocumentDefinitions();
   }, [serviceId, ulbId]);
-
 
   const getPropertyDetails = async (propNo, userId) => {
     try {
@@ -186,23 +185,36 @@ const FrmPropertyAppel = () => {
     }
   };
 
-  const handleSearchProperty = async (values, setFieldValue) => {
-    if (!values.ptn?.trim()) {
-      Swal.fire({
-        text: "Please enter PTN.",
-        confirmButtonColor: "#1e3a8a",
-      });
+  const handleSearchProperty = async (
+    ptn,
+    subcode,
+    setFieldValue,
+    resetForm,
+  ) => {
+    const validationResult = propertySearchValidationSchema.safeParse({
+      ptn: ptn,
+      subcode: subcode,
+    });
 
+    if (!validationResult.success) {
+      const firstError = validationResult.error.issues[0];
+      Swal.fire({
+        text: firstError.message,
+        confirmButtonColor: "#1e3a8a",
+        confirmButtonText: "OK",
+        allowOutsideClick: false,
+      });
       return;
     }
 
-    setIsSearching(true);
-
+    setIsLoading(true);
     try {
-      let fullPropNo = values.ptn;
+      setSearchError("");
+      setPropertyFound(false);
 
-      if (values.subcode && values.subcode.trim() !== "") {
-        fullPropNo = values.ptn + "/" + values.subcode;
+      let fullPropNo = ptn;
+      if (subcode && subcode.trim() !== "") {
+        fullPropNo = ptn + "/" + subcode;
       }
 
       const result = await getPropertyDetails(fullPropNo, userId);
@@ -211,76 +223,87 @@ const FrmPropertyAppel = () => {
         const propData = result.propertyOwners;
 
         if (propData.payamt && parseFloat(propData.payamt) > 0) {
-          const payNowUrl = `https://propertytax.thanecity.gov.in/PropSearch.aspx?PTN=${values.ptn}`;
-
           Swal.fire({
             text: `Your property tax payment of Rs.${propData.payamt} is due, please make the payment first`,
             confirmButtonColor: "#1e3a8a",
-            showCancelButton: true,
-            cancelButtonText: "Pay Now",
-            cancelButtonColor: "#d33",
-          }).then((result) => {
-            if (result.isConfirmed) {
-              window.open(payNowUrl, "_blank");
-            }
+            confirmButtonText: "OK",
+            allowOutsideClick: false,
+          }).then(() => {
+            resetFormAfterSearch(setFieldValue, resetForm);
           });
-
+          setIsLoading(false);
           return;
         }
 
-        setFieldValue("landHolder", propData.land_Holder || "");
-        setFieldValue("structureHolder", propData.struct_Holder || "");
-        setFieldValue("ownerDetails", propData.owner_Details || "");
-        setFieldValue("address", propData.address || "");
-        setYearlyTax(propData.yearly_tax || "0");
+        setFieldValue("landHolder", propData.land_Holder ?? "");
+        setFieldValue("structureHolder", propData.struct_Holder ?? "");
+        setFieldValue("ownerDetails", propData.owner_Details ?? "");
+        setFieldValue("address", propData.address ?? "");
+        setFieldValue("flatNo", propData.flat_No || propData.flatno || "");
+        setFieldValue("strType", propData.usagetype_name ?? "");
+        setFieldValue("constrType", propData.consttype_name ?? "");
+        setFieldValue("area", propData.prop_area ?? "");
+        setFieldValue("lettingRate", propData.letting_rate ?? "");
+        setFieldValue("rateableValue", propData.retable_value ?? "");
+        setFieldValue("yearlyTax", propData.yearly_tax?.toString() || "");
+        setFieldValue("assessmentYear", propData.asses_year ?? "");
+
+        setPropertyFound(true);
 
         Swal.fire({
-          text: "Property details fetched successfully!",
+          text: "Property found successfully!",
           confirmButtonColor: "#1e3a8a",
           timer: 1500,
+          allowOutsideClick: false,
         });
       } else {
         Swal.fire({
           text: "Property Not Found For This Prop No",
           confirmButtonColor: "#1e3a8a",
+          confirmButtonText: "OK",
+          allowOutsideClick: false,
+        }).then(() => {
+          resetFormAfterSearch(setFieldValue, resetForm);
         });
       }
     } catch (error) {
-      console.error("Error fetching property details:", error);
-
+      console.error("Search Property Error:", error);
       Swal.fire({
         text:
-          error?.response?.data?.message ||
           error?.response?.data?.error ||
-          "Error fetching property details. Please try again.",
+          "Error searching property. Please try again.",
         confirmButtonColor: "#1e3a8a",
+        confirmButtonText: "OK",
+        allowOutsideClick: false,
       });
     } finally {
-      setIsSearching(false);
+      setIsLoading(false);
     }
   };
 
+  const resetFormAfterSearch = (setFieldValue, resetForm) => {
+    resetForm();
+    setPropertyFound(false);
+    setSearchError("");
+  };
 
   const handleFileChange = (id, event) => {
     const file = event.currentTarget.files?.[0];
     if (file) {
       setTableData((prev) =>
         prev.map((row) =>
-          row.id === id
-            ? { ...row, file: file, fileName: file.name }
-            : row
-        )
+          row.id === id ? { ...row, file: file, fileName: file.name } : row,
+        ),
       );
     }
   };
-
 
   const uploadDocument = async (applicationNo, doc) => {
     const formData = new FormData();
     formData.append("corpId", user.corpId);
     formData.append("serviceId", serviceId);
     formData.append("appNo", applicationNo);
-    formData.append("docType", doc.docType || "PDF");
+    formData.append("docType", doc.docType);
     formData.append("documentId", String(doc.docId));
     formData.append("document", doc.file);
 
@@ -293,7 +316,7 @@ const FrmPropertyAppel = () => {
             Authorization: `Bearer ${token || localStorage.getItem("token")}`,
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return response.data.ok === true;
     } catch (error) {
@@ -371,14 +394,12 @@ const FrmPropertyAppel = () => {
     }
   };
 
-
   const handleSubmit = async (values) => {
     setLoading(true);
 
     let loader;
 
     try {
-
       if (!values.ptn?.trim()) {
         Swal.fire({
           text: "Please enter PTN.",
@@ -439,9 +460,11 @@ const FrmPropertyAppel = () => {
         return;
       }
 
-      const missingDocuments = tableData.filter(row => !row.file);
+      const missingDocuments = tableData.filter((row) => !row.file);
       if (missingDocuments.length > 0) {
-        const missingNames = missingDocuments.map(row => row.documentName).join(", ");
+        const missingNames = missingDocuments
+          .map((row) => row.documentName)
+          .join(", ");
         Swal.fire({
           text: `Please upload all required documents. Missing: ${missingNames}`,
           confirmButtonColor: "#1e3a8a",
@@ -453,7 +476,7 @@ const FrmPropertyAppel = () => {
       }
 
       const allowedExtensions = ["image/jpeg", "image/png", "application/pdf"];
-      const maxSizeInBytes = 5 * 1024 * 1024; // 5 MB
+      const maxSizeInBytes = 5 * 1024 * 1024;
 
       for (const row of tableData) {
         if (row.file) {
@@ -508,11 +531,10 @@ const FrmPropertyAppel = () => {
         appliName: values.applicantName,
         mobile: Number(values.mobileNo),
         email: values.emailId,
-        aadhar: Number(values.aadharNo) ,
+        aadhar: Number(values.aadharNo),
         objectType: Number(values.objectionType),
         objectDesc: values.objectionDescription,
 
-        // hardcoded beacause value not have in UI
         taxDate1: null,
         taxDate2: null,
         oldUsage: 0,
@@ -623,13 +645,13 @@ const FrmPropertyAppel = () => {
       //   }
       // });
 
-
-
       Swal.fire({
         text: `${message}`,
-        confirmButtonColor: '#1e3a8a',
+        confirmButtonColor: "#1e3a8a",
       }).then(() => {
-        navigate("/app/FrmTrackApplication", { state: { applicationNo: applicationNo } });
+        navigate("/app/FrmTrackApplication", {
+          state: { applicationNo: applicationNo },
+        });
 
         // if (payFlag === "Y") {
         //   navigate("/app/FrmAppliFee", { state: { applicationNo: applicationNo } });
@@ -637,7 +659,6 @@ const FrmPropertyAppel = () => {
         //   navigate("/app/FrmNoDuesCerti");
         // }
       });
-
     } catch (error) {
       console.error("Error submitting Property Appeal:", error);
 
@@ -677,7 +698,6 @@ const FrmPropertyAppel = () => {
       </div>
     ),
   }));
-
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
@@ -733,7 +753,12 @@ const FrmPropertyAppel = () => {
                       type="button"
                       className="bg-blue-900 hover:bg-blue-800 text-white"
                       onClick={() =>
-                        handleSearchProperty(values, setFieldValue)
+                        handleSearchProperty(
+                          values.ptn,
+                          values.subcode,
+                          setFieldValue,
+                          resetForm,
+                        )
                       }
                       disabled={isSearching}
                     >

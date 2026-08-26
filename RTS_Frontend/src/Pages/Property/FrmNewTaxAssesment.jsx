@@ -57,17 +57,7 @@ const FrmNewTaxAssesment = () => {
   const zoneId = locationState.zoneId || user?.zoneId || "12";
   const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId || ulbId;
   const serviceid = locationState.serviceId || user?.serviceId;
-
-  const getHeaderTitle = () => {
-    switch (String(serviceid)) {
-      case "43":
-        return "New Assessment";
-      case "289":
-        return "Self Assessment";
-      default:
-        return "New Assessment";
-    }
-  };
+  const servicename = locationState.serviceName;
 
   useEffect(() => {
     fetchWards();
@@ -115,8 +105,7 @@ const FrmNewTaxAssesment = () => {
         const tableRows = docs.map((doc, index) => ({
           id: doc.DOCID || doc.DocId || index + 1,
           srNo: index + 1,
-          documentName:
-            doc.DOCNAME || doc.DocName || doc.ENGDOCDESC || "Document",
+          documentName: doc.DOCNAME || doc.DocName || doc.ENGDOCDESC,
           docId: doc.DOCID || doc.DocId,
           docType: doc.DOCTYPE || doc.DocType || "PDF",
           file: null,
@@ -146,7 +135,7 @@ const FrmNewTaxAssesment = () => {
     formData.append("corpId", user.corpId);
     formData.append("serviceId", serviceid);
     formData.append("appNo", applicationNo);
-    formData.append("docType", doc.docType || "PDF");
+    formData.append("docType", doc.docType);
     formData.append("documentId", String(doc.docId));
     formData.append("document", doc.file);
 
@@ -250,17 +239,6 @@ const FrmNewTaxAssesment = () => {
         "Please enter Advance Receipt No. (अग्रीम कराची पावती क्र.)",
       );
     }
-
-    // for (const doc of documents) {
-    //   if (!docFiles[doc.DOCID]) {
-    //     return Swal.fire(`Please upload document: ${doc.DOCNAME}`);
-    //   }
-    //   if (docErrors[doc.DOCID]) {
-    //     return Swal.fire(
-    //       `Invalid file for ${doc.DOCNAME}: ${docErrors[doc.DOCID]}`,
-    //     );
-    //   }
-    // }
 
     if (serviceid == 43) {
       const missingDocuments = tableData.filter((row) => !row.file);
@@ -447,7 +425,7 @@ const FrmNewTaxAssesment = () => {
             <Card className="w-full border shadow-sm">
               <CardHeader className="border-b px-3 sm:px-5 md:px-6 py-3 sm:py-4">
                 <CardTitle className="text-base sm:text-lg md:text-xl">
-                  {getHeaderTitle()}
+                  {servicename}
                 </CardTitle>
               </CardHeader>
 
