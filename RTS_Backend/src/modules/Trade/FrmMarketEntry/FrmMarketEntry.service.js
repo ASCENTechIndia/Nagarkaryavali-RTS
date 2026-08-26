@@ -127,69 +127,69 @@ const getTradeTypeDetailsService = async (ulbId, tradeCategoryId, tradeTypeId) =
 // ============================================================
 // GET APPLICATION DETAILS
 // ============================================================
-const getApplicationDetailsService = async (applicationId, ulbId) => {
-  if (!applicationId) {
-    throw new Error("Application ID is required.");
-  }
+// const getApplicationDetailsService = async (applicationId, ulbId) => {
+//   if (!applicationId) {
+//     throw new Error("Application ID is required.");
+//   }
 
-  if (!ulbId) {
-    throw new Error("ULB ID is required.");
-  }
+//   if (!ulbId) {
+//     throw new Error("ULB ID is required.");
+//   }
 
-  // ----------------------------------------------------------
-  // APPLICATION MASTER
-  // ----------------------------------------------------------
-  const application = await repo.getApplicationDetailsRepo(applicationId, ulbId);
+//   // ----------------------------------------------------------
+//   // APPLICATION MASTER
+//   // ----------------------------------------------------------
+//   const application = await repo.getApplicationDetailsRepo(applicationId, ulbId);
 
-  // ----------------------------------------------------------
-  // NO DATA
-  // ----------------------------------------------------------
-  if (!application || application.length === 0) {
-    return {
-      success: false,
-      status: "NOT_FOUND",
-      message: "Application details not found",
-      data: null,
-    };
-  }
+//   // ----------------------------------------------------------
+//   // NO DATA
+//   // ----------------------------------------------------------
+//   if (!application || application.length === 0) {
+//     return {
+//       success: false,
+//       status: "NOT_FOUND",
+//       message: "Application details not found",
+//       data: null,
+//     };
+//   }
 
-  // ----------------------------------------------------------
-  // TRADE TYPE DETAILS
-  // ----------------------------------------------------------
-  const tradeTypeDetails = await repo.getApplicationTradeTypeDetailsRepo(applicationId, ulbId);
+//   // ----------------------------------------------------------
+//   // TRADE TYPE DETAILS
+//   // ----------------------------------------------------------
+//   const tradeTypeDetails = await repo.getApplicationTradeTypeDetailsRepo(applicationId, ulbId);
 
-  // ----------------------------------------------------------
-  // TRADE DETAILS
-  // ----------------------------------------------------------
-  const tradeDetails = await repo.getApplicationTradeDetailsRepo(applicationId);
+//   // ----------------------------------------------------------
+//   // TRADE DETAILS
+//   // ----------------------------------------------------------
+//   const tradeDetails = await repo.getApplicationTradeDetailsRepo(applicationId);
 
-  // ----------------------------------------------------------
-  // DIRECTOR DETAILS
-  // ----------------------------------------------------------
-  const directorDetails = await repo.getApplicationDirectorDetailsRepo(applicationId);
+//   // ----------------------------------------------------------
+//   // DIRECTOR DETAILS
+//   // ----------------------------------------------------------
+//   const directorDetails = await repo.getApplicationDirectorDetailsRepo(applicationId);
 
-  // ----------------------------------------------------------
-  // DOCUMENT DETAILS
-  // ----------------------------------------------------------
-  const documentDetails = await repo.getApplicationDocumentDetailsRepo(applicationId, ulbId);
+//   // ----------------------------------------------------------
+//   // DOCUMENT DETAILS
+//   // ----------------------------------------------------------
+//   const documentDetails = await repo.getApplicationDocumentDetailsRepo(applicationId, ulbId);
 
-  // ----------------------------------------------------------
-  // COMPLETE APPLICATION DATA
-  // ----------------------------------------------------------
-  return {
-    success: true,
-    status: "FOUND",
-    message: "Application details fetched successfully",
+//   // ----------------------------------------------------------
+//   // COMPLETE APPLICATION DATA
+//   // ----------------------------------------------------------
+//   return {
+//     success: true,
+//     status: "FOUND",
+//     message: "Application details fetched successfully",
 
-    data: {
-      application: application[0],
-      tradeTypeDetails,
-      tradeDetails,
-      directorDetails,
-      documentDetails,
-    },
-  };
-};
+//     data: {
+//       application: application[0],
+//       tradeTypeDetails,
+//       tradeDetails,
+//       directorDetails,
+//       documentDetails,
+//     },
+//   };
+// };
 
 // ============================================================
 // APPLICATION ENTRY
@@ -238,83 +238,83 @@ const documentInsertService = async (data) => {
 // GET EXISTING LICENSE DETAILS
 // ============================================================
 
-const getExistingLicenseDetailsService = async (oldLicencNo, ulbId) => {
-  if (!oldLicencNo) {
-    throw new Error("Old License Number is required.");
-  }
+// const getExistingLicenseDetailsService = async (oldLicencNo, ulbId) => {
+//   if (!oldLicencNo) {
+//     throw new Error("Old License Number is required.");
+//   }
 
-  if (!ulbId) {
-    throw new Error("ULB ID is required.");
-  }
+//   if (!ulbId) {
+//     throw new Error("ULB ID is required.");
+//   }
 
-  // ----------------------------------------------------------
-  // 1. Get latest application
-  // ----------------------------------------------------------
+//   // ----------------------------------------------------------
+//   // 1. Get latest application
+//   // ----------------------------------------------------------
 
-  const applicationRows = await repo.getExistingLicenseDetailsRepo(oldLicencNo, ulbId);
+//   const applicationRows = await repo.getExistingLicenseDetailsRepo(oldLicencNo, ulbId);
 
-  if (!applicationRows || applicationRows.length === 0) {
-    return {
-      found: false,
-      message: "No Licence Found",
-      application: null,
-      tradeTypeDetails: [],
-      tradeDetails: [],
-      directorDetails: [],
-      documentDetails: [],
-    };
-  }
+//   if (!applicationRows || applicationRows.length === 0) {
+//     return {
+//       found: false,
+//       message: "No Licence Found",
+//       application: null,
+//       tradeTypeDetails: [],
+//       tradeDetails: [],
+//       directorDetails: [],
+//       documentDetails: [],
+//     };
+//   }
 
-  // ----------------------------------------------------------
-  // 2. Latest application
-  // ----------------------------------------------------------
+//   // ----------------------------------------------------------
+//   // 2. Latest application
+//   // ----------------------------------------------------------
 
-  const application = applicationRows[0];
+//   const application = applicationRows[0];
 
-  const applicationId = application.NUM_APPLI_ID;
+//   const applicationId = application.NUM_APPLI_ID;
 
-  // ----------------------------------------------------------
-  // 3. Get dependent details
-  // ----------------------------------------------------------
+//   // ----------------------------------------------------------
+//   // 3. Get dependent details
+//   // ----------------------------------------------------------
 
-  const [tradeTypeDetails, tradeDetails, directorDetails, documentDetails] = await Promise.all([
-    repo.getExistingLicenseTradeTypeDetailsRepo(applicationId, ulbId),
+//   const [tradeTypeDetails, tradeDetails, directorDetails, documentDetails] = await Promise.all([
+//     repo.getExistingLicenseTradeTypeDetailsRepo(applicationId, ulbId),
 
-    repo.getExistingLicenseTradeDetailsRepo(applicationId, ulbId),
+//     repo.getExistingLicenseTradeDetailsRepo(applicationId, ulbId),
 
-    repo.getExistingLicenseDirectorDetailsRepo(applicationId, ulbId),
+//     repo.getExistingLicenseDirectorDetailsRepo(applicationId, ulbId),
 
-    repo.getExistingLicenseDocumentDetailsRepo(applicationId, ulbId),
-  ]);
+//     repo.getExistingLicenseDocumentDetailsRepo(applicationId, ulbId),
+//   ]);
 
-  // ----------------------------------------------------------
-  // 4. Calculate total amount
-  // ----------------------------------------------------------
+//   // ----------------------------------------------------------
+//   // 4. Calculate total amount
+//   // ----------------------------------------------------------
 
-  let totalAmount = 0;
+//   let totalAmount = 0;
 
-  for (const item of tradeTypeDetails) {
-    totalAmount += Number(item.RATE || 0);
-  }
+//   for (const item of tradeTypeDetails) {
+//     totalAmount += Number(item.RATE || 0);
+//   }
 
-  // ----------------------------------------------------------
-  // 5. Return complete details
-  // ----------------------------------------------------------
+//   // ----------------------------------------------------------
+//   // 5. Return complete details
+//   // ----------------------------------------------------------
 
-  return {
-    found: true,
+//   return {
+//     found: true,
 
-    application: {
-      ...application,
-      amount: totalAmount,
-    },
+//     application: {
+//       ...application,
+//       amount: totalAmount,
+//     },
 
-    tradeTypeDetails,
-    tradeDetails,
-    directorDetails,
-    documentDetails,
-  };
-};
+//     tradeTypeDetails,
+//     tradeDetails,
+//     directorDetails,
+//     documentDetails,
+//   };
+// };
 
 // ============================================================
 // SEARCH LICENSE
@@ -323,76 +323,58 @@ const getExistingLicenseDetailsService = async (oldLicencNo, ulbId) => {
 // ============================================================
 // CHECK LICENSE CANCELLED
 // ============================================================
-const checkLicenseCancelledService = async (oldLicencNo) => {
-  if (!oldLicencNo) {
-    throw new Error("License Number is required.");
-  }
+// const checkLicenseCancelledService = async (oldLicencNo) => {
+//   if (!oldLicencNo) {
+//     throw new Error("License Number is required.");
+//   }
 
-  const result = await repo.checkLicenseCancelledRepo(oldLicencNo);
+//   const result = await repo.checkLicenseCancelledRepo(oldLicencNo);
 
-  const count = Number(result[0]?.ID || 0);
+//   const count = Number(result[0]?.ID || 0);
 
-  return {
-    cancelled: count > 0,
-  };
-};
-
+//   return {
+//     cancelled: count > 0,
+//   };
+// };
 
 // ============================================================
 // GET TRADE TYPE RATES
 // ============================================================
-const getTradTypesRatesService = async (
-  tradeTypes,
-  fromDate,
-  toDate,
-  ulbId
-) => {
-  if (!tradeTypes) {
-    throw new Error("Trade Types are required.");
-  }
+// const getTradTypesRatesService = async (tradeTypes, fromDate, toDate, ulbId) => {
+//   if (!tradeTypes) {
+//     throw new Error("Trade Types are required.");
+//   }
 
-  if (!fromDate) {
-    throw new Error("From Date is required.");
-  }
+//   if (!fromDate) {
+//     throw new Error("From Date is required.");
+//   }
 
-  if (!ulbId) {
-    throw new Error("ULB ID is required.");
-  }
+//   if (!ulbId) {
+//     throw new Error("ULB ID is required.");
+//   }
 
-  return await repo.getTradTypesRatesRepo(
-    tradeTypes,
-    fromDate,
-    toDate,
-    ulbId
-  );
-};
-
+//   return await repo.getTradTypesRatesRepo(tradeTypes, fromDate, toDate, ulbId);
+// };
 
 // ============================================================
 // GET TRADE TYPES BY CATEGORY
 // ============================================================
-const getTradeTypesByCategoryService = async (categoryId, type) => {
-  if (!categoryId) {
-    throw new Error("Trade Category is required.");
-  }
+// const getTradeTypesByCategoryService = async (categoryId, type) => {
+//   if (!categoryId) {
+//     throw new Error("Trade Category is required.");
+//   }
 
-  if (!type) {
-    throw new Error("Type is required.");
-  }
+//   if (!type) {
+//     throw new Error("Type is required.");
+//   }
 
-  return await repo.getTradeTypesByCategoryRepo(
-    categoryId,
-    type
-  );
-};
+//   return await repo.getTradeTypesByCategoryRepo(categoryId, type);
+// };
 
 // ============================================================
 // GET TRADE CATEGORY BY JWALAN STATUS
 // ============================================================
-const getTradeCategoryByJwalanService = async (
-  jwalanshilStatus,
-  type
-) => {
+const getTradeCategoryByJwalanService = async (jwalanshilStatus, type) => {
   if (!jwalanshilStatus) {
     throw new Error("Jwalan status is required.");
   }
@@ -401,10 +383,7 @@ const getTradeCategoryByJwalanService = async (
     throw new Error("Type is required.");
   }
 
-  return await repo.getTradeCategoryByJwalanRepo(
-    jwalanshilStatus,
-    type
-  );
+  return await repo.getTradeCategoryByJwalanRepo(jwalanshilStatus, type);
 };
 
 module.exports = {
@@ -419,13 +398,13 @@ module.exports = {
   getDocumentDetailsService,
   getSelfDeclareDataService,
   getTradeTypeDetailsService,
-  getApplicationDetailsService,
+  // getApplicationDetailsService,
   applicationEntryService,
   updateDirectorImagesService,
   documentInsertService,
-  getExistingLicenseDetailsService,
-  checkLicenseCancelledService,
-  getTradTypesRatesService,
-  getTradeTypesByCategoryService,
-  getTradeCategoryByJwalanService
+  //getExistingLicenseDetailsService,
+  // checkLicenseCancelledService,
+  // getTradTypesRatesService,
+  //getTradeTypesByCategoryService,
+  getTradeCategoryByJwalanService,
 };
