@@ -84,6 +84,7 @@ const initialValues = {
   pincode: "",
   rebateType: "",
   remark: "",
+  zoneId: "",
 };
 
 const FrmRebateTax = () => {
@@ -113,6 +114,7 @@ const FrmRebateTax = () => {
   const [prabhagname, setPrabhagname] = useState("");
   const [zone, setZone] = useState("");
   const [wardno, setWardno] = useState("");
+  const [zoneList, setZoneList] = useState([]);
 
   const originalDocumentDefs = useRef([]);
 
@@ -128,11 +130,29 @@ const FrmRebateTax = () => {
   };
 
   useEffect(() => {
+    fetchZones();
     fetchRebateTypes();
     fetchTaxNames();
     fetchDocumentDefinitions(serviceId, ulbId);
     document.title = serviceId == "287" ? "Rebate on Tax" : "Rebate to Vacant Properties";
   }, [serviceId, ulbId]);
+
+  const fetchZones = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/api/FrmWaterRegister/ward-dropdown?ulbid=${ulbId}`,
+        {
+          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
+        }
+      );
+
+      if (response?.data?.ok && response?.data?.data?.data) {
+        setZoneList(response.data.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching zones:", error);
+    }
+  };
 
   const fetchRebateTypes = async () => {
     try {
@@ -439,6 +459,7 @@ const FrmRebateTax = () => {
     setFieldValue("pincode", "");
     setFieldValue("rebateType", "");
     setFieldValue("remark", "");
+    setFieldValue("zoneId", "");
     
     setShowTaxGrid(false);
     setSelectedTaxes([]);
@@ -593,6 +614,7 @@ const FrmRebateTax = () => {
         structureHolder: values.structureHolder,
         ownerDetails: values.ownerDetails,
         address: values.address,
+        zoneId: values.zoneId,
       });
 
       if (!applicantValidation.success) {
@@ -680,7 +702,7 @@ const FrmRebateTax = () => {
 
       const payload = {
         userId: userId,
-        zoneId: zoneId,
+        zoneId: values.zoneId,
         serviceId: serviceId,
         propNo: values.ptn,
         subCode: values.subcode || "",
@@ -886,6 +908,29 @@ const FrmRebateTax = () => {
 
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label required text="Zone" />
+                        <span>:</span>
+                      </div>
+                      <Select
+                        value={values.zoneId}
+                        onValueChange={(value) => {
+                          setFieldValue("zoneId", value);
+                        }}
+                      >
+                        <SelectTrigger className="w-full h-9">
+                          <SelectValue placeholder="-- Select Zone --" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {zoneList.map((zone) => (
+                            <SelectItem key={zone.WARDID} value={String(zone.WARDID)}>
+                              {zone.WARDNAME}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                       <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
                         <Label required text="Applicant Name" />

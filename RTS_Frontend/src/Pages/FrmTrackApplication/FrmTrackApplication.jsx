@@ -197,7 +197,7 @@ const FrmTrackApplication = () => {
         }
         );
 
-        console.log("response", response);
+        console.log("fetchTrackingSteps", response);
 
         if (response.data.ok || response.data.data.success) {
         const steps = response.data.data.data.steps.map((step, index) => ({
@@ -210,6 +210,14 @@ const FrmTrackApplication = () => {
         }));
         setTrackingSteps(steps);
         setAppAuth(response.data.data.appAuth || "");
+
+        const departmentId = response.data.data.data?.departmentId || 
+                           response.data.data?.departmentId;
+      
+        setSelectedApp(prev => ({
+          ...prev,
+          departmentId: departmentId
+        }));
 
         const appealData = await getAppealDetails(applino);
         if (appealData) {
@@ -404,6 +412,41 @@ const FrmTrackApplication = () => {
     }
   };
 
+  const fetchExistingCertificate = async (applino) => {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/api/FrmTrackApplication/getapplicationcertificate`,
+        { applino },
+        {
+          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
+        }
+      );
+
+      if (response.data.success && response.data.data && response.data.data.length > 0) {
+        const certData = response.data.data[0];
+        
+        if (certData.fileBytes) {
+          const byteCharacters = atob(certData.fileBytes);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: 'application/pdf' });
+          const url = window.URL.createObjectURL(blob);
+          
+          window.open(url, '_blank');
+          
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error("Error fetching existing certificate:", error);
+      return false;
+    }
+  };
+
   const downloadDocument = async (docId) => {
     try {
       const response = await axios.post(
@@ -479,6 +522,8 @@ const FrmTrackApplication = () => {
     const status = step.status;
     const appNo = selectedApp?.applicationNo;
     const serviceId = selectedApp?.serviceId;
+
+    console.log("selectedApp", selectedApp);
 
     if (stepName === "Application Entry" && status === "Done") {
       if (action === "First Appeal") {
@@ -560,34 +605,99 @@ const FrmTrackApplication = () => {
       return;
     }
 
+    // if (stepName === "Certificate Generated") {
+    //   if (status === "Done" || appAuth === "Done") {
+    //     Swal.fire({
+    //       text: "Generating certificate...",
+    //       allowOutsideClick: false,
+    //       showConfirmButton: false,
+    //       didOpen: () => Swal.showLoading(),
+    //     });
+
+    //     const success = await downloadCertificate(appNo, serviceId, userId, ulbId);
+
+    //     Swal.close();
+
+    //     if (success) {
+    //       Swal.fire({
+    //         text: "Certificate downloaded successfully!",
+    //         confirmButtonColor: '#1e3a8a',
+    //         timer: 2000,
+    //       });
+    //     } else {
+    //       Swal.fire({
+    //         text: "Error downloading certificate. Please try again.",
+    //         confirmButtonColor: '#1e3a8a',
+    //       });
+    //     }
+    //     return;
+    //   }
+      
+    //   if (appAuth === "Rejected") {
+    //     Swal.fire({
+    //       text: "Application was rejected. Certificate cannot be generated.",
+    //       confirmButtonColor: '#1e3a8a',
+    //     });
+    //     return;
+    //   }
+    // }
+
     if (stepName === "Certificate Generated") {
       if (status === "Done" || appAuth === "Done") {
-        Swal.fire({
-          text: "Generating certificate...",
-          allowOutsideClick: false,
-          showConfirmButton: false,
-          didOpen: () => Swal.showLoading(),
-        });
-
-        const success = await downloadCertificate(appNo, serviceId, userId, ulbId);
-
-        Swal.close();
-
-        if (success) {
+        const departmentId = selectedApp?.departmentId ;
+        
+        if (departmentId === 7) {
           Swal.fire({
-            text: "Certificate downloaded successfully!",
-            confirmButtonColor: '#1e3a8a',
-            timer: 2000,
+            text: "Generating certificate...",
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => Swal.showLoading(),
           });
+
+          const success = await downloadCertificate(appNo, serviceId, userId, ulbId);
+
+          Swal.close();
+
+          if (success) {
+            Swal.fire({
+              text: "Certificate downloaded successfully!",
+              confirmButtonColor: '#1e3a8a',
+              timer: 2000,
+            });
+          } else {
+            Swal.fire({
+              text: "Error downloading certificate. Please try again.",
+              confirmButtonColor: '#1e3a8a',
+            });
+          }
         } else {
           Swal.fire({
-            text: "Error downloading certificate. Please try again.",
-            confirmButtonColor: '#1e3a8a',
+            text: "Fetching certificate...",
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => Swal.showLoading(),
           });
+
+          const success = await fetchExistingCertificate(appNo);
+
+          Swal.close();
+
+          if (success) {
+            Swal.fire({
+              text: "Certificate downloaded successfully!",
+              confirmButtonColor: '#1e3a8a',
+              timer: 2000,
+            });
+          } else {
+            Swal.fire({
+              text: "Certificate not found.",
+              confirmButtonColor: '#1e3a8a',
+            });
+          }
         }
         return;
       }
-      
+    
       if (appAuth === "Rejected") {
         Swal.fire({
           text: "Application was rejected. Certificate cannot be generated.",
