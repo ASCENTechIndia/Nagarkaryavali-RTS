@@ -20,7 +20,7 @@ const FrmAppliFee = () => {
     const ulbId = Number(location.state?.ulbId ?? user?.ulbId);
     const corpId = Number(location.state?.corpId);
     const userUniqueId = Number(location.state?.userUniqueId ?? user?.userUniqueId);
-    const trackId = location.state?.trackId ?? user?.trackId ?? "0";
+    const trackId = location.state?.trackId ?? user?.trackId ?? "12345";
     const userIdMahaOnline = location.state?.userIdMahaOnline ?? user?.mahaOnlineUserId ?? "MAHA123";
     const username = location.state?.username ?? user?.username;
     const userFullName = location.state?.userFullName;
@@ -340,7 +340,8 @@ const FrmAppliFee = () => {
         return;
     }
 
-    const returnUrl = `${frontendUrl}/app/FrmAfterTransactionTMC`;
+    // const returnUrl = `${frontendUrl}/app/FrmAfterTransactionTMC`;
+    const returnUrl = `${baseUrl}/api/payment-response`;
 
     const address = "";
     const city = "";

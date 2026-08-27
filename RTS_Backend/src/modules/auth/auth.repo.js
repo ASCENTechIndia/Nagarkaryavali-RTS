@@ -1,8 +1,8 @@
 const oracledb = require("oracledb");
-const { getConnectionANCL } = require("../../config/db");
+const { getConnectionTMC } = require("../../config/db");
 
 async function registerUser({ userId, orgId, name, email, mobile, dob, password, confirmPassword, ipAddress, source, propNo }) {
-    const conn = await getConnectionANCL();
+    const conn = await getConnectionTMC();
 
     try {
         const normalizedIpAddress = typeof ipAddress === "string" && ipAddress.trim() ? ipAddress.trim() : "127.0.0.1";
@@ -60,7 +60,7 @@ async function registerUser({ userId, orgId, name, email, mobile, dob, password,
 }
 
 async function loginByProcedure({ corpId, mobile, password, ulbId, logflag }) {
-  const conn = await getConnectionANCL();
+  const conn = await getConnectionTMC();
   try {
     const emailResult = await conn.execute(
       `SELECT var_onlinereg_email AS email
@@ -139,7 +139,7 @@ async function loginByProcedure({ corpId, mobile, password, ulbId, logflag }) {
 }
 
 async function sendLoginOtp({ userId, ulbId, mobileNumber }) {
-  const conn = await getConnectionANCL();
+  const conn = await getConnectionTMC();
 
   try {
     const result = await conn.execute(
@@ -185,7 +185,7 @@ async function sendLoginOtp({ userId, ulbId, mobileNumber }) {
 }
 
 async function loginWithOtpProcedure({ userId, ulbId, mobileNumber, otp }) {
-  const conn = await getConnectionANCL();
+  const conn = await getConnectionTMC();
 
   try {
     const userResult = await conn.execute(
@@ -332,7 +332,7 @@ async function loginWithOtpProcedure({ userId, ulbId, mobileNumber, otp }) {
 }
 
 async function getForgotPasswordDetails({ mobile }) {
-    const conn = await getConnectionANCL();
+    const conn = await getConnectionTMC();
 
     try {
         const result = await conn.execute(
@@ -356,7 +356,7 @@ async function getForgotPasswordDetails({ mobile }) {
 }
 
 async function changePassword({ corpId, oldPassword, newPassword, userId, mode }) {
-    const conn = await getConnectionANCL();
+    const conn = await getConnectionTMC();
 
     try {
         const result = await conn.execute(
@@ -402,7 +402,7 @@ async function changePassword({ corpId, oldPassword, newPassword, userId, mode }
 }
 
 async function getCitizenDetailsByMobile({ mobile }) {
-  const conn = await getConnectionANCL();
+  const conn = await getConnectionTMC();
   try {
     const result = await conn.execute(
       `SELECT
