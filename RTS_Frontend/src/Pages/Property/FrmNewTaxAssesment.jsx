@@ -54,11 +54,11 @@ const FrmNewTaxAssesment = () => {
 
   const ulbId = locationState.ulbId || user?.ulbId;
   const userId = locationState.userId || user?.userId;
-  const zoneId = locationState.zoneId || user?.zoneId || "12";
   const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId || ulbId;
   const serviceid = locationState.serviceId || user?.serviceId;
   const servicename = locationState.serviceName;
 
+ 
   useEffect(() => {
     fetchWards();
     fetchDocumentDefinitions();
@@ -105,7 +105,8 @@ const FrmNewTaxAssesment = () => {
         const tableRows = docs.map((doc, index) => ({
           id: doc.DOCID || doc.DocId || index + 1,
           srNo: index + 1,
-          documentName: doc.DOCNAME || doc.DocName || doc.ENGDOCDESC,
+          documentName:
+            doc.DOCNAME || doc.DocName || doc.ENGDOCDESC,
           docId: doc.DOCID || doc.DocId,
           docType: doc.DOCTYPE || doc.DocType || "PDF",
           file: null,
@@ -296,7 +297,7 @@ const FrmNewTaxAssesment = () => {
 
     const payload = {
       userId: userId,
-      zoneId: zoneId,
+      zoneId: Number(values.prabhagOffice),
       serviceId: Number(serviceid),
       appliName: values.applicantName,
       appliAdd: values.applicantAddress,
@@ -310,7 +311,7 @@ const FrmNewTaxAssesment = () => {
       propTypeFlag: values.propertyType,
       sectorNo: values.sectorNo,
       remarkSurvey: values.surveyNo,
-      prabhagKarType: Number(values.prabhagOffice) || 1,
+      prabhagKarType: Number(values.prabhagOffice),
       vikasAppealNo: values.developmentProposalNo,
       propOwnName: values.landOwnerName,
       vikasName: values.developerName,
