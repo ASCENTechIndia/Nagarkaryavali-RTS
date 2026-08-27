@@ -1,6 +1,7 @@
 const { executeQueryTMC } = require("../../../db/queryExecutor");
 const oracledb = require("oracledb");
-const { withTxTMC } = require("../../../db/tx");
+const { withTxTMC, withTxANCL } = require("../../../db/tx");
+const { getConnectionTMC } = require("../../../config/db");
 
 // ============================================================
 // GET BUSINESS PLACE
@@ -235,48 +236,48 @@ const getTradeTypeDetailsRepo = async (ulbId, tradeCategoryId, tradeTypeId) => {
 // ============================================================
 // GET APPLICATION DETAILS
 // ============================================================
-// const getApplicationDetailsRepo = async (applicationId, ulbId) => {
-//   const query = `
-//     SELECT
-//       var_appli_applino,
-//       var_appli_applidt,
-//       var_appli_oldlicencno,
-//       var_appli_shopname,
-//       var_appli_panno,
-//       num_appli_contactno,
-//       var_appli_email,
-//       var_appli_address,
-//       num_appli_zoneid,
-//       num_appli_wardid,
-//       var_appli_isprod,
-//       var_appli_ownspace,
-//       var_appli_agrmentwith,
-//       num_appli_area,
-//       var_appli_iscorpnoc,
-//       num_appli_busstartyr,
-//       var_appli_shopactno,
-//       var_appli_foodlicno,
-//       num_appli_licdays,
-//       var_appli_shopnamemar,
-//       var_appli_placeownername,
-//       var_appli_placeowneraddress,
-//       dat_appli_fromdt,
-//       dat_appli_todt,
-//       NVL(num_appli_amount, 0) AS amount,
-//       num_appli_licensetypeid
-//     FROM market.aomk_appli_mas
-//     WHERE num_appli_id = :applicationId
-//       AND num_appli_ulbid = :ulbId
-//   `;
-//   //console.log("Query :", query);
+const getApplicationDetailsRepo = async (applicationId, ulbId) => {
+  const query = `
+    SELECT
+      var_appli_applino,
+      var_appli_applidt,
+      var_appli_oldlicencno,
+      var_appli_shopname,
+      var_appli_panno,
+      num_appli_contactno,
+      var_appli_email,
+      var_appli_address,
+      num_appli_zoneid,
+      num_appli_wardid,
+      var_appli_isprod,
+      var_appli_ownspace,
+      var_appli_agrmentwith,
+      num_appli_area,
+      var_appli_iscorpnoc,
+      num_appli_busstartyr,
+      var_appli_shopactno,
+      var_appli_foodlicno,
+      num_appli_licdays,
+      var_appli_shopnamemar,
+      var_appli_placeownername,
+      var_appli_placeowneraddress,
+      dat_appli_fromdt,
+      dat_appli_todt,
+      NVL(num_appli_amount, 0) AS amount,
+      num_appli_licensetypeid
+    FROM aomk_appli_mas
+    WHERE num_appli_id = :applicationId
+      AND num_appli_ulbid = :ulbId
+  `;
+  //console.log("Query :", query);
 
-//   const result = await executeQueryANCL(query, {
-//     applicationId,
-//     ulbId,
-//   });
-//   // console.log("result :", result);
-//   return result.rows || [];
-// };
+  const result = await executeQueryTMC(query, {
+    applicationId,
+    ulbId,
+  });
+  // console.log("result :", result);
+  return result.rows || [];
+};
 
 // ============================================================
 // GET APPLICATION TRADE TYPE DETAILS
@@ -290,15 +291,15 @@ const getTradeTypeDetailsRepo = async (ulbId, tradeCategoryId, tradeTypeId) => {
 //       NVL(num_applitrade_traderate, 0) AS Rate,
 //       num_rate_tradetypename AS tradetype,
 //       num_rate_id AS tradetypeid
-//     FROM market.aomk_applitradetyp_det
-//     INNER JOIN market.aomk_rate_mas
+//     FROM aomk_applitradetyp_det
+//     INNER JOIN aomk_rate_mas
 //       ON num_rate_id = num_applitradetype_trdtypid
 //      AND num_rate_ulbid = num_applitradetyp_ulbid
 //     WHERE num_applitradetype_appliid = :applicationId
 //       AND num_applitradetyp_ulbid = :ulbId
 //   `;
 
-//   const result = await executeQueryANCL(query, {
+//   const result = await executeQueryTMC(query, {
 //     applicationId,
 //     ulbId,
 //   });
@@ -315,11 +316,11 @@ const getTradeTypeDetailsRepo = async (ulbId, tradeCategoryId, tradeTypeId) => {
 //       num_applitrade_id,
 //       num_applitrade_appliid,
 //       num_applitrade_tradeid
-//     FROM market.aomk_applitrade_det
+//     FROM aomk_applitrade_det
 //     WHERE num_applitrade_appliid = :applicationId
 //   `;
 
-//   const result = await executeQueryANCL(query, {
+//   const result = await executeQueryTMC(query, {
 //     applicationId,
 //   });
 
@@ -333,7 +334,7 @@ const getTradeTypeDetailsRepo = async (ulbId, tradeCategoryId, tradeTypeId) => {
 //   let connection;
 
 //   try {
-//     connection = await getConnectionANCL();
+//     connection = await getConnectionTMC();
 
 //     const query = `
 //       SELECT
@@ -348,8 +349,8 @@ const getTradeTypeDetailsRepo = async (ulbId, tradeCategoryId, tradeTypeId) => {
 //         num_applidirector_applitype AS applitypeid,
 //         var_applitype_name AS applitypename,
 //         blo_applitype_photo AS imgDirectorImage
-//       FROM market.aomk_applidirector_det
-//       INNER JOIN market.aomk_applitype_mas
+//       FROM aomk_applidirector_det
+//       INNER JOIN aomk_applitype_mas
 //         ON num_applitype_id = num_applidirector_applitype
 //        AND num_applidirector_ulbid = num_applitype_ulbid
 //       WHERE num_applidirector_appliid = :applicationId
@@ -409,7 +410,7 @@ const getTradeTypeDetailsRepo = async (ulbId, tradeCategoryId, tradeTypeId) => {
 //   let connection;
 
 //   try {
-//     connection = await getConnectionANCL();
+//     connection = await getConnectionTMC();
 
 //     const query = `
 //       SELECT
@@ -420,7 +421,7 @@ const getTradeTypeDetailsRepo = async (ulbId, tradeCategoryId, tradeTypeId) => {
 //         blo_applidoc_image AS filebyte,
 //         doctypename
 //       FROM view_document_mas
-//       LEFT JOIN market.aomk_applidoc_det
+//       LEFT JOIN aomk_applidoc_det
 //         ON docid = num_applidoc_docid
 //        AND num_applidoc_appliid = :applicationId
 //       WHERE ulbid = :ulbId
@@ -856,13 +857,13 @@ const documentInsertRepo = async (data) => {
 //       dat_appli_todt,
 //       NVL(num_appli_amount, 0) AS amount,
 //       num_appli_licensetypeid
-//     FROM market.aomk_appli_mas
+//     FROM aomk_appli_mas
 //     WHERE var_appli_oldlicencno = :oldLicencNo
 //       AND num_appli_ulbid = :ulbId
 //     ORDER BY num_appli_id DESC
 //   `;
 
-//   const result = await executeQueryANCL(query, {
+//   const result = await executeQueryTMC(query, {
 //     oldLicencNo,
 //     ulbId,
 //   });
@@ -883,15 +884,15 @@ const documentInsertRepo = async (data) => {
 //       NVL(num_applitrade_traderate, 0) AS Rate,
 //       num_rate_tradetypename AS tradetype,
 //       num_rate_id AS tradetypeid
-//     FROM market.aomk_applitradetyp_det
-//     INNER JOIN market.aomk_rate_mas
+//     FROM aomk_applitradetyp_det
+//     INNER JOIN aomk_rate_mas
 //       ON num_rate_id = num_applitradetype_trdtypid
 //      AND num_rate_ulbid = num_applitradetyp_ulbid
 //     WHERE num_applitradetype_appliid = :applicationId
 //       AND num_applitradetyp_ulbid = :ulbId
 //   `;
 
-//   const result = await executeQueryANCL(query, {
+//   const result = await executeQueryTMC(query, {
 //     applicationId,
 //     ulbId,
 //   });
@@ -911,12 +912,12 @@ const documentInsertRepo = async (data) => {
 //       num_applitrade_id,
 //       num_applitrade_appliid,
 //       num_applitrade_tradeid
-//     FROM market.aomk_applitrade_det
+//     FROM aomk_applitrade_det
 //     WHERE num_applitrade_appliid = :applicationId
 //       AND num_applitrade_ulbid = :ulbId
 //   `;
 
-//   const result = await executeQueryANCL(query, {
+//   const result = await executeQueryTMC(query, {
 //     applicationId,
 //     ulbId,
 //   });
@@ -934,7 +935,7 @@ const documentInsertRepo = async (data) => {
 //   let connection;
 
 //   try {
-//     connection = await getConnectionANCL();
+//     connection = await getConnectionTMC();
 
 //     const query = `
 //       SELECT
@@ -949,8 +950,8 @@ const documentInsertRepo = async (data) => {
 //         num_applidirector_applitype AS applitypeid,
 //         var_applitype_name AS applitypename,
 //         blo_applitype_photo AS imgDirectorImage
-//       FROM market.aomk_applidirector_det
-//       INNER JOIN market.aomk_applitype_mas
+//       FROM aomk_applidirector_det
+//       INNER JOIN aomk_applitype_mas
 //         ON num_applitype_id = num_applidirector_applitype
 //        AND num_applidirector_ulbid = num_applitype_ulbid
 //       WHERE num_applidirector_appliid = :applicationId
@@ -1012,7 +1013,7 @@ const documentInsertRepo = async (data) => {
 //   let connection;
 
 //   try {
-//     connection = await getConnectionANCL();
+//     connection = await getConnectionTMC();
 
 //     const query = `
 //       SELECT
@@ -1023,7 +1024,7 @@ const documentInsertRepo = async (data) => {
 //         blo_applidoc_image AS filebyte,
 //         doctypename
 //       FROM view_document_mas
-//       LEFT JOIN market.aomk_applidoc_det
+//       LEFT JOIN aomk_applidoc_det
 //         ON docid = num_applidoc_docid
 //        AND num_applidoc_appliid = :applicationId
 //       WHERE ulbid = :ulbId
@@ -1078,12 +1079,12 @@ const documentInsertRepo = async (data) => {
 // const checkLicenseCancelledRepo = async (oldLicencNo) => {
 //   const query = `
 //     SELECT COUNT(num_trade_id) AS id
-//     FROM market.aomk_tradeservice_mas
+//     FROM aomk_tradeservice_mas
 //     WHERE var_trade_servicename = 'TLC'
 //       AND var_trade_licenseno = :oldLicencNo
 //   `;
 
-//   const result = await executeQueryANCL(query, {
+//   const result = await executeQueryTMC(query, {
 //     oldLicencNo,
 //   });
 
@@ -1098,7 +1099,7 @@ const documentInsertRepo = async (data) => {
 //     SELECT
 //       num_rate_id,
 //       SUM(num_rate_rate) AS tradType_rate
-//     FROM market.aomk_rate_mas
+//     FROM aomk_rate_mas
 //     WHERE num_rate_id IN (${tradeTypes})
 //       AND (
 //         TRUNC(dat_rate_fromdate) >= :fromDate
@@ -1108,7 +1109,7 @@ const documentInsertRepo = async (data) => {
 //     GROUP BY num_rate_id
 //   `;
 
-//   const result = await executeQueryANCL(query, {
+//   const result = await executeQueryTMC(query, {
 //     fromDate,
 //     ulbId,
 //   });
@@ -1136,7 +1137,7 @@ const documentInsertRepo = async (data) => {
 //       AND var_categorytype_type = :type
 //   `;
 
-//   const result = await executeQueryANCL(query, {
+//   const result = await executeQueryTMC(query, {
 //     categoryId,
 //     type,
 //   });
@@ -1168,33 +1169,265 @@ const getTradeCategoryByJwalanRepo = async (jwalanshilStatus, type) => {
   return result.rows || [];
 };
 
+const getZoneByWardRepo = async (wardId, ulbId) => {
+  const query = `
+    SELECT DISTINCT
+      zonename,
+      zoneid
+    FROM prop.vw_zonemas
+    WHERE wardid = :wardId
+      AND ulbid = :ulbId
+  `;
+
+  const result = await executeQueryTMC(query, { wardId, ulbId });
+  return result.rows || [];
+};
+
+// ============================================================
+// GET EXISTING LICENSE DETAILS REPO (NEW)
+// ============================================================
+const getExistingLicenseDetailsRepo = async (oldLicencNo, ulbId) => {
+  const query = `
+    SELECT
+      num_appli_id,
+      var_appli_applino,
+      var_appli_applidt,
+      var_appli_oldlicencno,
+      var_appli_shopname,
+      var_appli_panno,
+      num_appli_contactno,
+      var_appli_email,
+      var_appli_address,
+      num_appli_zoneid,
+      num_appli_wardid,
+      var_appli_isprod,
+      var_appli_ownspace,
+      var_appli_agrmentwith,
+      num_appli_area,
+      var_appli_iscorpnoc,
+      num_appli_busstartyr,
+      var_appli_shopactno,
+      var_appli_foodlicno,
+      num_appli_licdays,
+      var_appli_shopnamemar,
+      var_appli_placeownername,
+      var_appli_placeowneraddress,
+      dat_appli_fromdt,
+      dat_appli_todt,
+      NVL(num_appli_amount, 0) AS amount,
+      num_appli_licensetypeid
+    FROM aomk_appli_mas
+    WHERE var_appli_oldlicencno = :oldLicencNo
+      AND num_appli_ulbid = :ulbId
+    ORDER BY num_appli_id DESC
+  `;
+
+  const result = await executeQueryTMC(query, { oldLicencNo, ulbId });
+  return result.rows || [];
+};
+
+// ============================================================
+// GET EXISTING LICENSE TRADE TYPE DETAILS REPO (NEW)
+// ============================================================
+const getExistingLicenseTradeTypeDetailsRepo = async (applicationId, ulbId) => {
+  const query = `
+    SELECT
+      num_applitradetype_id,
+      num_applitradetype_appliid,
+      num_applitradetype_trdtypid,
+      NVL(num_applitrade_traderate, 0) AS Rate,
+      num_rate_tradetypename AS tradetype,
+      num_rate_id AS tradetypeid
+    FROM aomk_applitradetyp_det
+    INNER JOIN aomk_rate_mas
+      ON num_rate_id = num_applitradetype_trdtypid
+     AND num_rate_ulbid = num_applitradetyp_ulbid
+    WHERE num_applitradetype_appliid = :applicationId
+      AND num_applitradetyp_ulbid = :ulbId
+  `;
+
+  const result = await executeQueryTMC(query, { applicationId, ulbId });
+  return result.rows || [];
+};
+
+// ============================================================
+// GET EXISTING LICENSE TRADE DETAILS REPO (NEW)
+// ============================================================
+const getExistingLicenseTradeDetailsRepo = async (applicationId, ulbId) => {
+  const query = `
+    SELECT
+      num_applitrade_id,
+      num_applitrade_appliid,
+      num_applitrade_tradeid
+    FROM aomk_applitrade_det
+    WHERE num_applitrade_appliid = :applicationId
+      AND num_applitrade_ulbid = :ulbId
+  `;
+
+  const result = await executeQueryTMC(query, { applicationId, ulbId });
+  return result.rows || [];
+};
+
+// ============================================================
+// GET EXISTING LICENSE DIRECTOR DETAILS REPO (NEW)
+// ============================================================
+const getExistingLicenseDirectorDetailsRepo = async (applicationId, ulbId) => {
+  let connection;
+
+  try {
+    connection = await getConnectionTMC();
+
+    const query = `
+      SELECT
+        num_applidirector_id AS directorId,
+        num_applidirector_aadhaarno AS adharno,
+        var_applidirector_name AS dirctorname,
+        Var_AppliDirector_VoterId AS VoterId,
+        num_applidirector_mobileno AS mobileno,
+        var_applidirector_emailid AS email,
+        var_applidirector_gender AS gender,
+        var_applidirector_address AS address,
+        num_applidirector_applitype AS applitypeid,
+        var_applitype_name AS applitypename,
+        blo_applitype_photo AS imgDirectorImage
+      FROM aomk_applidirector_det
+      INNER JOIN aomk_applitype_mas
+        ON num_applitype_id = num_applidirector_applitype
+       AND num_applidirector_ulbid = num_applitype_ulbid
+      WHERE num_applidirector_appliid = :applicationId
+        AND num_applidirector_ulbid = :ulbId
+    `;
+
+    const result = await connection.execute(
+      query,
+      { applicationId, ulbId },
+      {
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+        fetchInfo: {
+          IMGDIRECTORIMAGE: { type: oracledb.BUFFER },
+        },
+      }
+    );
+
+    const rows = result.rows || [];
+
+    for (const row of rows) {
+      if (Buffer.isBuffer(row.IMGDIRECTORIMAGE) && row.IMGDIRECTORIMAGE.length > 0) {
+        row.imgDirectorImage = row.IMGDIRECTORIMAGE.toString("base64");
+      } else {
+        row.imgDirectorImage = null;
+      }
+      delete row.IMGDIRECTORIMAGE;
+    }
+
+    return rows;
+  } catch (error) {
+    console.error("GET EXISTING LICENSE DIRECTOR DETAILS ERROR:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try { await connection.close(); } catch (error) {
+        console.error("ERROR CLOSING ANCL CONNECTION:", error.message);
+      }
+    }
+  }
+};
+
+// ============================================================
+// GET EXISTING LICENSE DOCUMENT DETAILS REPO (NEW)
+// ============================================================
+const getExistingLicenseDocumentDetailsRepo = async (applicationId, ulbId) => {
+  let connection;
+
+  try {
+    connection = await getConnectionTMC();
+
+    const query = `
+      SELECT
+        docid AS primaryDocId,
+        num_applidoc_appliid AS AppliId,
+        docid AS docId,
+        var_applidoc_doctype AS FileType,
+        blo_applidoc_image AS filebyte,
+        doctypename
+      FROM view_document_mas
+      LEFT JOIN aomk_applidoc_det
+        ON docid = num_applidoc_docid
+       AND num_applidoc_appliid = :applicationId
+      WHERE ulbid = :ulbId
+    `;
+
+    const result = await connection.execute(
+      query,
+      { applicationId, ulbId },
+      {
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+        fetchInfo: {
+          FILEBYTE: { type: oracledb.BUFFER },
+        },
+      }
+    );
+
+    const rows = result.rows || [];
+
+    for (const row of rows) {
+      if (Buffer.isBuffer(row.FILEBYTE) && row.FILEBYTE.length > 0) {
+        row.filebyte = row.FILEBYTE.toString("base64");
+      } else {
+        row.filebyte = null;
+      }
+      delete row.FILEBYTE;
+    }
+
+    return rows;
+  } catch (error) {
+    console.error("GET EXISTING LICENSE DOCUMENT DETAILS ERROR:", error);
+    throw error;
+  } finally {
+    if (connection) {
+      try { await connection.close(); } catch (error) {
+        console.error("ERROR CLOSING ANCL CONNECTION:", error.message);
+      }
+    }
+  }
+};
+
+// ============================================================
+// CHECK LICENSE CANCELLED REPO (NEW)
+// ============================================================
+const checkLicenseCancelledRepo = async (oldLicencNo) => {
+  const query = `
+    SELECT COUNT(num_trade_id) AS id
+    FROM aomk_tradeservice_mas
+    WHERE var_trade_servicename = 'TLC'
+      AND var_trade_licenseno = :oldLicencNo
+  `;
+
+  const result = await executeQueryTMC(query, { oldLicencNo });
+  return result.rows || [];
+};
+
 module.exports = {
   getBusinessPlaceRepo,
   getJalanShilRepo,
   getIllegalTypeRepo,
   getApplicantTypeRepo,
   getWardRepo,
+  getZoneByWardRepo, // NEW
   getLicenseTypeRepo,
   getTradeCategoryRepo,
   getTradeDetailsRepo,
   getDocumentDetailsRepo,
   getSelfDeclareDataRepo,
-  getTradeTypeDetailsRepo,
-  // getApplicationDetailsRepo,
-  // getApplicationTradeTypeDetailsRepo,
-  // getApplicationTradeDetailsRepo,
-  // getApplicationDirectorDetailsRepo,
-  // getApplicationDocumentDetailsRepo,
+  getApplicationDetailsRepo,
+  getExistingLicenseDetailsRepo, // NEW
+  getExistingLicenseTradeTypeDetailsRepo, // NEW
+  getExistingLicenseTradeDetailsRepo, // NEW
+  getExistingLicenseDirectorDetailsRepo, // NEW
+  getExistingLicenseDocumentDetailsRepo, // NEW
+  checkLicenseCancelledRepo, // NEW
   applicationEntryRepo,
   updateDirectorImagesRepo,
   documentInsertRepo,
-  // getExistingLicenseDetailsRepo,
-  // getExistingLicenseTradeTypeDetailsRepo,
-  // getExistingLicenseTradeDetailsRepo,
-  // getExistingLicenseDirectorDetailsRepo,
-  // getExistingLicenseDocumentDetailsRepo,
-  // checkLicenseCancelledRepo,
-  // getTradTypesRatesRepo,
-  // getTradeTypesByCategoryRepo,
-  getTradeCategoryByJwalanRepo
+  getTradeCategoryByJwalanRepo,
 };
