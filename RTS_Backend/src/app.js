@@ -87,15 +87,15 @@ app.use("/api/FrmPlumberLicense", require("./modules/WaterModule/FrmPlumberLicen
 
 //Trade
 app.use("/api/FrmMarketEntry", require("./modules/Trade/FrmMarketEntry/FrmMarketEntry.routes"));
-
+app.use("/api/FrmMarketLicenseupdt", require("./modules/Trade/FrmMarketLicenseupdt/FrmMarketLicenseupdt.route"));
 
 //TrackApplication
 app.use("/api/FrmTrackApplication", require("./modules/TrackApplication/FrmTrackApplication/FrmTrackApplication.routes"));
 app.use("/api/FrmAppeal", require("./modules/TrackApplication/FrmAppeal/FrmAppeal.route"));
 app.use("/api/FrmAppliFee", require("./modules/TrackApplication/FrmAppliFee/FrmAppliFee.route"));
 app.use("/api/FrmAppFrmAfterTransactionTMCliFee", require("./modules/TrackApplication/FrmAfterTransactionTMC/FrmAfterTransactionTMC.route"));
+app.use("/api/FrmFirstAppealDocUpload", require("./modules/FrmFirstAppealDocUpload/FrmFirstAppealDocUpload.route"));
 
 app.use(errorMiddleware);
-
 
 module.exports = app;
