@@ -23,6 +23,7 @@ import FrmAppliFee from "./Pages/FrmTrackApplication/FrmAppliFee";
 import FrmAfterTransactionTMC from "./Pages/FrmTrackApplication/FrmAfterTransactionTMC";
 import FrmFirstAppeal from "./Pages/FrmFirstAppeal";
 import FrmFirstAppealDocUpload from "./Pages/FrmFirstAppealDocUpload";
+import FrmMarriageRgstn from "./Pages/Marriage/FrmMarriageRgstn";
 
 const router = createBrowserRouter([
   {
@@ -126,6 +127,13 @@ const router = createBrowserRouter([
         path: "/app/FrmFirstAppealDocUpload",
         element: <FrmFirstAppealDocUpload />
       },
+
+      {
+        path: "/app/FrmMarriageRgstn",
+        element: <FrmMarriageRgstn />
+      },
+
+
     ]
   },
 
