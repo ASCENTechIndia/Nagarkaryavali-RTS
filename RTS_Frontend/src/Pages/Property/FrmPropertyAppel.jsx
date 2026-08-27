@@ -47,7 +47,6 @@ const FrmPropertyAppel = () => {
   const locationState = location.state || {};
   const ulbId = locationState.ulbId || user?.ulbId;
   const userId = locationState.userId || user?.userId;
-  const zoneId = locationState.zoneId || user?.zoneId || "12";
   const mahaUlbId = locationState.mahaUlbId || user?.mahaUlbId || ulbId;
   const serviceId = locationState.serviceId || user?.serviceId;
 
@@ -59,6 +58,7 @@ const FrmPropertyAppel = () => {
   const [objections, setObjections] = useState([]);
   const [documentDefs, setDocumentDefs] = useState([]);
   const [tableData, setTableData] = useState([]);
+  const [zones, setZones] = useState([]);
 
   const headers = ["Sr No.", "Document Name", "Image(jpg,png,pdf)"];
 
@@ -96,6 +96,33 @@ const FrmPropertyAppel = () => {
           error?.response?.data?.message || "Error fetching objection list.",
         confirmButtonColor: "#1e3a8a",
       });
+    }
+  };
+
+   const fetchZones = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/api/FrmWaterRegister/ward-dropdown`,
+        {
+          params: {
+            ulbid: Number(ulbId),
+          },
+          headers: {
+            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+          },
+        },
+      );
+      if (
+        response.data?.ok &&
+        response.data?.data?.success &&
+        Array.isArray(response.data?.data?.data)
+      ) {
+        setZones(response.data.data.data);
+      } else {
+        setZones([]);
+      }
+    } catch (error) {
+      console.error("Error fetching wards:", error);
     }
   };
 
@@ -152,6 +179,7 @@ const FrmPropertyAppel = () => {
 
   useEffect(() => {
     fetchObjections();
+    fetchZones();
     fetchDocumentDefinitions();
   }, [serviceId, ulbId]);
 
@@ -520,7 +548,7 @@ const FrmPropertyAppel = () => {
 
       const payload = {
         userId: String(userId),
-        zoneId: Number(zoneId),
+        zoneId: values.zone,
         serviceId: Number(serviceId),
         propNo: values.ptn,
         subCode: values.subcode,
@@ -814,6 +842,33 @@ const FrmPropertyAppel = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+ <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
+                      <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label className="text-sm sm:text-base" text="झोन" />
+                        <span className="hidden md:block">:</span>
+                      </div>
+
+                      <Select
+                        value={values.zone}
+                        onValueChange={(value) => setFieldValue("zone", value)}
+                      >
+                        <SelectTrigger className="w-full h-9 sm:h-10">
+                          <SelectValue placeholder="-- Select Option --" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {zones.map((ward) => (
+                            <SelectItem
+                              key={ward.WARDID}
+                              value={String(ward.WARDID)}
+                            >
+                              {ward.WARDNAME}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label required text="Applicant Name" />
