@@ -521,7 +521,7 @@ async function getServiceInstructions({ serviceId }) {
   return await executeQueryTMC(query, bindParams);
 }
 
-async function getTradeCategories({ jwalanshilstat }) {
+async function getTradeCategories({ jwalanshilstat,categoryType }) {
   const query = `
     SELECT
       var_tradecategory_name AS TRADECATEGORY_NAME,
@@ -530,7 +530,7 @@ async function getTradeCategories({ jwalanshilstat }) {
     INNER JOIN aorts_tradecategory_mas
       ON num_tradecategory_id = num_category_catgryid
     WHERE var_tradecategory_flag = 'Y'
-      AND var_category_type = '1'
+      AND var_category_type = :categoryType
       AND var_category_jwalanshilstat = :jwalanshilstat
   `;
 
@@ -540,6 +540,7 @@ async function getTradeCategories({ jwalanshilstat }) {
         ? jwalanshilstat
         : 1
     ),
+    categoryType: categoryType
   };
 
   console.log("Trade Categories Query:", query);
