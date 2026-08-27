@@ -505,6 +505,261 @@ async function getSelfDeclarationService({ serviceId }) {
 }
 
 
+async function submitTradeApplicationService(payload) {
+  const {
+    userid,
+
+    licenseno,
+    appfname,
+    appmname,
+    applname,
+    mobile,
+    email,
+    aadhar,
+    propno,
+    address,
+    remark,
+
+    newbusiname,
+    newownfname,
+    newownmname,
+    newownlname,
+
+    newcofname,
+    newcomname,
+    newcolname,
+
+    ulbid,
+    servicename,
+
+    businesstr,
+    partnerstr,
+    corrpartnerstr,
+
+    appid,
+    tradeaddrstr,
+    tradechkstr,
+    directorstr,
+
+    rate,
+    wardid,
+    zoneid,
+    Servid,
+    Source,
+    amount,
+
+    Gender,
+    Jwalan,
+    Relation,
+    Adhikrutta,
+    LicencType,
+    TradeType,
+
+    CloseDt,
+    LicOwner,
+    LicType,
+    LicFrmDt,
+    LicToDt,
+
+    BusiName,
+    BusiSwarup,
+    BusiAddr,
+    type,
+  } = payload;
+
+
+  if (!ulbid) {
+    throw new AppError("ULB ID is required", 400);
+  }
+
+  if (!licenseno) {
+    throw new AppError("License Number is required", 400);
+  }
+
+  if (!mobile) {
+    throw new AppError("Mobile Number is required", 400);
+  }
+
+  if (String(mobile).length !== 10) {
+    throw new AppError(
+      "Mobile Number must be 10 digits",
+      400
+    );
+  }
+
+  if (email) {
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      throw new AppError(
+        "Invalid Email Address",
+        400
+      );
+    }
+  }
+
+
+  const result = await repo.insertTradeApplication({
+    userid,
+
+    licenseno,
+    appfname,
+    appmname,
+    applname,
+    mobile,
+    email,
+    aadhar,
+    propno,
+    address,
+    remark,
+
+    newbusiname,
+    newownfname,
+    newownmname,
+    newownlname,
+
+    newcofname,
+    newcomname,
+    newcolname,
+
+    ulbid,
+    servicename,
+
+    businesstr,
+    partnerstr,
+    corrpartnerstr,
+
+    appid,
+    tradeaddrstr,
+    tradechkstr,
+    directorstr,
+
+    rate,
+    wardid,
+    zoneid,
+    Servid,
+    Source,
+    amount,
+
+    Gender,
+    Jwalan,
+    Relation,
+    Adhikrutta,
+    LicencType,
+    TradeType,
+
+    CloseDt,
+    LicOwner,
+    LicType,
+    LicFrmDt,
+    LicToDt,
+
+    BusiName,
+    BusiSwarup,
+    BusiAddr,
+    type,
+  });
+
+
+  if (Number(result.out_ErrCode) !== 9999) {
+    return {
+      success: false,
+      errorCode: result.out_ErrCode,
+      message: result.out_ErrMsg || "Application submission failed",
+      applicationId: result.out_AppliID || null,
+      applicationNo: result.out_AppliNo || null,
+    };
+  }
+
+  return {
+    success: true,
+    errorCode: result.out_ErrCode,
+    message:
+      result.out_ErrMsg ||
+      "Application submitted successfully",
+
+    applicationId: result.out_AppliID || null,
+    applicationNo: result.out_AppliNo || null,
+  };
+}
+
+async function insertTradeTypeLogService(payload) {
+  const {
+    orgId,
+    id,
+    appId,
+    tradeType,
+    tradeCat,
+    rate,
+    directorId,
+    aadharNo,
+    directorName,
+    mobileNo,
+    email,
+    gender,
+    address,
+    appliType,
+    servicee,
+  } = payload;
+
+
+
+  if (!orgId) {
+    throw new AppError(
+      "Organization/ULB ID is required",
+      400
+    );
+  }
+
+  if (!servicee) {
+    throw new AppError(
+      "Service is required",
+      400
+    );
+  }
+
+
+  const result = await repo.insertTradeTypeLog({
+    orgId,
+    id,
+    appId,
+    tradeType,
+    tradeCat,
+    rate,
+    directorId,
+    aadharNo,
+    directorName,
+    mobileNo,
+    email,
+    gender,
+    address,
+    appliType,
+    servicee,
+  });
+
+
+  if (Number(result.Out_Errorcode) !== 9999) {
+    return {
+      success: false,
+      errorCode: result.Out_Errorcode,
+      message:
+        result.Out_Errormsg ||
+        "Trade type log insertion failed",
+    };
+  }
+
+  return {
+    success: true,
+    errorCode: result.Out_Errorcode,
+    message:
+      result.Out_Errormsg ||
+      "Trade type log inserted successfully",
+  };
+}
+
+
+
 
 module.exports = {
   getApplicationTypesService,
@@ -530,4 +785,6 @@ module.exports = {
   getServiceInstructionsService,
   getTradeCategoriesService,
   getSelfDeclarationService,
+  submitTradeApplicationService,
+  insertTradeTypeLogService
 };

@@ -4,72 +4,89 @@ const auth = require("../../../middlewares/auth.middleware");
 const controller = require("./FrmMarketLicenseupdt.controller");
 const upload = require("../../../middlewares/upload.middleware");
 
-router.post("/application-types", controller.getApplicationTypes);
+router.post("/application-types", auth(), controller.getApplicationTypes);
 
-router.post("/zones", controller.getZones);
+router.post("/zones", auth(), controller.getZones);
 
-router.get("/genders", controller.getGenders);
+router.get("/genders", auth(), controller.getGenders);
 
-router.get("/jalanshil", controller.getJalanshil);
+router.get("/jalanshil", auth(), controller.getJalanshil);
 
-router.get("/relations", controller.getRelations);
+router.get("/relations", auth(), controller.getRelations);
 
-router.post("/documentsMarket", controller.getDocuments);
+router.post("/documentsMarket", auth(), controller.getDocuments);
 
-router.get("/license-types", controller.getLicenseTypes);
+router.get("/license-types", auth(), controller.getLicenseTypes);
 
-router.get("/adhikrtutta", controller.getAdhikrtutta);
+router.get("/adhikrtutta", auth(), controller.getAdhikrtutta);
 
-router.get("/application-status", controller.getApplicationStatus);
+router.get("/application-status", auth(), controller.getApplicationStatus);
 
-router.post("/market-license-details", controller.getMarketLicenseDetails);
+router.post(
+  "/market-license-details",
+  auth(),
+  controller.getMarketLicenseDetails,
+);
 
-router.post("/director-name", controller.getDirectorName);
+router.post("/director-name", auth(), controller.getDirectorName);
 
-router.post("/market-application-types", controller.getMarketApplicationTypes);
+router.post(
+  "/market-application-types",
+  auth(),
+  controller.getMarketApplicationTypes,
+);
 
-router.post("/director-details", controller.getDirectorDetails);
+router.post("/director-details", auth(), controller.getDirectorDetails);
 
 router.post(
   "/market-application-address",
+  auth(),
   controller.getMarketApplicationAddress,
 );
 
-router.post("/trade-type-details", controller.getTradeTypeDetails);
+router.post("/trade-type-details", auth(), controller.getTradeTypeDetails);
 
-router.post("/trade-details", controller.getTradeDetails);
+router.post("/trade-details", auth(), controller.getTradeDetails);
 
-router.post("/trade-director-id", controller.getTradeDirectorId);
+router.post("/trade-director-id", auth(), controller.getTradeDirectorId);
 
 router.post(
   "/trade-director-image",
+  auth(),
   upload.single("document"),
   controller.updateTradeDirectorImage,
 );
 
 router.post(
   "/trade-types-by-category",
+  auth(),
 
   controller.getTradeTypesByCategory,
 );
 
 router.post(
   "/service-instructions",
+  auth(),
 
   controller.getServiceInstructions,
 );
 
 router.post(
   "/trade-categories",
+  auth(),
 
   controller.getTradeCategories,
 );
 
-
 router.post(
   "/self-declaration",
+  auth(),
 
   controller.getSelfDeclaration,
 );
+
+router.post("/submit", auth(), controller.submitTradeApplication);
+
+router.post("/trade-type-log", auth(), controller.insertTradeTypeLog);
 
 module.exports = router;
