@@ -20,6 +20,7 @@ import FrmPlumberLicense from "./Pages/WaterModule/FrmPlumberLicense";
 import FrmTrackApplication from "./Pages/FrmTrackApplication/FrmTrackApplication";
 import FrmAppeal from "./Pages/FrmTrackApplication/FrmAppeal";
 import FrmAppliFee from "./Pages/FrmTrackApplication/FrmAppliFee";
+import FrmAfterTransactionTMC from "./Pages/FrmTrackApplication/FrmAfterTransactionTMC";
 
 const router = createBrowserRouter([
   {
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
         path: "/forgot-password",
         element: <ForgotPassword />,
       },
+            {
+        path: "/app/FrmAfterTransactionTMC",
+        element: <FrmAfterTransactionTMC />
+      },
     ]
   },
   {
@@ -70,6 +75,7 @@ const router = createBrowserRouter([
         path: "/app/FrmAppliFee",
         element: <FrmAppliFee />
       },
+
       {
         path: "app/Step0New",
         element: <Watermodule />

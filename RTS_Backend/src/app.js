@@ -12,6 +12,7 @@ const authRoutes = require("./modules/auth/auth.routes");
 const adminRoutes = require("./modules/admin/admin.routes");
 const healthRoutes = require("./routes/health.routes");
 const path = require("path");
+const { paymentResponseController } = require("./modules/TrackApplication/FrmAfterTransactionTMC/FrmAfterTransactionTMC.controller");
 
 const app = express();
 
@@ -21,6 +22,13 @@ app.set("trust proxy", 1);
 // security & parsing
 // app.use(cors({ origin: NODE_ENV === "production" ? ["https://yourdomain.com"] : "*", credentials: true }));
 const allowedOrigins = ["https://payroll.nagarkaryavalinewuat.com", "https://nagarkaryavalinewuat.com", "http://localhost:5173"];
+
+app.post(
+    "/api/payment-response",
+    express.urlencoded({extended: true}),
+    paymentResponseController
+);
+
 
 app.use(
   cors({
@@ -70,6 +78,7 @@ app.use("/api/FrmRebateTax", require("./modules/Property/FrmRebateTax/FrmRebateT
 app.use("/api/FrmNoDuesCerti", require("./modules/Property/FrmNoDuesCerti/FrmNoDuesCerti.routes"));
 app.use("/api/FrmNewTaxAssesment", require("./modules/Property/FrmNewTaxAssesment/FrmNewTaxAssesment.route"));
 app.use("/api/FrmPropertyAppel", require("./modules/Property/FrmPropertyAppel/FrmPropertyAppel.route"));
+app.use("/api/FrmAfterTransactionTMC", require("./modules/Property/FrmAfterTransactionTMC/FrmAfterTransactionTMC.routes"))
 
 //Water module 
 app.use("/api/watermodule", require("./modules/WaterModule/WaterBillCopy/Stepnew.route"))
@@ -84,6 +93,7 @@ app.use("/api/FrmMarketEntry", require("./modules/Trade/FrmMarketEntry/FrmMarket
 app.use("/api/FrmTrackApplication", require("./modules/TrackApplication/FrmTrackApplication/FrmTrackApplication.routes"));
 app.use("/api/FrmAppeal", require("./modules/TrackApplication/FrmAppeal/FrmAppeal.route"));
 app.use("/api/FrmAppliFee", require("./modules/TrackApplication/FrmAppliFee/FrmAppliFee.route"));
+app.use("/api/FrmAppFrmAfterTransactionTMCliFee", require("./modules/TrackApplication/FrmAfterTransactionTMC/FrmAfterTransactionTMC.route"));
 
 app.use(errorMiddleware);
 

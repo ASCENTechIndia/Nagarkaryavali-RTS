@@ -1,8 +1,7 @@
 const oracledb = require("oracledb");
 
-const { executeQueryANCL, executeQueryTMC } = require("../../../db/queryExecutor");
-const { withTxTMC, withTxANCL } = require("../../../db/tx");
-const { getConnectionANCL, getConnectionTMC } = require("../../../config/db");
+const { executeQueryTMC } = require("../../../db/queryExecutor");
+const {  getConnectionTMC } = require("../../../config/db");
 
 // ============================================================
 // GET APPLICATION DETAILS

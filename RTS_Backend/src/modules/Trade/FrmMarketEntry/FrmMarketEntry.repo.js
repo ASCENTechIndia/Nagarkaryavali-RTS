@@ -1,7 +1,6 @@
-const { executeQueryTMC, executeQueryANCL } = require("../../../db/queryExecutor");
+const { executeQueryTMC } = require("../../../db/queryExecutor");
 const oracledb = require("oracledb");
-const { withTxTMC, withTxANCL } = require("../../../db/tx");
-const { getConnectionANCL } = require("../../../config/db");
+const { withTxTMC } = require("../../../db/tx");
 
 // ============================================================
 // GET BUSINESS PLACE

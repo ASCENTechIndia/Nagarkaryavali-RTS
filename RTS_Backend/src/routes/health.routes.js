@@ -1,11 +1,11 @@
 const express = require("express");
-const { getConnectionANCL } = require("../config/db");
+const {  getConnectionTMC } = require("../config/db");
 
 const router = express.Router();
 
 router.get("/health", async (req, res) => {
   try {
-    const conn = await getConnectionANCL();
+    const conn = await getConnectionTMC();
 
     const result = await conn.execute(`SELECT SYSDATE FROM DUAL`);
 
