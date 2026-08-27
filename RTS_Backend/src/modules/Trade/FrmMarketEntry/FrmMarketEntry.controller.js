@@ -283,63 +283,64 @@ const getTradeTypeDetails = async (req, res, next) => {
 // ============================================================
 // GET APPLICATION DETAILS
 // ============================================================
-// const getApplicationDetails = async (req, res, next) => {
-//   try {
-//     const { applicationId, ulbId } = req.body;
+const getApplicationDetails = async (req, res, next) => {
+  try {
+    const { applicationId, ulbId } = req.body;
 
-//     console.log("📥 Get Application Details", {
-//       applicationId,
-//       ulbId,
-//     });
+    console.log("📥 Get Application Details", {
+      applicationId,
+      ulbId,
+    });
 
-//     // --------------------------------------------------------
-//     // VALIDATION
-//     // --------------------------------------------------------
-//     if (!applicationId) {
-//       return res.status(400).json({
-//         ok: false,
-//         message: "Application ID is required",
-//       });
-//     }
+    // --------------------------------------------------------
+    // VALIDATION
+    // --------------------------------------------------------
+    if (!applicationId) {
+      return res.status(400).json({
+        ok: false,
+        message: "Application ID is required",
+      });
+    }
 
-//     if (!ulbId) {
-//       return res.status(400).json({
-//         ok: false,
-//         message: "ULB ID is required",
-//       });
-//     }
+    if (!ulbId) {
+      return res.status(400).json({
+        ok: false,
+        message: "ULB ID is required",
+      });
+    }
 
-//     // --------------------------------------------------------
-//     // SERVICE
-//     // --------------------------------------------------------
-//     const result = await service.getApplicationDetailsService(applicationId, ulbId);
+    // --------------------------------------------------------
+    // SERVICE
+    // --------------------------------------------------------
+    const result = await service.getApplicationDetailsService(applicationId, ulbId);
 
-//     // --------------------------------------------------------
-//     // NOT FOUND
-//     // --------------------------------------------------------
-//     if (result.status === "NOT_FOUND") {
-//       return res.status(404).json({
-//         ok: false,
-//         message: result.message,
-//         data: null,
-//       });
-//     }
+    // --------------------------------------------------------
+    // NOT FOUND
+    // --------------------------------------------------------
+    if (result.status === "NOT_FOUND") {
+      return res.status(404).json({
+        ok: false,
+        message: result.message,
+        data: null,
+      });
+    }
 
-//     // --------------------------------------------------------
-//     // SUCCESS
-//     // --------------------------------------------------------
-//     return res.status(200).json({
-//       ok: true,
-//       message: result.message,
-//       status: result.status,
-//       data: result.data,
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+    // --------------------------------------------------------
+    // SUCCESS
+    // --------------------------------------------------------
+    return res.status(200).json({
+      ok: true,
+      message: result.message,
+      status: result.status,
+      data: result.data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // ============================================================
-// APPLICATION ENTRY
+// APPLICATION ENTRY - FIXED VALIDATION
 // ============================================================
 const applicationEntry = async (req, res, next) => {
   try {
@@ -397,7 +398,7 @@ const applicationEntry = async (req, res, next) => {
     } = req.body;
 
     // --------------------------------------------------------
-    // VALIDATION
+    // VALIDATION - COMMON FOR ALL MODES
     // --------------------------------------------------------
 
     if (!userId) {
@@ -456,29 +457,36 @@ const applicationEntry = async (req, res, next) => {
       });
     }
 
-    if (!jwalan) {
-      return res.status(400).json({
-        ok: false,
-        message: "Jwalan is required",
-      });
-    }
+    // ==========================================================
+    // FIX: Only validate Jwalan & Illegal for Mode 2 (Renewal)
+    // ==========================================================
+    const modeNumber = Number(mode);
+    
+    if (modeNumber === 2) {
+      if (!jwalan) {
+        return res.status(400).json({
+          ok: false,
+          message: "Jwalan is required for Renewal",
+        });
+      }
 
-    if (illegal === undefined || illegal === null || illegal === "") {
-      return res.status(400).json({
-        ok: false,
-        message: "Illegal Property is required",
-      });
+      if (!illegal || Number(illegal) === 0) {
+        return res.status(400).json({
+          ok: false,
+          message: "Illegal Property is required for Renewal",
+        });
+      }
     }
 
     // --------------------------------------------------------
-    // SERVICE
+    // SERVICE CALL
     // --------------------------------------------------------
 
     const result = await service.applicationEntryService({
       userId,
       appid,
       appliNo,
-      mode,
+      mode: modeNumber,
       oldLicencNo,
 
       shopName,
@@ -520,11 +528,12 @@ const applicationEntry = async (req, res, next) => {
       arrearsAmount,
       serviceId,
       cfcRecno,
-      jwalan,
-      illegal,
+      // For Mode 1: default jwalan to "N"
+      jwalan: jwalan || (modeNumber === 1 ? "N" : ""),
+      illegal: illegal || 0,
       category,
-      propNo,
-      trdBusinessType,
+      propNo: propNo || "",
+      trdBusinessType: trdBusinessType || "",
     });
 
     // --------------------------------------------------------
@@ -537,7 +546,7 @@ const applicationEntry = async (req, res, next) => {
         message: result.errorMsg,
         status: "SUCCESS",
         data: {
-          appId: result.appid,
+          appId: result.appId,
           appliNo: result.appliNo,
         },
       });
@@ -553,7 +562,7 @@ const applicationEntry = async (req, res, next) => {
       status: "FAILED",
       data: {
         errorCode: result.errorCode,
-        appId: result.appid,
+        appId: result.appId,
         appliNo: result.appliNo,
       },
     });
@@ -680,6 +689,7 @@ const documentInsert = asyncHandler(async (req, res) => {
 //   });
 // });
 
+
 // ============================================================
 // GET TRADE TYPE RATES
 // ============================================================
@@ -735,18 +745,26 @@ const documentInsert = asyncHandler(async (req, res) => {
 //   });
 // });
 
+
 // ============================================================
 // GET TRADE CATEGORY BY JWALAN STATUS
 // ============================================================
 const getTradeCategoryByJwalan = asyncHandler(async (req, res) => {
-  const { jwalanshilStatus, type } = req.body;
+  const {
+    jwalanshilStatus,
+    type,
+  } = req.body;
 
   console.log("📥 Get Trade Category By Jwalan", {
     jwalanshilStatus,
     type,
   });
 
-  const data = await service.getTradeCategoryByJwalanService(jwalanshilStatus, type);
+  const data =
+    await service.getTradeCategoryByJwalanService(
+      jwalanshilStatus,
+      type
+    );
 
   return res.status(200).json({
     success: true,
@@ -755,25 +773,110 @@ const getTradeCategoryByJwalan = asyncHandler(async (req, res) => {
   });
 });
 
+
+const getZoneByWard = asyncHandler(async (req, res) => {
+  const { wardId, ulbId } = req.body;
+
+  if (!wardId) {
+    return res.status(400).json({
+      ok: false,
+      message: "Ward ID is required",
+    });
+  }
+
+  if (!ulbId) {
+    return res.status(400).json({
+      ok: false,
+      message: "ULB ID is required",
+    });
+  }
+
+  const data = await service.getZoneByWardService(wardId, ulbId);
+
+  return res.status(200).json({
+    ok: true,
+    message: "Zone fetched successfully",
+    data,
+  });
+});
+
+// ============================================================
+// GET EXISTING LICENSE DETAILS (NEW)
+// ============================================================
+const getExistingLicenseDetails = asyncHandler(async (req, res) => {
+  const { oldLicencNo, ulbId } = req.body;
+
+  if (!oldLicencNo) {
+    return res.status(400).json({
+      ok: false,
+      message: "Old License Number is required",
+    });
+  }
+
+  if (!ulbId) {
+    return res.status(400).json({
+      ok: false,
+      message: "ULB ID is required",
+    });
+  }
+
+  const result = await service.getExistingLicenseDetailsService(oldLicencNo, ulbId);
+
+  if (!result.found) {
+    return res.status(404).json({
+      ok: false,
+      message: "No Licence Found",
+      data: null,
+    });
+  }
+
+  return res.status(200).json({
+    ok: true,
+    message: "Existing license details fetched successfully",
+    data: result,
+  });
+});
+
+// ============================================================
+// CHECK LICENSE CANCELLED (NEW)
+// ============================================================
+const checkLicenseCancelled = asyncHandler(async (req, res) => {
+  const { oldLicencNo } = req.body;
+
+  if (!oldLicencNo) {
+    return res.status(400).json({
+      ok: false,
+      message: "License Number is required",
+    });
+  }
+
+  const cancelled = await service.checkLicenseCancelledService(oldLicencNo);
+
+  return res.status(200).json({
+    ok: true,
+    cancelled,
+    message: cancelled ? "License is Cancelled" : "License is not Cancelled",
+  });
+});
+
+
 module.exports = {
   getBusinessPlace,
   getJalanShil,
   getIllegalType,
   getApplicantType,
   getWard,
+  getZoneByWard, // NEW
   getLicenseType,
   getTradeCategory,
   getTradeDetails,
   getDocumentDetails,
   getSelfDeclareData,
-  getTradeTypeDetails,
-  // getApplicationDetails,
+  getApplicationDetails,
+  getExistingLicenseDetails, // NEW
+  checkLicenseCancelled, // NEW
   applicationEntry,
   updateDirectorImages,
   documentInsert,
-  //getExistingLicenseDetails,
-  // checkLicenseCancelled,
-  // getTradTypesRates,
-  // getTradeTypesByCategory,
   getTradeCategoryByJwalan,
 };
