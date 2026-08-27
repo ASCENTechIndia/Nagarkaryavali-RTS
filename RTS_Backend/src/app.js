@@ -96,6 +96,10 @@ app.use("/api/FrmAppliFee", require("./modules/TrackApplication/FrmAppliFee/FrmA
 app.use("/api/FrmAppFrmAfterTransactionTMCliFee", require("./modules/TrackApplication/FrmAfterTransactionTMC/FrmAfterTransactionTMC.route"));
 app.use("/api/FrmFirstAppealDocUpload", require("./modules/FrmFirstAppealDocUpload/FrmFirstAppealDocUpload.route"));
 
+//Solid Health
+
+app.use("/api/FrmServiceApplicationMst", require("./modules/SolidHealth/FrmServiceApplicationMst/FrmServiceApplicationMst.routes"))
+
 app.use(errorMiddleware);
 
 module.exports = app;
