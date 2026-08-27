@@ -523,7 +523,7 @@ const getCertificateDataRepo = async (serviceId, appNo, ulbId) => {
     query += " num_propassess_usagetype usagetype,var_propassess_consttype consttype,num_propassess_area area,num_propassess_lettingrate lettingrate, ";
     query += " num_propassess_rate rate,num_propassess_yeartax yeartax,var_propassess_assessyr assessyr,var_propassess_appliname appliname, ";
     query += " num_propassess_applimob applimob,var_propassess_appliemail appliemail, dat_propassess_insdate appdate, dat_applitrack_insdt authdate, var_propassess_javakno outno from aorts_propassess_mas ";
-    query += " inner join aorts_tmcservice_def on num_service_serviceid = num_propassess_servid ";
+    query += " inner join aorts_service_def on num_service_serviceid = num_propassess_servid ";
     query += " inner join prop.vw_zonemas on num_propassess_zoneid = zoneid inner join aorts_applitracking_det on var_applitrack_applno= var_propassess_appno and num_applitrack_stageid=3 ";
     query += " where var_propassess_appno = '" + appNo + "' and ulbid = '" + ulbId + "' ";
   }
@@ -535,7 +535,7 @@ const getCertificateDataRepo = async (serviceId, appNo, ulbId) => {
     query = " select var_service_eng_name || '/' || var_service_mar_name servid,zonename zoneid, wardname, var_newtaxasses_appno appno, ";
     query += " var_propassess_appliname appliname, dat_newtaxasses_insdate appdate, var_newtaxasses_appliadd address, dat_applitrack_insdt authdate, VAR_NEWTAXASSES_JAVAKNO outno ";
     query += " from aorts_newtaxasses_mas ";
-    query += " inner join aorts_tmcservice_def on num_service_serviceid = num_newtaxasses_servid ";
+    query += " inner join aorts_service_def on num_service_serviceid = num_newtaxasses_servid ";
     query += " inner join prop.vw_zonemas on num_newtaxasses_zoneid = zoneid INNER JOIN aorts_applitracking_det ON var_applitrack_applno = var_newtaxasses_appno ";
     query += " where var_newtaxasses_appno = '" + appNo + "' and ulbid = '" + ulbId + "' ";
   }
@@ -549,7 +549,7 @@ const getCertificateDataRepo = async (serviceId, appNo, ulbId) => {
     query +=
       " case when var_noduescert_subcode is not null then var_noduescert_propno||'/'||var_noduescert_subcode else var_noduescert_propno end  propno, var_noduescert_subcode subcode,var_noduescert_owndtls owndtls, NUM_NODUESCERT_YEARTAX YEARTAX, dat_applitrack_insdt authdate, var_noduescert_javakno outno ";
     query += " from aorts_noduescert_mas";
-    query += " inner join aorts_tmcservice_def on num_service_serviceid = num_noduescert_servid";
+    query += " inner join aorts_service_def on num_service_serviceid = num_noduescert_servid";
     query += " inner join prop.vw_zonemas on num_noduescert_zoneid = zoneid inner join aorts_applitracking_det on var_applitrack_applno=var_noduescert_appno and num_applitrack_stageid=3 ";
     query += " where var_noduescert_appno = '" + appNo + "' and ulbid = '" + ulbId + "' ";
   }
@@ -569,7 +569,7 @@ const getCertificateDataRepo = async (serviceId, appNo, ulbId) => {
     query += " var_proptrans_address address, var_transfertype_name transfertype, ";
     query += " var_proptrans_newownname newownname, dat_applitrack_insdt authdate, VAR_PROPTRANS_JAVAKNO outno ";
     query += " FROM aorts_proptrans_mas ";
-    query += " INNER JOIN aorts_tmcservice_def ";
+    query += " INNER JOIN aorts_service_def ";
     query += " ON num_service_serviceid = num_proptrans_servid ";
     query += " INNER JOIN prop.vw_zonemas ON num_proptrans_zoneid = zoneid ";
     query += " INNER JOIN prop.aoms_transfertype_mas ";
@@ -591,7 +591,7 @@ const getCertificateDataRepo = async (serviceId, appNo, ulbId) => {
     query += " var_taxexemption_ownername ownername, ";
     query += " var_rebatetype_name exemptiontype, dat_applitrack_insdt authdate, VAR_TAXEXEMPTION_JAVAKNO outno ";
     query += " FROM aorts_taxexemption_mas ";
-    query += " INNER JOIN aorts_tmcservice_def ";
+    query += " INNER JOIN aorts_service_def ";
     query += " ON num_service_serviceid = num_taxexemption_servid ";
     query += " INNER JOIN prop.vw_zonemas ON num_taxexemption_zoneid = zoneid ";
     query += " LEFT JOIN aorts_rebatetype_mas ";
@@ -608,8 +608,8 @@ const getCertificateDataRepo = async (serviceId, appNo, ulbId) => {
     query = " SELECT var_service_eng_name || '/' || var_service_mar_name servid, ";
     query += " zonename zoneid, wardname, var_propappeal_appno appno,";
     query += " var_propappeal_appliname appliname, dat_propappeal_insdate appdate,";
-    query += " var_propappeal_address address, dat_applitrack_insdt authdate, VAR_PROPAPPEAL_JAVAKNO outno FROM aorts_tmcpropertyappeal_mas";
-    query += " INNER JOIN aorts_tmcservice_def ON num_service_serviceid = num_propappeal_servid";
+    query += " var_propappeal_address address, dat_applitrack_insdt authdate, VAR_PROPAPPEAL_JAVAKNO outno FROM aorts_propertyappeal_mas";
+    query += " INNER JOIN aorts_service_def ON num_service_serviceid = num_propappeal_servid";
     query += " INNER JOIN prop.vw_zonemas ON num_propappeal_zoneid = zoneid inner join aorts_applitracking_det on var_applitrack_applno=var_propappeal_appno and num_applitrack_stageid=3 ";
     query += " where var_propappeal_appno = '" + appNo + "' and ulbid = '" + ulbId + "' ";
   }
