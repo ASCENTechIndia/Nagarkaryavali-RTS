@@ -70,6 +70,7 @@ app.use("/api/FrmRebateTax", require("./modules/Property/FrmRebateTax/FrmRebateT
 app.use("/api/FrmNoDuesCerti", require("./modules/Property/FrmNoDuesCerti/FrmNoDuesCerti.routes"));
 app.use("/api/FrmNewTaxAssesment", require("./modules/Property/FrmNewTaxAssesment/FrmNewTaxAssesment.route"));
 app.use("/api/FrmPropertyAppel", require("./modules/Property/FrmPropertyAppel/FrmPropertyAppel.route"));
+app.use("/api/FrmAfterTransactionTMC", require("./modules/Property/FrmAfterTransactionTMC/FrmAfterTransactionTMC.routes"))
 
 //Water module 
 app.use("/api/watermodule", require("./modules/WaterModule/WaterBillCopy/Stepnew.route"))

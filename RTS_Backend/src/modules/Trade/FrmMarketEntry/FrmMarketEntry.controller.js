@@ -1,5 +1,6 @@
 const service = require("./FrmMarketEntry.service");
 const asyncHandler = require("../../../libs/asyncHandler");
+const { ok, fail } = require("../../../libs/response");
 
 // ============================================================
 // GET BUSINESS PLACE
@@ -462,7 +463,7 @@ const applicationEntry = async (req, res, next) => {
       });
     }
 
-    if (!illegal) {
+    if (illegal === undefined || illegal === null || illegal === "") {
       return res.status(400).json({
         ok: false,
         message: "Illegal Property is required",
@@ -536,7 +537,7 @@ const applicationEntry = async (req, res, next) => {
         message: result.errorMsg,
         status: "SUCCESS",
         data: {
-          appId: result.appId,
+          appId: result.appid,
           appliNo: result.appliNo,
         },
       });
@@ -552,7 +553,7 @@ const applicationEntry = async (req, res, next) => {
       status: "FAILED",
       data: {
         errorCode: result.errorCode,
-        appId: result.appId,
+        appId: result.appid,
         appliNo: result.appliNo,
       },
     });
@@ -575,7 +576,7 @@ const updateDirectorImages = asyncHandler(async (req, res) => {
     throw new AppError("Director image is required.", 400);
   }
 
-  const result = await marketEntryService.updateDirectorImagesService({
+  const result = await service.updateDirectorImagesService({
     appid,
     directorIds,
     files: req.files,
@@ -679,7 +680,6 @@ const documentInsert = asyncHandler(async (req, res) => {
 //   });
 // });
 
-
 // ============================================================
 // GET TRADE TYPE RATES
 // ============================================================
@@ -735,26 +735,18 @@ const documentInsert = asyncHandler(async (req, res) => {
 //   });
 // });
 
-
 // ============================================================
 // GET TRADE CATEGORY BY JWALAN STATUS
 // ============================================================
 const getTradeCategoryByJwalan = asyncHandler(async (req, res) => {
-  const {
-    jwalanshilStatus,
-    type,
-  } = req.body;
+  const { jwalanshilStatus, type } = req.body;
 
   console.log("📥 Get Trade Category By Jwalan", {
     jwalanshilStatus,
     type,
   });
 
-  const data =
-    await service.getTradeCategoryByJwalanService(
-      jwalanshilStatus,
-      type
-    );
+  const data = await service.getTradeCategoryByJwalanService(jwalanshilStatus, type);
 
   return res.status(200).json({
     success: true,
@@ -762,7 +754,6 @@ const getTradeCategoryByJwalan = asyncHandler(async (req, res) => {
     data,
   });
 });
-
 
 module.exports = {
   getBusinessPlace,
@@ -776,7 +767,7 @@ module.exports = {
   getDocumentDetails,
   getSelfDeclareData,
   getTradeTypeDetails,
- // getApplicationDetails,
+  // getApplicationDetails,
   applicationEntry,
   updateDirectorImages,
   documentInsert,
@@ -784,6 +775,5 @@ module.exports = {
   // checkLicenseCancelled,
   // getTradTypesRates,
   // getTradeTypesByCategory,
-  getTradeCategoryByJwalan
-
+  getTradeCategoryByJwalan,
 };

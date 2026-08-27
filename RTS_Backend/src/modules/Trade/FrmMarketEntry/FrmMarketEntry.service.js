@@ -210,7 +210,7 @@ const updateDirectorImagesService = async (data) => {
     throw new Error("Director image is required.");
   }
 
-  return await marketEntryRepo.updateDirectorImagesRepo(data);
+  return await repo.updateDirectorImagesRepo(data);
 };
 
 // ============================================================
