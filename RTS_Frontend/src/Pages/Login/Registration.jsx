@@ -15,6 +15,7 @@ import { Mail } from "lucide-react";
 import GetIPAddress from "@/utils/ipHelper";
 import config from "@/utils/config";
 import { DatePicker } from "@/components/ui/calendar";
+import { CalendarCheckIcon } from "@/components/ui/calendar-check";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -22,7 +23,7 @@ const Registration = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const applicationState = location.state || {};
-    console.log({applicationState})
+    console.log({ applicationState })
     const ulbId = applicationState.ulbId;
     const serviceUrl = applicationState.serviceUrl || "";
     const [showPassword, setShowPassword] = useState(false);
@@ -189,12 +190,16 @@ const Registration = () => {
                                 <motion.div initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
                                     <div className="flex items-center gap-2">
                                         <UserIcon size={19} className="shrink-0 text-[#184aa6]" />
-                                        <Label text="Name:" required className="w-full" />
+                                        <Label text="Name" required className="sm:w-52" />
+                                        <span>:</span>
                                         <Input
                                             id="name"
                                             name="name"
                                             value={values.name}
-                                            onChange={handleChange}
+                                            onChange={(e) => {
+                                                const value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                                                setFieldValue("name", value);
+                                            }}
                                             placeholder="Enter name"
                                             autoComplete="name"
                                             className="h-11 rounded-xl border-gray-300 bg-gray-50 focus-visible:border-[#184aa6] focus-visible:ring-[#184aa6]"
@@ -205,13 +210,19 @@ const Registration = () => {
                                 <motion.div initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
                                     <div className="flex items-center gap-2">
                                         <Mail size={19} className="shrink-0 text-[#184aa6]" />
-                                        <Label text="Email:" required className="w-full" />
+                                        <Label text="Email" required className="sm:w-52" />
+                                        <span>:</span>
                                         <Input
                                             id="email"
                                             name="email"
                                             type="email"
                                             value={values.email}
-                                            onChange={handleChange}
+                                            onChange={(e) => {
+                                                const value = e.target.value.replace(/[^a-zA-Z0-9.@]/g, "");
+                                                const parts = value.split("@");
+                                                const sanitizedValue = parts.length > 2 ? `${parts[0]}@${parts.slice(1).join("")}` : value;
+                                                setFieldValue("email", sanitizedValue);
+                                            }}
                                             placeholder="Enter email"
                                             autoComplete="email"
                                             className="h-11 rounded-xl border-gray-300 bg-gray-50 focus-visible:border-[#184aa6] focus-visible:ring-[#184aa6]"
@@ -222,7 +233,8 @@ const Registration = () => {
                                 <motion.div initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
                                     <div className="flex items-center gap-2">
                                         <ShieldCheckIcon size={19} className="shrink-0 text-[#184aa6]" />
-                                        <Label text="Mobile No:" required className="w-full" />
+                                        <Label text="Mobile No" required className="sm:w-52" />
+                                        <span>:</span>
                                         <Input
                                             id="mobile"
                                             name="mobile"
@@ -243,44 +255,48 @@ const Registration = () => {
 
                                 <motion.div initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}>
                                     <div className="flex items-center gap-2">
-                                        <Label text="Date of Birth:" required className="sm:w-36" />
+                                        <CalendarCheckIcon size={19} className="shrink-0 text-[#184aa6]" />
+                                        <Label text="Date of Birth" required className="sm:w-52" />
+                                        <span>:</span>
                                         <DatePicker
                                             value={values.dob}
                                             onChange={(date) => setFieldValue("dob", date)}
-                                            className="h-11 rounded-xl border-gray-300 bg-gray-50 focus-visible:border-[#184aa6] focus-visible:ring-[#184aa6]"
+                                            className="h-11 rounded-xl border-gray-300 bg-gray-50 "
                                         />
                                     </div>
                                 </motion.div>
 
                                 <motion.div className="flex items-center gap-2 w-full" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
                                 >
-                                        <LockIcon size={19} className="shrink-0 text-[#184aa6]" />
-                                        <Label text="Password:" required className="w-full" />
-                                        <Input
-                                            id="password"
-                                            name="password"
-                                            type="password"
-                                            value={values.password}
-                                            onChange={handleChange}
-                                            placeholder="Enter password"
-                                            autoComplete="new-password"
-                                            className=" border-gray-300 bg-gray-50 focus-visible:border-[#184aa6] focus-visible:ring-[#184aa6]"
-                                        />
+                                    <LockIcon size={19} className="shrink-0 text-[#184aa6]" />
+                                    <Label text="Password" required className="sm:w-52" />
+                                    <span>:</span>
+                                    <Input
+                                        id="password"
+                                        name="password"
+                                        type="password"
+                                        value={values.password}
+                                        onChange={handleChange}
+                                        placeholder="Enter password"
+                                        autoComplete="new-password"
+                                        className=" border-gray-300 bg-gray-50 focus-visible:border-[#184aa6] focus-visible:ring-[#184aa6]"
+                                    />
                                 </motion.div>
 
                                 <motion.div className="flex gap-2 items-center" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }}>
-                                        <LockIcon size={19} className="shrink-0 text-[#184aa6]" />
-                                        <Label text="Confirm Password:" required className="sm:w-64" />
-                                        <Input
-                                            id="confirmPassword"
-                                            name="confirmPassword"
-                                            type="password"
-                                            value={values.confirmPassword}
-                                            onChange={handleChange}
-                                            placeholder="Confirm password"
-                                            autoComplete="new-password"
-                                            className=" border-gray-300 bg-gray-50 focus-visible:border-[#184aa6] focus-visible:ring-[#184aa6]"
-                                        />
+                                    <LockIcon size={19} className="shrink-0 text-[#184aa6]" />
+                                    <Label text="Confirm Password" required className="sm:w-52" />
+                                    <span>:</span>
+                                    <Input
+                                        id="confirmPassword"
+                                        name="confirmPassword"
+                                        type="password"
+                                        value={values.confirmPassword}
+                                        onChange={handleChange}
+                                        placeholder="Confirm password"
+                                        autoComplete="new-password"
+                                        className=" border-gray-300 bg-gray-50 focus-visible:border-[#184aa6] focus-visible:ring-[#184aa6]"
+                                    />
                                 </motion.div>
 
                                 <div className="flex justify-center gap-2 pt-2">
