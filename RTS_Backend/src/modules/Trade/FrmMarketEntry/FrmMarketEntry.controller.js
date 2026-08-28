@@ -342,120 +342,120 @@ const getApplicationDetails = async (req, res, next) => {
 // ============================================================
 // APPLICATION ENTRY - FIXED VALIDATION
 // ============================================================
-const applicationEntry = async (req, res, next) => {
-  try {
-    const {
-      userId,
-      appid,
-      appliNo,
-      mode,
-      oldLicencNo,
+  const applicationEntry = async (req, res, next) => {
+    try {
+      const {
+        userId,
+        appid,
+        appliNo,
+        mode,
+        oldLicencNo,
 
-      shopName,
-      panNo,
-      contactNo,
-      email,
-      address,
+        shopName,
+        panNo,
+        contactNo,
+        email,
+        address,
 
-      zoneId,
-      wardId,
-      isProd,
-      ownSpace,
-      agrmentWith,
+        zoneId,
+        wardId,
+        isProd,
+        ownSpace,
+        agrmentWith,
 
-      area,
-      isCorpNOC,
-      busStartYr,
-      shopActNo,
-      foodlicno,
+        area,
+        isCorpNOC,
+        busStartYr,
+        shopActNo,
+        foodlicno,
 
-      licDays,
-      applitradeStr,
-      applitradetypeStr,
-      applidirectorStr,
-      source,
+        licDays,
+        applitradeStr,
+        applitradetypeStr,
+        applidirectorStr,
+        source,
 
-      shopNameMar,
-      placeOwnerName,
-      placeOwnerAddress,
+        shopNameMar,
+        placeOwnerName,
+        placeOwnerAddress,
 
-      fromDate,
-      toDate,
+        fromDate,
+        toDate,
 
-      amount,
-      licType,
-      ulbId,
-      ipAddress,
-      licenseTypeId,
-      arrearsAmount,
-      serviceId,
-      cfcRecno,
-      jwalan,
-      illegal,
-      category,
-      propNo,
-      trdBusinessType,
-    } = req.body;
+        amount,
+        licType,
+        ulbId,
+        ipAddress,
+        licenseTypeId,
+        arrearsAmount,
+        serviceId,
+        cfcRecno,
+        jwalan,
+        illegal,
+        category,
+        propNo,
+        trdBusinessType,
+      } = req.body;
 
     // --------------------------------------------------------
     // VALIDATION - COMMON FOR ALL MODES
     // --------------------------------------------------------
 
-    if (!userId) {
-      return res.status(400).json({
-        ok: false,
-        message: "User ID is required",
-      });
-    }
+      if (!userId) {
+        return res.status(400).json({
+          ok: false,
+          message: "User ID is required",
+        });
+      }
 
-    if (!ulbId) {
-      return res.status(400).json({
-        ok: false,
-        message: "ULB ID is required",
-      });
-    }
+      if (!ulbId) {
+        return res.status(400).json({
+          ok: false,
+          message: "ULB ID is required",
+        });
+      }
 
-    if (!shopName) {
-      return res.status(400).json({
-        ok: false,
-        message: "Shop Name is required",
-      });
-    }
+      if (!shopName) {
+        return res.status(400).json({
+          ok: false,
+          message: "Shop Name is required",
+        });
+      }
 
-    if (!contactNo) {
-      return res.status(400).json({
-        ok: false,
-        message: "Contact No is required",
-      });
-    }
+      if (!contactNo) {
+        return res.status(400).json({
+          ok: false,
+          message: "Contact No is required",
+        });
+      }
 
-    if (!address) {
-      return res.status(400).json({
-        ok: false,
-        message: "Address is required",
-      });
-    }
+      if (!address) {
+        return res.status(400).json({
+          ok: false,
+          message: "Address is required",
+        });
+      }
 
-    if (!wardId) {
-      return res.status(400).json({
-        ok: false,
-        message: "Ward ID is required",
-      });
-    }
+      if (!wardId) {
+        return res.status(400).json({
+          ok: false,
+          message: "Ward ID is required",
+        });
+      }
 
-    if (!fromDate) {
-      return res.status(400).json({
-        ok: false,
-        message: "From Date is required",
-      });
-    }
+      if (!fromDate) {
+        return res.status(400).json({
+          ok: false,
+          message: "From Date is required",
+        });
+      }
 
-    if (!toDate) {
-      return res.status(400).json({
-        ok: false,
-        message: "To Date is required",
-      });
-    }
+      if (!toDate) {
+        return res.status(400).json({
+          ok: false,
+          message: "To Date is required",
+        });
+      }
 
     // ==========================================================
     // FIX: Only validate Jwalan & Illegal for Mode 2 (Renewal)
@@ -489,36 +489,36 @@ const applicationEntry = async (req, res, next) => {
       mode: modeNumber,
       oldLicencNo,
 
-      shopName,
-      panNo,
-      contactNo,
-      email,
-      address,
+        shopName,
+        panNo,
+        contactNo,
+        email,
+        address,
 
-      zoneId,
-      wardId,
-      isProd,
-      ownSpace,
-      agrmentWith,
+        zoneId,
+        wardId,
+        isProd,
+        ownSpace,
+        agrmentWith,
 
-      area,
-      isCorpNOC,
-      busStartYr,
-      shopActNo,
-      foodlicno,
+        area,
+        isCorpNOC,
+        busStartYr,
+        shopActNo,
+        foodlicno,
 
-      licDays,
-      applitradeStr,
-      applitradetypeStr,
-      applidirectorStr,
-      source,
+        licDays,
+        applitradeStr,
+        applitradetypeStr,
+        applidirectorStr,
+        source,
 
-      shopNameMar,
-      placeOwnerName,
-      placeOwnerAddress,
+        shopNameMar,
+        placeOwnerName,
+        placeOwnerAddress,
 
-      fromDate,
-      toDate,
+        fromDate,
+        toDate,
 
       amount,
       licType,
@@ -536,40 +536,40 @@ const applicationEntry = async (req, res, next) => {
       trdBusinessType: trdBusinessType || "",
     });
 
-    // --------------------------------------------------------
-    // SUCCESS
-    // --------------------------------------------------------
+      // --------------------------------------------------------
+      // SUCCESS
+      // --------------------------------------------------------
 
-    if (Number(result.errorCode) === 9999) {
+      if (Number(result.errorCode) === 9999) {
+        return res.status(200).json({
+          ok: true,
+          message: result.errorMsg,
+          status: "SUCCESS",
+          data: {
+            appId: result.appId,
+            appliNo: result.appliNo,
+          },
+        });
+      }
+
+      // --------------------------------------------------------
+      // FAILURE FROM PROCEDURE
+      // --------------------------------------------------------
+
       return res.status(200).json({
-        ok: true,
+        ok: false,
         message: result.errorMsg,
-        status: "SUCCESS",
+        status: "FAILED",
         data: {
+          errorCode: result.errorCode,
           appId: result.appId,
           appliNo: result.appliNo,
         },
       });
+    } catch (error) {
+      next(error);
     }
-
-    // --------------------------------------------------------
-    // FAILURE FROM PROCEDURE
-    // --------------------------------------------------------
-
-    return res.status(200).json({
-      ok: false,
-      message: result.errorMsg,
-      status: "FAILED",
-      data: {
-        errorCode: result.errorCode,
-        appId: result.appId,
-        appliNo: result.appliNo,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  };
 
 // ============================================================
 // UPDATE DIRECTOR IMAGES
