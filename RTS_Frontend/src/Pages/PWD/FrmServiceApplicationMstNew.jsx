@@ -815,7 +815,7 @@ const FrmServiceApplicationMstNew = () => {
 
                           setFieldValue("zoneId", value);
                         }}
-                        disabled={isAutoPrabhagService}
+                      
                       >
                         <SelectTrigger className="h-9 w-full rounded-md">
                           <SelectValue placeholder="Select Prabhag" />
