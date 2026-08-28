@@ -156,27 +156,37 @@ const Login = () => {
                         {({ values, handleChange }) => (
                             <Form className="space-y-4">
                                 <motion.div initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
-                                    <div className="flex items-center gap-1">
-                                        <UserIcon size={19} className="shrink-0 text-[#184aa6]" />
-                                        <Label text="Mobile Number:" required className="sm:w-52" />
+                                    <div className="sm:flex grid items-center gap-2">
+                                        <div className="flex items-center gap-1">
+                                            <UserIcon size={19} className="shrink-0 text-[#184aa6]" />
+                                            <Label text="Mobile Number" required className="sm:w-36" />
+                                        <span>:</span>
+                                        </div>
                                         <Input id="mobile" name="mobile" type="tel" value={values.mobile} onChange={(e) => { const value = e.target.value.replace(/\D/g, ""); handleChange({ target: { name: "mobile", value } }); }} placeholder="Enter mobile number" autoComplete="tel" maxLength={10} onCopy={blockClipboard} onPaste={blockClipboard} className="h-11 rounded-xl border-gray-300 bg-gray-50 focus-visible:border-[#184aa6] focus-visible:ring-[#184aa6]" />
                                     </div>
                                 </motion.div>
                                 <motion.div initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
-                                    <div className="flex items-center gap-2">
-                                        <LockIcon size={19} className="shrink-0 text-[#184aa6]" />
-                                        <Label text="Password:" required />
+                                    <div className="sm:flex grid items-center gap-2">
+                                        <div className="flex items-center gap-1">
+                                            <LockIcon size={19} className="shrink-0 text-[#184aa6]" />
+                                            <Label text="Password" required className="sm:w-36" />
+                                        <span>:</span>
+                                        </div>
                                         <Input id="in_password" name="in_password" type="password" value={values.in_password} onChange={handleChange} placeholder="Enter password" autoComplete="current-password" onCopy={blockClipboard} onPaste={blockClipboard} className="h-11 rounded-xl border-gray-300 bg-gray-50 focus-visible:border-[#184aa6] focus-visible:ring-[#184aa6]" />
                                     </div>
                                 </motion.div>
                                 <motion.div initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-                                    <div className="flex items-center gap-2">
+                                    <div className="sm:flex grid items-center gap-2">
+                                        <div className="flex items-center gap-1">
                                         <ShieldCheckIcon size={19} className="shrink-0 text-[#184aa6]" />
-                                        <Label text="CAPTCHA:" required className="mb-1.5" />
-                                        <div className="flex flex-1 gap-2">
-                                            <div className="flex h-11 flex-1 select-none items-center justify-center overflow-hidden rounded-xl border border-gray-300 bg-gray-100 font-mono text-lg font-bold tracking-[5px] text-[#184aa6]">{captchaValue}</div>
-                                            <Button type="button" variant="outline" onClick={refreshCaptcha} className="h-11 w-11 shrink-0 rounded-xl border-gray-300 p-0" title="Refresh CAPTCHA"><RefreshCWIcon size={17} /></Button>
+                                        <Label text="CAPTCHA" required className="sm:w-36" />
+                                        <span>:</span>
                                         </div>
+                                        {/* <div className="flex flex-1 gap-2"> */}
+                                        {/* <div className="flex h-11 flex-1 select-none items-center justify-center overflow-hidden rounded-xl border border-gray-300 bg-gray-100 font-mono text-lg font-bold tracking-[5px] text-[#184aa6]">{captchaValue}</div> */}
+                                        <Input value={captchaValue} readOnly className="w-full cursor-none" />
+                                        <Button type="button" variant="outline" onClick={refreshCaptcha} title="Refresh CAPTCHA"><RefreshCWIcon size={17} /></Button>
+                                        {/* </div> */}
                                     </div>
                                     <Input id="captcha" name="captcha" value={values.captcha} onChange={handleChange} placeholder="Enter CAPTCHA" autoComplete="off" onCopy={blockClipboard} onPaste={blockClipboard} className="mt-2 h-11 rounded-xl border-gray-300 bg-gray-50 focus-visible:border-[#184aa6] focus-visible:ring-[#184aa6]" />
                                 </motion.div>
