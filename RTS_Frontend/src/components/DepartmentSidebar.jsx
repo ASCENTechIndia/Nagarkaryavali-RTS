@@ -18,7 +18,7 @@ const DepartmentSidebar = ({ departments = [], selectedDepartmentId, onDepartmen
                     {state === "expanded" && (
                         <div className="min-w-0 ">
                             <p className="truncate text-xs font-bold text-white">DEPARTMENT</p>
-                            <p className="truncate text-xs text-white">SERVICES</p>
+                            {/* <p className="truncate text-xs text-white">SERVICES</p> */}
                         </div>
                     )}
                 </div>
