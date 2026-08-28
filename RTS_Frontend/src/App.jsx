@@ -24,6 +24,7 @@ import FrmAfterTransactionTMC from "./Pages/FrmTrackApplication/FrmAfterTransact
 import FrmFirstAppeal from "./Pages/FrmFirstAppeal";
 import FrmFirstAppealDocUpload from "./Pages/FrmFirstAppealDocUpload";
 import FrmMarketLicenseUpdt from "./Pages/Trade/FrmMarketLicenseupdt";
+import FrmMarriageRgstn from "./Pages/Marriage/FrmMarriageRgstn";
 
 const router = createBrowserRouter([
   {
