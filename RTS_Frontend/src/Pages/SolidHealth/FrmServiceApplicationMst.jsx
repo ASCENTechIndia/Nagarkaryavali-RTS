@@ -64,6 +64,7 @@ const FrmServiceApplicationMst = () => {
   const [villageList, setVillageList] = useState([]);
   const [isSectorVisible, setIsSectorVisible] = useState(false);
   const [zoneList, setZoneList] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -158,7 +159,7 @@ const FrmServiceApplicationMst = () => {
   const fetchVillages = async (sectorId) => {
     try {
       const response = await axios.post(
-        `${BASE_URL}/api/FrmServiceApplicationMst/villagelist`,
+        `${BASE_URL}/api/FrmServiceApplication/villagelist`,
         {
           sectorId: sectorId,
         },
@@ -206,7 +207,7 @@ const FrmServiceApplicationMst = () => {
           docType: doc.DOCTYPE || doc.docType || "PDF",
           file: null,
           fileName: "No file chosen",
-          fileBuffer: null,
+          isUploaded: false,
         }));
         setTableData(tableRows);
       } else {
@@ -221,6 +222,8 @@ const FrmServiceApplicationMst = () => {
   const handleFileChange = (id, event) => {
     const file = event.currentTarget.files?.[0];
     if (file) {
+      console.log("File selected:", file.name, "Size:", file.size);
+      
       const extension = file.name.split('.').pop().toUpperCase();
       const validExtensions = ['JPEG', 'JPG', 'PNG', 'PDF'];
       
@@ -243,19 +246,18 @@ const FrmServiceApplicationMst = () => {
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const arrayBuffer = e.target.result;
-        const buffer = Buffer.from(new Uint8Array(arrayBuffer));
-        setTableData((prev) =>
-          prev.map((row) =>
-            row.id === id
-              ? { ...row, file: file, fileName: file.name, fileBuffer: buffer }
-              : row
-          )
-        );
-      };
-      reader.readAsArrayBuffer(file);
+      setTableData((prev) =>
+        prev.map((row) =>
+          row.id === id
+            ? { 
+                ...row, 
+                file: file, 
+                fileName: file.name,
+                isUploaded: false 
+              }
+            : row
+        )
+      );
     }
   };
 
@@ -328,38 +330,47 @@ const FrmServiceApplicationMst = () => {
     return true;
   };
 
-  const validateDocuments = () => {
-    if (tableData.length === 0) return true;
-    return true;
-  };
-
   const uploadDocuments = async (applicationNo) => {
-    const formData = new FormData();
-    formData.append("corpid", Number(ulbId));
-    formData.append("serviceId", String(serviceId));
-    formData.append("appNo", applicationNo);
-
-    const documentIds = [];
-    const files = [];
-
-    tableData.forEach((row) => {
-      if (row.fileBuffer) {
-        documentIds.push(row.docId);
-        files.push(row.file);
-      }
-    });
-
-    if (documentIds.length === 0) {
-      return true;
-    }
-
-    formData.append("documentIds", documentIds.join(","));
-
-    files.forEach((file, index) => {
-      formData.append(`document_${index}`, file);
-    });
-
     try {
+      const documentsToUpload = tableData.filter(row => row.file !== null);
+      
+      console.log("Documents to upload:", documentsToUpload.length);
+      
+      if (documentsToUpload.length === 0) {
+        console.log("No documents to upload");
+        return true;
+      }
+
+      console.log(`Uploading ${documentsToUpload.length} documents...`);
+
+      const formData = new FormData();
+      formData.append("corpid", Number(ulbId));
+      formData.append("serviceId", String(serviceId));
+      formData.append("appNo", applicationNo);
+
+      const documentIds = [];
+      documentsToUpload.forEach((row) => {
+        if (row.docId) {
+          documentIds.push(row.docId);
+        }
+      });
+
+      formData.append("documentIds", documentIds.join(","));
+
+      documentsToUpload.forEach((row, index) => {
+        if (row.file) {
+          formData.append(`document_${index}`, row.file);
+        }
+      });
+
+      // console.log("Uploading with:", {
+      //   corpid: Number(ulbId),
+      //   serviceId: String(serviceId),
+      //   appNo: applicationNo,
+      //   documentIds: documentIds.join(","),
+      //   fileCount: documentsToUpload.length
+      // });
+
       const response = await axios.post(
         `${BASE_URL}/api/FrmServiceApplicationMst/upload-document`,
         formData,
@@ -368,279 +379,242 @@ const FrmServiceApplicationMst = () => {
             Authorization: `Bearer ${token || localStorage.getItem("token")}`,
             "Content-Type": "multipart/form-data",
           },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percentCompleted);
+            console.log(`Upload progress: ${percentCompleted}%`);
+          },
         }
       );
 
-      return response.data.ok === true;
+      console.log("Upload response:", response.data);
+
+      const isSuccess = response.data.ok === true || 
+                       response.data.success === true || 
+                       response.data.status === "success";
+
+      if (!isSuccess) {
+        console.error("Upload failed with response:", response.data);
+        throw new Error(response.data.message || "Document upload failed");
+      }
+
+      setTableData((prev) =>
+        prev.map((row) => {
+          if (row.file !== null) {
+            return { ...row, isUploaded: true };
+          }
+          return row;
+        })
+      );
+
+      return true;
     } catch (error) {
       console.error("Error uploading documents:", error);
-      return false;
+      
+      if (error.response) {
+        console.error("Error response data:", error.response.data);
+        console.error("Error response status:", error.response.status);
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+      }
+      
+      throw error;
     }
   };
 
-  // const handleSubmit = async (values, { setSubmitting }) => {
-  //   setLoading(true);
-  //   try {
-  //     if (!validateFields(values)) {
-  //       setLoading(false);
-  //       setSubmitting(false);
-  //       return;
-  //     }
-
-  //     if (!validateDocuments()) {
-  //       setLoading(false);
-  //       setSubmitting(false);
-  //       return;
-  //     }
-
-  //     const loader = Swal.fire({
-  //       title: "Submitting Application...",
-  //       text: "Please wait while we process your application.",
-  //       allowOutsideClick: false,
-  //       showConfirmButton: false,
-  //       didOpen: () => Swal.showLoading(),
-  //     });
-
-  //     const savePayload = {
-  //       ulbId: Number(ulbId),
-  //       userId: String(userId),
-  //       serviceId: String(serviceId),
-  //       applicationName: values.applicantName?.trim() || "",
-  //       address: values.address?.trim() || "",
-  //       mobile: values.mobileNo?.trim() || "",
-  //       email: values.emailId?.trim() || "",
-  //       aadharNo: values.aadharNo?.trim() || "0",
-  //       refNo: values.referenceNo?.trim() || "",
-  //       zoneId: isSectorVisible ? 0 : Number(values.zoneId || 0),
-  //       sectorId: isSectorVisible ? Number(values.sectorId || 0) : 0,
-  //       villageId: isSectorVisible ? Number(values.villageId || 0) : 0,
-  //       locality: values.locality?.trim() || "",
-  //       landmark: values.landmark?.trim() || "",
-  //       pincode: values.pincode ? Number(values.pincode) : 0,
-  //       source: "WEB",
-  //     };
-
-  //     console.log("Saving application with payload:", savePayload);
-
-  //     const saveResponse = await axios.post(
-  //       `${BASE_URL}/api/FrmServiceApplicationMst/save`,
-  //       savePayload,
-  //       {
-  //         headers: { 
-  //           Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-  //           'Content-Type': 'application/json',
-  //         },
-  //       }
-  //     );
-
-  //     console.log("Save response:", saveResponse.data);
-
-  //     if (!saveResponse.data.success) {
-  //       loader.close();
-  //       Swal.fire({
-  //         text: saveResponse.data.message || "Application submission failed",
-  //         confirmButtonColor: '#1e3a8a',
-  //       });
-  //       setLoading(false);
-  //       setSubmitting(false);
-  //       return;
-  //     }
-
-  //     const applicationNo = saveResponse.data.applicationNo;
-  //     const message = saveResponse.data.message || "Application submitted successfully";
-
-  //     sessionStorage.setItem("Appno", applicationNo);
-  //     sessionStorage.setItem("Service", pageTitle);
-
-  //     if (tableData.length > 0) {
-  //       const uploadSuccess = await uploadDocuments(applicationNo);
-  //       if (!uploadSuccess) {
-  //         loader.close();
-  //         Swal.fire({
-  //           text: "Application saved but document upload failed. Please contact support.",
-  //           confirmButtonColor: '#1e3a8a',
-  //         });
-  //         setLoading(false);
-  //         setSubmitting(false);
-  //         return;
-  //       }
-  //     }
-
-  //     loader.close();
-
-  //     const parts = message.split('$');
-  //     const displayMessage = parts[0] || message;
-  //     const payFlag = parts[1] || "N";
-
-  //     Swal.fire({
-  //       text: displayMessage,
-  //       confirmButtonColor: '#1e3a8a',
-  //     }).then(() => {
-  //       if (payFlag === "N" || payFlag === "N") {
-  //         window.location.reload();
-  //       } else {
-  //         navigate("/app/FrmAppliFee", { state: { applicationNo } });
-  //       }
-  //     });
-
-  //   } catch (error) {
-  //     console.error("Error submitting application:", error);
-      
-  //     let errorMessage = "Error submitting application. Please try again.";
-      
-  //     if (error.response) {
-  //       console.error("Response data:", error.response.data);
-  //       console.error("Response status:", error.response.status);
-  //       errorMessage = error.response.data?.message || 
-  //                      error.response.data?.error || 
-  //                      errorMessage;
-  //     } else if (error.request) {
-  //       errorMessage = "No response from server. Please check your connection.";
-  //     } else {
-  //       errorMessage = error.message;
-  //     }
-      
-  //     Swal.fire({
-  //       text: errorMessage,
-  //       confirmButtonColor: '#1e3a8a',
-  //     });
-  //   } finally {
-  //     setLoading(false);
-  //     setSubmitting(false);
-  //   }
-  // };
-
-const handleSubmit = async (values, { setSubmitting }) => {
-  setLoading(true);
-  try {
-    if (!validateFields(values)) {
-      setLoading(false);
-      setSubmitting(false);
-      return;
-    }
-
-    if (!validateDocuments()) {
-      setLoading(false);
-      setSubmitting(false);
-      return;
-    }
-
-    const loader = Swal.fire({
-      title: "Submitting Application...",
-      text: "Please wait while we process your application.",
-      allowOutsideClick: false,
-      showConfirmButton: false,
-      didOpen: () => Swal.showLoading(),
-    });
-
-    const savePayload = {
-      ulbId: Number(ulbId),
-      userId: String(userId),
-      serviceId: String(serviceId),
-      applicationName: values.applicantName?.trim() || "",
-      address: values.address?.trim() || "",
-      mobile: Number(values.mobileNo?.trim()) || 0, 
-      email: values.emailId?.trim() || "",
-      aadharNo: values.aadharNo?.trim() ? Number(values.aadharNo.trim()) : 0,
-      refNo: values.referenceNo?.trim() || "",
-      zoneId: isSectorVisible ? 0 : (values.zoneId ? Number(values.zoneId) : 0),
-      sectorId: isSectorVisible ? (values.sectorId ? Number(values.sectorId) : 0) : 0,
-      villageId: isSectorVisible ? (values.villageId ? Number(values.villageId) : 0) : 0,
-      locality: values.locality?.trim() || "",
-      landmark: values.landmark?.trim() || "",
-      pincode: values.pincode ? Number(values.pincode) : 0,
-      source: "WEB",
-    };
-
-    console.log("Saving application with payload:", savePayload);
-
-    const saveResponse = await axios.post(
-      `${BASE_URL}/api/FrmServiceApplicationMst/save`,
-      savePayload,
-      {
-        headers: { 
-          Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-          'Content-Type': 'application/json',
-        },
+  const handleSubmit = async (values, { setSubmitting }) => {
+    setLoading(true);
+    setUploadProgress(0);
+    
+    try {
+      if (!validateFields(values)) {
+        setLoading(false);
+        setSubmitting(false);
+        return;
       }
-    );
 
-    console.log("Save response:", saveResponse.data);
-
-    if (!saveResponse.data.success) {
-      loader.close();
-      Swal.fire({
-        text: saveResponse.data.message || "Application submission failed",
-        confirmButtonColor: '#1e3a8a',
-      });
-      setLoading(false);
-      setSubmitting(false);
-      return;
-    }
-
-    const applicationNo = saveResponse.data.applicationNo;
-    const message = saveResponse.data.message || "Application submitted successfully";
-
-    sessionStorage.setItem("Appno", applicationNo);
-    sessionStorage.setItem("Service", pageTitle);
-
-    if (tableData.length > 0) {
-      const uploadSuccess = await uploadDocuments(applicationNo);
-      if (!uploadSuccess) {
-        loader.close();
+      const totalDocuments = tableData.length;
+      const uploadedDocuments = tableData.filter(row => row.file !== null);
+      const missingDocuments = tableData.filter(row => row.file === null);
+      
+      console.log("Total documents in table:", totalDocuments);
+      console.log("Documents with files attached:", uploadedDocuments.length);
+      console.log("Missing documents:", missingDocuments.length);
+      
+      if (totalDocuments > 0 && missingDocuments.length > 0) {
+        const missingNames = missingDocuments.map(row => row.documentName).join(", ");
         Swal.fire({
-          text: "Application saved but document upload failed. Please contact support.",
+          text: `Please upload all the required documents`,
           confirmButtonColor: '#1e3a8a',
         });
         setLoading(false);
         setSubmitting(false);
         return;
       }
-    }
 
-    loader.close();
-
-    const parts = message.split('$');
-    const displayMessage = parts[0] || message;
-    const payFlag = parts[1] || "N";
-
-    Swal.fire({
-      text: displayMessage,
-      confirmButtonColor: '#1e3a8a',
-    }).then(() => {
-      if (payFlag === "N" || payFlag === "N") {
-        window.location.reload();
-      } else {
-        navigate("/app/FrmAppliFee", { state: { applicationNo } });
+      if (totalDocuments > 0 && uploadedDocuments.length === 0) {
+        Swal.fire({
+          text: "Please upload all required documents",
+          confirmButtonColor: '#1e3a8a',
+        });
+        setLoading(false);
+        setSubmitting(false);
+        return;
       }
-    });
 
-  } catch (error) {
-    console.error("Error submitting application:", error);
-    
-    let errorMessage = "Error submitting application. Please try again.";
-    
-    if (error.response) {
-      console.error("Response data:", error.response.data);
-      console.error("Response status:", error.response.status);
-      errorMessage = error.response.data?.message || 
-                     error.response.data?.error || 
-                     errorMessage;
-    } else if (error.request) {
-      errorMessage = "No response from server. Please check your connection.";
-    } else {
-      errorMessage = error.message;
+      const loader = Swal.fire({
+        title: "",
+        text: "Submitting Application...",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      const savePayload = {
+        ulbId: Number(ulbId),
+        userId: String(userId),
+        serviceId: String(serviceId),
+        applicationName: values.applicantName?.trim() || "",
+        address: values.address?.trim() || "",
+        mobile: values.mobileNo?.trim() || "",
+        email: values.emailId?.trim() || "",
+        aadharNo: values.aadharNo?.trim() || "0",
+        refNo: values.referenceNo?.trim() || "",
+        zoneId: isSectorVisible ? 0 : (values.zoneId ? Number(values.zoneId) : 0),
+        sectorId: isSectorVisible ? (values.sectorId ? Number(values.sectorId) : 0) : 0,
+        villageId: isSectorVisible ? (values.villageId ? Number(values.villageId) : 0) : 0,
+        locality: values.locality?.trim() || "",
+        landmark: values.landmark?.trim() || "",
+        pincode: values.pincode ? Number(values.pincode) : 0,
+        source: "WEB",
+      };
+
+      console.log("Saving application with payload:", savePayload);
+
+      const saveResponse = await axios.post(
+        `${BASE_URL}/api/FrmServiceApplicationMst/save`,
+        savePayload,
+        {
+          headers: { 
+            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log("Save response:", saveResponse.data);
+
+      if (!saveResponse.data.success) {
+        loader.close();
+        Swal.fire({
+          text: saveResponse.data.message || "Application submission failed",
+          confirmButtonColor: '#1e3a8a',
+        });
+        setLoading(false);
+        setSubmitting(false);
+        return;
+      }
+
+      const applicationNo = saveResponse.data.applicationNo;
+      const message = saveResponse.data.message || "Application submitted successfully";
+
+      console.log(`Application saved with number: ${applicationNo}`);
+
+      sessionStorage.setItem("Appno", applicationNo);
+      sessionStorage.setItem("Service", pageTitle);
+
+      if (uploadedDocuments.length > 0) {
+        loader.update({
+          text: `Uploading Documents...`,
+        });
+
+        try {
+          await uploadDocuments(applicationNo);
+          console.log("Documents uploaded successfully");
+          loader.update({
+            text: "Documents uploaded successfully!",
+          });
+        } catch (uploadError) {
+          console.error("Document upload failed:", uploadError);
+          
+          loader.close();
+          
+          const result = await Swal.fire({
+            title: "Document Upload Failed",
+            text: `Your application was saved but documents could not be uploaded. Error: ${uploadError.message || "Unknown error"}`,
+            confirmButtonColor: '#1e3a8a',
+            confirmButtonText: "Continue without documents",
+            showCancelButton: true,
+            cancelButtonText: "Retry Upload",
+            cancelButtonColor: '#d33',
+          });
+          
+          if (result.isConfirmed) {
+            Swal.fire({
+              text: "Application submitted successfully but without documents",
+              confirmButtonColor: '#1e3a8a',
+            }).then(() => {
+              window.location.reload();
+            });
+            setLoading(false);
+            setSubmitting(false);
+            return;
+          } else {
+            Swal.fire({
+              text: "You can try submitting again to upload documents",
+              confirmButtonColor: '#1e3a8a',
+            });
+            setLoading(false);
+            setSubmitting(false);
+            return;
+          }
+        }
+      }
+
+      loader.close();
+
+      const parts = message.split('$');
+      const displayMessage = parts[0] || message;
+      const payFlag = parts[1] || "N";
+
+      Swal.fire({
+        text: displayMessage,
+        confirmButtonColor: '#1e3a8a',
+      }).then(() => {
+        if (payFlag === "N" || payFlag === "N") {
+          window.location.reload();
+        } else {
+          navigate("/app/FrmAppliFee", { state: { applicationNo } });
+        }
+      });
+
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      
+      let errorMessage = "Error submitting application. Please try again.";
+      
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+        console.error("Response status:", error.response.status);
+        errorMessage = error.response.data?.message || 
+                       error.response.data?.error || 
+                       errorMessage;
+      } else if (error.request) {
+        errorMessage = "No response from server. Please check your connection.";
+      } else {
+        errorMessage = error.message;
+      }
+      
+      Swal.fire({
+        text: errorMessage,
+        confirmButtonColor: '#1e3a8a',
+      });
+    } finally {
+      setLoading(false);
+      setSubmitting(false);
+      setUploadProgress(0);
     }
-    
-    Swal.fire({
-      text: errorMessage,
-      confirmButtonColor: '#1e3a8a',
-    });
-  } finally {
-    setLoading(false);
-    setSubmitting(false);
-  }
-};
+  };
 
   const transformedTableData = tableData.map((item) => ({
     ...item,
@@ -653,8 +627,14 @@ const handleSubmit = async (values, { setSubmitting }) => {
           className="h-9 text-sm p-1 w-[60%]"
         />
         {item.fileName && item.fileName !== "No file chosen" && (
-          <span className="text-xs text-gray-500 truncate max-w-[80px]">{item.fileName}</span>
+          <span className="text-xs text-gray-500 truncate max-w-[80px]">
+            {item.fileName}
+            {item.isUploaded && " ✅"}
+          </span>
         )}
+        {/* {item.file === null && (
+          
+        )} */}
       </div>
     ),
   }));
@@ -679,11 +659,23 @@ const handleSubmit = async (values, { setSubmitting }) => {
                 <CardTitle className="text-lg font-semibold">
                   {pageTitle}
                 </CardTitle>
+                {uploadProgress > 0 && uploadProgress < 100 && (
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                    <div 
+                      className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                    <span className="text-xs text-gray-600 mt-1 block">
+                      Uploading: {uploadProgress}%
+                    </span>
+                  </div>
+                )}
               </CardHeader>
 
               <CardContent className="p-4 sm:p-6 space-y-6">
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Applicant Name */}
+
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label required text="Applicant Name" />
@@ -697,7 +689,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                     />
                   </div>
 
-                  {/* Applicant Address */}
+
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center whitespace-nowrap">
                       <Label text="Applicant Address" />
@@ -711,7 +703,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                     />
                   </div>
 
-                  {/* Mobile No. */}
+
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label required text="Mobile No." />
@@ -730,7 +722,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                     />
                   </div>
 
-                  {/* Email ID */}
+
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label required text="Email ID" />
@@ -745,7 +737,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                     />
                   </div>
 
-                  {/* Aadhar No. */}
+
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label text="Aadhar No." />
@@ -764,7 +756,6 @@ const handleSubmit = async (values, { setSubmitting }) => {
                     />
                   </div>
 
-                  {/* Reference No. */}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label text="Reference No." />
@@ -782,9 +773,10 @@ const handleSubmit = async (values, { setSubmitting }) => {
                     />
                   </div>
 
+
                   {isSectorVisible ? (
                     <>
-                      {/* Sector Dropdown */}
+
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                           <Label required text="Sector" />
@@ -817,7 +809,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                         </Select>
                       </div>
 
-                      {/* Village Dropdown */}
+
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                           <Label required text="Village" />
@@ -845,7 +837,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                       </div>
                     </>
                   ) : (
-                    /* Prabhag Dropdown */
+
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                       <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                         <Label required text="Prabhag" />
@@ -873,6 +865,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                   )}
                 </div>
 
+
                 <div className="overflow-x-auto">
                   <ShadCNTable
                     headers={headers}
@@ -883,6 +876,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                   />
                 </div>
                 
+
                 <div className="flex justify-center items-center gap-3 pt-4">
                   <Button
                     type="submit"
@@ -895,7 +889,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                     type="button"
                     variant="outline"
                     className="bg-gray-100 hover:bg-gray-200"
-                    onClick={() => navigate("/")}
+                    onClick={() => navigate("/app/FrmDeptServicesTMC")}
                   >
                     Back
                   </Button>
