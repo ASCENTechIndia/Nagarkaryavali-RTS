@@ -184,7 +184,7 @@ const Login = () => {
                                         </div>
                                         {/* <div className="flex flex-1 gap-2"> */}
                                         {/* <div className="flex h-11 flex-1 select-none items-center justify-center overflow-hidden rounded-xl border border-gray-300 bg-gray-100 font-mono text-lg font-bold tracking-[5px] text-[#184aa6]">{captchaValue}</div> */}
-                                        <Input value={captchaValue} readOnly className="w-full cursor-none" />
+                                        <Input value={captchaValue} readOnly className="w-full  cursor-none bg-[#d7e2f8] border-0" />
                                         <Button type="button" variant="outline" onClick={refreshCaptcha} title="Refresh CAPTCHA"><RefreshCWIcon size={17} /></Button>
                                         {/* </div> */}
                                     </div>
