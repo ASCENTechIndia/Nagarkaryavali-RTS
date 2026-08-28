@@ -134,14 +134,17 @@ const router = createBrowserRouter([
         element: <FrmMarketLicenseupdt />,
       },
       {
-        path: "/app/FrmSecondAppeal",
-        element: <FrmSecondAppeal />,
+        path: "/app/FrmFirstAppealDocUpload",
+        element: <FrmFirstAppealDocUpload />,
       },
       {
-        path: "/app/FrmServiceApplicationMst",
-        element: <FrmServiceApplicationMst />,
+        path: "/app/FrmFirstAppeal",
+        element: <FrmFirstAppeal />,
       },
-
+      // {
+      //   path: "/app/FrmSecondAppeal",
+      //   element: <FrmSecondAppeal />,
+      // },
       {
         path: "/app/FrmMarriageRgstn",
         element: <FrmMarriageRgstn />

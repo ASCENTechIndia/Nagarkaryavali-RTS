@@ -58,7 +58,6 @@ const getWardsRepo = async (  ) => {
             zonename AS wardname,
             zoneid AS wardid
         FROM prop.vw_zonemas
-        WHERE ulbid = 3
         ORDER BY zonename
     `;
 
