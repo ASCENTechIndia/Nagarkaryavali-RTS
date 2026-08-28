@@ -17,7 +17,7 @@ const DepartmentSidebar = ({ departments = [], selectedDepartmentId, onDepartmen
                     <div className="flex h-8 w-6 shrink-0 items-center justify-center rounded-lg bg-white "><Building2 size={16} /></div>
                     {state === "expanded" && (
                         <div className="min-w-0 ">
-                            <p className="truncate text-xs font-bold text-white">DEPARTMENT</p>
+                            <p className="truncate text-xs font-bold text-white">DEPARTMENTS</p>
                             {/* <p className="truncate text-xs text-white">SERVICES</p> */}
                         </div>
                     )}
@@ -26,7 +26,7 @@ const DepartmentSidebar = ({ departments = [], selectedDepartmentId, onDepartmen
 
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupLabel>Departments</SidebarGroupLabel>
+                    {/* <SidebarGroupLabel>Departments</SidebarGroupLabel> */}
 
                     <SidebarMenu>
                         {departments.map((department) => {
