@@ -56,7 +56,7 @@ const router = createBrowserRouter([
         path: "/forgot-password",
         element: <ForgotPassword />,
       },
-            {
+      {
         path: "/app/FrmAfterTransactionTMC",
         element: <FrmAfterTransactionTMC />
       },
@@ -130,6 +130,10 @@ const router = createBrowserRouter([
       {
         path: "/app/FrmFirstAppealDocUpload",
         element: <FrmFirstAppealDocUpload />
+      },
+      {
+        path: "/app/FrmMarriageRgstn",
+        element: <FrmMarriageRgstn />
       },
     ]
   },
