@@ -962,6 +962,12 @@ const FrmMarketEntry = () => {
       const directorString = buildDirectorString();
       const tradeTypeString = buildTradeTypeString();
 
+      const buildTradeString = () => {
+        const tradeIds = [...new Set(tradeTypeRateRows.map(item => item.tradeCategoryId))];
+        return tradeIds.filter(id => id).join("#");
+      };
+
+
       const totalAmount = tradeTypeRateRows.reduce(
         (total, item) => total + Number(item.rate || 0),
         0,
@@ -1011,7 +1017,7 @@ const FrmMarketEntry = () => {
 
         amount: Number(totalAmount || 0),
 
-        applitradeStr: "",
+        applitradeStr: buildTradeString(), 
         applitradetypeStr: tradeTypeString,
         applidirectorStr: directorString,
 
