@@ -288,10 +288,10 @@ exports.getServiceInstructions = asyncHandler(async (req, res) => {
 });
 
 exports.getTradeCategories = asyncHandler(async (req, res) => {
-  const { jwalanshilstat } = req.body;
+  const { jwalanshilstat , categoryType } = req.body;
 
   const result = await service.getTradeCategoriesService({
-    jwalanshilstat,
+    jwalanshilstat, categoryType
   });
 
   return ok(res, result, "Trade categories fetched successfully");

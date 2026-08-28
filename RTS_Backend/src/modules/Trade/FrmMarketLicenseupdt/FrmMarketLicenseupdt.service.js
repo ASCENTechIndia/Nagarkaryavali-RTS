@@ -468,9 +468,9 @@ async function getServiceInstructionsService({ serviceId }) {
 }
 
 
-async function getTradeCategoriesService({ jwalanshilstat }) {
+async function getTradeCategoriesService({ jwalanshilstat, categoryType }) {
   const result = await repo.getTradeCategories({
-    jwalanshilstat,
+    jwalanshilstat, categoryType
   });
 
   if (!result.success) {
