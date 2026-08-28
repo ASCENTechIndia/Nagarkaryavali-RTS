@@ -521,7 +521,7 @@ async function getServiceInstructions({ serviceId }) {
   return await executeQueryTMC(query, bindParams);
 }
 
-async function getTradeCategories({ jwalanshilstat }) {
+async function getTradeCategories({ jwalanshilstat,categoryType }) {
   const query = `
     SELECT
       var_tradecategory_name AS TRADECATEGORY_NAME,
@@ -530,7 +530,7 @@ async function getTradeCategories({ jwalanshilstat }) {
     INNER JOIN aorts_tradecategory_mas
       ON num_tradecategory_id = num_category_catgryid
     WHERE var_tradecategory_flag = 'Y'
-      AND var_category_type = '1'
+      AND var_category_type = :categoryType
       AND var_category_jwalanshilstat = :jwalanshilstat
   `;
 
@@ -540,6 +540,7 @@ async function getTradeCategories({ jwalanshilstat }) {
         ? jwalanshilstat
         : 1
     ),
+    categoryType: categoryType
   };
 
   console.log("Trade Categories Query:", query);
@@ -568,6 +569,490 @@ async function getSelfDeclaration({ serviceId }) {
   return await executeQueryTMC(query, bindParams);
 }
 
+async function insertTradeApplication(params) {
+  const {
+    userid,
+
+    licenseno,
+    appfname,
+    appmname,
+    applname,
+    mobile,
+    email,
+    aadhar,
+    propno,
+    address,
+    remark,
+
+    newbusiname,
+    newownfname,
+    newownmname,
+    newownlname,
+
+    newcofname,
+    newcomname,
+    newcolname,
+
+    ulbid,
+    servicename,
+
+    businesstr,
+    partnerstr,
+    corrpartnerstr,
+
+    appid,
+    tradeaddrstr,
+    tradechkstr,
+    directorstr,
+
+    rate,
+    wardid,
+    zoneid,
+    Servid,
+    Source,
+    amount,
+
+    Gender,
+    Jwalan,
+    Relation,
+    Adhikrutta,
+    LicencType,
+    TradeType,
+
+    CloseDt,
+    LicOwner,
+    LicType,
+    LicFrmDt,
+    LicToDt,
+
+    BusiName,
+    BusiSwarup,
+    BusiAddr,
+    type,
+  } = params;
+
+  const sql = `
+    BEGIN
+
+      aorts_applitrade_ins(
+        :in_userid,
+        :in_licenseno,
+        :in_appfname,
+        :in_appmname,
+        :in_applname,
+        :in_mobile,
+        :in_email,
+        :in_aadhar,
+        :in_propno,
+        :in_address,
+        :in_remark,
+        :in_newbusiname,
+        :in_newownfname,
+        :in_newownmname,
+        :in_newownlname,
+        :in_newcofname,
+        :in_newcomname,
+        :in_newcolname,
+        :in_ulbid,
+        :in_servicename,
+        :in_businesstr,
+        :in_partnerstr,
+        :in_corrpartnerstr,
+        :in_appid,
+        :in_tradeaddrstr,
+        :in_tradechkstr,
+        :in_directorstr,
+        :in_rate,
+        :in_wardid,
+        :in_zoneid,
+        :in_Servid,
+        :In_Source,
+        :in_amount,
+        :In_Gender,
+        :in_Jwalan,
+        :in_Relation,
+        :in_Adhikrutta,
+        :in_LicencType,
+        :in_TradeType,
+        :in_CloseDt,
+        :In_LicOwner,
+        :In_LicType,
+        :In_LicFrmDt,
+        :In_LicToDt,
+        :In_BusiName,
+        :In_BusiSwarup,
+        :In_BusiAddr,
+        :In_type,
+        :out_ErrCode,
+        :out_ErrMsg,
+        :out_AppliID,
+        :out_AppliNo
+      );
+
+    END;
+  `;
+
+  const binds = {
+    in_userid: userid || null,
+
+    in_licenseno: licenseno || null,
+
+    in_appfname: appfname || null,
+
+    in_appmname: appmname || null,
+
+    in_applname: applname || null,
+
+    in_mobile: mobile
+      ? Number(mobile)
+      : null,
+
+    in_email: email || null,
+
+    in_aadhar: aadhar
+      ? Number(aadhar)
+      : null,
+
+    in_propno: propno || null,
+
+    in_address: address || null,
+
+    in_remark: remark || null,
+
+    in_newbusiname: newbusiname || null,
+
+    in_newownfname: newownfname || null,
+
+    in_newownmname: newownmname || null,
+
+    in_newownlname: newownlname || null,
+
+    in_newcofname: newcofname || null,
+
+    in_newcomname: newcomname || null,
+
+    in_newcolname: newcolname || null,
+
+    in_ulbid: ulbid
+      ? Number(ulbid)
+      : null,
+
+    in_servicename: servicename || null,
+
+    in_businesstr: businesstr || null,
+
+    in_partnerstr: partnerstr || null,
+
+    in_corrpartnerstr: corrpartnerstr || null,
+
+    in_appid: appid
+      ? Number(appid)
+      : null,
+
+    in_tradeaddrstr: tradeaddrstr || null,
+
+    in_tradechkstr: tradechkstr || null,
+
+    in_directorstr: directorstr || null,
+
+    in_rate: rate
+      ? Number(rate)
+      : null,
+
+    in_wardid: wardid
+      ? Number(wardid)
+      : null,
+
+    in_zoneid: zoneid
+      ? Number(zoneid)
+      : null,
+
+    in_Servid: Servid
+      ? Number(Servid)
+      : null,
+
+    In_Source: Source || null,
+
+    in_amount: amount
+      ? Number(amount)
+      : null,
+
+    In_Gender: Gender || null,
+
+    in_Jwalan: Jwalan || null,
+
+    in_Relation: Relation
+      ? Number(Relation)
+      : null,
+
+    in_Adhikrutta: Adhikrutta
+      ? Number(Adhikrutta)
+      : null,
+
+    in_LicencType: LicencType
+      ? Number(LicencType)
+      : null,
+
+    in_TradeType: TradeType
+      ? Number(TradeType)
+      : null,
+
+    in_CloseDt: CloseDt
+      ? new Date(CloseDt)
+      : null,
+
+    In_LicOwner: LicOwner || null,
+
+    In_LicType: LicType || null,
+
+  
+    In_LicFrmDt: LicFrmDt
+      ? new Date(LicFrmDt)
+      : null,
+
+    In_LicToDt: LicToDt
+      ? new Date(LicToDt)
+      : null,
+
+ 
+    In_BusiName: BusiName || null,
+
+
+    In_BusiSwarup: BusiSwarup || null,
+
+
+    In_BusiAddr: BusiAddr || null,
+
+    In_type: type || null,
+
+    out_ErrCode: {
+      dir: oracledb.BIND_OUT,
+      type: oracledb.NUMBER,
+    },
+
+    out_ErrMsg: {
+      dir: oracledb.BIND_OUT,
+      type: oracledb.STRING,
+      maxSize: 4000,
+    },
+
+    out_AppliID: {
+      dir: oracledb.BIND_OUT,
+      type: oracledb.NUMBER,
+    },
+
+    out_AppliNo: {
+      dir: oracledb.BIND_OUT,
+      type: oracledb.STRING,
+      maxSize: 500,
+    },
+  };
+
+  console.log(
+    "Calling Procedure: aorts_applitrade_ins"
+  );
+
+  console.log("Procedure Bind Params:", {
+    userid,
+    licenseno,
+    appfname,
+    appmname,
+    applname,
+    mobile,
+    email,
+    propno,
+    ulbid,
+    servicename,
+    appid,
+    Servid,
+    wardid,
+    zoneid,
+    Source,
+    amount,
+    Gender,
+    Relation,
+    LicencType,
+    TradeType,
+    LicOwner,
+    LicType,
+    BusiName,
+    BusiSwarup,
+    BusiAddr,
+    type,
+  });
+
+  const result = await executeProcedureTMC({
+    sql,
+    binds,
+  });
+
+  if (!result.success) {
+    throw new Error(
+      result.error ||
+        "aorts_applitrade_ins procedure execution failed"
+    );
+  }
+
+  console.log(
+    "aorts_applitrade_ins Result:",
+    result.outBinds
+  );
+
+  return result.outBinds;
+}
+
+async function insertTradeTypeLog(params) {
+  const {
+    orgId,
+    id,
+    appId,
+    tradeType,
+    tradeCat,
+    rate,
+    directorId,
+    aadharNo,
+    directorName,
+    mobileNo,
+    email,
+    gender,
+    address,
+    appliType,
+    servicee,
+  } = params;
+
+  const sql = `
+    BEGIN
+
+      aorts_tradetypelog_ins(
+        :In_OrgId,
+        :In_Id,
+        :In_Appid,
+        :In_TradeType,
+        :In_TradeCat,
+        :In_Rate,
+        :In_Directorid,
+        :In_Aadharno,
+        :In_Directorname,
+        :In_Mobileno,
+        :In_Email,
+        :In_Gender,
+        :In_Addres,
+        :In_Applitype,
+        :In_Service,
+        :Out_Errorcode,
+        :Out_Errormsg
+      );
+
+    END;
+  `;
+
+  const binds = {
+
+    In_OrgId: orgId
+      ? Number(orgId)
+      : null,
+
+    In_Id: id
+      ? Number(id)
+      : null,
+
+    In_Appid: appId
+      ? Number(appId)
+      : null,
+
+    In_TradeType: tradeType
+      ? Number(tradeType)
+      : null,
+
+    In_TradeCat: tradeCat
+      ? Number(tradeCat)
+      : null,
+
+    In_Rate: rate
+      ? Number(rate)
+      : null,
+
+    In_Directorid: directorId
+      ? Number(directorId)
+      : null,
+
+    In_Aadharno: aadharNo
+      ? Number(aadharNo)
+      : null,
+
+    In_Directorname: directorName || null,
+
+    In_Mobileno: mobileNo
+      ? Number(mobileNo)
+      : null,
+
+    In_Email: email || null,
+
+    In_Gender: gender || null,
+
+    In_Addres: address || null,
+
+    In_Applitype: appliType
+      ? Number(appliType)
+      : null,
+
+    In_Service: servicee || null,
+
+    Out_Errorcode: {
+      dir: oracledb.BIND_OUT,
+      type: oracledb.NUMBER,
+    },
+
+    Out_Errormsg: {
+      dir: oracledb.BIND_OUT,
+      type: oracledb.STRING,
+      maxSize: 500,
+    },
+  };
+
+  console.log(
+    "Calling Procedure: aorts_tradetypelog_ins"
+  );
+
+  console.log("Trade Type Log Params:", {
+    orgId,
+    id,
+    appId,
+    tradeType,
+    tradeCat,
+    rate,
+    directorId,
+    aadharNo,
+    directorName,
+    mobileNo,
+    email,
+    gender,
+    address,
+    appliType,
+    servicee,
+  });
+
+  const result = await executeProcedureTMC({
+    sql,
+    binds,
+  });
+
+  if (!result.success) {
+    throw new Error(
+      result.error ||
+        "aorts_tradetypelog_ins procedure execution failed"
+    );
+  }
+
+  console.log(
+    "Trade Type Log Result:",
+    result.outBinds
+  );
+
+  return result.outBinds;
+}
+
+
 module.exports = {
   getApplicationTypes,
   getZones,
@@ -592,4 +1077,6 @@ module.exports = {
   getServiceInstructions,
   getTradeCategories,
   getSelfDeclaration,
+  insertTradeApplication,
+  insertTradeTypeLog
 };

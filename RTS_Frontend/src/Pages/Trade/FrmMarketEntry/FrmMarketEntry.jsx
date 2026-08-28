@@ -25,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import getIPAddress from "@/utils/ipHelper";
 
@@ -33,48 +34,48 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const initialValues = {
   oldLicenseNo: "",
   tradeBusinessType: "T",
-  
+
   shopNameEnglish: "",
   shopNameMarathi: "",
   panCardNo: "",
   contactNo: "",
   email: "",
   shopAddress: "",
-  
+
   wardNo: "",
   zoneNo: "",
-  
+
   fromDate: "",
   toDate: "",
-  
+
   usedArea: "0",
   amount: "0",
-  
+
   jalanShil: "",
   illegalType: "",
   propNo: "",
-  
+
   tradeCategory: "",
   tradeType: "",
   rate: "",
-  
+
   businessPlace: "",
-  
+
   isManufactured: "Y",
   isOwnerDoingBusiness: "Y",
-  
+
   rentAgreementWithWhom: "",
   corporationNoc: "Y",
   businessStartYear: "0",
   shopActRegistrationNo: "",
   otherAdministrationRegistrationNo: "",
-  
+
   applicantName: "",
   applicantAddress: "",
-  
+
   licenseType: "",
   businessNature: "",
-  
+
   directorAadharNo: "",
   directorName: "",
   directorContactNo: "",
@@ -84,7 +85,7 @@ const initialValues = {
   directorAddress: "",
   directorApplicantType: "",
   directorImage: null,
-  
+
   declarationAccepted: false,
 };
 
@@ -103,20 +104,20 @@ const FrmMarketEntry = () => {
   const serviceId = locationState.serviceId || user?.serviceId;
 
   const searchParams = new URLSearchParams(window.location.search);
-  
+
   const mode = Number(
-    searchParams.get("mode") ?? 
-    searchParams.get("@") ?? 
-    locationState.mode ?? 
-    1
+    searchParams.get("mode") ??
+      searchParams.get("@") ??
+      locationState.mode ??
+      1,
   );
 
-  // const applicationId = locationState.applicationId ?? 
-  //   locationState.appId ?? 
-  //   searchParams.get("applicationId") ?? 
-  //   searchParams.get("appid") ?? 
-  //   sessionStorage.getItem("applicationId") ?? 
-  //   sessionStorage.getItem("appid") ?? 
+  // const applicationId = locationState.applicationId ??
+  //   locationState.appId ??
+  //   searchParams.get("applicationId") ??
+  //   searchParams.get("appid") ??
+  //   sessionStorage.getItem("applicationId") ??
+  //   sessionStorage.getItem("appid") ??
   //   "";
 
   const [activeTab, setActiveTab] = useState("primary");
@@ -137,11 +138,12 @@ const FrmMarketEntry = () => {
   const [applicationId, setApplicationId] = useState("");
   const [applicationNo, setApplicationNo] = useState("");
 
-  const authToken = token || 
-    sessionStorage.getItem("accessToken") || 
-    sessionStorage.getItem("token") || 
-    localStorage.getItem("accessToken") || 
-    localStorage.getItem("token") || 
+  const authToken =
+    token ||
+    sessionStorage.getItem("accessToken") ||
+    sessionStorage.getItem("token") ||
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("token") ||
     "";
 
   const getBusinessPlace = async () => {
@@ -149,14 +151,14 @@ const FrmMarketEntry = () => {
       const response = await axios.post(
         `${BASE_URL}/api/FrmMarketEntry/getbusinessplace`,
         {},
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } }
+        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
       );
       const data = response.data?.data || [];
       setBusinessPlaceOptions(
         data.map((item) => ({
           value: String(item.NUM_BUSIPLACE_ID),
           label: item.VAR_BUSIPLACE_NAME || "",
-        }))
+        })),
       );
     } catch (error) {
       console.error("Business Place Error:", error);
@@ -169,14 +171,14 @@ const FrmMarketEntry = () => {
       const response = await axios.post(
         `${BASE_URL}/api/FrmMarketEntry/getjalanshil`,
         {},
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } }
+        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
       );
       const data = response.data?.data || [];
       setJalanShilOptions(
         data.map((item) => ({
           value: String(item.VAR_JALANSHIL_CODE || ""),
           label: item.VAR_JALANSHIL_NAME || "",
-        }))
+        })),
       );
     } catch (error) {
       console.error("Jalan Shil Error:", error);
@@ -189,14 +191,14 @@ const FrmMarketEntry = () => {
       const response = await axios.post(
         `${BASE_URL}/api/FrmMarketEntry/getillegaltype`,
         {},
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } }
+        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
       );
       const data = response.data?.data || [];
       setIllegalTypeOptions(
         data.map((item) => ({
           value: String(item.NUM_ILLEGAL_ID),
           label: item.VAR_ILLEGAL_NAME || "",
-        }))
+        })),
       );
     } catch (error) {
       console.error("Illegal Type Error:", error);
@@ -209,14 +211,14 @@ const FrmMarketEntry = () => {
       const response = await axios.post(
         `${BASE_URL}/api/FrmMarketEntry/getlicensetype`,
         {},
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } }
+        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
       );
       const data = response.data?.data || [];
       setLicenseTypeOptions(
         data.map((item) => ({
           value: String(item.NUM_LICENSETYPE_ID),
           label: item.VAR_LICENSETYPE_NAME || "",
-        }))
+        })),
       );
     } catch (error) {
       console.error("License Type Error:", error);
@@ -230,14 +232,14 @@ const FrmMarketEntry = () => {
       const response = await axios.post(
         `${BASE_URL}/api/FrmMarketEntry/getapplicanttype`,
         { ulbId },
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } }
+        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
       );
       const data = response.data?.data || [];
       setApplicantTypeOptions(
         data.map((item) => ({
           value: String(item.NUM_APPLITYPE_ID),
           label: item.VAR_APPLITYPE_NAME || "",
-        }))
+        })),
       );
     } catch (error) {
       console.error("Applicant Type Error:", error);
@@ -251,14 +253,14 @@ const FrmMarketEntry = () => {
       const response = await axios.post(
         `${BASE_URL}/api/FrmMarketEntry/getward`,
         { ulbId },
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } }
+        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
       );
       const data = response.data?.data || [];
       setWardOptions(
         data.map((item) => ({
           value: String(item.WARDID),
           label: item.WARDNAME || "",
-        }))
+        })),
       );
     } catch (error) {
       console.error("Ward Error:", error);
@@ -272,14 +274,14 @@ const FrmMarketEntry = () => {
       const response = await axios.post(
         `${BASE_URL}/api/FrmMarketEntry/getzonebyward`,
         { wardId, ulbId },
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } }
+        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
       );
       const data = response.data?.data || [];
       setZoneOptions(
         data.map((item) => ({
           value: String(item.ZONEID),
           label: item.ZONENAME || "",
-        }))
+        })),
       );
     } catch (error) {
       console.error("Zone Error:", error);
@@ -289,7 +291,7 @@ const FrmMarketEntry = () => {
 
   const loadTradeCategory = async (tradeBusinessType, jalanShil) => {
     const effectiveJalanShil = jalanShil || (mode === 1 ? "Y" : "");
-    
+
     if (!tradeBusinessType || !effectiveJalanShil) {
       setTradeCategoryOptions([]);
       return [];
@@ -298,11 +300,11 @@ const FrmMarketEntry = () => {
     try {
       const response = await axios.post(
         `${BASE_URL}/api/FrmMarketEntry/gettradecategory`,
-        { 
-          licenseType: tradeBusinessType, 
-          jalanShil: effectiveJalanShil 
+        {
+          licenseType: tradeBusinessType,
+          jalanShil: effectiveJalanShil,
         },
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } }
+        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
       );
 
       console.log("Trade Category Response: ", response);
@@ -312,7 +314,7 @@ const FrmMarketEntry = () => {
         data.map((item) => ({
           value: String(item.NUM_CATEGORY_CATGRYID),
           label: item.VAR_TRADECATEGORY_NAME || "",
-        }))
+        })),
       );
       return data;
     } catch (error) {
@@ -328,14 +330,14 @@ const FrmMarketEntry = () => {
       const response = await axios.post(
         `${BASE_URL}/api/FrmMarketEntry/gettradedetails`,
         { ulbId },
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } }
+        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
       );
       const data = response.data?.data || [];
       setTradeTypeOptions(
         data.map((item) => ({
           value: String(item.TRADEID),
           label: item.TRADENAME || "",
-        }))
+        })),
       );
     } catch (error) {
       console.error("Trade Details Error:", error);
@@ -349,7 +351,7 @@ const FrmMarketEntry = () => {
       const response = await axios.post(
         `${BASE_URL}/api/FrmMarketEntry/getdocumentdetails`,
         { serviceId, ulbId },
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } }
+        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
       );
       const data = response.data?.data || [];
       setDocumentRows(
@@ -363,7 +365,7 @@ const FrmMarketEntry = () => {
           file: null,
           fileName: "",
           remark: "",
-        }))
+        })),
       );
     } catch (error) {
       console.error("Document Details Error:", error);
@@ -380,14 +382,14 @@ const FrmMarketEntry = () => {
       const response = await axios.post(
         `${BASE_URL}/api/FrmMarketEntry/getselfdeclaredata`,
         { serviceId: Number(serviceId) },
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } }
+        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
       );
       const data = response.data?.data || [];
       setSelfDeclareRows(
         data.map((item) => ({
           id: String(item.ID ?? ""),
           message: item.MESSAGE ?? "",
-        }))
+        })),
       );
     } catch (error) {
       console.error("Self Declare Error:", error);
@@ -401,7 +403,7 @@ const FrmMarketEntry = () => {
       const response = await axios.post(
         `${BASE_URL}/api/FrmMarketEntry/getapplicationdetails`,
         { applicationId: Number(appId), ulbId },
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } }
+        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
       );
       return response.data?.data || null;
     } catch (error) {
@@ -416,7 +418,7 @@ const FrmMarketEntry = () => {
       const response = await axios.post(
         `${BASE_URL}/api/FrmMarketEntry/getexistinglicensedetails`,
         { oldLicencNo: oldLicenseNo, ulbId },
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } }
+        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
       );
       return response.data?.data || null;
     } catch (error) {
@@ -431,7 +433,7 @@ const FrmMarketEntry = () => {
       const response = await axios.post(
         `${BASE_URL}/api/FrmMarketEntry/checklicensecancelled`,
         { oldLicencNo: oldLicenseNo },
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } }
+        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
       );
       return response.data?.cancelled || false;
     } catch (error) {
@@ -489,7 +491,6 @@ const FrmMarketEntry = () => {
     loadData();
   }, [ulbId, serviceId, mode, applicationId]);
 
-
   const handleWardChange = async (wardId, setFieldValue) => {
     setFieldValue("wardNo", wardId);
     await getZoneByWard(wardId);
@@ -508,11 +509,15 @@ const FrmMarketEntry = () => {
     setFieldValue("rate", "");
   };
 
-  const handleTradeBusinessTypeChange = async (value, setFieldValue, values) => {
+  const handleTradeBusinessTypeChange = async (
+    value,
+    setFieldValue,
+    values,
+  ) => {
     setFieldValue("tradeBusinessType", value);
     setFieldValue("tradeCategory", "");
     setFieldValue("tradeType", "");
-    
+
     const effectiveJalanShil = values.jalanShil || (mode === 1 ? "Y" : "");
     if (effectiveJalanShil) {
       await loadTradeCategory(value, effectiveJalanShil);
@@ -530,7 +535,7 @@ const FrmMarketEntry = () => {
     }
 
     const alreadyExists = tradeTypeRateRows.some(
-      (item) => String(item.tradeTypeId) === String(values.tradeType)
+      (item) => String(item.tradeTypeId) === String(values.tradeType),
     );
 
     if (alreadyExists) {
@@ -539,10 +544,10 @@ const FrmMarketEntry = () => {
     }
 
     const category = tradeCategoryOptions.find(
-      (item) => String(item.value) === String(values.tradeCategory)
+      (item) => String(item.value) === String(values.tradeCategory),
     );
     const tradeType = tradeTypeOptions.find(
-      (item) => String(item.value) === String(values.tradeType)
+      (item) => String(item.value) === String(values.tradeType),
     );
 
     const rate = values.rate || "0";
@@ -559,10 +564,9 @@ const FrmMarketEntry = () => {
       },
     ]);
 
-    const totalAmount = tradeTypeRateRows.reduce(
-      (sum, item) => sum + Number(item.rate || 0),
-      0
-    ) + Number(rate);
+    const totalAmount =
+      tradeTypeRateRows.reduce((sum, item) => sum + Number(item.rate || 0), 0) +
+      Number(rate);
     setFieldValue("amount", String(totalAmount));
 
     setFieldValue("tradeType", "");
@@ -592,7 +596,7 @@ const FrmMarketEntry = () => {
     }
 
     const applicantType = applicantTypeOptions.find(
-      (item) => String(item.value) === String(values.directorApplicantType)
+      (item) => String(item.value) === String(values.directorApplicantType),
     );
 
     const nextId = directorRows.length + 1;
@@ -634,8 +638,8 @@ const FrmMarketEntry = () => {
       prev.map((item) =>
         String(item.id) === String(id)
           ? { ...item, file, fileName: file.name }
-          : item
-      )
+          : item,
+      ),
     );
   };
 
@@ -652,7 +656,7 @@ const FrmMarketEntry = () => {
           item.gender || "",
           item.applicantTypeId || "",
           item.aadharNo || "",
-        ].join("$")
+        ].join("$"),
       )
       .join("#");
   };
@@ -660,22 +664,20 @@ const FrmMarketEntry = () => {
   const buildTradeTypeString = () => {
     return tradeTypeRateRows
       .map((item) =>
-        [
-          item.tradeTypeId,
-          item.rate || "0",
-          item.tradeCategoryId || "",
-        ].join("$")
+        [item.tradeTypeId, item.rate || "0", item.tradeCategoryId || ""].join(
+          "$",
+        ),
       )
       .join("#");
   };
 
   const handleSearchLicense = async (values, setFieldValue) => {
     const oldLicenseNo = values.oldLicenseNo?.trim();
-    
+
     if (!oldLicenseNo) {
-      Swal.fire({ 
-        icon: "warning", 
-        text: "Please enter License Number" 
+      Swal.fire({
+        icon: "warning",
+        text: "Please enter License Number",
       });
       return;
     }
@@ -693,9 +695,9 @@ const FrmMarketEntry = () => {
       const isCancelled = await checkLicenseCancelled(oldLicenseNo);
       if (isCancelled) {
         Swal.close();
-        Swal.fire({ 
-          icon: "error", 
-          text: "License is Cancelled" 
+        Swal.fire({
+          icon: "error",
+          text: "License is Cancelled",
         });
         return;
       }
@@ -704,9 +706,9 @@ const FrmMarketEntry = () => {
       Swal.close();
 
       if (!result || !result.found) {
-        Swal.fire({ 
-          icon: "error", 
-          text: "No Licence Found" 
+        Swal.fire({
+          icon: "error",
+          text: "No Licence Found",
         });
         setFieldValue("oldLicenseNo", "");
         return;
@@ -717,21 +719,24 @@ const FrmMarketEntry = () => {
       const directorDetails = result.directorDetails || [];
       const documentDetails = result.documentDetails || [];
 
-      const appId = application.NUM_APPLI_ID;           
+      const appId = application.NUM_APPLI_ID;
       const appNo = application.VAR_APPLI_APPLINO;
-      
+
       setApplicationId(String(appId));
       setApplicationNo(String(appNo));
 
       setFieldValue("shopNameEnglish", application.VAR_APPLI_SHOPNAME || "");
       setFieldValue("shopNameMarathi", application.VAR_APPLI_SHOPNAMEMAR || "");
       setFieldValue("panCardNo", application.VAR_APPLI_PANNO || "");
-      setFieldValue("contactNo", application.NUM_APPLI_CONTACTNO?.toString() || "");
+      setFieldValue(
+        "contactNo",
+        application.NUM_APPLI_CONTACTNO?.toString() || "",
+      );
       setFieldValue("email", application.VAR_APPLI_EMAIL || "");
       setFieldValue("shopAddress", application.VAR_APPLI_ADDRESS || "");
       setFieldValue("wardNo", application.NUM_APPLI_WARDID?.toString() || "");
       setFieldValue("zoneNo", application.NUM_APPLI_ZONEID?.toString() || "");
-      
+
       if (application.DAT_APPLI_FROMDT) {
         const fromDate = new Date(application.DAT_APPLI_FROMDT);
         setFieldValue("fromDate", formatDateForFormik(fromDate));
@@ -740,19 +745,43 @@ const FrmMarketEntry = () => {
         const toDate = new Date(application.DAT_APPLI_TODT);
         setFieldValue("toDate", formatDateForFormik(toDate));
       }
-      
+
       setFieldValue("usedArea", application.NUM_APPLI_AREA?.toString() || "0");
-      setFieldValue("applicantName", application.VAR_APPLI_PLACEOWNERNAME || "");
-      setFieldValue("applicantAddress", application.VAR_APPLI_PLACEOWNERADDRESS || "");
-      setFieldValue("licenseType", application.NUM_APPLI_LICENSETYPEID?.toString() || "");
-      
+      setFieldValue(
+        "applicantName",
+        application.VAR_APPLI_PLACEOWNERNAME || "",
+      );
+      setFieldValue(
+        "applicantAddress",
+        application.VAR_APPLI_PLACEOWNERADDRESS || "",
+      );
+      setFieldValue(
+        "licenseType",
+        application.NUM_APPLI_LICENSETYPEID?.toString() || "",
+      );
+
       setFieldValue("isManufactured", application.VAR_APPLI_ISPROD || "Y");
-      setFieldValue("isOwnerDoingBusiness", application.VAR_APPLI_OWNSPACE || "Y");
-      setFieldValue("rentAgreementWithWhom", application.VAR_APPLI_AGRMENTWITH || "");
+      setFieldValue(
+        "isOwnerDoingBusiness",
+        application.VAR_APPLI_OWNSPACE || "Y",
+      );
+      setFieldValue(
+        "rentAgreementWithWhom",
+        application.VAR_APPLI_AGRMENTWITH || "",
+      );
       setFieldValue("corporationNoc", application.VAR_APPLI_ISCORPNOC || "Y");
-      setFieldValue("businessStartYear", application.NUM_APPLI_BUSSTARTYR?.toString() || "0");
-      setFieldValue("shopActRegistrationNo", application.VAR_APPLI_SHOPACTNO || "");
-      setFieldValue("otherAdministrationRegistrationNo", application.VAR_APPLI_FOODLICNO || "");
+      setFieldValue(
+        "businessStartYear",
+        application.NUM_APPLI_BUSSTARTYR?.toString() || "0",
+      );
+      setFieldValue(
+        "shopActRegistrationNo",
+        application.VAR_APPLI_SHOPACTNO || "",
+      );
+      setFieldValue(
+        "otherAdministrationRegistrationNo",
+        application.VAR_APPLI_FOODLICNO || "",
+      );
 
       const totalAmount = result.application.AMOUNT || 0;
       setFieldValue("amount", String(totalAmount));
@@ -760,10 +789,14 @@ const FrmMarketEntry = () => {
       if (tradeTypeDetails.length > 0) {
         const tradeTypeRows = tradeTypeDetails.map((item, index) => ({
           id: Date.now() + index,
-          tradeTypeId: String(item.TRADETYPEID || item.NUM_APPLITRADETYPE_TRDTYPID || ""),
+          tradeTypeId: String(
+            item.TRADETYPEID || item.NUM_APPLITRADETYPE_TRDTYPID || "",
+          ),
           tradeType: item.TRADETYPE || "",
           rate: String(item.RATE || 0),
-          tradeCategoryId: String(item.NUM_CATEGORY_CATGRYID || item.CATEGORYID || ""),
+          tradeCategoryId: String(
+            item.NUM_CATEGORY_CATGRYID || item.CATEGORYID || "",
+          ),
           tradeCategory: item.TRADECATEGORY || "",
         }));
         setTradeTypeRateRows(tradeTypeRows);
@@ -789,8 +822,8 @@ const FrmMarketEntry = () => {
       if (documentDetails.length > 0) {
         setDocumentRows((prev) =>
           prev.map((item) => {
-            const existing = documentDetails.find((d) => 
-              String(d.DOCID) === String(item.docId)
+            const existing = documentDetails.find(
+              (d) => String(d.DOCID) === String(item.docId),
             );
             if (existing && existing.filebyte) {
               return {
@@ -799,7 +832,7 @@ const FrmMarketEntry = () => {
               };
             }
             return item;
-          })
+          }),
         );
       }
 
@@ -810,7 +843,6 @@ const FrmMarketEntry = () => {
       });
 
       setActiveTab("primary");
-
     } catch (error) {
       Swal.close();
       console.error("Search License Error:", error);
@@ -823,7 +855,6 @@ const FrmMarketEntry = () => {
 
   const submitApplication = async (values, { setSubmitting, resetForm }) => {
     try {
-
       if (!values.shopNameEnglish?.trim()) {
         Swal.fire({ text: "Please Enter Shop Name English" });
         setActiveTab("primary");
@@ -884,6 +915,33 @@ const FrmMarketEntry = () => {
           setActiveTab("primary");
           return;
         }
+
+        if (documentRows.length > 0) {
+          const missingDocuments = documentRows.filter(
+            (item) => item.active === "Y" && !item.file,
+          );
+
+          if (missingDocuments.length > 0) {
+            setActiveTab("documents");
+
+            await Swal.fire({
+              icon: "warning",
+              title: "Documents Required",
+              html: `
+        <div style="text-align: left;">
+          <p>Please upload all required documents.</p>
+          <ul style="margin-top: 10px;">
+            ${missingDocuments
+              .map((doc) => `<li>${doc.documentName}</li>`)
+              .join("")}
+          </ul>
+        </div>
+      `,
+            });
+
+            return;
+          }
+        }
       }
 
       if (directorRows.length === 0) {
@@ -903,10 +961,10 @@ const FrmMarketEntry = () => {
 
       const directorString = buildDirectorString();
       const tradeTypeString = buildTradeTypeString();
-      
+
       const totalAmount = tradeTypeRateRows.reduce(
         (total, item) => total + Number(item.rate || 0),
-        0
+        0,
       );
 
       const ipAddress = await getIPAddress();
@@ -916,57 +974,59 @@ const FrmMarketEntry = () => {
         ulbId: Number(ulbId),
         corpId: Number(corpId || 0),
         serviceId: Number(serviceId),
-        
+
         appid: Number(applicationId || 0),
         appliNo: applicationNo || "0",
         mode: Number(mode),
-        
-        oldLicencNo: mode === 2 ? (values.oldLicenseNo?.trim() || null) : null,
-        
+
+        oldLicencNo: mode === 2 ? values.oldLicenseNo?.trim() || null : null,
+
         shopName: values.shopNameEnglish?.trim() || "",
         shopNameMar: values.shopNameMarathi?.trim() || "",
         panNo: values.panCardNo?.trim() || "",
         contactNo: values.contactNo ? Number(values.contactNo) : null,
         email: values.email?.trim() || "",
         address: values.shopAddress?.trim() || "",
-        
+
         zoneId: values.zoneNo ? Number(values.zoneNo) : Number(zoneId || 0),
         wardId: values.wardNo ? Number(values.wardNo) : 0,
-        
+
         isProd: values.isManufactured === "Y" ? "Y" : "N",
         ownSpace: values.isOwnerDoingBusiness === "Y" ? "Y" : "N",
         agrmentWith: values.rentAgreementWithWhom || "",
         area: values.usedArea ? Number(values.usedArea) : 0,
         isCorpNOC: values.corporationNoc === "Y" ? "Y" : "N",
-        busStartYr: values.businessStartYear ? Number(values.businessStartYear) : 0,
+        busStartYr: values.businessStartYear
+          ? Number(values.businessStartYear)
+          : 0,
         shopActNo: values.shopActRegistrationNo || "",
         foodlicno: values.otherAdministrationRegistrationNo || "",
         licDays: null,
-        
+
         placeOwnerName: values.applicantName?.trim() || "",
         placeOwnerAddress: values.applicantAddress?.trim() || "",
-        
+
         fromDate: values.fromDate || null,
         toDate: values.toDate || null,
-        
+
         amount: Number(totalAmount || 0),
-        
+
         applitradeStr: "",
         applitradetypeStr: tradeTypeString,
         applidirectorStr: directorString,
-        
+
         licType: String(mode === 2 ? "R" : "N"),
         licenseTypeId: values.licenseType ? Number(values.licenseType) : 0,
         businessPlace: values.businessPlace ? Number(values.businessPlace) : 0,
-        
+
         jwalan: values.jalanShil || (mode === 1 ? "N" : ""),
         illegal: values.illegalType ? Number(values.illegalType) : 0,
         propNo: values.propNo || "",
         arrearsAmount: 0,
-        
+
         category: values.tradeBusinessType || "T",
         trdBusinessType: values.businessNature || "",
-        
+
         source: "WEB",
         ipAddress: ipAddress || "127.0.0.1",
         cfcRecno: "",
@@ -975,7 +1035,6 @@ const FrmMarketEntry = () => {
       console.log("========== APPLICATION ENTRY PAYLOAD ==========");
       console.log(JSON.stringify(payload, null, 2));
       console.log("================================================");
-
 
       Swal.fire({
         title: "Saving...",
@@ -989,7 +1048,7 @@ const FrmMarketEntry = () => {
       const response = await axios.post(
         `${BASE_URL}/api/FrmMarketEntry/applicationentry`,
         payload,
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } }
+        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
       );
 
       Swal.close();
@@ -997,12 +1056,14 @@ const FrmMarketEntry = () => {
       console.log("APPLICATION ENTRY RESPONSE:", response.data);
 
       const responseData = response.data?.data || {};
-      const backendMessage = response.data?.message || "Application entry failed.";
+      const backendMessage =
+        response.data?.message || "Application entry failed.";
       const errorCode = Number(responseData?.errorCode ?? 0);
       const newAppId = responseData?.appId ?? responseData?.appid ?? 0;
       const appNo = responseData?.appliNo || responseData?.appNo || "";
 
-      const isSuccess = response.data?.ok === true && 
+      const isSuccess =
+        response.data?.ok === true &&
         String(response.data?.status || "").toUpperCase() === "SUCCESS";
 
       if (!isSuccess) {
@@ -1019,7 +1080,7 @@ const FrmMarketEntry = () => {
       }
 
       const selectedDocuments = documentRows.filter(
-        (item) => item?.file && item.active === "Y"
+        (item) => item?.file && item.active === "Y",
       );
 
       if (selectedDocuments.length > 0) {
@@ -1049,7 +1110,7 @@ const FrmMarketEntry = () => {
                 Authorization: authToken ? `Bearer ${authToken}` : "",
                 "Content-Type": "multipart/form-data",
               },
-            }
+            },
           );
         }
       }
@@ -1082,7 +1143,7 @@ const FrmMarketEntry = () => {
               Authorization: authToken ? `Bearer ${authToken}` : "",
               "Content-Type": "multipart/form-data",
             },
-          }
+          },
         );
       }
 
@@ -1098,13 +1159,13 @@ const FrmMarketEntry = () => {
       setTradeTypeRateRows([]);
       setDirectorRows([]);
       setActiveTab("primary");
-
     } catch (error) {
       Swal.close();
       console.error("Application Entry Error:", error);
-      
+
       const errorResponse = error?.response?.data || {};
-      const errorMessage = errorResponse?.message || error?.message || "Application entry failed.";
+      const errorMessage =
+        errorResponse?.message || error?.message || "Application entry failed.";
 
       await Swal.fire({
         icon: "error",
@@ -1118,7 +1179,8 @@ const FrmMarketEntry = () => {
 
   const parseDateForPicker = (value) => {
     if (!value) return undefined;
-    if (value instanceof Date) return Number.isNaN(value.getTime()) ? undefined : value;
+    if (value instanceof Date)
+      return Number.isNaN(value.getTime()) ? undefined : value;
     const date = new Date(`${value}T00:00:00`);
     return Number.isNaN(date.getTime()) ? undefined : date;
   };
@@ -1142,7 +1204,9 @@ const FrmMarketEntry = () => {
           <Card className="w-full rounded-lg border border-gray-300 bg-white shadow-sm">
             <CardHeader className="border-b border-gray-200 px-5 py-4">
               <CardTitle className="text-lg font-semibold text-gray-700">
-                {mode === 2 ? "Trade/Storage License Renewal" : "New Trade / Storage License"}
+                {mode === 2
+                  ? "Trade/Storage License Renewal"
+                  : "New Trade / Storage License"}
               </CardTitle>
             </CardHeader>
 
@@ -1152,23 +1216,97 @@ const FrmMarketEntry = () => {
                 onValueChange={setActiveTab}
                 className="w-full"
               >
-                <div className="border-b border-gray-200 px-5 pt-4">
-                  <TabsList className="h-auto w-full justify-start gap-7 overflow-x-auto rounded-none bg-transparent p-0">
+                <div className="border-b border-gray-200 px-2 pt-2">
+                  <TabsList className="h-auto w-full justify-start gap-6 overflow-x-auto rounded-none bg-transparent p-0">
                     <TabsTrigger
                       value="primary"
-                      className="rounded-none border-b-2 border-transparent px-2 pb-3 pt-1 text-sm font-medium data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                      className="
+        rounded-none
+        border-0
+        border-b-2
+        border-transparent
+        bg-transparent
+        px-2
+        pb-3
+        pt-1
+        text-sm
+        font-medium
+        text-gray-600
+        shadow-none
+        outline-none
+        ring-0
+        transition-colors
+        hover:bg-transparent
+        hover:text-primary
+        focus-visible:outline-none
+        focus-visible:ring-0
+        data-[state=active]:border-primary
+        data-[state=active]:bg-transparent
+        data-[state=active]:text-primary
+        data-[state=active]:shadow-none
+      "
                     >
                       प्राथमिक माहिती
                     </TabsTrigger>
+
                     <TabsTrigger
                       value="director"
-                      className="rounded-none border-b-2 border-transparent px-2 pb-3 pt-1 text-sm font-medium data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                      className="
+        rounded-none
+        border-0
+        border-b-2
+        border-transparent
+        bg-transparent
+        px-2
+        pb-3
+        pt-1
+        text-sm
+        font-medium
+        text-gray-600
+        shadow-none
+        outline-none
+        ring-0
+        transition-colors
+        hover:bg-transparent
+        hover:text-primary
+        focus-visible:outline-none
+        focus-visible:ring-0
+        data-[state=active]:border-primary
+        data-[state=active]:bg-transparent
+        data-[state=active]:text-primary
+        data-[state=active]:shadow-none
+      "
                     >
                       संचालक माहिती
                     </TabsTrigger>
+
                     <TabsTrigger
                       value="documents"
-                      className="rounded-none border-b-2 border-transparent px-2 pb-3 pt-1 text-sm font-medium data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                      className="
+        rounded-none
+        border-0
+        border-b-2
+        border-transparent
+        bg-transparent
+        px-2
+        pb-3
+        pt-1
+        text-sm
+        font-medium
+        text-gray-600
+        shadow-none
+        outline-none
+        ring-0
+        transition-colors
+        hover:bg-transparent
+        hover:text-primary
+        focus-visible:outline-none
+        focus-visible:ring-0
+        data-[state=active]:border-primary
+        data-[state=active]:bg-transparent
+        data-[state=active]:text-primary
+        data-[state=active]:shadow-none
+      "
                     >
                       कागदपत्र जोडणे
                     </TabsTrigger>
@@ -1177,12 +1315,15 @@ const FrmMarketEntry = () => {
 
                 <TabsContent value="primary" className="m-0 px-5 py-6">
                   <div className="space-y-7">
-
                     {mode === 2 && (
                       <div className="space-y-4">
                         <div className="grid grid-cols-1 xl:grid-cols-3">
                           <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2 xl:col-span-1">
-                            <Label text="Type" required className="!w-full text-sm font-medium" />
+                            <Label
+                              text="Type"
+                              required
+                              className="!w-full text-sm font-medium"
+                            />
                             <span>:</span>
                             <div className="flex items-center gap-6">
                               <label className="flex cursor-pointer items-center gap-2 text-sm">
@@ -1190,7 +1331,11 @@ const FrmMarketEntry = () => {
                                   type="radio"
                                   checked={values.tradeBusinessType === "T"}
                                   onChange={async () => {
-                                    await handleTradeBusinessTypeChange("T", setFieldValue, values);
+                                    await handleTradeBusinessTypeChange(
+                                      "T",
+                                      setFieldValue,
+                                      values,
+                                    );
                                   }}
                                   className="h-4 w-4"
                                 />
@@ -1201,7 +1346,11 @@ const FrmMarketEntry = () => {
                                   type="radio"
                                   checked={values.tradeBusinessType === "S"}
                                   onChange={async () => {
-                                    await handleTradeBusinessTypeChange("S", setFieldValue, values);
+                                    await handleTradeBusinessTypeChange(
+                                      "S",
+                                      setFieldValue,
+                                      values,
+                                    );
                                   }}
                                   className="h-4 w-4"
                                 />
@@ -1213,19 +1362,27 @@ const FrmMarketEntry = () => {
 
                         <div className="grid grid-cols-1 xl:grid-cols-3">
                           <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2 xl:col-span-1">
-                            <Label text="परवाना क्रमांक" required className="!w-full text-sm font-medium" />
+                            <Label
+                              text="परवाना क्रमांक"
+                              required
+                              className="!w-full text-sm font-medium"
+                            />
                             <span>:</span>
                             <div className="flex w-full gap-2">
                               <Input
                                 value={values.oldLicenseNo}
-                                onChange={(e) => setFieldValue("oldLicenseNo", e.target.value)}
+                                onChange={(e) =>
+                                  setFieldValue("oldLicenseNo", e.target.value)
+                                }
                                 className="h-10 flex-1"
                                 placeholder="Enter License Number"
                               />
                               <Button
                                 type="button"
                                 variant="outline"
-                                onClick={() => handleSearchLicense(values, setFieldValue)}
+                                onClick={() =>
+                                  handleSearchLicense(values, setFieldValue)
+                                }
                                 className="h-10 whitespace-nowrap"
                               >
                                 शोधा
@@ -1236,71 +1393,115 @@ const FrmMarketEntry = () => {
                       </div>
                     )}
 
-                    <section className={mode === 2 ? "border-t border-gray-200 pt-6" : ""}>
+                    <section
+                      className={
+                        mode === 2 ? "border-t border-gray-200 pt-6" : ""
+                      }
+                    >
                       <div className="grid grid-cols-1 gap-x-8 gap-y-5 xl:grid-cols-2">
                         <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2">
-                          <Label text="दुकानाचे नाव इंग्रजी" required className="!w-full text-sm font-medium" />
+                          <Label
+                            text="दुकानाचे नाव इंग्रजी"
+                            required
+                            className="!w-full text-sm font-medium"
+                          />
                           <span>:</span>
                           <Input
                             value={values.shopNameEnglish}
-                            onChange={(e) => setFieldValue("shopNameEnglish", e.target.value)}
+                            onChange={(e) =>
+                              setFieldValue("shopNameEnglish", e.target.value)
+                            }
                             className="h-10 w-full"
                             maxLength={100}
                           />
                         </div>
 
                         <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2">
-                          <Label text="दुकानाचे नाव मराठी" required className="!w-full text-sm font-medium" />
+                          <Label
+                            text="दुकानाचे नाव मराठी"
+                            required
+                            className="!w-full text-sm font-medium"
+                          />
                           <span>:</span>
                           <Input
                             value={values.shopNameMarathi}
-                            onChange={(e) => setFieldValue("shopNameMarathi", e.target.value)}
+                            onChange={(e) =>
+                              setFieldValue("shopNameMarathi", e.target.value)
+                            }
                             className="h-10 w-full"
                             maxLength={100}
                           />
                         </div>
 
                         <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2">
-                          <Label text="पॅन कार्ड नं." className="!w-full text-sm font-medium" />
+                          <Label
+                            text="पॅन कार्ड नं."
+                            className="!w-full text-sm font-medium"
+                          />
                           <span>:</span>
                           <Input
                             maxLength={10}
                             value={values.panCardNo}
-                            onChange={(e) => setFieldValue("panCardNo", e.target.value.toUpperCase())}
+                            onChange={(e) =>
+                              setFieldValue(
+                                "panCardNo",
+                                e.target.value.toUpperCase(),
+                              )
+                            }
                             className="h-10 w-full"
                           />
                         </div>
 
                         <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2">
-                          <Label text="संपर्क क्र." required className="!w-full text-sm font-medium" />
+                          <Label
+                            text="संपर्क क्र."
+                            required
+                            className="!w-full text-sm font-medium"
+                          />
                           <span>:</span>
                           <Input
                             type="tel"
                             maxLength={10}
                             value={values.contactNo}
-                            onChange={(e) => setFieldValue("contactNo", e.target.value.replace(/\D/g, ""))}
+                            onChange={(e) =>
+                              setFieldValue(
+                                "contactNo",
+                                e.target.value.replace(/\D/g, ""),
+                              )
+                            }
                             className="h-10 w-full"
                           />
                         </div>
 
                         <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2">
-                          <Label text="ई-मेल" className="!w-full text-sm font-medium" />
+                          <Label
+                            text="ई-मेल"
+                            className="!w-full text-sm font-medium"
+                          />
                           <span>:</span>
                           <Input
                             type="email"
                             value={values.email}
-                            onChange={(e) => setFieldValue("email", e.target.value)}
+                            onChange={(e) =>
+                              setFieldValue("email", e.target.value)
+                            }
                             className="h-10 w-full"
                             maxLength={50}
                           />
                         </div>
 
                         <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2 xl:col-span-2">
-                          <Label text="दुकानाचा पत्ता" required className="!w-full text-sm font-medium" />
+                          <Label
+                            text="दुकानाचा पत्ता"
+                            required
+                            className="!w-full text-sm font-medium"
+                          />
                           <span>:</span>
                           <Input
                             value={values.shopAddress}
-                            onChange={(e) => setFieldValue("shopAddress", e.target.value)}
+                            onChange={(e) =>
+                              setFieldValue("shopAddress", e.target.value)
+                            }
                             className="h-10 w-full"
                           />
                         </div>
@@ -1309,13 +1510,18 @@ const FrmMarketEntry = () => {
 
                     <section className="border-t border-gray-200 pt-6">
                       <div className="grid grid-cols-1 gap-x-10 gap-y-4 lg:grid-cols-2 xl:grid-cols-3">
-                        
                         <div className="grid min-w-0 grid-cols-[210px_16px_minmax(0,1fr)] items-start gap-2">
-                          <Label text="प्रभाग समिती." required className="!w-full pt-2 text-sm font-medium" />
+                          <Label
+                            text="प्रभाग समिती."
+                            required
+                            className="!w-full pt-2 text-sm font-medium"
+                          />
                           <span className="pt-2 text-center">:</span>
                           <Select
                             value={values.wardNo}
-                            onValueChange={(value) => handleWardChange(value, setFieldValue)}
+                            onValueChange={(value) =>
+                              handleWardChange(value, setFieldValue)
+                            }
                           >
                             <SelectTrigger className="h-10 w-full">
                               <SelectValue placeholder="-- Select Option --" />
@@ -1331,48 +1537,71 @@ const FrmMarketEntry = () => {
                         </div>
 
                         <div className="grid min-w-0 grid-cols-[210px_16px_minmax(0,1fr)] items-start gap-2">
-                          <Label text="दिनांका पासून" className="!w-full pt-2 text-sm font-medium" />
+                          <Label
+                            text="दिनांका पासून"
+                            className="!w-full pt-2 text-sm font-medium"
+                          />
                           <span className="pt-2 text-center">:</span>
                           <DatePicker
                             value={parseDateForPicker(values.fromDate)}
-                            onChange={(date) => setFieldValue("fromDate", formatDateForFormik(date))}
+                            onChange={(date) =>
+                              setFieldValue(
+                                "fromDate",
+                                formatDateForFormik(date),
+                              )
+                            }
                             className="h-10 w-full"
                           />
                         </div>
 
                         <div className="grid min-w-0 grid-cols-[210px_16px_minmax(0,1fr)] items-start gap-2">
-                          <Label text="दिनांका पर्यंत" className="!w-full pt-2 text-sm font-medium" />
+                          <Label
+                            text="दिनांका पर्यंत"
+                            className="!w-full pt-2 text-sm font-medium"
+                          />
                           <span className="pt-2 text-center">:</span>
                           <DatePicker
                             value={parseDateForPicker(values.toDate)}
-                            onChange={(date) => setFieldValue("toDate", formatDateForFormik(date))}
+                            onChange={(date) =>
+                              setFieldValue("toDate", formatDateForFormik(date))
+                            }
                             className="h-10 w-full"
                           />
                         </div>
 
                         <div className="grid min-w-0 grid-cols-[210px_16px_minmax(0,1fr)] items-start gap-2">
-                          <Label text="Area in Sq.ft" required className="!w-full pt-2 text-sm font-medium" />
+                          <Label
+                            text="Area in Sq.ft"
+                            required
+                            className="!w-full pt-2 text-sm font-medium"
+                          />
                           <span className="pt-2 text-center">:</span>
                           <Input
                             type="number"
                             value={values.usedArea}
-                            onChange={(e) => setFieldValue("usedArea", e.target.value)}
+                            onChange={(e) =>
+                              setFieldValue("usedArea", e.target.value)
+                            }
                             className="h-10 w-full"
                           />
                         </div>
 
                         {mode === 2 && (
                           <div className="grid min-w-0 grid-cols-[210px_16px_minmax(0,1fr)] items-start gap-2">
-                            <Label 
-                              text="ज्वलनशील पदार्थांचा / इंधनाचा वापर व साठवणूक करीत आहे?" 
-                              required 
-                              className="!w-full pt-1 text-sm font-medium leading-5" 
+                            <Label
+                              text="ज्वलनशील पदार्थांचा / इंधनाचा वापर व साठवणूक करीत आहे?"
+                              required
+                              className="!w-full pt-1 text-sm font-medium leading-5"
                             />
                             <span className="pt-2 text-center">:</span>
                             <Select
                               value={values.jalanShil}
                               onValueChange={async (value) => {
-                                await handleJalanShilChange(value, setFieldValue, values);
+                                await handleJalanShilChange(
+                                  value,
+                                  setFieldValue,
+                                  values,
+                                );
                               }}
                             >
                               <SelectTrigger className="h-10 w-full">
@@ -1380,7 +1609,10 @@ const FrmMarketEntry = () => {
                               </SelectTrigger>
                               <SelectContent>
                                 {jalanShilOptions.map((item) => (
-                                  <SelectItem key={item.value} value={item.value}>
+                                  <SelectItem
+                                    key={item.value}
+                                    value={item.value}
+                                  >
                                     {item.label}
                                   </SelectItem>
                                 ))}
@@ -1391,18 +1623,27 @@ const FrmMarketEntry = () => {
 
                         {mode === 2 && (
                           <div className="grid min-w-0 grid-cols-[210px_16px_minmax(0,1fr)] items-start gap-2">
-                            <Label text="Illegal Property" required className="!w-full pt-2 text-sm font-medium" />
+                            <Label
+                              text="Illegal Property"
+                              required
+                              className="!w-full pt-2 text-sm font-medium"
+                            />
                             <span className="pt-2 text-center">:</span>
                             <Select
                               value={values.illegalType}
-                              onValueChange={(value) => setFieldValue("illegalType", value)}
+                              onValueChange={(value) =>
+                                setFieldValue("illegalType", value)
+                              }
                             >
                               <SelectTrigger className="h-10 w-full">
                                 <SelectValue placeholder="-- Select Option --" />
                               </SelectTrigger>
                               <SelectContent>
                                 {illegalTypeOptions.map((item) => (
-                                  <SelectItem key={item.value} value={item.value}>
+                                  <SelectItem
+                                    key={item.value}
+                                    value={item.value}
+                                  >
                                     {item.label}
                                   </SelectItem>
                                 ))}
@@ -1413,23 +1654,38 @@ const FrmMarketEntry = () => {
 
                         {mode === 2 && (
                           <div className="grid min-w-0 grid-cols-[210px_16px_minmax(0,1fr)] items-start gap-2">
-                            <Label text="Property No" required className="!w-full pt-2 text-sm font-medium" />
+                            <Label
+                              text="Property No"
+                              required
+                              className="!w-full pt-2 text-sm font-medium"
+                            />
                             <span className="pt-2 text-center">:</span>
                             <Input
                               value={values.propNo}
-                              onChange={(e) => setFieldValue("propNo", e.target.value)}
+                              onChange={(e) =>
+                                setFieldValue("propNo", e.target.value)
+                              }
                               className="h-10 w-full"
                             />
                           </div>
                         )}
 
                         <div className="grid min-w-0 grid-cols-[210px_16px_minmax(0,1fr)] items-start gap-2">
-                          <Label text="Trade Category" required className="!w-full pt-2 text-sm font-medium" />
+                          <Label
+                            text="Trade Category"
+                            required
+                            className="!w-full pt-2 text-sm font-medium"
+                          />
                           <span className="pt-2 text-center">:</span>
                           <Select
                             value={values.tradeCategory}
-                            disabled={!values.tradeBusinessType || (mode === 2 && !values.jalanShil)}
-                            onValueChange={(value) => handleTradeCategoryChange(value, setFieldValue)}
+                            disabled={
+                              !values.tradeBusinessType ||
+                              (mode === 2 && !values.jalanShil)
+                            }
+                            onValueChange={(value) =>
+                              handleTradeCategoryChange(value, setFieldValue)
+                            }
                           >
                             <SelectTrigger className="h-10 w-full">
                               <SelectValue placeholder="-- Select Option --" />
@@ -1445,12 +1701,18 @@ const FrmMarketEntry = () => {
                         </div>
 
                         <div className="grid min-w-0 grid-cols-[210px_16px_minmax(0,1fr)] items-start gap-2">
-                          <Label text="Trade Type" required className="!w-full pt-2 text-sm font-medium" />
+                          <Label
+                            text="Trade Type"
+                            required
+                            className="!w-full pt-2 text-sm font-medium"
+                          />
                           <span className="pt-2 text-center">:</span>
                           <Select
                             value={values.tradeType}
                             disabled={!values.tradeCategory}
-                            onValueChange={(value) => setFieldValue("tradeType", value)}
+                            onValueChange={(value) =>
+                              setFieldValue("tradeType", value)
+                            }
                           >
                             <SelectTrigger className="h-10 w-full">
                               <SelectValue placeholder="-- Select Option --" />
@@ -1466,11 +1728,17 @@ const FrmMarketEntry = () => {
                         </div>
 
                         <div className="grid min-w-0 grid-cols-[210px_16px_minmax(0,1fr)] items-start gap-2">
-                          <Label text="व्यवसाय ची जागा" required className="!w-full pt-2 text-sm font-medium" />
+                          <Label
+                            text="व्यवसाय ची जागा"
+                            required
+                            className="!w-full pt-2 text-sm font-medium"
+                          />
                           <span className="pt-2 text-center">:</span>
                           <Select
                             value={values.businessPlace}
-                            onValueChange={(value) => setFieldValue("businessPlace", value)}
+                            onValueChange={(value) =>
+                              setFieldValue("businessPlace", value)
+                            }
                           >
                             <SelectTrigger className="h-10 w-full">
                               <SelectValue placeholder="-- Select Option --" />
@@ -1487,18 +1755,27 @@ const FrmMarketEntry = () => {
 
                         <div className="hidden">
                           <div className="grid min-w-0 grid-cols-[210px_16px_minmax(0,1fr)] items-start gap-2">
-                            <Label text="झोन क्र." required className="!w-full pt-2 text-sm font-medium" />
+                            <Label
+                              text="झोन क्र."
+                              required
+                              className="!w-full pt-2 text-sm font-medium"
+                            />
                             <span className="pt-2 text-center">:</span>
                             <Select
                               value={values.zoneNo}
-                              onValueChange={(value) => setFieldValue("zoneNo", value)}
+                              onValueChange={(value) =>
+                                setFieldValue("zoneNo", value)
+                              }
                             >
                               <SelectTrigger className="h-10 w-full">
                                 <SelectValue placeholder="-- Select Option --" />
                               </SelectTrigger>
                               <SelectContent>
                                 {zoneOptions.map((item) => (
-                                  <SelectItem key={item.value} value={item.value}>
+                                  <SelectItem
+                                    key={item.value}
+                                    value={item.value}
+                                  >
                                     {item.label}
                                   </SelectItem>
                                 ))}
@@ -1509,11 +1786,16 @@ const FrmMarketEntry = () => {
 
                         <div className="hidden">
                           <div className="grid min-w-0 grid-cols-[210px_16px_minmax(0,1fr)] items-start gap-2">
-                            <Label text="Rate" className="!w-full pt-2 text-sm font-medium" />
+                            <Label
+                              text="Rate"
+                              className="!w-full pt-2 text-sm font-medium"
+                            />
                             <span className="pt-2 text-center">:</span>
                             <Input
                               value={values.rate}
-                              onChange={(e) => setFieldValue("rate", e.target.value)}
+                              onChange={(e) =>
+                                setFieldValue("rate", e.target.value)
+                              }
                               className="h-10 w-full"
                             />
                           </div>
@@ -1531,32 +1813,29 @@ const FrmMarketEntry = () => {
                     </section>
 
                     {tradeTypeRateRows.length > 0 && (
-                      <div className="overflow-x-auto">
-                        <Table className="min-w-[650px] border">
+                      <div className="w-full overflow-x-auto">
+                        <Table className="w-full table-fixed border">
                           <TableHeader>
                             <TableRow>
-                              <TableHead className="bg-[#2f4356] text-white">काढा</TableHead>
-                              <TableHead className="bg-[#2f4356] text-white">Trade Type</TableHead>
-                              <TableHead className="bg-[#2f4356] text-white">दर</TableHead>
-                              <TableHead className="bg-[#2f4356] text-white">Trade Category</TableHead>
+                              <TableHead className="bg-[#184aa6] text-white">
+                                Trade Type
+                              </TableHead>
+
+                              <TableHead className="bg-[#184aa6] text-white">
+                                Trade Category
+                              </TableHead>
                             </TableRow>
                           </TableHeader>
+
                           <TableBody>
                             {tradeTypeRateRows.map((item) => (
                               <TableRow key={item.id}>
-                                <TableCell>
-                                  <Button
-                                    type="button"
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => removeTradeType(item.id)}
-                                  >
-                                    Remove
-                                  </Button>
+                                <TableCell className="break-words">
+                                  {item.tradeType}
                                 </TableCell>
-                                <TableCell>{item.tradeType}</TableCell>
-                                <TableCell>{item.rate}</TableCell>
-                                <TableCell>{item.tradeCategory}</TableCell>
+                                <TableCell className="break-words">
+                                  {item.tradeCategory}
+                                </TableCell>
                               </TableRow>
                             ))}
                           </TableBody>
@@ -1564,34 +1843,50 @@ const FrmMarketEntry = () => {
                       </div>
                     )}
 
-                    {serviceId && ["304", "501"].includes(String(serviceId)) && (
-                      <section className="border-t border-gray-200 pt-6">
-                        <div className="grid grid-cols-1 gap-x-8 gap-y-5 xl:grid-cols-3">
-                          <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2">
-                            <Label text="व्यवसायाचे स्वरूप" required className="!w-full text-sm font-medium" />
-                            <span>:</span>
-                            <Input
-                              value={values.businessNature}
-                              onChange={(e) => setFieldValue("businessNature", e.target.value)}
-                              className="h-10 w-full"
-                            />
+                    {serviceId &&
+                      ["304", "501"].includes(String(serviceId)) && (
+                        <section className="border-t border-gray-200 pt-6">
+                          <div className="grid grid-cols-1 gap-x-8 gap-y-5 xl:grid-cols-3">
+                            <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2">
+                              <Label
+                                text="व्यवसायाचे स्वरूप"
+                                required
+                                className="!w-full text-sm font-medium"
+                              />
+                              <span>:</span>
+                              <Input
+                                value={values.businessNature}
+                                onChange={(e) =>
+                                  setFieldValue(
+                                    "businessNature",
+                                    e.target.value,
+                                  )
+                                }
+                                className="h-10 w-full"
+                              />
+                            </div>
                           </div>
-                        </div>
-                      </section>
-                    )}
+                        </section>
+                      )}
 
                     <div className="hidden">
                       <section className="border-t border-gray-200 pt-6">
                         <div className="grid grid-cols-1 gap-x-8 gap-y-5 xl:grid-cols-2">
                           <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2">
-                            <Label text="वस्तू निर्मित आहे का" required className="!w-full text-sm font-medium" />
+                            <Label
+                              text="वस्तू निर्मित आहे का"
+                              required
+                              className="!w-full text-sm font-medium"
+                            />
                             <span>:</span>
                             <div className="flex items-center gap-6">
                               <label className="flex cursor-pointer items-center gap-2 text-sm">
                                 <Input
                                   type="radio"
                                   checked={values.isManufactured === "Y"}
-                                  onChange={() => setFieldValue("isManufactured", "Y")}
+                                  onChange={() =>
+                                    setFieldValue("isManufactured", "Y")
+                                  }
                                   className="h-4 w-4"
                                 />
                                 होय
@@ -1600,7 +1895,9 @@ const FrmMarketEntry = () => {
                                 <Input
                                   type="radio"
                                   checked={values.isManufactured === "N"}
-                                  onChange={() => setFieldValue("isManufactured", "N")}
+                                  onChange={() =>
+                                    setFieldValue("isManufactured", "N")
+                                  }
                                   className="h-4 w-4"
                                 />
                                 नाही
@@ -1609,14 +1906,20 @@ const FrmMarketEntry = () => {
                           </div>
 
                           <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2">
-                            <Label text="स्वत:च्या मालकीच्या जागेत व्यवसाय करीत आहे का" required className="!w-full text-sm font-medium" />
+                            <Label
+                              text="स्वत:च्या मालकीच्या जागेत व्यवसाय करीत आहे का"
+                              required
+                              className="!w-full text-sm font-medium"
+                            />
                             <span>:</span>
                             <div className="flex items-center gap-6">
                               <label className="flex cursor-pointer items-center gap-2 text-sm">
                                 <Input
                                   type="radio"
                                   checked={values.isOwnerDoingBusiness === "Y"}
-                                  onChange={() => setFieldValue("isOwnerDoingBusiness", "Y")}
+                                  onChange={() =>
+                                    setFieldValue("isOwnerDoingBusiness", "Y")
+                                  }
                                   className="h-4 w-4"
                                 />
                                 होय
@@ -1625,7 +1928,9 @@ const FrmMarketEntry = () => {
                                 <Input
                                   type="radio"
                                   checked={values.isOwnerDoingBusiness === "N"}
-                                  onChange={() => setFieldValue("isOwnerDoingBusiness", "N")}
+                                  onChange={() =>
+                                    setFieldValue("isOwnerDoingBusiness", "N")
+                                  }
                                   className="h-4 w-4"
                                 />
                                 नाही
@@ -1639,21 +1944,33 @@ const FrmMarketEntry = () => {
                     <section className="border-t border-gray-200 pt-6">
                       <div className="grid grid-cols-1 gap-x-8 gap-y-5 xl:grid-cols-2">
                         <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2">
-                          <Label text="अर्जदाराचे नाव" required className="!w-full text-sm font-medium" />
+                          <Label
+                            text="अर्जदाराचे नाव"
+                            required
+                            className="!w-full text-sm font-medium"
+                          />
                           <span>:</span>
                           <Input
                             value={values.applicantName}
-                            onChange={(e) => setFieldValue("applicantName", e.target.value)}
+                            onChange={(e) =>
+                              setFieldValue("applicantName", e.target.value)
+                            }
                             className="h-10 w-full"
                           />
                         </div>
 
                         <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-start gap-2">
-                          <Label text="अर्जदाराचे पत्ता" required className="!w-full pt-2 text-sm font-medium" />
+                          <Label
+                            text="अर्जदाराचे पत्ता"
+                            required
+                            className="!w-full pt-2 text-sm font-medium"
+                          />
                           <span className="pt-2">:</span>
                           <textarea
                             value={values.applicantAddress}
-                            onChange={(e) => setFieldValue("applicantAddress", e.target.value)}
+                            onChange={(e) =>
+                              setFieldValue("applicantAddress", e.target.value)
+                            }
                             className="min-h-[90px] w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                           />
                         </div>
@@ -1664,24 +1981,39 @@ const FrmMarketEntry = () => {
                       <section className="border-t border-gray-200 pt-6">
                         <div className="grid grid-cols-1 gap-x-8 gap-y-5 xl:grid-cols-2">
                           <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2">
-                            <Label text="भाडे करार कोणासोबत केलेला आहे" required className="!w-full text-sm font-medium" />
+                            <Label
+                              text="भाडे करार कोणासोबत केलेला आहे"
+                              required
+                              className="!w-full text-sm font-medium"
+                            />
                             <span>:</span>
                             <Input
                               value={values.rentAgreementWithWhom}
-                              onChange={(e) => setFieldValue("rentAgreementWithWhom", e.target.value)}
+                              onChange={(e) =>
+                                setFieldValue(
+                                  "rentAgreementWithWhom",
+                                  e.target.value,
+                                )
+                              }
                               className="h-10 w-full"
                             />
                           </div>
 
                           <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2">
-                            <Label text="व्यवसायासाठी म. न. पा. चे नाहरकत प्रमाणपत्र घेतले आहे का" required className="!w-full text-sm font-medium" />
+                            <Label
+                              text="व्यवसायासाठी म. न. पा. चे नाहरकत प्रमाणपत्र घेतले आहे का"
+                              required
+                              className="!w-full text-sm font-medium"
+                            />
                             <span>:</span>
                             <div className="flex items-center gap-6">
                               <label className="flex cursor-pointer items-center gap-2 text-sm">
                                 <Input
                                   type="radio"
                                   checked={values.corporationNoc === "Y"}
-                                  onChange={() => setFieldValue("corporationNoc", "Y")}
+                                  onChange={() =>
+                                    setFieldValue("corporationNoc", "Y")
+                                  }
                                   className="h-4 w-4"
                                 />
                                 होय
@@ -1690,7 +2022,9 @@ const FrmMarketEntry = () => {
                                 <Input
                                   type="radio"
                                   checked={values.corporationNoc === "N"}
-                                  onChange={() => setFieldValue("corporationNoc", "N")}
+                                  onChange={() =>
+                                    setFieldValue("corporationNoc", "N")
+                                  }
                                   className="h-4 w-4"
                                 />
                                 नाही
@@ -1699,51 +2033,85 @@ const FrmMarketEntry = () => {
                           </div>
 
                           <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2">
-                            <Label text="व्यवसाय सुरु केल्याचे वर्ष" required className="!w-full text-sm font-medium" />
+                            <Label
+                              text="व्यवसाय सुरु केल्याचे वर्ष"
+                              required
+                              className="!w-full text-sm font-medium"
+                            />
                             <span>:</span>
                             <Input
                               type="number"
                               maxLength={4}
                               value={values.businessStartYear}
-                              onChange={(e) => setFieldValue("businessStartYear", e.target.value)}
+                              onChange={(e) =>
+                                setFieldValue(
+                                  "businessStartYear",
+                                  e.target.value,
+                                )
+                              }
                               className="h-10 w-full"
                             />
                           </div>
 
                           <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2">
-                            <Label text="शॉप ऍक्ट नोंदणी क्र." className="!w-full text-sm font-medium" />
+                            <Label
+                              text="शॉप ऍक्ट नोंदणी क्र."
+                              className="!w-full text-sm font-medium"
+                            />
                             <span>:</span>
                             <Input
                               maxLength={18}
                               value={values.shopActRegistrationNo}
-                              onChange={(e) => setFieldValue("shopActRegistrationNo", e.target.value)}
+                              onChange={(e) =>
+                                setFieldValue(
+                                  "shopActRegistrationNo",
+                                  e.target.value,
+                                )
+                              }
                               className="h-10 w-full"
                             />
                           </div>
 
                           <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2">
-                            <Label text="अन्न व औषध प्रशासन कायद्यान्वये नोंदणी क्र." className="!w-full text-sm font-medium" />
+                            <Label
+                              text="अन्न व औषध प्रशासन कायद्यान्वये नोंदणी क्र."
+                              className="!w-full text-sm font-medium"
+                            />
                             <span>:</span>
                             <Input
                               value={values.otherAdministrationRegistrationNo}
-                              onChange={(e) => setFieldValue("otherAdministrationRegistrationNo", e.target.value)}
+                              onChange={(e) =>
+                                setFieldValue(
+                                  "otherAdministrationRegistrationNo",
+                                  e.target.value,
+                                )
+                              }
                               className="h-10 w-full"
                             />
                           </div>
 
                           <div className="grid grid-cols-[210px_18px_minmax(0,1fr)] items-center gap-2">
-                            <Label text="License Type" required className="!w-full text-sm font-medium" />
+                            <Label
+                              text="License Type"
+                              required
+                              className="!w-full text-sm font-medium"
+                            />
                             <span>:</span>
                             <Select
                               value={values.licenseType}
-                              onValueChange={(value) => setFieldValue("licenseType", value)}
+                              onValueChange={(value) =>
+                                setFieldValue("licenseType", value)
+                              }
                             >
                               <SelectTrigger className="h-10 w-full">
                                 <SelectValue placeholder="-- Select Option --" />
                               </SelectTrigger>
                               <SelectContent>
                                 {licenseTypeOptions.map((item) => (
-                                  <SelectItem key={item.value} value={item.value}>
+                                  <SelectItem
+                                    key={item.value}
+                                    value={item.value}
+                                  >
                                     {item.label}
                                   </SelectItem>
                                 ))}
@@ -1782,73 +2150,112 @@ const FrmMarketEntry = () => {
                     <div className="grid grid-cols-1 gap-x-8 gap-y-5 xl:grid-cols-2">
                       {/* Director Aadhar */}
                       <div className="grid grid-cols-[220px_18px_minmax(0,1fr)] items-center gap-2">
-                        <Label text="संचालकाचा आधार क्रमांक" className="!w-full text-sm font-medium" />
+                        <Label
+                          text="संचालकाचा आधार क्रमांक"
+                          className="!w-full text-sm font-medium"
+                        />
                         <span>:</span>
                         <Input
                           maxLength={12}
                           value={values.directorAadharNo}
-                          onChange={(e) => setFieldValue("directorAadharNo", e.target.value.replace(/\D/g, ""))}
+                          onChange={(e) =>
+                            setFieldValue(
+                              "directorAadharNo",
+                              e.target.value.replace(/\D/g, ""),
+                            )
+                          }
                           className="h-10 w-full"
                         />
                       </div>
 
                       {/* Director Name */}
                       <div className="grid grid-cols-[220px_18px_minmax(0,1fr)] items-center gap-2">
-                        <Label text="संचालकाचे नाव" required className="!w-full text-sm font-medium" />
+                        <Label
+                          text="संचालकाचे नाव"
+                          required
+                          className="!w-full text-sm font-medium"
+                        />
                         <span>:</span>
                         <Input
                           value={values.directorName}
-                          onChange={(e) => setFieldValue("directorName", e.target.value)}
+                          onChange={(e) =>
+                            setFieldValue("directorName", e.target.value)
+                          }
                           className="h-10 w-full"
                         />
                       </div>
 
                       {/* Voter ID */}
                       <div className="grid grid-cols-[220px_18px_minmax(0,1fr)] items-center gap-2">
-                        <Label text="Voter ID Card No / License No" className="!w-full text-sm font-medium" />
+                        <Label
+                          text="Voter ID Card No / License No"
+                          className="!w-full text-sm font-medium"
+                        />
                         <span>:</span>
                         <Input
                           maxLength={20}
                           value={values.directorVoterId}
-                          onChange={(e) => setFieldValue("directorVoterId", e.target.value)}
+                          onChange={(e) =>
+                            setFieldValue("directorVoterId", e.target.value)
+                          }
                           className="h-10 w-full"
                         />
                       </div>
 
                       {/* Director Mobile */}
                       <div className="grid grid-cols-[220px_18px_minmax(0,1fr)] items-center gap-2">
-                        <Label text="संपर्क क्र." required className="!w-full text-sm font-medium" />
+                        <Label
+                          text="संपर्क क्र."
+                          required
+                          className="!w-full text-sm font-medium"
+                        />
                         <span>:</span>
                         <Input
                           maxLength={10}
                           value={values.directorContactNo}
-                          onChange={(e) => setFieldValue("directorContactNo", e.target.value.replace(/\D/g, ""))}
+                          onChange={(e) =>
+                            setFieldValue(
+                              "directorContactNo",
+                              e.target.value.replace(/\D/g, ""),
+                            )
+                          }
                           className="h-10 w-full"
                         />
                       </div>
 
                       {/* Director Email */}
                       <div className="grid grid-cols-[220px_18px_minmax(0,1fr)] items-center gap-2">
-                        <Label text="ई-मेल" className="!w-full text-sm font-medium" />
+                        <Label
+                          text="ई-मेल"
+                          className="!w-full text-sm font-medium"
+                        />
                         <span>:</span>
                         <Input
                           type="email"
                           value={values.directorEmail}
-                          onChange={(e) => setFieldValue("directorEmail", e.target.value)}
+                          onChange={(e) =>
+                            setFieldValue("directorEmail", e.target.value)
+                          }
                           className="h-10 w-full"
                         />
                       </div>
 
                       {/* Gender */}
                       <div className="grid grid-cols-[220px_18px_minmax(0,1fr)] items-center gap-2">
-                        <Label text="लिंग" required className="!w-full text-sm font-medium" />
+                        <Label
+                          text="लिंग"
+                          required
+                          className="!w-full text-sm font-medium"
+                        />
                         <span>:</span>
                         <div className="flex flex-wrap items-center gap-5">
                           <label className="flex cursor-pointer items-center gap-2 text-sm">
                             <Input
                               type="radio"
                               checked={values.directorGender === "F"}
-                              onChange={() => setFieldValue("directorGender", "F")}
+                              onChange={() =>
+                                setFieldValue("directorGender", "F")
+                              }
                               className="h-4 w-4"
                             />
                             स्त्री
@@ -1857,7 +2264,9 @@ const FrmMarketEntry = () => {
                             <Input
                               type="radio"
                               checked={values.directorGender === "M"}
-                              onChange={() => setFieldValue("directorGender", "M")}
+                              onChange={() =>
+                                setFieldValue("directorGender", "M")
+                              }
                               className="h-4 w-4"
                             />
                             पुरुष
@@ -1866,7 +2275,9 @@ const FrmMarketEntry = () => {
                             <Input
                               type="radio"
                               checked={values.directorGender === "O"}
-                              onChange={() => setFieldValue("directorGender", "O")}
+                              onChange={() =>
+                                setFieldValue("directorGender", "O")
+                              }
                               className="h-4 w-4"
                             />
                             इतर
@@ -1876,22 +2287,34 @@ const FrmMarketEntry = () => {
 
                       {/* Director Address */}
                       <div className="grid grid-cols-[220px_18px_minmax(0,1fr)] items-start gap-2 xl:col-span-2">
-                        <Label text="पत्ता" required className="!w-full pt-2 text-sm font-medium" />
+                        <Label
+                          text="पत्ता"
+                          required
+                          className="!w-full pt-2 text-sm font-medium"
+                        />
                         <span className="pt-2">:</span>
                         <textarea
                           value={values.directorAddress}
-                          onChange={(e) => setFieldValue("directorAddress", e.target.value)}
+                          onChange={(e) =>
+                            setFieldValue("directorAddress", e.target.value)
+                          }
                           className="min-h-[90px] w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                         />
                       </div>
 
                       {/* Applicant Type */}
                       <div className="grid grid-cols-[220px_18px_minmax(0,1fr)] items-center gap-2">
-                        <Label text="अर्जदार प्रकार" required className="!w-full text-sm font-medium" />
+                        <Label
+                          text="अर्जदार प्रकार"
+                          required
+                          className="!w-full text-sm font-medium"
+                        />
                         <span>:</span>
                         <Select
                           value={values.directorApplicantType}
-                          onValueChange={(value) => setFieldValue("directorApplicantType", value)}
+                          onValueChange={(value) =>
+                            setFieldValue("directorApplicantType", value)
+                          }
                         >
                           <SelectTrigger className="h-10 w-full">
                             <SelectValue placeholder="-- Select Option --" />
@@ -1908,12 +2331,20 @@ const FrmMarketEntry = () => {
 
                       {/* Director Photo */}
                       <div className="grid grid-cols-[220px_18px_minmax(0,1fr)] items-center gap-2">
-                        <Label text="संचालकांचा फोटो" className="!w-full text-sm font-medium" />
+                        <Label
+                          text="संचालकांचा फोटो"
+                          className="!w-full text-sm font-medium"
+                        />
                         <span>:</span>
                         <Input
                           type="file"
                           accept=".jpg,.jpeg,.png"
-                          onChange={(e) => setFieldValue("directorImage", e.currentTarget.files?.[0] || null)}
+                          onChange={(e) =>
+                            setFieldValue(
+                              "directorImage",
+                              e.currentTarget.files?.[0] || null,
+                            )
+                          }
                           className="h-10 w-full"
                         />
                       </div>
@@ -1931,19 +2362,48 @@ const FrmMarketEntry = () => {
 
                     {/* Director Grid */}
                     <div className="w-full overflow-x-auto">
-                      <Table className="min-w-[1250px] border">
+                      <Table className="w-full table-fixed border">
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="whitespace-nowrap bg-[#2f4356] text-white">आधार क्र.</TableHead>
-                            <TableHead className="whitespace-nowrap bg-[#2f4356] text-white">संचालकांचे नाव</TableHead>
-                            <TableHead className="whitespace-nowrap bg-[#2f4356] text-white">Voter ID Card No / License No</TableHead>
-                            <TableHead className="whitespace-nowrap bg-[#2f4356] text-white">मोबाईल क्र.</TableHead>
-                            <TableHead className="whitespace-nowrap bg-[#2f4356] text-white">ई-मेल</TableHead>
-                            <TableHead className="whitespace-nowrap bg-[#2f4356] text-white">लिंग</TableHead>
-                            <TableHead className="whitespace-nowrap bg-[#2f4356] text-white">पत्ता</TableHead>
-                            <TableHead className="whitespace-nowrap bg-[#2f4356] text-white">अर्जदाराचा प्रकार</TableHead>
-                            <TableHead className="whitespace-nowrap bg-[#2f4356] text-white">संचालकांचे छायाचित्र</TableHead>
-                            <TableHead className="whitespace-nowrap bg-[#2f4356] text-white">काढा</TableHead>
+                            <TableHead className="w-[90px] whitespace-nowrap bg-[#184aa6] text-white">
+                              आधार क्र.
+                            </TableHead>
+
+                            <TableHead className="w-[150px] whitespace-nowrap bg-[#184aa6] text-white">
+                              संचालकांचे नाव
+                            </TableHead>
+
+                            <TableHead className="w-[180px] whitespace-normal bg-[#184aa6] text-white">
+                              Voter ID Card No / License No
+                            </TableHead>
+
+                            <TableHead className="w-[130px] whitespace-nowrap bg-[#184aa6] text-white">
+                              मोबाईल क्र.
+                            </TableHead>
+
+                            <TableHead className="w-[170px] whitespace-nowrap bg-[#184aa6] text-white">
+                              ई-मेल
+                            </TableHead>
+
+                            <TableHead className="w-[80px] whitespace-nowrap bg-[#184aa6] text-white">
+                              लिंग
+                            </TableHead>
+
+                            <TableHead className="w-[220px] whitespace-nowrap bg-[#184aa6] text-white">
+                              पत्ता
+                            </TableHead>
+
+                            <TableHead className="w-[150px] whitespace-nowrap bg-[#184aa6] text-white">
+                              अर्जदाराचा प्रकार
+                            </TableHead>
+
+                            <TableHead className="w-[180px] whitespace-nowrap bg-[#184aa6] text-white">
+                              संचालकांचे छायाचित्र
+                            </TableHead>
+
+                            <TableHead className="w-[110px] whitespace-nowrap bg-[#184aa6] text-white">
+                              काढा
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
 
@@ -1951,15 +2411,42 @@ const FrmMarketEntry = () => {
                           {directorRows.length > 0 ? (
                             directorRows.map((item) => (
                               <TableRow key={item.id}>
-                                <TableCell>{item.aadharNo}</TableCell>
-                                <TableCell>{item.directorName}</TableCell>
-                                <TableCell>{item.voterId}</TableCell>
-                                <TableCell>{item.mobileNo}</TableCell>
-                                <TableCell>{item.email}</TableCell>
-                                <TableCell>{item.gender}</TableCell>
-                                <TableCell>{item.address}</TableCell>
-                                <TableCell>{item.applicantType}</TableCell>
-                                <TableCell>{item.image?.name || ""}</TableCell>
+                                <TableCell className="break-words">
+                                  {item.aadharNo}
+                                </TableCell>
+
+                                <TableCell className="break-words">
+                                  {item.directorName}
+                                </TableCell>
+
+                                <TableCell className="break-words">
+                                  {item.voterId}
+                                </TableCell>
+
+                                <TableCell className="whitespace-nowrap">
+                                  {item.mobileNo}
+                                </TableCell>
+
+                                <TableCell className="break-words">
+                                  {item.email}
+                                </TableCell>
+
+                                <TableCell className="whitespace-nowrap">
+                                  {item.gender}
+                                </TableCell>
+
+                                <TableCell className="break-words">
+                                  {item.address}
+                                </TableCell>
+
+                                <TableCell className="break-words">
+                                  {item.applicantType}
+                                </TableCell>
+
+                                <TableCell className="break-words">
+                                  {item.image?.name || ""}
+                                </TableCell>
+
                                 <TableCell>
                                   <Button
                                     type="button"
@@ -1974,7 +2461,10 @@ const FrmMarketEntry = () => {
                             ))
                           ) : (
                             <TableRow>
-                              <TableCell colSpan={10} className="py-5 text-center">
+                              <TableCell
+                                colSpan={10}
+                                className="py-5 text-center"
+                              >
                                 No records found.
                               </TableCell>
                             </TableRow>
@@ -2004,22 +2494,30 @@ const FrmMarketEntry = () => {
 
                 <TabsContent value="documents" className="m-0 px-5 py-6">
                   <div className="w-full overflow-x-auto">
-                    <Table className="min-w-[900px] border">
+                    <Table className="w-full table-fixed border">
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="bg-[#2f4356] text-white">दस्तऐवजाचे नांव</TableHead>
-                          <TableHead className="w-[300px] bg-[#2f4356] text-white">शेरा</TableHead>
-                          <TableHead className="w-[320px] bg-[#2f4356] text-white">फाईल निवडा</TableHead>
+                          <TableHead className="w-[40%] bg-[#184aa6] text-white">
+                            दस्तऐवजाचे नांव
+                          </TableHead>
+
+                          <TableHead className="w-[25%] bg-[#184aa6] text-white">
+                            शेरा
+                          </TableHead>
+
+                          <TableHead className="w-[35%] bg-[#184aa6] text-white">
+                            फाईल निवडा
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
-
                       <TableBody>
                         {documentRows.length > 0 ? (
                           documentRows.map((item) => (
                             <TableRow key={item.id}>
-                              <TableCell className="whitespace-normal align-middle">
+                              <TableCell className="break-words align-middle">
                                 {item.documentName}
                               </TableCell>
+
                               <TableCell className="align-middle">
                                 <Input
                                   value={item.remark || ""}
@@ -2027,14 +2525,18 @@ const FrmMarketEntry = () => {
                                     setDocumentRows((prev) =>
                                       prev.map((row) =>
                                         String(row.id) === String(item.id)
-                                          ? { ...row, remark: e.target.value }
-                                          : row
-                                      )
+                                          ? {
+                                              ...row,
+                                              remark: e.target.value,
+                                            }
+                                          : row,
+                                      ),
                                     )
                                   }
                                   className="h-9 w-full"
                                 />
                               </TableCell>
+
                               <TableCell className="align-middle">
                                 <Input
                                   type="file"
@@ -2043,7 +2545,7 @@ const FrmMarketEntry = () => {
                                   onChange={(e) =>
                                     handleDocumentFile(
                                       item.id,
-                                      e.currentTarget.files?.[0]
+                                      e.currentTarget.files?.[0],
                                     )
                                   }
                                   className="h-9 w-full"
@@ -2069,7 +2571,10 @@ const FrmMarketEntry = () => {
                         <Checkbox
                           checked={values.declarationAccepted}
                           onCheckedChange={(checked) =>
-                            setFieldValue("declarationAccepted", checked === true)
+                            setFieldValue(
+                              "declarationAccepted",
+                              checked === true,
+                            )
                           }
                         />
                         <span>

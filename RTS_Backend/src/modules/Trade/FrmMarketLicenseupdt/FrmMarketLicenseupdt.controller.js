@@ -220,11 +220,7 @@ exports.getTradeDirectorId = asyncHandler(async (req, res) => {
     applicationId,
   });
 
-  return ok(
-    res,
-    result,
-    "Trade director ID fetched successfully"
-  );
+  return ok(res, result, "Trade director ID fetched successfully");
 });
 
 exports.updateTradeDirectorImage = asyncHandler(async (req, res) => {
@@ -251,26 +247,14 @@ exports.updateTradeDirectorImage = asyncHandler(async (req, res) => {
   });
 
   if (!result.success) {
-    return fail(
-      res,
-      result.message || "Director image update failed"
-    );
+    return fail(res, result.message || "Director image update failed");
   }
 
-  return ok(
-    res,
-    result,
-    "Director image updated successfully"
-  );
+  return ok(res, result, "Director image updated successfully");
 });
 
-
 exports.getTradeTypesByCategory = asyncHandler(async (req, res) => {
-  const {
-    categoryId,
-    serviceId,
-    jwalanshilstat,
-  } = req.body;
+  const { categoryId, serviceId, jwalanshilstat } = req.body;
 
   if (!categoryId) {
     return fail(res, "Category ID is required");
@@ -286,11 +270,7 @@ exports.getTradeTypesByCategory = asyncHandler(async (req, res) => {
     jwalanshilstat,
   });
 
-  return ok(
-    res,
-    result,
-    "Trade types fetched successfully"
-  );
+  return ok(res, result, "Trade types fetched successfully");
 });
 
 exports.getServiceInstructions = asyncHandler(async (req, res) => {
@@ -304,25 +284,17 @@ exports.getServiceInstructions = asyncHandler(async (req, res) => {
     serviceId,
   });
 
-  return ok(
-    res,
-    result,
-    "Service instructions fetched successfully"
-  );
+  return ok(res, result, "Service instructions fetched successfully");
 });
 
 exports.getTradeCategories = asyncHandler(async (req, res) => {
-  const { jwalanshilstat } = req.body;
+  const { jwalanshilstat , categoryType } = req.body;
 
   const result = await service.getTradeCategoriesService({
-    jwalanshilstat,
+    jwalanshilstat, categoryType
   });
 
-  return ok(
-    res,
-    result,
-    "Trade categories fetched successfully"
-  );
+  return ok(res, result, "Trade categories fetched successfully");
 });
 
 exports.getSelfDeclaration = asyncHandler(async (req, res) => {
@@ -336,9 +308,214 @@ exports.getSelfDeclaration = asyncHandler(async (req, res) => {
     serviceId,
   });
 
+  return ok(res, result, "Self declaration fetched successfully");
+});
+
+exports.submitTradeApplication = asyncHandler(async (req, res) => {
+  const {
+    userid,
+    userId,
+
+    licenseno,
+    appfname,
+    appmname,
+    applname,
+    mobile,
+    email,
+    aadhar,
+    propno,
+    address,
+    remark,
+
+    newbusiname,
+    newownfname,
+    newownmname,
+    newownlname,
+
+    newcofname,
+    newcomname,
+    newcolname,
+
+    ulbid,
+    servicename,
+
+    businesstr,
+    partnerstr,
+    corrpartnerstr,
+
+    appid,
+    tradeaddrstr,
+    tradechkstr,
+    directorstr,
+
+    rate,
+    wardid,
+    zoneid,
+    Servid,
+    Source,
+    amount,
+
+    Gender,
+    Jwalan,
+    Relation,
+    Adhikrutta,
+    LicencType,
+    TradeType,
+
+    CloseDt,
+    LicOwner,
+    LicType,
+    LicFrmDt,
+    LicToDt,
+
+    BusiName,
+    BusiSwarup,
+    BusiAddr,
+    type,
+  } = req.body;
+
+  const finalUserId = req.user?.userId || userid || userId;
+
+  if (!ulbid) {
+    return fail(res, "ULB ID is required");
+  }
+
+  if (!licenseno) {
+    return fail(res, "License Number is required");
+  }
+
+  if (!mobile) {
+    return fail(res, "Mobile Number is required");
+  }
+
+  if (String(mobile).length !== 10) {
+    return fail(res, "Mobile Number must be 10 digits");
+  }
+
+  const result = await service.submitTradeApplicationService({
+    userid: finalUserId,
+
+    licenseno,
+    appfname,
+    appmname,
+    applname,
+    mobile,
+    email,
+    aadhar,
+    propno,
+    address,
+    remark,
+
+    newbusiname,
+    newownfname,
+    newownmname,
+    newownlname,
+
+    newcofname,
+    newcomname,
+    newcolname,
+
+    ulbid,
+    servicename,
+
+    businesstr,
+    partnerstr,
+    corrpartnerstr,
+
+    appid,
+    tradeaddrstr,
+    tradechkstr,
+    directorstr,
+
+    rate,
+    wardid,
+    zoneid,
+    Servid,
+    Source,
+    amount,
+
+    Gender,
+    Jwalan,
+    Relation,
+    Adhikrutta,
+    LicencType,
+    TradeType,
+
+    CloseDt,
+    LicOwner,
+    LicType,
+    LicFrmDt,
+    LicToDt,
+
+    BusiName,
+    BusiSwarup,
+    BusiAddr,
+    type,
+  });
+
+  if (!result.success) {
+    return fail(res, result.message || "Trade application submission failed");
+  }
+
   return ok(
     res,
     result,
-    "Self declaration fetched successfully"
+    result.message || "Trade application submitted successfully",
+  );
+});
+
+exports.insertTradeTypeLog = asyncHandler(async (req, res) => {
+  const {
+    orgId,
+    id,
+    appId,
+    tradeType,
+    tradeCat,
+    rate,
+    directorId,
+    aadharNo,
+    directorName,
+    mobileNo,
+    email,
+    gender,
+    address,
+    appliType,
+    servicee,
+  } = req.body;
+
+  if (!orgId) {
+    return fail(res, "Organization/ULB ID is required");
+  }
+
+  if (!service) {
+    return fail(res, "Service is required");
+  }
+
+  const result = await service.insertTradeTypeLogService({
+    orgId,
+    id,
+    appId,
+    tradeType,
+    tradeCat,
+    rate,
+    directorId,
+    aadharNo,
+    directorName,
+    mobileNo,
+    email,
+    gender,
+    address,
+    appliType,
+    servicee,
+  });
+
+  if (!result.success) {
+    return fail(res, result.message || "Trade type log insertion failed");
+  }
+
+  return ok(
+    res,
+    result,
+    result.message || "Trade type log inserted successfully",
   );
 });

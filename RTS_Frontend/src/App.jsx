@@ -23,6 +23,8 @@ import FrmAppliFee from "./Pages/FrmTrackApplication/FrmAppliFee";
 import FrmAfterTransactionTMC from "./Pages/FrmTrackApplication/FrmAfterTransactionTMC";
 import FrmFirstAppeal from "./Pages/FrmFirstAppeal";
 import FrmFirstAppealDocUpload from "./Pages/FrmFirstAppealDocUpload";
+import FrmMarketLicenseUpdt from "./Pages/Trade/FrmMarketLicenseupdt";
+import FrmMarriageRgstn from "./Pages/Marriage/FrmMarriageRgstn";
 
 const router = createBrowserRouter([
   {
@@ -55,7 +57,7 @@ const router = createBrowserRouter([
         path: "/forgot-password",
         element: <ForgotPassword />,
       },
-            {
+      {
         path: "/app/FrmAfterTransactionTMC",
         element: <FrmAfterTransactionTMC />
       },
@@ -119,12 +121,20 @@ const router = createBrowserRouter([
         element: <FrmMarketEntry />
       },
       {
+        path: "app/FrmMarketLicenseupdt",
+        element: <FrmMarketLicenseUpdt />
+      },
+      {
         path: "/app/FrmFirstAppeal",
         element: <FrmFirstAppeal />
       },
       {
         path: "/app/FrmFirstAppealDocUpload",
         element: <FrmFirstAppealDocUpload />
+      },
+      {
+        path: "/app/FrmMarriageRgstn",
+        element: <FrmMarriageRgstn />
       },
     ]
   },
