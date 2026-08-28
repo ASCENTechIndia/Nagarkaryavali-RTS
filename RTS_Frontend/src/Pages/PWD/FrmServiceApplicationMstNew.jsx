@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import config from "@/utils/config";
 
 import {
   Select,
@@ -17,13 +18,15 @@ import {
 } from "@/components/ui/select";
 
 import ShadCNTable from "@/components/ui/table";
-
 import { useAuth } from "@/context/AuthContext";
 import { useLocation } from "react-router-dom";
-
 import { serviceApplicationValidationSchema } from "@/validations/global.validation";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+const AUTO_PRABHAG_SERVICES = ["60", "62", "41", "461"];
+const AUTO_PRABHAG_WARD_ID = "12";
+const SECTOR_SERVICES = ["60", "62"];
 
 const initialValues = {
   appName: "",
@@ -32,62 +35,42 @@ const initialValues = {
   email: "",
   aadharNo: "",
   refNo: "",
-
   zoneId: "",
   sectorId: "",
   villageId: "",
-
   locality: "",
   landmark: "",
   pincode: "",
-
   documents: [],
 };
 
 const FrmServiceApplicationMstNew = () => {
   const location = useLocation();
-
   const { user, token } = useAuth();
 
   const locationState = location.state || {};
 
   const ulbId = locationState.ulbId || user?.ulbId || "";
-
   const userId = locationState.userId || user?.userId || "";
-
   const serviceId = locationState.serviceId || user?.serviceId || "";
 
   const serviceName = locationState.serviceName || "Service Application";
 
-  const isSectorService = ["60", "62"].includes(String(serviceId));
+  const serviceIdString = String(serviceId);
 
-  const axiosConfig = {
-    headers: {
-      Authorization: `Bearer ${token || localStorage.getItem("token") || ""}`,
-    },
-  };
+  const isSectorService = SECTOR_SERVICES.includes(serviceIdString);
+
+  const isAutoPrabhagService = AUTO_PRABHAG_SERVICES.includes(serviceIdString);
 
   const [loading, setLoading] = useState(false);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [documentLoading, setDocumentLoading] = useState(false);
-
   const [villageLoading, setVillageLoading] = useState(false);
 
   const [wards, setWards] = useState([]);
-
   const [sectors, setSectors] = useState([]);
-
   const [villages, setVillages] = useState([]);
-
   const [documents, setDocuments] = useState([]);
-
-  /*
-   * ---------------------------------------------------------
-   * DOCUMENT TABLE
-   * ---------------------------------------------------------
-   */
 
   const documentHeaders = ["Sr No.", "Document Name", "Image(jpg,png,pdf)"];
 
@@ -102,11 +85,9 @@ const FrmServiceApplicationMstNew = () => {
       width: "100px",
       textAlign: "center",
     },
-
     "Document Name": {
       width: "560px",
     },
-
     "Image(jpg,png,pdf)": {
       width: "340px",
     },
@@ -183,7 +164,13 @@ const FrmServiceApplicationMstNew = () => {
         {
           ulbId: Number(ulbId),
         },
-        axiosConfig,
+        {
+          headers: {
+            Authorization: `Bearer ${
+              token || localStorage.getItem("token") || ""
+            }`,
+          },
+        },
       );
 
       if (!response?.data?.ok) {
@@ -215,7 +202,13 @@ const FrmServiceApplicationMstNew = () => {
         {
           serviceId: Number(serviceId),
         },
-        axiosConfig,
+        {
+          headers: {
+            Authorization: `Bearer ${
+              token || localStorage.getItem("token") || ""
+            }`,
+          },
+        },
       );
 
       if (!response?.data?.ok) {
@@ -254,7 +247,13 @@ const FrmServiceApplicationMstNew = () => {
         {
           sectorId: Number(selectedSectorId),
         },
-        axiosConfig,
+        {
+          headers: {
+            Authorization: `Bearer ${
+              token || localStorage.getItem("token") || ""
+            }`,
+          },
+        },
       );
 
       if (!response?.data?.ok) {
@@ -302,7 +301,13 @@ const FrmServiceApplicationMstNew = () => {
           serviceId: Number(serviceId),
           ulbId: Number(ulbId),
         },
-        axiosConfig,
+        {
+          headers: {
+            Authorization: `Bearer ${
+              token || localStorage.getItem("token") || ""
+            }`,
+          },
+        },
       );
 
       if (!response?.data?.ok) {
@@ -317,25 +322,15 @@ const FrmServiceApplicationMstNew = () => {
 
       const mappedDocuments = documentData.map((item, index) => ({
         id: item?.DOCID ?? `document-${index + 1}`,
-
         docId: item?.DOCID ?? "",
-
         documentName: item?.DOCNAME || "",
-
         engDocDesc: item?.ENGDOCDESC || "",
-
         docType: item?.DOCTYPE || "",
-
         nocNew: item?.NOC_NEW,
-
         nocRenewal: item?.NOC_RENEWAL,
-
         active: item?.ACTIVE || "",
-
         file: null,
-
         fileName: "",
-
         srNo: index + 1,
       }));
 
@@ -410,15 +405,17 @@ const FrmServiceApplicationMstNew = () => {
     setFieldValue("documents", updatedDocuments);
   };
 
-  const handleSubmit = async (values, { resetForm }) => {
+  const handleSubmit = async (values, { resetForm, setSubmitting }) => {
     try {
       setIsSubmitting(true);
+      setSubmitting(true);
 
       showLoader("Submitting Application...");
 
       let zoneId = 0;
       let sectorId = 0;
       let villageId = 0;
+
       let locality = "";
       let landmark = "";
       let pincode = 0;
@@ -428,10 +425,17 @@ const FrmServiceApplicationMstNew = () => {
 
         villageId = Number(values.villageId) || 0;
 
-        // As per the .NET flow for service 60 / 62
-        zoneId = 12;
-      } else if (["41", "461"].includes(String(serviceId))) {
-        zoneId = Number(values.zoneId) || 0;
+        zoneId =
+          Number(
+            wards.find((ward) => String(ward?.WARDID) === AUTO_PRABHAG_WARD_ID)
+              ?.WARDID,
+          ) || 0;
+      } else if (["41", "461"].includes(serviceIdString)) {
+        zoneId =
+          Number(
+            wards.find((ward) => String(ward?.WARDID) === AUTO_PRABHAG_WARD_ID)
+              ?.WARDID,
+          ) || 0;
 
         locality = values.locality?.trim() || "";
 
@@ -444,36 +448,21 @@ const FrmServiceApplicationMstNew = () => {
 
       const payload = {
         ulbId: Number(ulbId),
-
         userId: String(userId),
-
         serviceId: Number(serviceId),
-
         applicationName: values.appName?.trim() || "",
-
         address: values.address?.trim() || "",
-
         mobile: values.mobile?.trim() || "",
-
         email: values.email?.trim() || "",
-
         aadharNo: values.aadharNo?.trim() || "",
-
         refNo: values.refNo?.trim() || "",
-
         zoneId,
-
         sectorId,
-
         villageId,
-
         locality,
-
         landmark,
-
         pincode,
-
-        source: locationState.source || "RW",
+        source: config.source || "RW",
       };
 
       console.log("FrmServiceApplicationMst/save payload:", payload);
@@ -481,7 +470,13 @@ const FrmServiceApplicationMstNew = () => {
       const response = await axios.post(
         `${BASE_URL}/api/FrmServiceApplicationMst/save`,
         payload,
-        axiosConfig,
+        {
+          headers: {
+            Authorization: `Bearer ${
+              token || localStorage.getItem("token") || ""
+            }`,
+          },
+        },
       );
 
       if (!response?.data?.success) {
@@ -491,10 +486,6 @@ const FrmServiceApplicationMstNew = () => {
       }
 
       const applicationNo = response?.data?.applicationNo || "";
-
-      /*
-       * Application saved successfully.
-       */
 
       Swal.close();
 
@@ -507,35 +498,19 @@ const FrmServiceApplicationMstNew = () => {
         confirmButtonText: "OK",
       });
 
-      /*
-       * Reset only application fields.
-       *
-       * The document rows remain loaded from
-       * documentlist.
-       */
       resetForm({
         values: {
           ...initialValues,
+          zoneId: isAutoPrabhagService ? AUTO_PRABHAG_WARD_ID : "",
           documents: [],
         },
       });
 
-      /*
-       * IMPORTANT:
-       *
-       * Do NOT setDocuments([]).
-       *
-       * Keep the document rows in the table and
-       * clear only the selected files.
-       */
       setDocuments((currentDocuments) =>
         currentDocuments.map((document, index) => ({
           ...document,
-
           file: null,
-
           fileName: "",
-
           srNo: index + 1,
         })),
       );
@@ -556,11 +531,12 @@ const FrmServiceApplicationMstNew = () => {
       });
     } finally {
       setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
   return (
-    <Card className="w-full shadow-[0px_5px_10px_10px_rgba(0,0,0,0.2)] border">
+    <Card className="w-full border shadow-[0px_5px_10px_10px_rgba(0,0,0,0.2)]">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-slate-800">
           {serviceName}
@@ -568,7 +544,11 @@ const FrmServiceApplicationMstNew = () => {
       </CardHeader>
 
       <Formik
-        initialValues={initialValues}
+        initialValues={{
+          ...initialValues,
+          zoneId: isAutoPrabhagService ? AUTO_PRABHAG_WARD_ID : "",
+        }}
+        enableReinitialize
         validate={(values) => {
           const result =
             serviceApplicationValidationSchema(serviceId).safeParse(values);
@@ -587,11 +567,9 @@ const FrmServiceApplicationMstNew = () => {
             return errors;
           }, {});
         }}
-        validateOnChange={false}
-        validateOnBlur={true}
         onSubmit={handleSubmit}
       >
-        {({ values, handleChange, setFieldValue, resetForm }) => {
+        {({ values, handleChange, setFieldValue }) => {
           const transformedTableData = documents.map((document) => ({
             ...document,
 
@@ -610,91 +588,82 @@ const FrmServiceApplicationMstNew = () => {
           return (
             <Form className="w-full">
               <CardContent className="space-y-5 px-4 py-2 sm:px-5">
-                {/* APPLICATION DETAILS */}
-
                 <div className="rounded-md border border-slate-200 bg-white">
-                  <div className="border-b  px-4 py-1.5">
-                    <h2 className="text-sm font-semibold ">
+                  <div className="border-b px-4 py-1.5">
+                    <h2 className="text-sm font-semibold">
                       Application Details
                     </h2>
                   </div>
 
                   <div className="grid grid-cols-1 gap-x-8 gap-y-3 p-3 lg:grid-cols-2">
-                    {/* APPLICANT NAME */}
-
                     <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
                       <Label
-                        text="Applicant Name"
+                        text="Applicant Name :"
                         required
-                        className="text-sm font-medium text-black sm:text-right"
+                        className="whitespace-nowrap text-sm font-medium text-black sm:text-right"
                       />
 
                       <Input
                         name="appName"
                         value={values.appName}
                         onChange={handleChange}
-                        className="h-9 rounded-md  bg-white text-sm"
+                        className="h-9 rounded-md bg-white text-sm"
                       />
                     </div>
 
-                    {/* ADDRESS */}
-
                     <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
                       <Label
-                        text="Area"
-                        className="text-sm font-medium text-black sm:text-right"
+                        text="Area :"
+                        className="whitespace-nowrap text-sm font-medium text-black sm:text-right"
                       />
 
                       <Input
                         name="address"
                         value={values.address}
                         onChange={handleChange}
+                        className="h-9"
                       />
                     </div>
 
-                    {/* LOCALITY */}
-
-                    {["41", "461"].includes(String(serviceId)) && (
+                    {["41", "461"].includes(serviceIdString) && (
                       <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
                         <Label
-                          text="Locality"
+                          text="Locality :"
                           required
-                          className="text-sm font-medium text-black sm:text-right"
+                          className="whitespace-nowrap text-sm font-medium text-black sm:text-right"
                         />
 
                         <Input
                           name="locality"
                           value={values.locality}
                           onChange={handleChange}
+                          className="h-9"
                         />
                       </div>
                     )}
 
-                    {/* LANDMARK */}
-
-                    {["41", "461"].includes(String(serviceId)) && (
+                    {["41", "461"].includes(serviceIdString) && (
                       <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
                         <Label
-                          text="Landmark"
+                          text="Landmark :"
                           required
-                          className="text-sm font-medium text-black sm:text-right"
+                          className="whitespace-nowrap text-sm font-medium text-black sm:text-right"
                         />
 
                         <Input
                           name="landmark"
                           value={values.landmark}
                           onChange={handleChange}
+                          className="h-9"
                         />
                       </div>
                     )}
 
-                    {/* MOBILE */}
-
                     <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
                       <Label
-                        text="Mobile No."
+                        text="Mobile No. :"
                         required
-                        className="text-sm font-medium text-black sm:text-right"
+                        className="whitespace-nowrap text-sm font-medium text-black sm:text-right"
                       />
 
                       <Input
@@ -708,16 +677,15 @@ const FrmServiceApplicationMstNew = () => {
                             event.target.value.replace(/\D/g, "").slice(0, 10),
                           )
                         }
+                        className="h-9"
                       />
                     </div>
 
-                    {/* EMAIL */}
-
                     <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
                       <Label
-                        text="Email ID"
+                        text="Email ID :"
                         required
-                        className="text-sm font-medium text-black sm:text-right"
+                        className="whitespace-nowrap text-sm font-medium text-black sm:text-right"
                       />
 
                       <Input
@@ -725,15 +693,14 @@ const FrmServiceApplicationMstNew = () => {
                         name="email"
                         value={values.email}
                         onChange={handleChange}
+                        className="h-9"
                       />
                     </div>
 
-                    {/* AADHAR */}
-
                     <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
                       <Label
-                        text="Aadhar No."
-                        className="text-sm font-medium text-black sm:text-right"
+                        text="Aadhar No. :"
+                        className="whitespace-nowrap text-sm font-medium text-black sm:text-right"
                       />
 
                       <Input
@@ -747,20 +714,17 @@ const FrmServiceApplicationMstNew = () => {
                             event.target.value.replace(/\D/g, "").slice(0, 12),
                           )
                         }
+                        className="h-9"
                       />
                     </div>
 
-                    {/* SECTOR / VILLAGE */}
-
-                    {isSectorService ? (
+                    {isSectorService && (
                       <>
-                        {/* SECTOR */}
-
                         <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
                           <Label
-                            text="Sector"
+                            text="Sector :"
                             required
-                            className="text-sm font-medium text-black sm:text-right"
+                            className="whitespace-nowrap text-sm font-medium text-black sm:text-right"
                           />
 
                           <Select
@@ -777,7 +741,7 @@ const FrmServiceApplicationMstNew = () => {
                               loadVillages(value);
                             }}
                           >
-                            <SelectTrigger className="h-9 w-full rounded-md ">
+                            <SelectTrigger className="h-9 w-full rounded-md">
                               <SelectValue placeholder="Select Sector" />
                             </SelectTrigger>
 
@@ -794,13 +758,11 @@ const FrmServiceApplicationMstNew = () => {
                           </Select>
                         </div>
 
-                        {/* VILLAGE */}
-
                         <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
                           <Label
-                            text="Village"
+                            text="Village :"
                             required
-                            className="text-sm font-medium text-black sm:text-right"
+                            className="whitespace-nowrap text-sm font-medium text-black sm:text-right"
                           />
 
                           <Select
@@ -812,7 +774,7 @@ const FrmServiceApplicationMstNew = () => {
                             }
                             disabled={!values.sectorId || villageLoading}
                           >
-                            <SelectTrigger className="h-9 w-full rounded-md ">
+                            <SelectTrigger className="h-9 w-full rounded-md">
                               <SelectValue
                                 placeholder={
                                   villageLoading
@@ -835,48 +797,49 @@ const FrmServiceApplicationMstNew = () => {
                           </Select>
                         </div>
                       </>
-                    ) : (
-                      /* PRABHAG */
-
-                      <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
-                        <Label
-                          text="Prabhag"
-                          required
-                          className="text-sm font-medium text-black sm:text-right"
-                        />
-
-                        <Select
-                          value={values.zoneId ? String(values.zoneId) : ""}
-                          onValueChange={(value) =>
-                            setFieldValue("zoneId", value)
-                          }
-                        >
-                          <SelectTrigger className="h-9 w-full rounded-md ">
-                            <SelectValue placeholder="Select Prabhag" />
-                          </SelectTrigger>
-
-                          <SelectContent>
-                            {wards.map((ward) => (
-                              <SelectItem
-                                key={ward.WARDID}
-                                value={String(ward.WARDID)}
-                              >
-                                {ward.WARDNAME}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
                     )}
 
-                    {/* PINCODE */}
+                    <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
+                      <Label
+                        text="Prabhag :"
+                        required
+                        className="whitespace-nowrap text-sm font-medium text-black sm:text-right"
+                      />
 
-                    {["41", "461"].includes(String(serviceId)) && (
+                      <Select
+                        value={values.zoneId ? String(values.zoneId) : ""}
+                        onValueChange={(value) => {
+                          if (isAutoPrabhagService) {
+                            return;
+                          }
+
+                          setFieldValue("zoneId", value);
+                        }}
+                      
+                      >
+                        <SelectTrigger className="h-9 w-full rounded-md">
+                          <SelectValue placeholder="Select Prabhag" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          {wards.map((ward) => (
+                            <SelectItem
+                              key={ward.WARDID}
+                              value={String(ward.WARDID)}
+                            >
+                              {ward.WARDNAME}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {["41", "461"].includes(serviceIdString) && (
                       <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
                         <Label
-                          text="Pincode"
+                          text="Pincode :"
                           required
-                          className="text-sm font-medium text-black sm:text-right"
+                          className="whitespace-nowrap text-sm font-medium text-black sm:text-right"
                         />
 
                         <Input
@@ -890,26 +853,25 @@ const FrmServiceApplicationMstNew = () => {
                               event.target.value.replace(/\D/g, "").slice(0, 6),
                             )
                           }
+                          className="h-9"
                         />
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* DOCUMENT DETAILS */}
-
-                <div className="rounded-md border  bg-white">
-                  <div className="border-b  px-4 py-1.5">
-                    <h2 className="text-sm font-semibold ">Document Details</h2>
+                <div className="rounded-md border bg-white">
+                  <div className="border-b px-4 py-1.5">
+                    <h2 className="text-sm font-semibold">Document Details</h2>
                   </div>
 
                   <div className="p-4">
                     {documentLoading ? (
-                      <div className="py-6 text-center text-sm ">
+                      <div className="py-6 text-center text-sm">
                         Loading documents...
                       </div>
                     ) : documents.length === 0 ? (
-                      <div className="py-6 text-center text-sm ">
+                      <div className="py-6 text-center text-sm">
                         No documents available.
                       </div>
                     ) : (
@@ -926,9 +888,7 @@ const FrmServiceApplicationMstNew = () => {
                   </div>
                 </div>
 
-                {/* BUTTONS */}
-
-                <div className="flex flex-wrap items-center justify-center gap-3 border-t  pt-4">
+                <div className="flex flex-wrap items-center justify-center gap-3 border-t pt-4">
                   <Button type="submit" disabled={isSubmitting || loading}>
                     {isSubmitting ? "Submitting..." : "Submit"}
                   </Button>
