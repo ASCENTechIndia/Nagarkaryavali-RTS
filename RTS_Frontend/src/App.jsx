@@ -25,6 +25,7 @@ import FrmFirstAppeal from "./Pages/FrmFirstAppeal";
 import FrmFirstAppealDocUpload from "./Pages/FrmFirstAppealDocUpload";
 import FrmMarketLicenseUpdt from "./Pages/Trade/FrmMarketLicenseupdt";
 import FrmMarriageRgstn from "./Pages/Marriage/FrmMarriageRgstn";
+import FrmServiceApplicationMst from "./Pages/SolidHealth/FrmServiceApplicationMst";
 
 const router = createBrowserRouter([
   {
@@ -136,6 +137,11 @@ const router = createBrowserRouter([
         path: "/app/FrmMarriageRgstn",
         element: <FrmMarriageRgstn />
       },
+       {
+        path: "/app/FrmServiceApplicationMst",
+        element: <FrmServiceApplicationMst />,
+      },
+
     ]
   },
 
