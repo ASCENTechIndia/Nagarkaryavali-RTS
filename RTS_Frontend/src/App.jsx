@@ -23,6 +23,7 @@ import FrmAppliFee from "./Pages/FrmTrackApplication/FrmAppliFee";
 import FrmAfterTransactionTMC from "./Pages/FrmTrackApplication/FrmAfterTransactionTMC";
 import FrmFirstAppeal from "./Pages/FrmFirstAppeal";
 import FrmFirstAppealDocUpload from "./Pages/FrmFirstAppealDocUpload";
+import FrmMarketLicenseUpdt from "./Pages/Trade/FrmMarketLicenseupdt";
 
 const router = createBrowserRouter([
   {
@@ -117,6 +118,10 @@ const router = createBrowserRouter([
       {
         path: "/app/FrmMarketEntry",
         element: <FrmMarketEntry />
+      },
+      {
+        path: "app/FrmMarketLicenseupdt",
+        element: <FrmMarketLicenseUpdt />
       },
       {
         path: "/app/FrmFirstAppeal",

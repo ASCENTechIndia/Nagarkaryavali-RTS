@@ -535,11 +535,7 @@ async function getTradeCategories({ jwalanshilstat }) {
   `;
 
   const bindParams = {
-    jwalanshilstat: Number(
-      jwalanshilstat !== undefined
-        ? jwalanshilstat
-        : 1
-    ),
+    jwalanshilstat,
   };
 
   console.log("Trade Categories Query:", query);
