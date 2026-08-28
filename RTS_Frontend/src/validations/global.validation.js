@@ -147,3 +147,207 @@ export const propertyRebateValidationSchema = z.object({
       message: "Please select a Zone",
     }),
 });
+
+
+export const serviceApplicationValidationSchema = (
+  serviceId,
+) =>
+  z
+    .object({
+      appName: z
+        .string()
+        .trim()
+        .min(
+          1,
+          "Please Enter Application Name",
+        ),
+
+      address: z
+        .string()
+        .optional()
+        .default(""),
+
+      mobile: z
+        .string()
+        .trim()
+        .min(
+          1,
+          "Please Enter Mobile No",
+        )
+        .regex(
+          mobileRegex,
+          "Mobile Number must be 10 digits",
+        ),
+
+
+
+      aadharNo: z
+        .string()
+        .optional()
+        .default("")
+        .refine(
+          (value) => {
+            if (!value?.trim()) {
+              return true;
+            }
+
+            return aadharRegex.test(
+              value.trim(),
+            );
+          },
+          {
+            message:
+              "Aadhar Number must be 12 digits",
+          },
+        ),
+
+      refNo: z
+        .string()
+        .optional()
+        .default(""),
+
+      zoneId: z
+        .string()
+        .optional()
+        .default(""),
+
+      sectorId: z
+        .string()
+        .optional()
+        .default(""),
+
+      villageId: z
+        .string()
+        .optional()
+        .default(""),
+
+      locality: z
+        .string()
+        .optional()
+        .default(""),
+
+      landmark: z
+        .string()
+        .optional()
+        .default(""),
+
+      pincode: z
+        .string()
+        .optional()
+        .default(""),
+
+      documents: documentValidationSchema,
+    })
+    .superRefine((values, ctx) => {
+      const isSectorService = [
+        "60",
+        "62",
+      ].includes(String(serviceId));
+
+      const isAddressService = [
+        "41",
+        "461",
+      ].includes(String(serviceId));
+
+      /*
+       * Service 60 / 62
+       * Sector + Village required
+       */
+      if (isSectorService) {
+        if (
+          !values.sectorId ||
+          values.sectorId === "0" ||
+          values.sectorId === "-1"
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["sectorId"],
+            message:
+              "Please select Sector",
+          });
+        }
+
+        if (
+          !values.villageId ||
+          values.villageId === "0" ||
+          values.villageId === "-1"
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["villageId"],
+            message:
+              "Please select Village",
+          });
+        }
+      } else {
+        /*
+         * Other services
+         * Prabhag required
+         */
+        if (
+          !values.zoneId ||
+          values.zoneId === "0" ||
+          values.zoneId === "-1"
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["zoneId"],
+            message:
+              "Please select Prabhag",
+          });
+        }
+      }
+
+      /*
+       * Service 41 / 461
+       * Address + Locality + Landmark + Pincode
+       */
+      if (isAddressService) {
+        if (!values.address?.trim()) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["address"],
+            message:
+              "Please Enter Address",
+          });
+        }
+
+        if (!values.locality?.trim()) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["locality"],
+            message:
+              "Please Enter Locality",
+          });
+        }
+
+        if (!values.landmark?.trim()) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["landmark"],
+            message:
+              "Please Enter LandMark",
+          });
+        }
+
+        if (!values.pincode?.trim()) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["pincode"],
+            message:
+              "Please Enter Pincode",
+          });
+        } else if (
+          !/^\d{6}$/.test(
+            values.pincode,
+          )
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["pincode"],
+            message:
+              "Invalid Pincode",
+          });
+        }
+      }
+    });
