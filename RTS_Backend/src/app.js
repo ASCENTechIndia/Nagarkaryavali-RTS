@@ -100,6 +100,7 @@ app.use("/api/FrmFirstAppealDocUpload", require("./modules/FrmFirstAppealDocUplo
 
 app.use("/api/FrmServiceApplicationMst", require("./modules/SolidHealth/FrmServiceApplicationMst/FrmServiceApplicationMst.routes"))
 
+app.use("/api/FrmSecondAppeal", require("./modules/SecondAppeal/FrmSecondAppeal/FrmSecondAppeal.route"));
 app.use(errorMiddleware);
 
 module.exports = app;
