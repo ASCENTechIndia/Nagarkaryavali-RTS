@@ -102,6 +102,7 @@ app.use("/api/FrmServiceApplicationMst", require("./modules/SolidHealth/FrmServi
 
 // Marriage
 app.use("/api/FrmMarriageRgstn", require("./modules/Marriage/FrmMarriageRgstn/FrmMarriageRgstn.routes"));
+app.use("/api/FrmAppoints", require("./modules/Marriage/FrmAppoints/FrmAppoints.route"));
 
 app.use(errorMiddleware);
 
