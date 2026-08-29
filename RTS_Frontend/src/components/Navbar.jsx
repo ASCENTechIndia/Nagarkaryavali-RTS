@@ -8,7 +8,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const NavbarContent = ({ withSidebar }) => {
-    const { user, requestInitialized, logout } = useAuth();
+    const { user, token, requestInitialized, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const ulbID = user?.ulbId;
@@ -90,7 +90,8 @@ const NavbarContent = ({ withSidebar }) => {
                         {corpInfo.name || "Municipal Corporation"}
                     </h1>
                     <div />
-                    {(user && serviceId && !isAuthPage) && (
+                    {(user && token && !isAuthPage) && (
+                    // {(user && serviceId && !isAuthPage) && (
                         <div className="flex items-center gap-2 min-w-30 justify-end">
                             <Button
                                 variant="default"

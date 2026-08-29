@@ -44,7 +44,7 @@ const Layout = () => {
         }
 
         const fetchDepartments = async () => {
-            if (ulbId === 3) {
+            if (ulbId == 3) {
                 setDepartments(ULB3_DEPARTMENTS.map((department) => ({...department, ulbId: 3})));
                 return;
             }

@@ -258,12 +258,26 @@ const LandingPage = () => {
                 await Swal.fire({
                     // icon: "error",
                     // title: "Service Unavailable",
-                    text: "Service URL is not configured",
+                    text: "Page endpoint is not configured.",
                     confirmButtonText: "OK",
                 });
 
                 return;
             }
+
+
+            // if (currentToken && !isTokenExpired(currentToken) && !serviceUrl) {
+            //     if (Swal.isVisible()) {
+            //         Swal.close();
+            //     }
+
+            //     await Swal.fire({
+            //         text: "Service URL is not configured",
+            //         confirmButtonText: "OK",
+            //     });
+
+            //     return;
+            // }
 
             const navigationState = {
                 ulbId,
