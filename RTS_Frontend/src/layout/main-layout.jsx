@@ -119,7 +119,7 @@ const Layout = () => {
                         initial={{opacity: 0, y: 8}}
                         animate={{opacity: 1, y: 0}}
                         transition={{duration: 0.25, ease: "easeOut"}}
-                        className="flex w-full min-w-0 flex-1 flex-col overflow-x-hidden px-2 py-3 sm:px-4 sm:py-4 md:px-5 lg:px-6"
+                        className="flex w-full min-w-0 flex-1 flex-col overflow-x-hidden px-2 py-2 sm:px-4 md:px-5 lg:px-6"
                     >
                         <Outlet context={{departments, selectedDepartment, setSelectedDepartment, handleDepartmentSelect}}/>
                     </motion.main>

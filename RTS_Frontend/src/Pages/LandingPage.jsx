@@ -332,8 +332,8 @@ const LandingPage = () => {
     };
 
     return (
-        <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden bg-[#f4f7fb]">
-            <section className={`flex min-h-0 min-w-0 flex-1 flex-col border-r bg-white ${mobileDetails ? "hidden md:flex" : "flex"}`}>
+        <div className="flex max-h-[calc(100vh-100px)] min-h-0 min-w-0 overflow-hidden bg-[#f4f7fb]">
+            <section className={`flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-r bg-white ${mobileDetails ? "hidden md:flex" : "flex"}`}>
                 <div className="shrink-0 border-b bg-[#080080] px-4 py-2">
                     <h2 className="truncate text-center text-sm font-bold text-white">
                         {selectedDepartment?.name || "Department Services"}
@@ -356,7 +356,7 @@ const LandingPage = () => {
                     </div>
                 </div>
 
-                <ScrollArea className="min-h-0 flex-1">
+                <ScrollArea className="min-h-0 flex-1 overflow-hidden">
                     <div className="p-3">
                         {!selectedDepartment ? (
                             <div className="py-20 text-center">
@@ -406,7 +406,7 @@ const LandingPage = () => {
                 </ScrollArea>
             </section>
 
-            <section className={`flex min-h-0 min-w-0 flex-1 flex-col bg-[#f8fafc] ${!mobileDetails ? "hidden md:flex" : "flex"}`}>
+            <section className={`flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[#f8fafc] ${!mobileDetails ? "hidden md:flex" : "flex"}`}>
                 <div className="flex shrink-0 items-center border-b bg-[#080080] px-3 py-2">
                     <Button
                         type="button"
@@ -421,10 +421,9 @@ const LandingPage = () => {
                     </Button>
 
                     <h2 className="flex-1 text-center text-sm font-bold text-white">Service Details</h2>
-                    <div className="w-7 md:hidden" />
                 </div>
 
-                <ScrollArea className="min-h-0 flex-1">
+                <ScrollArea className="min-h-0 flex-1 overflow-hidden">
                     <div className="space-y-4 p-3 sm:p-4">
                         <Card className="border-blue-100 shadow-sm">
                             <CardHeader className="pb-2">
@@ -525,7 +524,7 @@ const LandingPage = () => {
                                     <PopoverContent
                                         align="center"
                                         sideOffset={8}
-                                        className="w-full"
+                                        className="sm:w-full max-sm:h-96"
                                     >
                                         <PopoverHeader className="border-b bg-[#080080] px-4 py-3">
                                             <PopoverTitle className="flex items-center gap-2 text-sm font-semibold text-white">
