@@ -3,6 +3,7 @@ import { z } from "zod";
 const mobileRegex = /^\d{10}$/;
 const aadharRegex = /^\d{12}$/;
 const emailRegex = /^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$/;
+const pincodeRegex = /^\d{6}$/;
 
 export const propertySearchValidationSchema = z.object({
   ptn: z.string()
