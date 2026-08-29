@@ -86,7 +86,7 @@ const NavbarContent = ({ withSidebar }) => {
                         )}
                     </div>
 
-                    <h1 className="flex-1 text-center truncate text-sm font-bold text-white sm:text-xl md:text-xl">
+                    <h1 onClick={() => navigate("/")}  className="cursor-pointer flex-1 text-center truncate text-sm font-bold text-white sm:text-xl md:text-xl">
                         {corpInfo.name || "Municipal Corporation"}
                     </h1>
                     <div />

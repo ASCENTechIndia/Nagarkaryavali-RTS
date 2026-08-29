@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverHeader, PopoverTitle, PopoverTrigger } 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const LandingPage = () => {
-    const { user } = useAuth();
+    const { user, token, isTokenExpired } = useAuth();
     const navigate = useNavigate();
     const { selectedDepartment } = useOutletContext();
     const ulbId = user?.ulbId;
@@ -123,7 +123,7 @@ const LandingPage = () => {
                 }),
 
                 axios.get(`${BASE_URL}/api/Dashboard/instructions-for-service`,
-                    {params: {serviceId: service.id}}
+                    { params: { serviceId: service.id } }
                 ),
             ]);
 
@@ -166,7 +166,7 @@ const LandingPage = () => {
 
                 setInstruction(instructionText.trim());
             } else {
-                console.error( "Instruction API error:", instructionResponse.reason);
+                console.error("Instruction API error:", instructionResponse.reason);
                 setInstruction("");
             }
         } catch (error) {
@@ -188,7 +188,7 @@ const LandingPage = () => {
         }
 
         const value = search.toLowerCase();
-        return services.filter((service) =>service.name?.toLowerCase().includes(value));
+        return services.filter((service) => service.name?.toLowerCase().includes(value));
     }, [services, search]);
 
     const handleApply = async () => {
@@ -208,7 +208,7 @@ const LandingPage = () => {
             return;
         }
         if (department === "InfoRel") {
-            window.location.href ="https://www.filmcell.maharashtra.gov.in";
+            window.location.href = "https://www.filmcell.maharashtra.gov.in";
             return;
         }
         if (department === "PWD" && serviceId === "E79C935C43A49FF22A228595FC9B1EDC") {
@@ -224,7 +224,7 @@ const LandingPage = () => {
             showLoader("Fetching service details...");
             const response = await axios.get(`${BASE_URL}/api/Dashboard/service-details`,
                 {
-                    params: {serviceId},
+                    params: { serviceId },
                 }
             );
 
@@ -239,16 +239,54 @@ const LandingPage = () => {
 
             const serviceUrl = serviceDetails.serviceUrl ? serviceDetails.serviceUrl.replace(/^~\/?/, "/").replace(/\.aspx(?=\?|$)/i, "") : "";
 
-            navigate("/login", {
-                state: {
-                    ulbId,
-                    deptId: selectedDepartment.id,
-                    serviceId: serviceDetails.serviceId || serviceId,
-                    serviceName: serviceDetails.serviceName || selectedService.name,
-                    serviceRate: serviceDetails.serviceRate,
-                    serviceUrl,
-                },
+            // navigate("/login", {
+            //     state: {
+            //         ulbId,
+            //         deptId: selectedDepartment.id,
+            //         serviceId: serviceDetails.serviceId || serviceId,
+            //         serviceName: serviceDetails.serviceName || selectedService.name,
+            //         serviceRate: serviceDetails.serviceRate,
+            //         serviceUrl,
+            //     },
+            // });
+
+            if (!serviceUrl) {
+                if (Swal.isVisible()) {
+                    Swal.close();
+                }
+
+                await Swal.fire({
+                    // icon: "error",
+                    // title: "Service Unavailable",
+                    text: "Service URL is not configured",
+                    confirmButtonText: "OK",
+                });
+
+                return;
+            }
+
+            const navigationState = {
+                ulbId,
+                deptId: selectedDepartment.id,
+                serviceId: serviceDetails.serviceId || serviceId,
+                serviceName: serviceDetails.serviceName || selectedService.name,
+                serviceRate: serviceDetails.serviceRate,
+                serviceUrl,
+            };
+
+            const currentToken = token || sessionStorage.getItem("accessToken");
+
+            if (!currentToken || isTokenExpired(currentToken)) {
+                navigate("/login", {
+                    state: navigationState,
+                });
+                return;
+            }
+
+            navigate(serviceUrl, {
+                state: navigationState,
             });
+
         } catch (error) {
             if (Swal.isVisible()) {
                 Swal.close();
@@ -281,7 +319,7 @@ const LandingPage = () => {
 
     return (
         <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden bg-[#f4f7fb]">
-            <section className={`flex min-h-0 min-w-0 flex-1 flex-col border-r bg-white ${mobileDetails ? "hidden md:flex" : "flex" }`}>
+            <section className={`flex min-h-0 min-w-0 flex-1 flex-col border-r bg-white ${mobileDetails ? "hidden md:flex" : "flex"}`}>
                 <div className="shrink-0 border-b bg-[#080080] px-4 py-2">
                     <h2 className="truncate text-center text-sm font-bold text-white">
                         {selectedDepartment?.name || "Department Services"}
@@ -290,7 +328,7 @@ const LandingPage = () => {
 
                 <div className="shrink-0 border-b bg-white p-3">
                     <div className="relative">
-                        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/>
+                        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
 
                         <Input
                             value={search}
@@ -330,20 +368,20 @@ const LandingPage = () => {
                                                     handleServiceSelect(service)
                                                 }
                                                 whileHover={{ x: 3 }}
-                                                whileTap={{scale: 0.98,}}
-                                                className={`group flex w-full items-start gap-2 rounded-md border-b px-2 py-2.5 text-left ${active ? "bg-blue-50" : "hover:bg-blue-50" }`}
+                                                whileTap={{ scale: 0.98, }}
+                                                className={`group flex w-full items-start gap-2 rounded-md border-b px-2 py-2.5 text-left ${active ? "bg-blue-50" : "hover:bg-blue-50"}`}
                                             >
-                                                <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${active ? "bg-[#184aa6] text-white" : "bg-gray-100 text-gray-500" }`}>
+                                                <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${active ? "bg-[#184aa6] text-white" : "bg-gray-100 text-gray-500"}`}>
                                                     {index + 1}
                                                 </span>
 
                                                 <div className="min-w-0 flex-1">
-                                                    <p className={`text-xs font-medium leading-5 ${active ? "text-[#184aa6]" : "text-gray-700" }`}>
+                                                    <p className={`text-xs font-medium leading-5 ${active ? "text-[#184aa6]" : "text-gray-700"}`}>
                                                         {service.name}
                                                     </p>
                                                 </div>
 
-                                                <ChevronRight size={15} className="mt-1 shrink-0 text-gray-300"/>
+                                                <ChevronRight size={15} className="mt-1 shrink-0 text-gray-300" />
                                             </motion.button>
                                         );
                                     }
@@ -354,7 +392,7 @@ const LandingPage = () => {
                 </ScrollArea>
             </section>
 
-            <section className={`flex min-h-0 min-w-0 flex-1 flex-col bg-[#f8fafc] ${!mobileDetails ? "hidden md:flex" : "flex" }`}>
+            <section className={`flex min-h-0 min-w-0 flex-1 flex-col bg-[#f8fafc] ${!mobileDetails ? "hidden md:flex" : "flex"}`}>
                 <div className="flex shrink-0 items-center border-b bg-[#080080] px-3 py-2">
                     <Button
                         type="button"
@@ -411,11 +449,11 @@ const LandingPage = () => {
                                         {documents.map(
                                             (document, index) => (
                                                 <div
-                                                    key={ document.id || index }
+                                                    key={document.id || index}
                                                     className="flex items-start gap-2 rounded-md border border-gray-100 bg-gray-50 px-3 py-2"
                                                 >
                                                     <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#184aa6] text-[10px] font-bold text-white">{index + 1}</span>
-                                                    <span className="text-xs leading-5 text-gray-600">{ document.name }</span>
+                                                    <span className="text-xs leading-5 text-gray-600">{document.name}</span>
                                                 </div>
                                             )
                                         )}
@@ -425,54 +463,55 @@ const LandingPage = () => {
                         </Card>
 
                         {selectedService && downloadDocs.length > 0 && (
-                                <Card className="border-gray-200 shadow-sm">
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm">
-                                            Download Documents
-                                        </CardTitle>
-                                    </CardHeader>
+                            <Card className="border-gray-200 shadow-sm">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-sm">
+                                        Download Documents
+                                    </CardTitle>
+                                </CardHeader>
 
-                                    <CardContent>
-                                        <div className="space-y-2">
-                                            {downloadDocs.map(
-                                                (document, index) => (
-                                                    <div
-                                                        key={document.id || index}
-                                                        className="flex items-center gap-2 rounded-md border bg-white px-3 py-2"
+                                <CardContent>
+                                    <div className="space-y-2">
+                                        {downloadDocs.map(
+                                            (document, index) => (
+                                                <div
+                                                    key={document.id || index}
+                                                    className="flex items-center gap-2 rounded-md border bg-white px-3 py-2"
+                                                >
+                                                    <FileText size={16} className="shrink-0 text-[#184aa6]" />
+                                                    <span className="min-w-0 flex-1 truncate text-xs text-gray-600">{document.name}</span>
+
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleDownload(document)
+                                                        }
+                                                        className="h-7 shrink-0 text-xs"
                                                     >
-                                                        <FileText size={16} className="shrink-0 text-[#184aa6]" />
-                                                        <span className="min-w-0 flex-1 truncate text-xs text-gray-600">{document.name}</span>
-
-                                                        <Button
-                                                            type="button"
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() =>
-                                                                handleDownload(document)
-                                                            }
-                                                            className="h-7 shrink-0 text-xs"
-                                                        >
-                                                            <Download size={13} />Download
-                                                        </Button>
-                                                    </div>
-                                                )
-                                            )}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            )}
+                                                        <Download size={13} />Download
+                                                    </Button>
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
 
 
                         <div className="flex flex-wrap gap-2">
                             {selectedService && instruction && (
                                 <Popover>
                                     <PopoverTrigger asChild>
-                                        <Button  type="button"  variant="outline"><Info size={13} /> Instruction</Button>
+                                        <Button type="button" variant="outline"><Info size={13} /> Instruction</Button>
                                     </PopoverTrigger>
 
                                     <PopoverContent
-                                        align="end"
+                                        align="center"
                                         sideOffset={8}
+                                        className="w-full"
                                     >
                                         <PopoverHeader className="border-b bg-[#080080] px-4 py-3">
                                             <PopoverTitle className="flex items-center gap-2 text-sm font-semibold text-white">
