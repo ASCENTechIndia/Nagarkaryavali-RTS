@@ -675,9 +675,9 @@ async function uploadDoc(params) {
     ) VALUES (
       :mrrgdtlid,
       :mrrgdocid,
-      :BLOBDocImage,
+      :BLOBDOCIMAGE,
       :flag,
-      :user,
+      :p_user, 
       SYSDATE,
       :ulbid,
       :mrrgdocflag
@@ -687,9 +687,9 @@ async function uploadDoc(params) {
   const binds = {
     mrrgdtlid: String(mrrgdtlid),
     mrrgdocid: Number(mrrgdocid),
-    BLOBDocImage: { val: Buffer.from(mrrgdoc), type: oracledb.BUFFER, dir: oracledb.BIND_IN },
+    BLOBDOCIMAGE: { val: Buffer.from(mrrgdoc), type: oracledb.BUFFER, dir: oracledb.BIND_IN },
     flag: flag,
-    user: user,
+    p_user: user,
     ulbid: String(ulbid),
     mrrgdocflag: mrrgdocflag,
   };
@@ -697,6 +697,7 @@ async function uploadDoc(params) {
   const connection = await getConnectionTMC();
   try {
     const result = await connection.execute(query, binds, { autoCommit: true });
+    console.log("Upload Docs: ", result);
     return { success: true, rowsAffected: result.rowsAffected };
   } finally {
     await connection.close();
@@ -870,7 +871,7 @@ async function insertAppDoc(params) {
       :appNo,
       :docType,
       :documentId,
-      :docBuffer
+      :DOCBUFFER
     )
   `;
 
@@ -884,7 +885,7 @@ async function insertAppDoc(params) {
         appNo: String(appNo),
         docType: String(docType),
         documentId: Number(documentId),
-        docBuffer: { val: Buffer.from(docBuffer), type: oracledb.BUFFER, dir: oracledb.BIND_IN },
+        DOCBUFFER: { val: Buffer.from(docBuffer), type: oracledb.BUFFER, dir: oracledb.BIND_IN },
       },
       { autoCommit: true }
     );
