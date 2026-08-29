@@ -279,10 +279,35 @@ const uploadServiceDocuments = asyncHandler(async (req, res) => {
   });
 });
 
+// ============================================================
+// GET VILLAGE LIST BY SECTOR
+// ============================================================
+const getVillageList = asyncHandler(async (req, res) => {
+  console.log("================================================");
+  console.log("Request: Get Village List");
+  console.log("Request Body:", req.body);
+  console.log("================================================");
+
+  const { sectorId } = req.body;
+
+  if (!sectorId) {
+    throw new AppError("sectorId is required", 400);
+  }
+
+  const result = await service.getVillageListService(sectorId);
+
+  return ok(res, {
+    message: result.message,
+    data: result.data,
+  });
+});
+
+
 module.exports = {
   getWardList,
   getSectorList,
   getDocumentList,
   saveServiceApplication,
   uploadServiceDocuments,
+  getVillageList,
 };
