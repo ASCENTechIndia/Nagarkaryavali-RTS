@@ -1,22 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, } from "@/components/ui/select";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import Swal from "sweetalert2";
+import ShadCNTable from "@/components/ui/table";
 
 const FrmWaterConnectionApplication = () => {
-
+  const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   console.log({ location })
   const locationState = location.state || {};
   const ulbId = locationState.ulbId || user?.ulbId
   const userId = locationState.userId || user?.userId
+  // const serviceId = 14
   const serviceId = locationState.serviceId
   const serviceName = location.state?.serviceName
 
@@ -48,14 +50,33 @@ const FrmWaterConnectionApplication = () => {
   const [zoneList, setZoneList] = useState([]);
   const [zoneLoading, setZoneLoading] = useState(false);
   const [consumerTypeList, setConsumerTypeList] = useState([]);
-  const [consumerTypeLoading, setConsumerTypeLoading] =useState(false);
+  const [consumerTypeLoading, setConsumerTypeLoading] = useState(false);
   const [meterTypeList, setMeterTypeList] = useState([]);
-  const [meterTypeLoading, setMeterTypeLoading] =useState(false);
+  const [meterTypeLoading, setMeterTypeLoading] = useState(false);
   const [documentList, setDocumentList] = useState([]);
-  const [documentLoading, setDocumentLoading] =useState(false);
+  const [documentLoading, setDocumentLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [documentFiles, setDocumentFiles] = useState({});
- const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const [bndForm, setBndForm] = useState({
+    registrationNo: "",
+    birthDeathDate: "",
+    fatherName: "",
+    motherName: "",
+  });
+  const [bndDetails, setBndDetails] = useState([]);
+
+  const [bndHeader, setBndHeader] = useState("");
+  const [bndLoading, setBndLoading] = useState(false);
+  const [selectedBndRecord, setSelectedBndRecord] = useState(null);
+
+
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const BND_SERVICE_IDS = [14, 15, 342, 343];
+
+  const isBndService = BND_SERVICE_IDS.includes(Number(serviceId));
+  const isBirthService = [14, 342].includes(Number(serviceId));
+  const bndDateLabel = isBirthService ? "Birth Date" : "Death Date";
+
   const handleChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -130,7 +151,7 @@ const FrmWaterConnectionApplication = () => {
     try {
       setConsumerTypeLoading(true);
 
-   
+
 
       const url =
         `${BASE_URL}/api/watermodule/water-consumer-types`;
@@ -193,7 +214,7 @@ const FrmWaterConnectionApplication = () => {
     try {
       setMeterTypeLoading(true);
 
-    
+
 
       const url =
         `${BASE_URL}/api/watermodule/water-meter-types`;
@@ -269,7 +290,7 @@ const FrmWaterConnectionApplication = () => {
 
       setDocumentLoading(true);
 
-   
+
 
       const url =
         `${BASE_URL}/api/watermodule/service-documents`;
@@ -315,7 +336,7 @@ const FrmWaterConnectionApplication = () => {
         setDocumentList([]);
 
         Swal.fire({
-       
+
           title: "Unable to Load Documents",
           text:
             response?.data?.message ||
@@ -336,7 +357,7 @@ const FrmWaterConnectionApplication = () => {
       setDocumentList([]);
 
       Swal.fire({
-    
+
         title: "Document Loading Failed",
         text:
           error?.response?.data?.message ||
@@ -349,13 +370,81 @@ const FrmWaterConnectionApplication = () => {
   };
 
 
+  const handleBndSearch = async () => {
+    const { registrationNo, birthDeathDate, fatherName, motherName } = bndForm;
+
+    if (!registrationNo.trim() && !birthDeathDate && !fatherName.trim() && !motherName.trim()) {
+      await Swal.fire({
+        icon: "warning",
+        text: "Please Enter Reg.no OR Date OR Father Name OR Mother Name",
+      });
+      return;
+    }
+
+    setBndLoading(true);
+
+    try {
+      const response = await axios.post(`${BASE_URL}/api/watermodule/search-birth-death-details`,
+        {
+          serviceId: Number(serviceId),
+          registrationNo: registrationNo.trim(),
+          birthDeathDate,
+          fatherName: fatherName.trim(),
+          motherName: motherName.trim(),
+        }
+      );
+
+      const responseData = response.data?.data;
+      setBndHeader(responseData?.header || "");
+
+      const formattedBndDetails = (responseData?.data || []).map((item) => ({
+        ...item,
+        BNDdate: item.BNDdate
+          ? item.BNDdate.split("T")[0].split("-").reverse().join("/")
+          : "-",
+      }));
+
+      setBndDetails(formattedBndDetails);
+
+      setSelectedBndRecord(null);
+
+      if (!responseData?.data?.length) {
+        await Swal.fire({
+          icon: "info",
+          text: "No records found",
+        });
+      }
+    } catch (error) {
+      setBndDetails([]);
+      setBndHeader("");
+      setSelectedBndRecord(null);
+
+      await Swal.fire({
+        icon: "error",
+        text: error?.response?.data?.message || error?.response?.data?.error || "Unable to fetch Birth/Death details.",
+      });
+    } finally {
+      setBndLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchZones();
     fetchConsumerTypes();
     fetchMeterTypes();
   }, []);
 
-
+  useEffect(() => {
+    setBndForm({
+      registrationNo: "",
+      birthDeathDate: "",
+      fatherName: "",
+      motherName: "",
+    });
+    setBndDetails([]);
+    setBndHeader("");
+    setSelectedBndRecord(null);
+  }, [serviceId]);
 
   useEffect(() => {
     if (serviceId && ulbId) {
@@ -367,10 +456,18 @@ const FrmWaterConnectionApplication = () => {
 
   const handleSubmit = async () => {
 
+    if (isBndService && !selectedBndRecord) {
+      await Swal.fire({
+        icon: "warning",
+        text: "Select Atleast one Record",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
 
     if (!formData.zone) {
       Swal.fire({
-       
+
         text: "Please select Zone.",
         confirmButtonColor: "#1e3a8a",
       });
@@ -379,7 +476,7 @@ const FrmWaterConnectionApplication = () => {
 
     if (!formData.firstName.trim()) {
       Swal.fire({
-    
+
         text: "Please enter First Name.",
         confirmButtonColor: "#1e3a8a",
       });
@@ -388,7 +485,7 @@ const FrmWaterConnectionApplication = () => {
 
     if (!formData.lastName.trim()) {
       Swal.fire({
-      
+
         text: "Please enter Last Name.",
         confirmButtonColor: "#1e3a8a",
       });
@@ -397,7 +494,7 @@ const FrmWaterConnectionApplication = () => {
 
     if (!formData.firstNameMarathi.trim()) {
       Swal.fire({
-        
+
         text: "Please enter First Name in Marathi.",
         confirmButtonColor: "#1e3a8a",
       });
@@ -406,7 +503,7 @@ const FrmWaterConnectionApplication = () => {
 
     if (!formData.lastNameMarathi.trim()) {
       Swal.fire({
-      
+
         text: "Please enter Last Name in Marathi.",
         confirmButtonColor: "#1e3a8a",
       });
@@ -415,7 +512,7 @@ const FrmWaterConnectionApplication = () => {
 
     if (!formData.mobileNo.trim()) {
       Swal.fire({
-      
+
         text: "Please enter Mobile Number.",
         confirmButtonColor: "#1e3a8a",
       });
@@ -424,7 +521,7 @@ const FrmWaterConnectionApplication = () => {
 
     if (formData.mobileNo.length !== 10) {
       Swal.fire({
-     
+
         text: "Please enter a valid 10 digit Mobile Number.",
         confirmButtonColor: "#1e3a8a",
       });
@@ -433,7 +530,7 @@ const FrmWaterConnectionApplication = () => {
 
     if (!formData.aadharNo.trim()) {
       Swal.fire({
-      
+
         text: "Please enter Aadhar Card Number.",
         confirmButtonColor: "#1e3a8a",
       });
@@ -442,7 +539,7 @@ const FrmWaterConnectionApplication = () => {
 
     if (formData.aadharNo.length !== 12) {
       Swal.fire({
-     
+
         text: "Please enter a valid 12 digit Aadhar Number.",
         confirmButtonColor: "#1e3a8a",
       });
@@ -451,7 +548,7 @@ const FrmWaterConnectionApplication = () => {
 
     if (!formData.email.trim()) {
       Swal.fire({
-       
+
         text: "Please enter Email.",
         confirmButtonColor: "#1e3a8a",
       });
@@ -460,7 +557,7 @@ const FrmWaterConnectionApplication = () => {
 
     if (!formData.address.trim()) {
       Swal.fire({
-  
+
         text: "Please enter Address.",
         confirmButtonColor: "#1e3a8a",
       });
@@ -469,7 +566,7 @@ const FrmWaterConnectionApplication = () => {
 
     if (!formData.addressMarathi.trim()) {
       Swal.fire({
-       
+
         text: "Please enter Address in Marathi.",
         confirmButtonColor: "#1e3a8a",
       });
@@ -478,7 +575,7 @@ const FrmWaterConnectionApplication = () => {
 
     if (!formData.purpose.trim()) {
       Swal.fire({
-       
+
         text: "Please enter Purpose.",
         confirmButtonColor: "#1e3a8a",
       });
@@ -487,7 +584,7 @@ const FrmWaterConnectionApplication = () => {
 
     if (!formData.purposeMarathi.trim()) {
       Swal.fire({
-       
+
         text: "Please enter Purpose in Marathi.",
         confirmButtonColor: "#1e3a8a",
       });
@@ -496,7 +593,7 @@ const FrmWaterConnectionApplication = () => {
 
     if (!formData.consumeType) {
       Swal.fire({
-       
+
         text: "Please select Consumer Type.",
         confirmButtonColor: "#1e3a8a",
       });
@@ -505,7 +602,7 @@ const FrmWaterConnectionApplication = () => {
 
     if (!formData.meterType) {
       Swal.fire({
-       
+
         text: "Please select Meter Type.",
         confirmButtonColor: "#1e3a8a",
       });
@@ -513,16 +610,10 @@ const FrmWaterConnectionApplication = () => {
     }
 
 
-    const BASE_URL =
-      import.meta.env.VITE_BASE_URL;
+    const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-
-
-
-    const selectedDocuments = documentList
-      .map((document) => {
-        const file =
-          documentFiles[document.DOCID];
+    const selectedDocuments = documentList.map((document) => {
+        const file = documentFiles[document.DOCID];
 
         if (!file) {
           return null;
@@ -543,36 +634,36 @@ const FrmWaterConnectionApplication = () => {
       "Selected Documents:",
       selectedDocuments
     );
-if (documentList.length === 0) {
-  await Swal.fire({
+    if (documentList.length === 0) {
+      await Swal.fire({
 
-    title: "Document Required",
-    text: "No documents are configured for this service.",
-    confirmButtonColor: "#1e3a8a",
-  });
+        title: "Document Required",
+        text: "No documents are configured for this service.",
+        confirmButtonColor: "#1e3a8a",
+      });
 
-  return;
-}
+      return;
+    }
 
 
-// Find documents for which file is not selected
-const missingDocuments = documentList.filter(
-  (document) => !documentFiles[document.DOCID]
-);
+    // Find documents for which file is not selected
+    const missingDocuments = documentList.filter(
+      (document) => !documentFiles[document.DOCID]
+    );
 
-if (missingDocuments.length > 0) {
+    if (missingDocuments.length > 0) {
 
-  const missingDocumentNames = missingDocuments
-    .map(
-      (document, index) =>
-        `${index + 1}. ${document.DOCNAME || "Document"}`
-    )
-    .join("<br/>");
+      const missingDocumentNames = missingDocuments
+        .map(
+          (document, index) =>
+            `${index + 1}. ${document.DOCNAME || "Document"}`
+        )
+        .join("<br/>");
 
-  await Swal.fire({
-    
-    title: "Documents Required",
-    html: `
+      await Swal.fire({
+
+        title: "Documents Required",
+        html: `
       <div style="text-align:left">
         <p>
           <strong>All documents are compulsory for submission.</strong>
@@ -587,16 +678,16 @@ if (missingDocuments.length > 0) {
         </div>
       </div>
     `,
-    confirmButtonColor: "#1e3a8a",
-  });
+        confirmButtonColor: "#1e3a8a",
+      });
 
-  return;
-}
+      return;
+    }
 
 
     const confirmResult =
       await Swal.fire({
-       
+
         title: "Submit Application?",
         text: "Are you sure you want to submit this application?",
         showCancelButton: true,
@@ -625,7 +716,7 @@ if (missingDocuments.length > 0) {
         },
       });
 
-  
+
 
       const savePayload = {
         in_ulbid: Number(ulbId),
@@ -704,9 +795,9 @@ if (missingDocuments.length > 0) {
 
         in_nocpurposeid: 1,
 
-        in_RegiNo: "",
+        in_RegiNo: isBndService ? selectedBndRecord?.regno : "",
 
-        in_UniqueNo: "",
+        in_UniqueNo: isBndService ? selectedBndRecord?.uniqueNo : "",
 
         in_appsource: "RTS",
 
@@ -743,7 +834,7 @@ if (missingDocuments.length > 0) {
         Swal.close();
 
         await Swal.fire({
-         
+
           title: "Application Failed",
           text:
             saveResponse?.data?.message ||
@@ -797,7 +888,7 @@ if (missingDocuments.length > 0) {
         Swal.close();
 
         await Swal.fire({
-         
+
           title: "Application Failed",
           text:
             errorMessage ||
@@ -967,7 +1058,7 @@ if (missingDocuments.length > 0) {
             item.success !== true
         );
 
- 
+
       if (
         failedUploads.length > 0
       ) {
@@ -983,7 +1074,7 @@ if (missingDocuments.length > 0) {
             .join(", ");
 
         await Swal.fire({
-        
+
           title: "Application Saved",
           html: `
           <div style="text-align:left">
@@ -1009,12 +1100,12 @@ if (missingDocuments.length > 0) {
         return;
       }
 
- 
+
 
       Swal.close();
 
       await Swal.fire({
-       
+
         title: "Application Submitted Successfully",
         html: `
         <div style="text-align:center">
@@ -1060,8 +1151,9 @@ if (missingDocuments.length > 0) {
         meterType: "",
       });
 
-      setDocumentFiles({});
-
+      setDocumentFiles([]);
+      setBndDetails([])
+      navigate("/app/FrmTrackApplication")
       console.log(
         "Final Upload Results:",
         uploadResults
@@ -1100,6 +1192,11 @@ if (missingDocuments.length > 0) {
   const handleClose = () => {
     window.history.back();
   };
+
+  const tableBndDetails = bndDetails.map((row) => ({
+    ...row,
+    checked: selectedBndRecord?.uniqueNo === row.uniqueNo,
+  }));
 
 
   return (
@@ -1201,8 +1298,6 @@ if (missingDocuments.length > 0) {
 
               </div>
 
-              <div />
-
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1260,7 +1355,7 @@ if (missingDocuments.length > 0) {
 
               </div>
 
-  
+
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1289,8 +1384,6 @@ if (missingDocuments.length > 0) {
                 />
 
               </div>
-
-              <div />
 
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
@@ -1408,7 +1501,6 @@ if (missingDocuments.length > 0) {
                 />
 
               </div>
-
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
@@ -1790,6 +1882,130 @@ if (missingDocuments.length > 0) {
 
             </div>
           </div>
+
+          {isBndService && (
+            <Card className="border-gray-200 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm text-[#080080]">
+                  {isBirthService ? "Birth Details Search" : "Death Details Search"}
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  <div className="space-y-2">
+                    <Label text="Registration No." />
+                    <Input
+                      value={bndForm.registrationNo}
+                      onChange={(e) =>
+                        setBndForm((prev) => ({
+                          ...prev,
+                          registrationNo: e.target.value,
+                        }))
+                      }
+                      placeholder="Enter Registration No."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label text={bndDateLabel} />
+                    <Input
+                      type="date"
+                      value={bndForm.birthDeathDate}
+                      onChange={(e) =>
+                        setBndForm((prev) => ({
+                          ...prev,
+                          birthDeathDate: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label text="Mother Name" />
+                    <Input
+                      value={bndForm.motherName}
+                      onChange={(e) =>
+                        setBndForm((prev) => ({
+                          ...prev,
+                          motherName: e.target.value,
+                        }))
+                      }
+                      placeholder="Enter Mother Name"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label text="Father Name" />
+                    <Input
+                      value={bndForm.fatherName}
+                      onChange={(e) =>
+                        setBndForm((prev) => ({
+                          ...prev,
+                          fatherName: e.target.value,
+                        }))
+                      }
+                      placeholder="Enter Father Name"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    onClick={handleBndSearch}
+                    disabled={bndLoading}
+                    className="bg-[#080080] hover:bg-[#060066]"
+                  >
+                    {bndLoading ? "Searching..." : "Search"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {isBndService && bndDetails.length > 0 && (
+            <Card className="border-gray-200 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm text-[#080080]">
+                  {bndHeader}
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent>
+                <ShadCNTable
+                  headers={[
+                    "Select",
+                    "Reg No.",
+                    "Name",
+                    "Gender",
+                    bndDateLabel,
+                    "Mother Name",
+                    "Father Name",
+                    "Copies",
+                  ]}
+                  data={tableBndDetails}
+                  keyMapping={{
+                    Select: "rowcheck",
+                    "Reg No.": "regno",
+                    Name: "name",
+                    Gender: "gender",
+                    [bndDateLabel]: "BNDdate",
+                    "Mother Name": "mothername",
+                    "Father Name": "fathername",
+                    Copies: "copies",
+                  }}
+                  onRowCheckChange={(row, checked) => {
+                    if (checked) {
+                      setSelectedBndRecord(row);
+                    } else {
+                      setSelectedBndRecord(null);
+                    }
+                  }}
+                />
+              </CardContent>
+            </Card>
+          )}
 
 
 

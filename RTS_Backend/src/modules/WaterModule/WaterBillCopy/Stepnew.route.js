@@ -15,5 +15,6 @@ router.get( "/water-meter-types",  controller.getWaterMeterTypesController);
 router.get( "/service-documents",  controller.getServiceDocumentsController);
 router.post( "/save",  controller.saveApplicantInfoController);
 router.post( "/upload-app-doc",  upload.single("documents"), controller.uploadAppDocument);
+router.post( "/search-birth-death-details", controller.searchBirthDeathDetails);
 
 module.exports = router;
