@@ -21,15 +21,14 @@ import FrmTrackApplication from "./Pages/FrmTrackApplication/FrmTrackApplication
 import FrmAppeal from "./Pages/FrmTrackApplication/FrmAppeal";
 import FrmAppliFee from "./Pages/FrmTrackApplication/FrmAppliFee";
 import FrmMarketLicenseupdt from "./Pages/Trade/FrmMarketLicenseupdt";
-import FrmSecondAppeal from "./Pages/FrmSecondAppeal";
 import FrmServiceApplicationMst from "./Pages/SolidHealth/FrmServiceApplicationMst";
 import FrmAfterTransactionTMC from "./Pages/FrmTrackApplication/FrmAfterTransactionTMC";
 import FrmFirstAppeal from "./Pages/FrmFirstAppeal";
 import FrmFirstAppealDocUpload from "./Pages/FrmFirstAppealDocUpload";
 import FrmMarketLicenseUpdt from "./Pages/Trade/FrmMarketLicenseupdt";
 import FrmMarriageRgstn from "./Pages/Marriage/FrmMarriageRgstn";
-import FrmServiceApplicationMst from "./Pages/SolidHealth/FrmServiceApplicationMst";
 import FrmServiceApplicationMstNew from "./Pages/PWD/FrmServiceApplicationMstNew";
+import FrmAppoints from "./Pages/Marriage/FrmAppoints";
 
 const router = createBrowserRouter([
   {
@@ -134,14 +133,17 @@ const router = createBrowserRouter([
         element: <FrmMarketLicenseupdt />,
       },
       {
-        path: "/app/FrmSecondAppeal",
-        element: <FrmSecondAppeal />,
+        path: "/app/FrmFirstAppealDocUpload",
+        element: <FrmFirstAppealDocUpload />,
       },
       {
-        path: "/app/FrmServiceApplicationMst",
-        element: <FrmServiceApplicationMst />,
+        path: "/app/FrmFirstAppeal",
+        element: <FrmFirstAppeal />,
       },
-
+      // {
+      //   path: "/app/FrmSecondAppeal",
+      //   element: <FrmSecondAppeal />,
+      // },
       {
         path: "/app/FrmMarriageRgstn",
         element: <FrmMarriageRgstn />
@@ -153,6 +155,10 @@ const router = createBrowserRouter([
       {
         path: "/app/FrmServiceApplicationMstNew",
         element: <FrmServiceApplicationMstNew />
+      },
+      {
+         path: "/app/FrmAppoints",
+        element: <FrmAppoints />
       },
 
     ]

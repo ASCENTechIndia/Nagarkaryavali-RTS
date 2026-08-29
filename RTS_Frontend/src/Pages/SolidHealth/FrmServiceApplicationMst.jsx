@@ -23,10 +23,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const getPageTitle = (serviceName) => {
-  return serviceName;
-};
-
 const initialValues = {
   applicantName: "",
   mobileNo: "",
@@ -76,17 +72,48 @@ const FrmServiceApplicationMst = () => {
   };
 
   useEffect(() => {
-    const title = getPageTitle(serviceName);
+    const title = serviceName;
     setPageTitle(title);
     document.title = title;
     
     if (ulbId && serviceId && isFirstRender.current) {
       isFirstRender.current = false;
-      fetchZones();
-      fetchDocumentDefinitions(serviceId, ulbId);
-      checkSectorVisibility(serviceId);
+      fetchAllData();
     }
   }, [serviceId, ulbId, serviceName]);
+
+  const fetchAllData = async () => {
+    try {
+      const results = await Promise.allSettled([
+        fetchZones(),
+        fetchDocumentDefinitions(serviceId, ulbId),
+        checkSectorVisibility(serviceId),
+        fetchSectors(),
+        //fetchVillages(),
+      ]);
+
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          console.log(`API ${index + 1} succeeded:`, result.value);
+        } else {
+          console.error(`API ${index + 1} failed:`, result.reason);
+        }
+      });
+
+      const hasCriticalFailure = results.some((result, index) => 
+        result.status === 'rejected' && index === 1
+      );
+
+      if (hasCriticalFailure) {
+        Swal.fire({
+          text: "Failed to load document list. Please refresh the page.",
+          confirmButtonColor: '#1e3a8a',
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching initial data:", error);
+    }
+  };
 
   const checkSectorVisibility = (serviceId) => {
     const sectorServices = ["60", "62"];
@@ -133,52 +160,77 @@ const FrmServiceApplicationMst = () => {
     }
   };
 
-  const fetchSectors = async () => {
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/api/FrmServiceApplicationMst/sectorlist`,
-        {
-          serviceId: String(serviceId),
+const fetchSectors = async () => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/api/FrmServiceApplicationMst/sectorlist`,
+      {
+        serviceId: String(serviceId),
+      },
+      {
+        headers: { 
+          Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+          'Content-Type': 'application/json',
         },
-        {
-          headers: { 
-            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (response?.data?.ok && response?.data?.data) {
-        setSectorList(response.data.data);
       }
-    } catch (error) {
-      console.error("Error fetching sectors:", error);
+    );
+
+    if (response?.data?.ok && response?.data?.data.data) {
+      const sectorData = response.data.data.data;
+      if (Array.isArray(sectorData)) {
+        setSectorList(sectorData);
+      } else if (sectorData.data && Array.isArray(sectorData.data)) {
+        setSectorList(sectorData.data);
+      } else if (sectorData && typeof sectorData === 'object' && !Array.isArray(sectorData)) {
+        if (sectorData.sectorId || sectorData.SECTORID) {
+          setSectorList([sectorData]);
+        } else {
+          setSectorList([]);
+        }
+      } else {
+        setSectorList([]);
+      }
+    } else {
+      setSectorList([]);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching sectors:", error);
+    setSectorList([]);
+  }
+};
 
-  const fetchVillages = async (sectorId) => {
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/api/FrmServiceApplication/villagelist`,
-        {
-          sectorId: sectorId,
+const fetchVillages = async (sectorId) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/api/FrmServiceApplicationMst/villages`,
+      {
+        sectorId: sectorId,
+      },
+      {
+        headers: { 
+          Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+          'Content-Type': 'application/json',
         },
-        {
-          headers: { 
-            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (response?.data?.ok && response?.data?.data) {
-        setVillageList(response.data.data);
       }
-    } catch (error) {
-      console.error("Error fetching villages:", error);
+    );
+
+    if (response?.data?.ok && response?.data?.data.data) {
+      const villageData = response.data.data.data;
+      if (Array.isArray(villageData)) {
+        setVillageList(villageData);
+      } else if (villageData.data && Array.isArray(villageData.data)) {
+        setVillageList(villageData.data);
+      } else {
+        setVillageList([]);
+      }
+    } else {
       setVillageList([]);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching villages:", error);
+    setVillageList([]);
+  }
+};
 
   const fetchDocumentDefinitions = async (serviceId, ulbId) => {
     try {
@@ -222,7 +274,6 @@ const FrmServiceApplicationMst = () => {
   const handleFileChange = (id, event) => {
     const file = event.currentTarget.files?.[0];
     if (file) {
-      console.log("File selected:", file.name, "Size:", file.size);
       
       const extension = file.name.split('.').pop().toUpperCase();
       const validExtensions = ['JPEG', 'JPG', 'PNG', 'PDF'];
@@ -334,14 +385,10 @@ const FrmServiceApplicationMst = () => {
     try {
       const documentsToUpload = tableData.filter(row => row.file !== null);
       
-      console.log("Documents to upload:", documentsToUpload.length);
-      
       if (documentsToUpload.length === 0) {
         console.log("No documents to upload");
         return true;
       }
-
-      console.log(`Uploading ${documentsToUpload.length} documents...`);
 
       const formData = new FormData();
       formData.append("corpid", Number(ulbId));
@@ -363,14 +410,6 @@ const FrmServiceApplicationMst = () => {
         }
       });
 
-      // console.log("Uploading with:", {
-      //   corpid: Number(ulbId),
-      //   serviceId: String(serviceId),
-      //   appNo: applicationNo,
-      //   documentIds: documentIds.join(","),
-      //   fileCount: documentsToUpload.length
-      // });
-
       const response = await axios.post(
         `${BASE_URL}/api/FrmServiceApplicationMst/upload-document`,
         formData,
@@ -386,8 +425,6 @@ const FrmServiceApplicationMst = () => {
           },
         }
       );
-
-      console.log("Upload response:", response.data);
 
       const isSuccess = response.data.ok === true || 
                        response.data.success === true || 
@@ -437,10 +474,6 @@ const FrmServiceApplicationMst = () => {
       const uploadedDocuments = tableData.filter(row => row.file !== null);
       const missingDocuments = tableData.filter(row => row.file === null);
       
-      console.log("Total documents in table:", totalDocuments);
-      console.log("Documents with files attached:", uploadedDocuments.length);
-      console.log("Missing documents:", missingDocuments.length);
-      
       if (totalDocuments > 0 && missingDocuments.length > 0) {
         const missingNames = missingDocuments.map(row => row.documentName).join(", ");
         Swal.fire({
@@ -480,16 +513,18 @@ const FrmServiceApplicationMst = () => {
         email: values.emailId?.trim() || "",
         aadharNo: values.aadharNo?.trim() || "0",
         refNo: values.referenceNo?.trim() || "",
-        zoneId: isSectorVisible ? 0 : (values.zoneId ? Number(values.zoneId) : 0),
-        sectorId: isSectorVisible ? (values.sectorId ? Number(values.sectorId) : 0) : 0,
-        villageId: isSectorVisible ? (values.villageId ? Number(values.villageId) : 0) : 0,
         locality: values.locality?.trim() || "",
         landmark: values.landmark?.trim() || "",
         pincode: values.pincode ? Number(values.pincode) : 0,
         source: "WEB",
       };
 
-      console.log("Saving application with payload:", savePayload);
+    if (isSectorVisible) {
+      savePayload.sectorId = values.sectorId ? Number(values.sectorId) : null;
+      savePayload.villageId = values.villageId ? Number(values.villageId) : null;
+    } else {
+      savePayload.zoneId = values.zoneId ? Number(values.zoneId) : null;
+    }
 
       const saveResponse = await axios.post(
         `${BASE_URL}/api/FrmServiceApplicationMst/save`,
@@ -501,8 +536,6 @@ const FrmServiceApplicationMst = () => {
           },
         }
       );
-
-      console.log("Save response:", saveResponse.data);
 
       if (!saveResponse.data.success) {
         loader.close();
@@ -530,7 +563,6 @@ const FrmServiceApplicationMst = () => {
 
         try {
           await uploadDocuments(applicationNo);
-          console.log("Documents uploaded successfully");
           loader.update({
             text: "Documents uploaded successfully!",
           });
@@ -582,11 +614,17 @@ const FrmServiceApplicationMst = () => {
         confirmButtonColor: '#1e3a8a',
       }).then(() => {
         if (payFlag === "N" || payFlag === "N") {
-          window.location.reload();
-        } else {
-          navigate("/app/FrmAppliFee", { state: { applicationNo } });
-        }
-      });
+          navigate("/app/FrmTrackApplication", { 
+            state: { 
+              applicationNo: applicationNo,
+              serviceName: pageTitle,
+              ulbId: ulbId
+            } 
+          });
+  } else {
+    navigate("/app/FrmAppliFee", { state: { applicationNo } });
+  }
+});
 
     } catch (error) {
       console.error("Error submitting application:", error);
@@ -632,9 +670,6 @@ const FrmServiceApplicationMst = () => {
             {item.isUploaded && " ✅"}
           </span>
         )}
-        {/* {item.file === null && (
-          
-        )} */}
       </div>
     ),
   }));
@@ -659,17 +694,6 @@ const FrmServiceApplicationMst = () => {
                 <CardTitle className="text-lg font-semibold">
                   {pageTitle}
                 </CardTitle>
-                {uploadProgress > 0 && uploadProgress < 100 && (
-                  <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                    <div 
-                      className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
-                      style={{ width: `${uploadProgress}%` }}
-                    ></div>
-                    <span className="text-xs text-gray-600 mt-1 block">
-                      Uploading: {uploadProgress}%
-                    </span>
-                  </div>
-                )}
               </CardHeader>
 
               <CardContent className="p-4 sm:p-6 space-y-6">
@@ -692,7 +716,7 @@ const FrmServiceApplicationMst = () => {
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center whitespace-nowrap">
-                      <Label text="Applicant Address" />
+                      <Label required text="Applicant Address" />
                       <span>:</span>
                     </div>
                     <Input
@@ -777,7 +801,7 @@ const FrmServiceApplicationMst = () => {
                   {isSectorVisible ? (
                     <>
 
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      {/* <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                           <Label required text="Sector" />
                           <span>:</span>
@@ -807,10 +831,47 @@ const FrmServiceApplicationMst = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                      </div>
-
+                      </div> */}
 
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+  <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+    <Label required text="Sector" />
+    <span>:</span>
+  </div>
+  <Select
+    value={values.sectorId}
+    onValueChange={(value) => {
+      setFieldValue("sectorId", value);
+      setFieldValue("villageId", "");
+      setVillageList([]);
+      if (value && value !== "0") {
+        fetchVillages(value);
+      }
+    }}
+  >
+    <SelectTrigger className="w-full h-9">
+      <SelectValue placeholder="-- Select Sector --" />
+    </SelectTrigger>
+    <SelectContent>
+      {/* Safe check: only map if sectorList is an array */}
+      {Array.isArray(sectorList) && sectorList.length > 0 ? (
+        sectorList.map((sector) => (
+          <SelectItem 
+            key={sector.sectorId || sector.SECTORID || Math.random()} 
+            value={String(sector.sectorId || sector.SECTORID)}
+          >
+            {sector.sectorName || sector.SECTORNAME || "Unknown Sector"}
+          </SelectItem>
+        ))
+      ) : (
+        <SelectItem value="0">No sectors available</SelectItem>
+      )}
+    </SelectContent>
+  </Select>
+</div>
+
+
+                      {/* <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                           <Label required text="Village" />
                           <span>:</span>
@@ -834,7 +895,39 @@ const FrmServiceApplicationMst = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                      </div>
+                      </div> */}
+
+<div className="flex flex-col sm:flex-row sm:items-center gap-2">
+  <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+    <Label required text="Village" />
+    <span>:</span>
+  </div>
+  <Select
+    value={values.villageId}
+    onValueChange={(value) => setFieldValue("villageId", value)}
+    disabled={!values.sectorId || values.sectorId === "0"}
+  >
+    <SelectTrigger className="w-full h-9">
+      <SelectValue placeholder="-- Select Village --" />
+    </SelectTrigger>
+    <SelectContent>
+      {/* Safe check: only map if villageList is an array */}
+      {Array.isArray(villageList) && villageList.length > 0 ? (
+        villageList.map((village) => (
+          <SelectItem 
+            key={village.villageId || village.VILLAGEID || Math.random()} 
+            value={String(village.villageId || village.VILLAGEID)}
+          >
+            {village.villageName || village.VILLAGENAME || "Unknown Village"}
+          </SelectItem>
+        ))
+      ) : (
+        <SelectItem value="0">No villages available</SelectItem>
+      )}
+    </SelectContent>
+  </Select>
+</div>
+
                     </>
                   ) : (
 
@@ -889,7 +982,7 @@ const FrmServiceApplicationMst = () => {
                     type="button"
                     variant="outline"
                     className="bg-gray-100 hover:bg-gray-200"
-                    onClick={() => navigate("/app/FrmDeptServicesTMC")}
+                    onClick={() => navigate("/")}
                   >
                     Back
                   </Button>

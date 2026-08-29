@@ -100,7 +100,10 @@ app.use("/api/FrmFirstAppealDocUpload", require("./modules/FrmFirstAppealDocUplo
 
 app.use("/api/FrmServiceApplicationMst", require("./modules/SolidHealth/FrmServiceApplicationMst/FrmServiceApplicationMst.routes"))
 
-app.use("/api/FrmSecondAppeal", require("./modules/SecondAppeal/FrmSecondAppeal/FrmSecondAppeal.route"));
+// Marriage
+app.use("/api/FrmMarriageRgstn", require("./modules/Marriage/FrmMarriageRgstn/FrmMarriageRgstn.routes"));
+app.use("/api/FrmAppoints", require("./modules/Marriage/FrmAppoints/FrmAppoints.route"));
+
 app.use(errorMiddleware);
 
 module.exports = app;

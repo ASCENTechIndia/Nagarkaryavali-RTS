@@ -52,6 +52,17 @@ const getDocumentsForServiceService = async (payload) => {
     return { success: true, count: data.length, data };
 };
 
+const getInstructionsForServiceService = async (payload) => {
+    console.log("Service: Fetch Intructions For Service", payload);
+
+    const data = await repo.getInsructionsForServiceRepo(payload);
+
+    if (!data || data.length === 0) {
+        return { success: false, message: "No documents found", data: [] };
+    }
+    return { success: true, count: data.length, data };
+};
+
 const getDownloadDocsService = async (payload) => {
     console.log("Service: Fetch Download Documents", payload);
     const data = await repo.getDownloadDocsRepo(payload);
@@ -81,6 +92,7 @@ module.exports = {
     getDepartmentMenuService,
     getServicesByDeptIdService,
     getDocumentsForServiceService,
+    getInstructionsForServiceService,
     getDownloadDocsService,
     getServiceDetails
 };

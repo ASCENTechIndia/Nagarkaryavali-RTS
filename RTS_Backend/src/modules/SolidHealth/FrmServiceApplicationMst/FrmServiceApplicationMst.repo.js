@@ -376,10 +376,41 @@ const uploadServiceDocumentsRepo = async ({ corpid, serviceId, appNo, documents 
 };
 
 
+const getVillageListRepo = async (sectorId) => {
+  try {
+    const query = `
+      SELECT
+        var_village_name AS villageName,
+        num_village_id AS villageId
+      FROM aorts_village_mst
+      WHERE var_village_active = 'Y'
+        AND num_sector_id = :sectorId
+      ORDER BY num_village_id
+    `;
+
+    const result = await executeQueryTMC(query, {
+      sectorId: Number(sectorId),
+    });
+
+    return {
+      success: true,
+      rows: result.rows || [],
+    };
+  } catch (error) {
+    console.error("GET VILLAGE LIST REPO ERROR:", error);
+
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+};
+
 module.exports = {
   getWardListRepo,
   getSectorListRepo,
   getDocumentListRepo,
   insertServiceApplicationRepo,
   uploadServiceDocumentsRepo,
+  getVillageListRepo,
 };

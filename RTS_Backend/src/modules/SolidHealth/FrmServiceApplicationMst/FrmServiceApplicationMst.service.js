@@ -139,10 +139,34 @@ const uploadServiceDocumentsService = async ({ corpid, serviceId, appNo, documen
 
   return result;
 };
+
+// ============================================================
+// GET VILLAGE LIST BY SECTOR
+// ============================================================
+const getVillageListService = async (sectorId) => {
+  if (!sectorId) {
+    throw new Error("Sector ID is required.");
+  }
+
+  const result = await repo.getVillageListRepo(sectorId);
+
+  if (!result.success) {
+    throw new Error(result.error || "Failed to fetch village list.");
+  }
+
+  return {
+    status: "SUCCESS",
+    message: "Village list fetched successfully.",
+    data: result.rows,
+  };
+};
+
+
 module.exports = {
   getWardListService,
   getSectorListService,
   getDocumentListService,
   saveServiceApplicationService,
   uploadServiceDocumentsService,
+  getVillageListService,
 };

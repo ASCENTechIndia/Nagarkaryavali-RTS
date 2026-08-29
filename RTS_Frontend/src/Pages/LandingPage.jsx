@@ -1,14 +1,16 @@
-import React, { useEffect, useMemo, useState } from "react";
+import * as React from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuth } from "@/context/AuthContext";
-import { ChevronRight, FileText, Download, Search, Building2, ArrowLeft } from "lucide-react";
+import { ChevronRight, FileText, Download, Search, Building2, ArrowLeft, Info } from "lucide-react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Popover, PopoverContent, PopoverHeader, PopoverTitle, PopoverTrigger } from "@/components/ui/popover";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -22,6 +24,7 @@ const LandingPage = () => {
     const [selectedService, setSelectedService] = useState(null);
     const [documents, setDocuments] = useState([]);
     const [downloadDocs, setDownloadDocs] = useState([]);
+    const [instruction, setInstruction] = useState("");
     const [search, setSearch] = useState("");
     const [mobileDetails, setMobileDetails] = useState(false);
 
@@ -43,6 +46,7 @@ const LandingPage = () => {
             setSelectedService(null);
             setDocuments([]);
             setDownloadDocs([]);
+            setInstruction("");
             return;
         }
 
@@ -51,6 +55,7 @@ const LandingPage = () => {
             setServices([]);
             setDocuments([]);
             setDownloadDocs([]);
+            setInstruction("");
             setSearch("");
             setMobileDetails(false);
 
@@ -58,7 +63,7 @@ const LandingPage = () => {
 
             try {
                 const res = await axios.get(`${BASE_URL}/api/Dashboard/services-by-dept`,
-                    { params: { ulbid: ulbId, deptId: selectedDepartment.id } }
+                    { params: { ulbid: ulbId, deptId: selectedDepartment.id }, }
                 );
 
                 const data = res.data?.data?.data || [];
@@ -94,17 +99,31 @@ const LandingPage = () => {
         setSelectedService(service);
         setDocuments([]);
         setDownloadDocs([]);
+        setInstruction("");
         setMobileDetails(true);
 
-        showLoader("Loading documents...");
+        showLoader("Loading service details...");
 
         try {
-            const [documentsResponse, downloadResponse] = await Promise.allSettled([
+            const [documentsResponse, downloadResponse, instructionResponse] = await Promise.allSettled([
                 axios.get(`${BASE_URL}/api/Dashboard/documents-for-service`,
-                    { params: { serviceId: service.id, ulbid: ulbId } }
+                    {
+                        params: {
+                            serviceId: service.id,
+                            ulbid: ulbId,
+                        },
+                    }
                 ),
-                axios.get(`${BASE_URL}/api/Dashboard/download-docs`,
-                    { params: { serviceName: service.id, ulbid: ulbId } }
+
+                axios.get(`${BASE_URL}/api/Dashboard/download-docs`, {
+                    params: {
+                        serviceName: service.id,
+                        ulbid: ulbId,
+                    },
+                }),
+
+                axios.get(`${BASE_URL}/api/Dashboard/instructions-for-service`,
+                    {params: {serviceId: service.id}}
                 ),
             ]);
 
@@ -117,7 +136,6 @@ const LandingPage = () => {
                 }));
 
                 setDocuments(mappedDocuments);
-
             } else {
                 console.error("Documents API error:", documentsResponse.reason);
                 setDocuments([]);
@@ -126,23 +144,37 @@ const LandingPage = () => {
             if (downloadResponse.status === "fulfilled") {
                 const downloadData = downloadResponse.value?.data?.data?.data || [];
 
-                const mappedDownloadDocs = downloadData.map((item, index) => ({
-                    id: item.DOCID || index,
-                    name: item.DOCNAME || item.VAR_DOWNLAODOC_SERVNAME || "Document",
-                    serviceName: item.VAR_DOWNLAODOC_SERVNAME,
-                    ulbid: item.NUM_DOWNLAODOC_ULBID,
-                }));
+                const mappedDownloadDocs = downloadData.map(
+                    (item, index) => ({
+                        id: item.DOCID || index,
+                        name: item.DOCNAME || item.VAR_DOWNLAODOC_SERVNAME || "Document",
+                        serviceName: item.VAR_DOWNLAODOC_SERVNAME,
+                        ulbid: item.NUM_DOWNLAODOC_ULBID,
+                    })
+                );
 
                 setDownloadDocs(mappedDownloadDocs);
             } else {
                 console.error("Download documents API error:", downloadResponse.reason);
                 setDownloadDocs([]);
             }
+
+            if (instructionResponse.status === "fulfilled") {
+                const instructionData = instructionResponse.value?.data?.data?.data || [];
+
+                const instructionText = instructionData?.[0]?.VAR_INST_MARDOCDESC || "";
+
+                setInstruction(instructionText.trim());
+            } else {
+                console.error( "Instruction API error:", instructionResponse.reason);
+                setInstruction("");
+            }
         } catch (error) {
-            console.error("Document loading error:", error);
+            console.error("Service details loading error:", error);
 
             setDocuments([]);
             setDownloadDocs([]);
+            setInstruction("");
         } finally {
             if (Swal.isVisible()) {
                 Swal.close();
@@ -156,8 +188,7 @@ const LandingPage = () => {
         }
 
         const value = search.toLowerCase();
-
-        return services.filter((service) => service.name?.toLowerCase().includes(value));
+        return services.filter((service) =>service.name?.toLowerCase().includes(value));
     }, [services, search]);
 
     const handleApply = async () => {
@@ -172,22 +203,18 @@ const LandingPage = () => {
             window.location.href = "https://mahavastu.maharashtra.gov.in/";
             return;
         }
-
         if (department === "Encroachment") {
             window.location.href = "http://tmcmandap.vidhsiddinfotechllp.com";
             return;
         }
-
         if (department === "InfoRel") {
-            window.location.href = "https://www.filmcell.maharashtra.gov.in";
+            window.location.href ="https://www.filmcell.maharashtra.gov.in";
             return;
         }
-
         if (department === "PWD" && serviceId === "E79C935C43A49FF22A228595FC9B1EDC") {
             window.location.href = "https://mahasanchar.emahapwd.com";
             return;
         }
-
         if (department === "Sewerage") {
             window.location.href = "https://thanecity.gov.in/tmc/CitizenHome.html";
             return;
@@ -195,11 +222,13 @@ const LandingPage = () => {
 
         try {
             showLoader("Fetching service details...");
-
-            const response = await axios.get(`${BASE_URL}/api/Dashboard/service-details`, { params: { serviceId } });
+            const response = await axios.get(`${BASE_URL}/api/Dashboard/service-details`,
+                {
+                    params: {serviceId},
+                }
+            );
 
             const serviceDetails = response.data?.data;
-
             if (!serviceDetails) {
                 throw new Error("Service details not found");
             }
@@ -217,8 +246,8 @@ const LandingPage = () => {
                     serviceId: serviceDetails.serviceId || serviceId,
                     serviceName: serviceDetails.serviceName || selectedService.name,
                     serviceRate: serviceDetails.serviceRate,
-                    serviceUrl
-                }
+                    serviceUrl,
+                },
             });
         } catch (error) {
             if (Swal.isVisible()) {
@@ -226,12 +255,11 @@ const LandingPage = () => {
             }
 
             console.error("Service details error:", error);
-
             Swal.fire({
                 icon: "error",
                 title: "Unable to Continue",
                 text: error?.response?.data?.message || error?.response?.data?.error || error?.message || "Unable to fetch service details",
-                confirmButtonText: "OK"
+                confirmButtonText: "OK",
             });
         }
     };
@@ -240,21 +268,29 @@ const LandingPage = () => {
         if (!document?.id) {
             return;
         }
-
         console.log("Download document:", document);
+    };
+
+    const formatInstruction = (text) => {
+        if (!text) {
+            return "";
+        }
+
+        return text.replace(/<br\s*\/?>/gi, "</p><p>").replace(/\r?\n/g, "<br />");
     };
 
     return (
         <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden bg-[#f4f7fb]">
-
-            <section className={`flex min-h-0 min-w-0 flex-1 flex-col border-r bg-white ${mobileDetails ? "hidden md:flex" : "flex"}`}>
+            <section className={`flex min-h-0 min-w-0 flex-1 flex-col border-r bg-white ${mobileDetails ? "hidden md:flex" : "flex" }`}>
                 <div className="shrink-0 border-b bg-[#080080] px-4 py-2">
-                    <h2 className="truncate text-center text-sm font-bold text-white">{selectedDepartment?.name || "Department Services"}</h2>
+                    <h2 className="truncate text-center text-sm font-bold text-white">
+                        {selectedDepartment?.name || "Department Services"}
+                    </h2>
                 </div>
 
                 <div className="shrink-0 border-b bg-white p-3">
                     <div className="relative">
-                        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/>
 
                         <Input
                             value={search}
@@ -273,18 +309,19 @@ const LandingPage = () => {
                         {!selectedDepartment ? (
                             <div className="py-20 text-center">
                                 <Building2 size={35} className="mx-auto mb-2 text-gray-300" />
-                                <p className="text-sm text-gray-400"> Select a department</p>
+                                <p className="text-sm text-gray-400"> Select a department </p>
                             </div>
                         ) : filteredServices.length === 0 ? (
                             <div className="py-20 text-center">
                                 <FileText size={35} className="mx-auto mb-2 text-gray-300" />
-                                <p className="text-sm text-gray-400"> No services found</p>
+                                <p className="text-sm text-gray-400">No services found</p>
                             </div>
                         ) : (
                             <div className="space-y-1">
                                 {filteredServices.map(
                                     (service, index) => {
                                         const active = selectedService?.id === service.id;
+
                                         return (
                                             <motion.button
                                                 key={service.id}
@@ -293,20 +330,20 @@ const LandingPage = () => {
                                                     handleServiceSelect(service)
                                                 }
                                                 whileHover={{ x: 3 }}
-                                                whileTap={{ scale: 0.98 }}
-                                                className={`group flex w-full items-start gap-2 rounded-md border-b px-2 py-2.5 text-left ${active ? "bg-blue-50" : "hover:bg-blue-50"}`}
+                                                whileTap={{scale: 0.98,}}
+                                                className={`group flex w-full items-start gap-2 rounded-md border-b px-2 py-2.5 text-left ${active ? "bg-blue-50" : "hover:bg-blue-50" }`}
                                             >
-                                                <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${active ? "bg-[#184aa6] text-white" : "bg-gray-100 text-gray-500"}`}>
+                                                <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${active ? "bg-[#184aa6] text-white" : "bg-gray-100 text-gray-500" }`}>
                                                     {index + 1}
                                                 </span>
 
                                                 <div className="min-w-0 flex-1">
-                                                    <p className={`text-xs font-medium leading-5 ${active ? "text-[#184aa6]" : "text-gray-700"}`}>
+                                                    <p className={`text-xs font-medium leading-5 ${active ? "text-[#184aa6]" : "text-gray-700" }`}>
                                                         {service.name}
                                                     </p>
                                                 </div>
 
-                                                <ChevronRight size={15} className="mt-1 shrink-0 text-gray-300" />
+                                                <ChevronRight size={15} className="mt-1 shrink-0 text-gray-300"/>
                                             </motion.button>
                                         );
                                     }
@@ -317,7 +354,7 @@ const LandingPage = () => {
                 </ScrollArea>
             </section>
 
-            <section className={`flex min-h-0 min-w-0 flex-1 flex-col bg-[#f8fafc] ${!mobileDetails ? "hidden md:flex" : "flex"}`}>
+            <section className={`flex min-h-0 min-w-0 flex-1 flex-col bg-[#f8fafc] ${!mobileDetails ? "hidden md:flex" : "flex" }`}>
                 <div className="flex shrink-0 items-center border-b bg-[#080080] px-3 py-2">
                     <Button
                         type="button"
@@ -339,17 +376,23 @@ const LandingPage = () => {
                     <div className="space-y-4 p-3 sm:p-4">
                         <Card className="border-blue-100 shadow-sm">
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-base text-[#184aa6]">{selectedService?.name || "Select a service"}</CardTitle>
+                                <CardTitle className="text-base text-[#184aa6]">
+                                    {selectedService?.name || "Select a service"}
+                                </CardTitle>
                             </CardHeader>
 
                             <CardContent>
-                                <p className="text-xs leading-5 text-gray-600"> {selectedService ? "Documents required for this service." : "Select a service to view documents."} </p>
+                                <p className="text-xs leading-5 text-gray-600">
+                                    {selectedService ? "Documents required for this service." : "Select a service to view documents."}
+                                </p>
                             </CardContent>
                         </Card>
 
                         <Card className="border-gray-200 shadow-sm">
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-sm">Documents Required</CardTitle>
+                                <div className="flex items-center justify-between gap-2">
+                                    <CardTitle className="text-sm">Documents Required</CardTitle>
+                                </div>
                             </CardHeader>
 
                             <CardContent>
@@ -368,16 +411,11 @@ const LandingPage = () => {
                                         {documents.map(
                                             (document, index) => (
                                                 <div
-                                                    key={document.id || index}
+                                                    key={ document.id || index }
                                                     className="flex items-start gap-2 rounded-md border border-gray-100 bg-gray-50 px-3 py-2"
                                                 >
-                                                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#184aa6] text-[10px] font-bold text-white">
-                                                        {index + 1}
-                                                    </span>
-
-                                                    <span className="text-xs leading-5 text-gray-600">
-                                                        {document.name}
-                                                    </span>
+                                                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#184aa6] text-[10px] font-bold text-white">{index + 1}</span>
+                                                    <span className="text-xs leading-5 text-gray-600">{ document.name }</span>
                                                 </div>
                                             )
                                         )}
@@ -386,11 +424,12 @@ const LandingPage = () => {
                             </CardContent>
                         </Card>
 
-                        {selectedService &&
-                            downloadDocs.length > 0 && (
+                        {selectedService && downloadDocs.length > 0 && (
                                 <Card className="border-gray-200 shadow-sm">
                                     <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm">Download Documents</CardTitle>
+                                        <CardTitle className="text-sm">
+                                            Download Documents
+                                        </CardTitle>
                                     </CardHeader>
 
                                     <CardContent>
@@ -402,7 +441,7 @@ const LandingPage = () => {
                                                         className="flex items-center gap-2 rounded-md border bg-white px-3 py-2"
                                                     >
                                                         <FileText size={16} className="shrink-0 text-[#184aa6]" />
-                                                        <span className="min-w-0 flex-1 truncate text-xs text-gray-600"> {document.name}</span>
+                                                        <span className="min-w-0 flex-1 truncate text-xs text-gray-600">{document.name}</span>
 
                                                         <Button
                                                             type="button"
@@ -413,8 +452,7 @@ const LandingPage = () => {
                                                             }
                                                             className="h-7 shrink-0 text-xs"
                                                         >
-                                                            <Download size={13} />
-                                                            Download
+                                                            <Download size={13} />Download
                                                         </Button>
                                                     </div>
                                                 )
@@ -424,15 +462,40 @@ const LandingPage = () => {
                                 </Card>
                             )}
 
+
                         <div className="flex flex-wrap gap-2">
+                            {selectedService && instruction && (
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button  type="button"  variant="outline"><Info size={13} /> Instruction</Button>
+                                    </PopoverTrigger>
+
+                                    <PopoverContent
+                                        align="end"
+                                        sideOffset={8}
+                                    >
+                                        <PopoverHeader className="border-b bg-[#080080] px-4 py-3">
+                                            <PopoverTitle className="flex items-center gap-2 text-sm font-semibold text-white">
+                                                <Info size={16} />Instructions
+                                            </PopoverTitle>
+                                        </PopoverHeader>
+
+                                        <div className="max-h-[60vh] overflow-y-auto px-4 py-3">
+                                            <div
+                                                className="text-sm leading-6 text-gray-700 [&_p]:mb-2 [&_p:last-child]:mb-0"
+                                                dangerouslySetInnerHTML={{ __html: `<p>${formatInstruction(instruction)}</p>`, }}
+                                            />
+                                        </div>
+                                    </PopoverContent>
+                                </Popover>
+                            )}
                             <Button
                                 type="button"
                                 onClick={handleApply}
                                 disabled={!selectedDepartment || !selectedService}
-                                className="bg-[#184aa6] text-xs hover:bg-blue-900"
                             >
                                 Apply Now
-                                <ChevronRight size={15} />
+                                <ChevronRight size={12} />
                             </Button>
                         </div>
                     </div>

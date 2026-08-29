@@ -100,6 +100,25 @@ exports.getDocumentsForServiceController = asyncHandler(
     }
 );
 
+exports.getInstructionsForServiceController = asyncHandler(
+    async (req, res) => {
+        console.log("Documents For Service Request:", req.query);
+        const { serviceId } = req.query;
+
+        if (!serviceId) {
+            return fail(res, "serviceId is required");
+        }
+
+        const data = await service.getInstructionsForServiceService({ serviceId });
+
+        if (!data.success) {
+            return fail(res, data.message);
+        }
+
+        return ok(res, data, data.message || "Service documents fetched successfully");
+    }
+);
+
 exports.getDownloadDocsController = asyncHandler(
     async (req, res) => {
         console.log("Download Documents Request:", req.query);
