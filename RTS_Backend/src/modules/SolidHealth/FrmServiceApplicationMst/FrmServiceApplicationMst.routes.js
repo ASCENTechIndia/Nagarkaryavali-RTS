@@ -12,4 +12,7 @@ router.post("/documentlist", controller.getDocumentList);
 router.post("/save", controller.saveServiceApplication);
 
 router.post("/upload-document", upload.any(), controller.uploadServiceDocuments);
+
+router.post("/villages", controller.getVillageList);
+
 module.exports = router;

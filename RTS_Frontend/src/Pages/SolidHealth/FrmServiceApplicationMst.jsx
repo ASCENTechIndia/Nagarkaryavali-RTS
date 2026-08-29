@@ -88,6 +88,8 @@ const FrmServiceApplicationMst = () => {
         fetchZones(),
         fetchDocumentDefinitions(serviceId, ulbId),
         checkSectorVisibility(serviceId),
+        fetchSectors(),
+        //fetchVillages(),
       ]);
 
       results.forEach((result, index) => {
@@ -158,52 +160,77 @@ const FrmServiceApplicationMst = () => {
     }
   };
 
-  const fetchSectors = async () => {
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/api/FrmServiceApplicationMst/sectorlist`,
-        {
-          serviceId: String(serviceId),
+const fetchSectors = async () => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/api/FrmServiceApplicationMst/sectorlist`,
+      {
+        serviceId: String(serviceId),
+      },
+      {
+        headers: { 
+          Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+          'Content-Type': 'application/json',
         },
-        {
-          headers: { 
-            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (response?.data?.ok && response?.data?.data) {
-        setSectorList(response.data.data);
       }
-    } catch (error) {
-      console.error("Error fetching sectors:", error);
+    );
+
+    if (response?.data?.ok && response?.data?.data.data) {
+      const sectorData = response.data.data.data;
+      if (Array.isArray(sectorData)) {
+        setSectorList(sectorData);
+      } else if (sectorData.data && Array.isArray(sectorData.data)) {
+        setSectorList(sectorData.data);
+      } else if (sectorData && typeof sectorData === 'object' && !Array.isArray(sectorData)) {
+        if (sectorData.sectorId || sectorData.SECTORID) {
+          setSectorList([sectorData]);
+        } else {
+          setSectorList([]);
+        }
+      } else {
+        setSectorList([]);
+      }
+    } else {
+      setSectorList([]);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching sectors:", error);
+    setSectorList([]);
+  }
+};
 
-  const fetchVillages = async (sectorId) => {
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/api/FrmServiceApplication/villagelist`,
-        {
-          sectorId: sectorId,
+const fetchVillages = async (sectorId) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/api/FrmServiceApplicationMst/villages`,
+      {
+        sectorId: sectorId,
+      },
+      {
+        headers: { 
+          Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+          'Content-Type': 'application/json',
         },
-        {
-          headers: { 
-            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (response?.data?.ok && response?.data?.data) {
-        setVillageList(response.data.data);
       }
-    } catch (error) {
-      console.error("Error fetching villages:", error);
+    );
+
+    if (response?.data?.ok && response?.data?.data.data) {
+      const villageData = response.data.data.data;
+      if (Array.isArray(villageData)) {
+        setVillageList(villageData);
+      } else if (villageData.data && Array.isArray(villageData.data)) {
+        setVillageList(villageData.data);
+      } else {
+        setVillageList([]);
+      }
+    } else {
       setVillageList([]);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching villages:", error);
+    setVillageList([]);
+  }
+};
 
   const fetchDocumentDefinitions = async (serviceId, ulbId) => {
     try {
@@ -486,15 +513,18 @@ const FrmServiceApplicationMst = () => {
         email: values.emailId?.trim() || "",
         aadharNo: values.aadharNo?.trim() || "0",
         refNo: values.referenceNo?.trim() || "",
-        zoneId: isSectorVisible ? 0 : (values.zoneId ? Number(values.zoneId) : 0),
-        sectorId: isSectorVisible ? (values.sectorId ? Number(values.sectorId) : 0) : 0,
-        villageId: isSectorVisible ? (values.villageId ? Number(values.villageId) : 0) : 0,
         locality: values.locality?.trim() || "",
         landmark: values.landmark?.trim() || "",
         pincode: values.pincode ? Number(values.pincode) : 0,
         source: "WEB",
       };
 
+    if (isSectorVisible) {
+      savePayload.sectorId = values.sectorId ? Number(values.sectorId) : null;
+      savePayload.villageId = values.villageId ? Number(values.villageId) : null;
+    } else {
+      savePayload.zoneId = values.zoneId ? Number(values.zoneId) : null;
+    }
 
       const saveResponse = await axios.post(
         `${BASE_URL}/api/FrmServiceApplicationMst/save`,
@@ -686,7 +716,7 @@ const FrmServiceApplicationMst = () => {
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center whitespace-nowrap">
-                      <Label text="Applicant Address" />
+                      <Label required text="Applicant Address" />
                       <span>:</span>
                     </div>
                     <Input
@@ -771,7 +801,7 @@ const FrmServiceApplicationMst = () => {
                   {isSectorVisible ? (
                     <>
 
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      {/* <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                           <Label required text="Sector" />
                           <span>:</span>
@@ -801,10 +831,47 @@ const FrmServiceApplicationMst = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                      </div>
-
+                      </div> */}
 
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+  <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+    <Label required text="Sector" />
+    <span>:</span>
+  </div>
+  <Select
+    value={values.sectorId}
+    onValueChange={(value) => {
+      setFieldValue("sectorId", value);
+      setFieldValue("villageId", "");
+      setVillageList([]);
+      if (value && value !== "0") {
+        fetchVillages(value);
+      }
+    }}
+  >
+    <SelectTrigger className="w-full h-9">
+      <SelectValue placeholder="-- Select Sector --" />
+    </SelectTrigger>
+    <SelectContent>
+      {/* Safe check: only map if sectorList is an array */}
+      {Array.isArray(sectorList) && sectorList.length > 0 ? (
+        sectorList.map((sector) => (
+          <SelectItem 
+            key={sector.sectorId || sector.SECTORID || Math.random()} 
+            value={String(sector.sectorId || sector.SECTORID)}
+          >
+            {sector.sectorName || sector.SECTORNAME || "Unknown Sector"}
+          </SelectItem>
+        ))
+      ) : (
+        <SelectItem value="0">No sectors available</SelectItem>
+      )}
+    </SelectContent>
+  </Select>
+</div>
+
+
+                      {/* <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                           <Label required text="Village" />
                           <span>:</span>
@@ -828,7 +895,39 @@ const FrmServiceApplicationMst = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                      </div>
+                      </div> */}
+
+<div className="flex flex-col sm:flex-row sm:items-center gap-2">
+  <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+    <Label required text="Village" />
+    <span>:</span>
+  </div>
+  <Select
+    value={values.villageId}
+    onValueChange={(value) => setFieldValue("villageId", value)}
+    disabled={!values.sectorId || values.sectorId === "0"}
+  >
+    <SelectTrigger className="w-full h-9">
+      <SelectValue placeholder="-- Select Village --" />
+    </SelectTrigger>
+    <SelectContent>
+      {/* Safe check: only map if villageList is an array */}
+      {Array.isArray(villageList) && villageList.length > 0 ? (
+        villageList.map((village) => (
+          <SelectItem 
+            key={village.villageId || village.VILLAGEID || Math.random()} 
+            value={String(village.villageId || village.VILLAGEID)}
+          >
+            {village.villageName || village.VILLAGENAME || "Unknown Village"}
+          </SelectItem>
+        ))
+      ) : (
+        <SelectItem value="0">No villages available</SelectItem>
+      )}
+    </SelectContent>
+  </Select>
+</div>
+
                     </>
                   ) : (
 
