@@ -286,7 +286,9 @@ async function uploadAppDocument({
   };
 }
 
-
+const searchBirthDeathDetailsService = async (payload) => {
+    return await repo.searchBirthDeathDetailsRepo(payload);
+};
 
 module.exports = {
     getServiceNameService,
@@ -299,4 +301,5 @@ module.exports = {
     getServiceDocumentsService,
     saveApplicantInfoService,
     uploadAppDocument,
+    searchBirthDeathDetailsService
 };

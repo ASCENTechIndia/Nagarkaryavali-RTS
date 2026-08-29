@@ -493,3 +493,37 @@ exports.uploadAppDocument = asyncHandler(
     );
   }
 );
+
+exports.searchBirthDeathDetails = async (req, res) => {
+    try {
+        const {serviceId, registrationNo, birthDeathDate, fatherName, motherName} = req.body;
+
+        if (!serviceId) {
+            return res.status(400).json({
+                ok: false,
+                message: "Service ID is required",
+            });
+        }
+        if (!registrationNo && !birthDeathDate && !fatherName && !motherName) {
+            return res.status(400).json({
+                ok: false,
+                message: "Please Enter Reg.no OR Date OR Father Name OR Mother Name",
+            });
+        }
+
+        const result = await service.searchBirthDeathDetailsService({serviceId, registrationNo, birthDeathDate, fatherName, motherName});
+
+        return res.status(200).json({
+            ok: true,
+            message: result?.rows?.length ? `${result.header} fetched successfully` : "No records found",
+            data: {header: result.header, count: result.rows.length, data: result.rows},
+        });
+    } catch (error) {
+        console.error("Stepnew searchBirthDeathDetails error:", error);
+
+        return res.status(500).json({
+            ok: false,
+            message: error?.message || "Unable to fetch Birth/Death details",
+        });
+    }
+};

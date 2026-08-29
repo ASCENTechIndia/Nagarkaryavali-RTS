@@ -458,7 +458,108 @@ async function insertAppDocument({
   });
 }
 
+const searchBirthDeathDetailsRepo = async ({serviceId, registrationNo, birthDeathDate, fatherName, motherName}) => {
+    const normalizedServiceId = Number(serviceId);
 
+    if ( !registrationNo && !birthDeathDate && !fatherName && !motherName ) {
+        throw new Error( "Please Enter Reg.no OR Date OR Father Name OR Mother Name" );
+    }
+
+    const conditions = [];
+    const binds = {};
+
+    let sql = "";
+    let header = "";
+
+    if ([15, 343].includes(normalizedServiceId)) {
+        header = "Death Details";
+        sql = `
+            SELECT
+                uniqueno AS "uniqueNo",
+                num_death_regno AS "regno",
+                var_death_name AS "name",
+                CASE
+                    WHEN var_death_gender = 'M' THEN 'Male'
+                    ELSE 'Female'
+                END AS "gender",
+                dat_death_deathdate AS "BNDdate",
+                var_death_monthername AS "mothername",
+                var_death_fathername AS "fathername",
+                num_death_noofcopies AS "copies"
+            FROM birthdeath.aobd_death_def bd
+        `;
+
+        if (registrationNo) {
+            conditions.push("num_death_regno = :registrationNo");
+            binds.registrationNo = registrationNo;
+        }
+
+        if (birthDeathDate) {
+            conditions.push("TRUNC(dat_death_deathdate) = TRUNC(TO_DATE(:birthDeathDate, 'YYYY-MM-DD'))");
+            binds.birthDeathDate = birthDeathDate;
+        }
+
+        if (fatherName) {
+            conditions.push("UPPER(var_death_fathername) LIKE UPPER(:fatherName)");
+            binds.fatherName = `%${fatherName}%`;
+        }
+
+        if (motherName) {
+            conditions.push("UPPER(var_death_monthername) LIKE UPPER(:motherName)");
+            binds.motherName = `%${motherName}%`;
+        }
+    } else if ([14, 342].includes(normalizedServiceId)) {
+        header = "Birth Details";
+        sql = `
+            SELECT
+                uniqueno AS "uniqueNo",
+                num_birth_regno AS "regno",
+                var_birth_name AS "name",
+                CASE
+                    WHEN var_birth_gender = 'M' THEN 'Male'
+                    ELSE 'Female'
+                END AS "gender",
+                dat_birth_birthdate AS "BNDdate",
+                var_birth_monthername AS "mothername",
+                var_birth_fathername AS "fathername",
+                num_birth_noofcopies AS "copies"
+            FROM birthdeath.aobd_birth_def bd
+        `;
+
+        if (registrationNo) {
+            conditions.push("num_birth_regno = :registrationNo");
+            binds.registrationNo = registrationNo;
+        }
+
+        if (birthDeathDate) {
+            conditions.push("TRUNC(dat_birth_birthdate) = TRUNC(TO_DATE(:birthDeathDate, 'YYYY-MM-DD'))");
+            binds.birthDeathDate = birthDeathDate;
+        }
+
+        if (fatherName) {
+            conditions.push("UPPER(var_birth_fathername) LIKE UPPER(:fatherName)");
+            binds.fatherName = `%${fatherName}%`;
+        }
+
+        if (motherName) {
+            conditions.push("UPPER(var_birth_monthername) LIKE UPPER(:motherName)");
+            binds.motherName = `%${motherName}%`;
+        }
+    } else {
+        throw new Error("Invalid service ID");
+    }
+
+    if (conditions.length > 0) {
+        sql += ` WHERE ${conditions.join(" AND ")}`;
+    }
+
+    const result = await executeQueryTMC(sql, binds);
+    console.log({result:result, sql, binds})
+    return {
+        header,
+        rows: result.rows,
+    };
+};
 
 module.exports = {
     getServiceNameRepo,
@@ -471,4 +572,5 @@ module.exports = {
     getServiceDocumentsRepo,
     saveApplicantInfoRepo,
     insertAppDocument,
+    searchBirthDeathDetailsRepo
 };
