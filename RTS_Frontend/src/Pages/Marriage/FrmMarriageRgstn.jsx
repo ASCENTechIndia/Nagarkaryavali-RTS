@@ -97,11 +97,10 @@ function FrmMarriageRgstn() {
   const { user, token } = useAuth();
 
   const locationState = location.state || {};
-  const serviceId = locationState.serviceId || "1";
-  const serviceName =
-    locationState.serviceName || "Issuance of Marriage Certificate";
-  const serviceRate = locationState.serviceRate || 0;
-  const serviceUrl = locationState.serviceUrl || "~/app/FrmMarriageRgstn.aspx";
+  const serviceId = locationState.serviceId;
+  const serviceName = locationState.serviceName ;
+  const serviceRate = locationState.serviceRate ;
+  const serviceUrl = locationState.serviceUrl;
 
   const [activeTab, setActiveTab] = useState("application");
   const [loading, setLoading] = useState(false);

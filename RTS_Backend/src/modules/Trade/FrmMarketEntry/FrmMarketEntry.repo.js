@@ -78,7 +78,7 @@ const getWardRepo = async (ulbId) => {
     SELECT DISTINCT
       wardname,
       wardid
-    FROM prop.vw_zonemas
+    FROM vw_zonemas
     WHERE ulbid = :ulbId
   `;
 
@@ -481,14 +481,13 @@ const getApplicationDetailsRepo = async (applicationId, ulbId) => {
 const applicationEntryRepo = async (data) => {
   try {
     const fromDate = data.fromDate ? new Date(`${data.fromDate}T00:00:00`) : null;
-
     const toDate = data.toDate ? new Date(`${data.toDate}T00:00:00`) : null;
 
     const result = await withTxTMC(async (conn) => {
       const res = await conn.execute(
         `
         BEGIN
-          aorts_marketentry_ins(
+          aomk_appli_ins(
             :In_UserId,
             :In_Appid,
             :In_AppliNo,
@@ -500,20 +499,18 @@ const applicationEntryRepo = async (data) => {
             :In_ContactNo,
             :In_Email,
             :In_Address,
-
             :In_ZoneId,
             :In_WardId,
             :In_IsProd,
             :In_OwnSpace,
             :In_Agrmentwith,
-
             :In_Area,
             :In_IsCorpNOC,
             :In_BusStartYr,
             :In_ShopActNo,
             :In_foodlicno,
-
             :In_LicDays,
+
             :In_Applitrade_Str,
             :In_Applitradetype_Str,
             :In_Applidirector_Str,
@@ -533,11 +530,8 @@ const applicationEntryRepo = async (data) => {
             :in_arreasamt,
             :in_Servid,
             :in_CFCRecno,
-            :in_Jwalan,
-            :in_Illegal,
-            :in_category,
-            :in_propno,
-            :in_trdbusinesstype,
+            :in_PropNo,
+            :in_MarketPropNo,
 
             :Out_Errorcode,
             :Out_Errormsg,
@@ -550,113 +544,68 @@ const applicationEntryRepo = async (data) => {
           // ==================================================
           // INPUT PARAMETERS
           // ==================================================
-
           In_UserId: data.userId,
-
           In_Appid: data.appid,
-
           In_AppliNo: data.appliNo,
-
           In_Mode: data.mode,
-
           In_OldLicencNo: data.oldLicencNo || null,
 
           In_ShopName: data.shopName,
-
           In_PANNo: data.panNo,
-
           In_ContactNo: data.contactNo,
-
           In_Email: data.email && data.email.trim() !== "" ? data.email : null,
-
           In_Address: data.address,
 
           In_ZoneId: data.zoneId,
-
           In_WardId: data.wardId,
-
           In_IsProd: data.isProd,
-
           In_OwnSpace: data.ownSpace,
-
           In_Agrmentwith: data.agrmentWith,
-
           In_Area: data.area,
-
           In_IsCorpNOC: data.isCorpNOC,
-
           In_BusStartYr: data.busStartYr,
-
           In_ShopActNo: data.shopActNo && data.shopActNo.trim() !== "" ? data.shopActNo : null,
-
           In_foodlicno: data.foodlicno && data.foodlicno.trim() !== "" ? data.foodlicno : null,
-
           In_LicDays: data.licDays,
 
           In_Applitrade_Str: data.applitradeStr,
-
           In_Applitradetype_Str: data.applitradetypeStr,
-
           In_Applidirector_Str: data.applidirectorStr,
-
           In_Source: data.source,
 
           In_ShopNameMar: data.shopNameMar,
-
           In_PlaceOwnerName: data.placeOwnerName,
-
           In_PlaceOwnerAddress: data.placeOwnerAddress,
 
           In_FromDate: fromDate,
-
           In_ToDate: toDate,
-
           in_amount: data.amount,
-
           in_lictype: data.licType,
-
           In_OrgId: data.ulbId,
-
           in_ipaddr: data.ipAddress,
-
           in_licensetypeid: data.licenseTypeId,
-
           in_arreasamt: data.arrearsAmount,
-
           in_Servid: data.serviceId,
-
           in_CFCRecno: data.cfcRecno,
-
-          in_Jwalan: data.jwalan,
-
-          in_Illegal: data.illegal,
-
-          in_category: data.category,
-
-          in_propno: data.propNo,
-
-          in_trdbusinesstype: data.trdBusinessType && data.trdBusinessType.trim() !== "" ? data.trdBusinessType : null,
+          in_PropNo: data.propNo,
+          in_MarketPropNo: data.marketPropNo || "",
 
           // ==================================================
           // OUTPUT PARAMETERS
           // ==================================================
-
           Out_Errorcode: {
             dir: oracledb.BIND_OUT,
             type: oracledb.NUMBER,
           },
-
           Out_Errormsg: {
             dir: oracledb.BIND_OUT,
             type: oracledb.STRING,
             maxSize: 2000,
           },
-
           Out_Appid: {
             dir: oracledb.BIND_OUT,
             type: oracledb.NUMBER,
           },
-
           Out_AppliNo: {
             dir: oracledb.BIND_OUT,
             type: oracledb.STRING,
@@ -666,13 +615,8 @@ const applicationEntryRepo = async (data) => {
       );
 
       console.log("applicationEntryRepo:", res);
-
       return res.outBinds;
     });
-
-    // ========================================================
-    // RETURN PROCEDURE RESULT
-    // ========================================================
 
     return {
       success: true,
@@ -683,7 +627,6 @@ const applicationEntryRepo = async (data) => {
     };
   } catch (err) {
     console.error("APPLICATION ENTRY REPO ERROR:", err);
-
     return {
       success: false,
       error: err.message,
@@ -1174,7 +1117,7 @@ const getZoneByWardRepo = async (wardId, ulbId) => {
     SELECT DISTINCT
       zonename,
       zoneid
-    FROM prop.vw_zonemas
+    FROM vw_zonemas
     WHERE wardid = :wardId
       AND ulbid = :ulbId
   `;
