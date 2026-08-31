@@ -29,47 +29,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// const ENCRYPTION_KEY = "AS23N7E2H4V717DEAS23N7E2H4V717DE";
-// const EXTERNAL_API_URL = "http://ptaxtmccollection.thanecity.gov.in/TMC_IGRClient/Service.svc/GetDataDetails_TMC";
-
-// function encryptString(plainText, keyValue) {
-//   const keyBytes = [];
-//   for (let i = 0; i < keyValue.length; i++) {
-//     keyBytes.push(keyValue.charCodeAt(i));
-//   }
-//   const plainBytes = [];
-//   for (let i = 0; i < plainText.length; i++) {
-//     plainBytes.push(plainText.charCodeAt(i));
-//   }
-//   const actualKey = keyBytes.slice(0, 32);
-//   const result = [];
-//   for (let i = 0; i < plainBytes.length; i++) {
-//     result.push(plainBytes[i] ^ actualKey[i % actualKey.length]);
-//   }
-//   let hex = '';
-//   for (let i = 0; i < result.length; i++) {
-//     hex += result[i].toString(16).padStart(2, '0').toUpperCase();
-//   }
-//   return hex;
-// }
-
-// function decryptString(cipherText, keyValue) {
-//   const keyBytes = [];
-//   for (let i = 0; i < keyValue.length; i++) {
-//     keyBytes.push(keyValue.charCodeAt(i));
-//   }
-//   const cipherBytes = [];
-//   for (let i = 0; i < cipherText.length; i += 2) {
-//     cipherBytes.push(parseInt(cipherText.substr(i, 2), 16));
-//   }
-//   const actualKey = keyBytes.slice(0, 32);
-//   const result = [];
-//   for (let i = 0; i < cipherBytes.length; i++) {
-//     result.push(cipherBytes[i] ^ actualKey[i % actualKey.length]);
-//   }
-//   return String.fromCharCode(...result);
-// }
-
 const initialValues = {
   ptn: "",
   subcode: "",
@@ -224,47 +183,6 @@ const FrmAssessmentCerti = () => {
       </div>
     ),
   }));
-
-  // const getPropertyDetails = async (propNo, userId) => {
-  //   try {
-  //     const jsonReq = {
-  //       jsonData: [{
-  //         user_id: userId,
-  //         propno: propNo,
-  //         flatno: ""
-  //       }]
-  //     };
-
-  //     const jsonReqString = JSON.stringify(jsonReq);
-  //     const encryptedRequest = encryptString(jsonReqString, ENCRYPTION_KEY);
-
-  //     const postData = {
-  //       jsonData: [{
-  //         encr_request: encryptedRequest
-  //       }]
-  //     };
-
-  //     const response = await axios.post(EXTERNAL_API_URL, postData, {
-  //       headers: {
-  //         'Content-Type': 'application/json'
-  //       },
-  //       timeout: 30000
-  //     });
-
-  //     if (response?.data?.jsonData?.[0]?.encr_request) {
-  //       const decryptedResponse = decryptString(
-  //         response.data.jsonData[0].encr_request,
-  //         ENCRYPTION_KEY
-  //       );
-  //       return JSON.parse(decryptedResponse);
-  //     }
-
-  //     return null;
-  //   } catch (error) {
-  //     console.error("getPropertyDetails Error:", error);
-  //     throw error;
-  //   }
-  // };
 
   const getPropertyDetails = async (propNo, userId) => {
     try {
@@ -666,7 +584,7 @@ const FrmAssessmentCerti = () => {
                       placeholder="Enter Property Number"
                     />
                   </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  {/* <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-24 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label text="Subcode" />
                       <span>:</span>
@@ -678,7 +596,7 @@ const FrmAssessmentCerti = () => {
                       className="w-full h-9"
                       placeholder="Enter Subcode"
                     />
-                  </div>
+                  </div> */}
                   <div className="flex items-center gap-2">
                     <Button
                       type="button"

@@ -29,47 +29,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// const ENCRYPTION_KEY = "AS23N7E2H4V717DEAS23N7E2H4V717DE";
-// const EXTERNAL_API_URL = "http://ptaxtmccollection.thanecity.gov.in/TMC_IGRClient/Service.svc/GetDataDetails_TMC";
-
-// function encryptString(plainText, keyValue) {
-//   const keyBytes = [];
-//   for (let i = 0; i < keyValue.length; i++) {
-//     keyBytes.push(keyValue.charCodeAt(i));
-//   }
-//   const plainBytes = [];
-//   for (let i = 0; i < plainText.length; i++) {
-//     plainBytes.push(plainText.charCodeAt(i));
-//   }
-//   const actualKey = keyBytes.slice(0, 32);
-//   const result = [];
-//   for (let i = 0; i < plainBytes.length; i++) {
-//     result.push(plainBytes[i] ^ actualKey[i % actualKey.length]);
-//   }
-//   let hex = '';
-//   for (let i = 0; i < result.length; i++) {
-//     hex += result[i].toString(16).padStart(2, '0').toUpperCase();
-//   }
-//   return hex;
-// }
-
-// function decryptString(cipherText, keyValue) {
-//   const keyBytes = [];
-//   for (let i = 0; i < keyValue.length; i++) {
-//     keyBytes.push(keyValue.charCodeAt(i));
-//   }
-//   const cipherBytes = [];
-//   for (let i = 0; i < cipherText.length; i += 2) {
-//     cipherBytes.push(parseInt(cipherText.substr(i, 2), 16));
-//   }
-//   const actualKey = keyBytes.slice(0, 32);
-//   const result = [];
-//   for (let i = 0; i < cipherBytes.length; i++) {
-//     result.push(cipherBytes[i] ^ actualKey[i % actualKey.length]);
-//   }
-//   return String.fromCharCode(...result);
-// }
-
 const getPageTitle = (serviceId) => {
   const titleMap = {
     "44": "Re Assessment",
@@ -195,41 +154,6 @@ const FrmNoDuesCerti = () => {
       console.error("Error fetching document definitions:", error);
     }
   };
-
-  // const getPropertyDetails = async (propNo, userId) => {
-  //   try {
-  //     const jsonReq = {
-  //       jsonData: [{
-  //         user_id: userId,
-  //         propno: propNo,
-  //         flatno: ""
-  //       }]
-  //     };
-  //     const jsonReqString = JSON.stringify(jsonReq);
-  //     const encryptedRequest = encryptString(jsonReqString, ENCRYPTION_KEY);
-  //     const postData = {
-  //       jsonData: [{
-  //         encr_request: encryptedRequest
-  //       }]
-  //     };
-  //     const response = await axios.post(EXTERNAL_API_URL, postData, {
-  //       headers: {
-  //         'Content-Type': 'application/json'
-  //       },
-  //     });
-  //     if (response?.data?.jsonData?.[0]?.encr_request) {
-  //       const decryptedResponse = decryptString(
-  //         response.data.jsonData[0].encr_request,
-  //         ENCRYPTION_KEY
-  //       );
-  //       return JSON.parse(decryptedResponse);
-  //     }
-  //     return null;
-  //   } catch (error) {
-  //     console.error("getPropertyDetails Error:", error);
-  //     throw error;
-  //   }
-  // };
 
   const getPropertyDetails = async (propNo, userId) => {
     try {
@@ -463,32 +387,6 @@ const FrmNoDuesCerti = () => {
     });
   };
 
-  // const uploadDocument = async (applicationNo, doc) => {
-  //   const formData = new FormData();
-  //   formData.append("serviceId", String(serviceId));
-  //   formData.append("appNo", applicationNo);
-  //   formData.append("docType", doc.docType || "PDF");
-  //   formData.append("documentId", String(doc.docId));
-  //   formData.append("document", doc.file);
-
-  //   try {
-  //     const response = await axios.post(
-  //       `${BASE_URL}/api/FrmAssessmentCerti/upload-document`,
-  //       formData,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-  //           "Content-Type": "multipart/form-data",
-  //         },
-  //       }
-  //     );
-  //     return response.data.success;
-  //   } catch (error) {
-  //     console.error("Error uploading document:", error);
-  //     return false;
-  //   }
-  // };
-
   const uploadDocument = async (applicationNo, doc) => {
     const formData = new FormData();
     formData.append("corpId", user.corpId); 
@@ -516,39 +414,39 @@ const FrmNoDuesCerti = () => {
     }
   };
 
-  // const insertMahaOnline = async (applicationNo) => {
-  //   try {
-  //     const mahaPayload = {
-  //       mahaData: {
-  //         ulbId: ulbId,
-  //         mahaUlbId: mahaUlbId || ulbId,
-  //         trackId: Date.now().toString(),
-  //         districtId: "0",
-  //         requestString: `TrackId:${Date.now()}|AppNo:${applicationNo}|ServiceId:${serviceId}|ULBId:${ulbId}|MahaULBId:${mahaUlbId || ulbId}|Timestamp:${Date.now()}`,
-  //         responseString: `Success|Application:${applicationNo}|Status:Processed|Timestamp:${Date.now()}`,
-  //         encryptedFinalString: `ENC_${applicationNo}_${Date.now()}`
-  //       },
-  //       applicationNo: applicationNo,
-  //       serviceId: String(serviceId),
-  //     };
+  const insertMahaOnline = async (applicationNo) => {
+    try {
+      const mahaPayload = {
+        mahaData: {
+          ulbId: ulbId,
+          mahaUlbId: mahaUlbId || ulbId,
+          trackId: Date.now().toString(),
+          districtId: "0",
+          requestString: `TrackId:${Date.now()}|AppNo:${applicationNo}|ServiceId:${serviceId}|ULBId:${ulbId}|MahaULBId:${mahaUlbId || ulbId}|Timestamp:${Date.now()}`,
+          responseString: `Success|Application:${applicationNo}|Status:Processed|Timestamp:${Date.now()}`,
+          encryptedFinalString: `ENC_${applicationNo}_${Date.now()}`
+        },
+        applicationNo: applicationNo,
+        serviceId: String(serviceId),
+      };
 
-  //     console.log("Maha Online Request Payload:", mahaPayload);
+      console.log("Maha Online Request Payload:", mahaPayload);
 
-  //     const response = await axios.post(
-  //       `${BASE_URL}/api/FrmAssessmentCerti/maha-online-first-step`,
-  //       mahaPayload,
-  //       {
-  //         headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
-  //       }
-  //     );
+      const response = await axios.post(
+        `${BASE_URL}/api/FrmAssessmentCerti/maha-online-first-step`,
+        mahaPayload,
+        {
+          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
+        }
+      );
 
-  //     console.log("Maha Online Response:", response.data);
-  //     return response.data.data.success;
-  //   } catch (error) {
-  //     console.error("Error in Maha Online integration:", error);
-  //     return false;
-  //   }
-  // };
+      console.log("Maha Online Response:", response.data);
+      return response.data.data.success;
+    } catch (error) {
+      console.error("Error in Maha Online integration:", error);
+      return false;
+    }
+  };
 
   const checkPaymentFlag = async () => {
     try {
@@ -571,25 +469,6 @@ const FrmNoDuesCerti = () => {
       return "N";
     }
   };
-
-  // const handleFileChange = (id, event) => {
-  //   const file = event.currentTarget.files?.[0];
-  //   if (file) {
-  //     const reader = new FileReader();
-  //     reader.onload = (e) => {
-  //       const arrayBuffer = e.target.result;
-  //       const buffer = Buffer.from(new Uint8Array(arrayBuffer));
-  //       setTableData((prev) =>
-  //         prev.map((row) =>
-  //           row.id === id
-  //             ? { ...row, file: file, fileName: file.name, fileBuffer: buffer }
-  //             : row
-  //         )
-  //       );
-  //     };
-  //     reader.readAsArrayBuffer(file);
-  //   }
-  // };
 
   const handleFileChange = (id, event) => {
     const file = event.currentTarget.files?.[0];
@@ -869,7 +748,7 @@ const FrmNoDuesCerti = () => {
                       className="w-full h-9"
                     />
                   </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  {/* <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-24 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label text="Subcode" />
                       <span>:</span>
@@ -880,7 +759,7 @@ const FrmNoDuesCerti = () => {
                       onChange={handleChange}
                       className="w-full h-9"
                     />
-                  </div>
+                  </div> */}
                   <div className="flex items-center gap-2">
                     <Button
                       type="button"
