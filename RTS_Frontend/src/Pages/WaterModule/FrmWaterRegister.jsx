@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ShadCNTable from "@/components/ui/table";
 import config from "@/utils/config";
+import { DatePicker } from "@/components/ui/calendar";
 
 const FrmWaterRegister = () => {
     const location = useLocation();
@@ -19,9 +20,9 @@ const FrmWaterRegister = () => {
     const { user, token } = useAuth();
     const baseUrl = import.meta.env.VITE_BASE_URL;
 
-    const ulbId = Number(location.state?.ulbId ?? user?.ulbId );
-    const userId = Number(location.state?.userId ?? user?.userId );
-    const serviceId = Number(location.state?.serviceId ?? user?.serviceId );
+    const ulbId = Number(location.state?.ulbId ?? user?.ulbId);
+    const userId = Number(location.state?.userId ?? user?.userId);
+    const serviceId = Number(location.state?.serviceId ?? user?.serviceId);
     const source = config?.source
 
     const [serviceName, setServiceName] = useState("Reconnection");
@@ -125,15 +126,37 @@ const FrmWaterRegister = () => {
     }, [loadMasters, token]);
 
     const formatOracleDate = (date) => {
-        if (!date) return null;
-        if (/^\d{2}-[A-Z]{3}-\d{4}$/.test(date)) {
-            return date.toUpperCase();
+        if (!date) return "";
+
+        const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+        if (date instanceof Date && !Number.isNaN(date.getTime())) {
+            const day = String(date.getDate()).padStart(2, "0");
+            const month = months[date.getMonth()];
+            const year = date.getFullYear();
+
+            return `${day}-${month}-${year}`;
         }
 
-        const [year, month, day] = date.split("-");
-        const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-        return `${day}-${months[Number(month) - 1]}-${year}`;
+        if (typeof date !== "string") return "";
+        if (/^\d{2}-[A-Z]{3}-\d{4}$/i.test(date)) {
+            return date.toUpperCase();
+        }
+        if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+            const [year, month, day] = date.split("-");
+            return `${day}-${months[Number(month) - 1]}-${year}`;
+        }
+
+        const parsedDate = new Date(date);
+        if (!Number.isNaN(parsedDate.getTime())) {
+            const day = String(parsedDate.getDate()).padStart(2, "0");
+            const month = months[parsedDate.getMonth()];
+            const year = parsedDate.getFullYear();
+            return `${day}-${month}-${year}`;
+        }
+        return "";
     };
+
 
     const fetchConnectionDetails = async (setFieldValue, consumerNo) => {
         const value = consumerNo.trim();
@@ -415,7 +438,7 @@ const FrmWaterRegister = () => {
 
         try {
             Swal.fire({
-                title: "Submitting...",
+                text: "Submitting...",
                 allowOutsideClick: false,
                 allowEscapeKey: false,
                 showConfirmButton: false,
@@ -450,7 +473,7 @@ const FrmWaterRegister = () => {
             }
 
             Swal.fire({
-                title: "Uploading Documents...",
+                text: "Uploading Documents...",
                 allowOutsideClick: false,
                 allowEscapeKey: false,
                 showConfirmButton: false,
@@ -487,6 +510,7 @@ const FrmWaterRegister = () => {
             setDocuments((prev) =>
                 prev.map((item) => ({ ...item, file: null }))
             );
+            navigate("/app/FrmTrackApplication")
         } catch (error) {
             Swal.close();
             console.error("Water Register Submit Error:", error);
@@ -745,13 +769,13 @@ const FrmWaterRegister = () => {
                                         <Label text="Earlier Conn. Close Date" required className="min-w-fit" />
                                         <span>:</span>
                                     </div>
-                                    <Input
-                                        type="date"
+
+
+                                    <DatePicker
                                         value={values.erlDate}
-                                        onChange={(e) =>
-                                            setFieldValue("erlDate", e.target.value)
+                                        onChange={(date) =>
+                                            setFieldValue("erlDate", date)
                                         }
-                                        className="w-full"
                                     />
                                 </div>
 

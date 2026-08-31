@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { Formik, Form } from "formik";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,17 +12,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ShadCNTable from "@/components/ui/table";
 import config from "@/utils/config";
+import { DatePicker } from "@/components/ui/calendar";
 
 const FrmPlumberLicense = () => {
     const location = useLocation();
     const { user, token } = useAuth();
+    const navigate = useNavigate();
 
     const baseUrl = import.meta.env.VITE_BASE_URL;
-    const ulbId = Number(location.state?.ulbId ?? user?.ulbId );
-    const userId = location.state?.userId ?? user?.userId ;
+    const ulbId = Number(location.state?.ulbId ?? user?.ulbId);
+    const userId = location.state?.userId ?? user?.userId;
     const serviceId = Number(location.state?.serviceId ?? user?.serviceId);
     const source = config?.source;
-    console.log({location})
+    console.log({ location })
     const [mode, setMode] = useState(serviceId === 24 ? "N" : "R");
     const [serviceName, setServiceName] = useState("Plumber License");
     const [zones, setZones] = useState([]);
@@ -152,19 +154,38 @@ const FrmPlumberLicense = () => {
 
     const formatOracleDate = (date) => {
         if (!date) return "";
-        if (/^\d{2}-[A-Z]{3}-\d{4}$/.test(date)) {
-            return date.toUpperCase();
+
+        const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+        if (date instanceof Date && !Number.isNaN(date.getTime())) {
+            const day = String(date.getDate()).padStart(2, "0");
+            const month = months[date.getMonth()];
+            const year = date.getFullYear();
+
+            return `${day}-${month}-${year}`;
         }
 
-        const parts = date.split("-");
-        if (parts.length !== 3) {return "";}
+        if (typeof date !== "string") return "";
+        if (/^\d{2}-[A-Z]{3}-\d{4}$/i.test(date)) {
+            return date.toUpperCase();
+        }
+        if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+            const [year, month, day] = date.split("-");
+            return `${day}-${months[Number(month) - 1]}-${year}`;
+        }
 
-        const [year, month, day] = parts;
-        const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-        return `${day}-${months[Number(month) - 1]}-${year}`;
+        const parsedDate = new Date(date);
+        if (!Number.isNaN(parsedDate.getTime())) {
+            const day = String(parsedDate.getDate()).padStart(2, "0");
+            const month = months[parsedDate.getMonth()];
+            const year = parsedDate.getFullYear();
+            return `${day}-${month}-${year}`;
+        }
+        return "";
     };
 
     const handleSubmit = async (values, { resetForm }) => {
+        debugger;
         if (!values.zoneId) {
             Swal.fire({
                 // icon: "warning",
@@ -501,7 +522,7 @@ const FrmPlumberLicense = () => {
             });
 
             setDocuments((previous) => previous.map((item) => ({ ...item, file: null })));
-            
+            navigate("/app/FrmTrackApplication")
         } catch (error) {
             Swal.close();
             console.error("Plumber License Submit Error:", error);
@@ -527,7 +548,7 @@ const FrmPlumberLicense = () => {
                         <CardContent className="p-5">
                             <div className="flex justify-center">
                                 <div className="flex items-center gap-2">
-                                    
+
                                     <Input
                                         type="radio"
                                         name="licenseType"
@@ -540,7 +561,7 @@ const FrmPlumberLicense = () => {
                                     <Label text="New" className="flex cursor-pointer items-center gap-2 text-sm" />
 
 
-                                    
+
                                     <Input
                                         type="radio"
                                         name="licenseType"
@@ -690,13 +711,13 @@ const FrmPlumberLicense = () => {
 
                                                 <SelectContent>
                                                     {educationList.map((item) => (
-                                                            <SelectItem
-                                                                key={item.EDUCATIONID}
-                                                                value={String(item.EDUCATIONID)}
-                                                            >
-                                                                {item.EDUCATIONNAME}
-                                                            </SelectItem>
-                                                        )
+                                                        <SelectItem
+                                                            key={item.EDUCATIONID}
+                                                            value={String(item.EDUCATIONID)}
+                                                        >
+                                                            {item.EDUCATIONNAME}
+                                                        </SelectItem>
+                                                    )
                                                     )}
                                                 </SelectContent>
                                             </Select>
@@ -762,11 +783,10 @@ const FrmPlumberLicense = () => {
                                             <span>:</span>
                                         </div>
 
-                                        <Input
-                                            type="date"
+                                        <DatePicker
                                             value={values.renewalDate}
-                                            onChange={(e) =>
-                                                setFieldValue("renewalDate", e.target.value)
+                                            onChange={(date) =>
+                                                setFieldValue("renewalDate", date)
                                             }
                                         />
                                     </div>
@@ -777,11 +797,10 @@ const FrmPlumberLicense = () => {
                                             <span>:</span>
                                         </div>
 
-                                        <Input
-                                            type="date"
+                                        <DatePicker
                                             value={values.fromDate}
-                                            onChange={(e) =>
-                                                setFieldValue("fromDate", e.target.value)
+                                            onChange={(date) =>
+                                                setFieldValue("fromDate", date)
                                             }
                                         />
                                     </div>
@@ -792,27 +811,26 @@ const FrmPlumberLicense = () => {
                                             <span>:</span>
                                         </div>
 
-                                        <Input
-                                            type="date"
+                                        <DatePicker
                                             value={values.toDate}
-                                            onChange={(e) =>
-                                                setFieldValue("toDate", e.target.value)
+                                            onChange={(date) =>
+                                                setFieldValue("toDate", date)
                                             }
                                         />
                                     </div>
 
                                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                                         <div className="flex shrink-0 items-center sm:w-48 sm:justify-between">
-                                            <Label text="Aadhar" required/>
+                                            <Label text="Aadhar" required />
                                             <span>:</span>
                                         </div>
 
                                         <Input
-                                            value={ values.renewalAadhaar}
+                                            value={values.renewalAadhaar}
                                             maxLength={12}
                                             inputMode="numeric"
                                             onChange={(e) =>
-                                                setFieldValue("renewalAadhaar", e.target.value.replace(/\D/g,""))
+                                                setFieldValue("renewalAadhaar", e.target.value.replace(/\D/g, ""))
                                             }
                                         />
                                     </div>
@@ -838,7 +856,7 @@ const FrmPlumberLicense = () => {
                                                 maxLength={100}
                                                 value={values.renewalMiddleName}
                                                 onChange={(e) =>
-                                                    setFieldValue("renewalMiddleName",e.target.value)
+                                                    setFieldValue("renewalMiddleName", e.target.value)
                                                 }
                                             />
 
@@ -855,16 +873,16 @@ const FrmPlumberLicense = () => {
 
                                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                                         <div className="flex shrink-0 items-center sm:w-48 sm:justify-between">
-                                            <Label text="Mobile No" required/>
+                                            <Label text="Mobile No" required />
                                             <span>:</span>
                                         </div>
 
                                         <Input
-                                            value={ values.renewalMobile}
+                                            value={values.renewalMobile}
                                             maxLength={10}
                                             inputMode="numeric"
                                             onChange={(e) =>
-                                                setFieldValue( "renewalMobile", e.target.value.replace(/\D/g,""))
+                                                setFieldValue("renewalMobile", e.target.value.replace(/\D/g, ""))
                                             }
                                         />
                                     </div>
@@ -880,14 +898,14 @@ const FrmPlumberLicense = () => {
                                             maxLength={50}
                                             value={values.renewalEmail}
                                             onChange={(e) =>
-                                                setFieldValue("renewalEmail", e.target.value )
+                                                setFieldValue("renewalEmail", e.target.value)
                                             }
                                         />
                                     </div>
 
                                     <div className="flex flex-col gap-2 sm:col-span-2 sm:flex-row sm:items-start sm:gap-4">
                                         <div className="flex shrink-0 items-center sm:w-48 sm:justify-between">
-                                            <Label text="Address" required/>
+                                            <Label text="Address" required />
                                             <span>:</span>
                                         </div>
 
@@ -913,32 +931,32 @@ const FrmPlumberLicense = () => {
                                                 "Image(jpg,png,pdf)",
                                             ]}
                                             data={documents.map((item, index) => ({
-                                                    srNo: index + 1,
-                                                    documentName: item.DOCNAME,
-                                                    image: (
-                                                        <div className="flex items-center gap-2">
-                                                            <Input
-                                                                type="file"
-                                                                accept=".jpg,.jpeg,.png,.pdf"
-                                                                className="h-9 min-w-70cursor-pointer"
-                                                                onChange={(e) =>
-                                                                    handleFileChange(item.DOCID,e.target.files?.[0])
-                                                                }
-                                                            />
+                                                srNo: index + 1,
+                                                documentName: item.DOCNAME,
+                                                image: (
+                                                    <div className="flex items-center gap-2">
+                                                        <Input
+                                                            type="file"
+                                                            accept=".jpg,.jpeg,.png,.pdf"
+                                                            className="h-9 min-w-70cursor-pointer"
+                                                            onChange={(e) =>
+                                                                handleFileChange(item.DOCID, e.target.files?.[0])
+                                                            }
+                                                        />
 
-                                                            {item.file && (
-                                                                <span className="max-w-37 truncate text-xs text-green-600">
-                                                                    {item.file.name}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    ),
-                                                })
+                                                        {item.file && (
+                                                            <span className="max-w-37 truncate text-xs text-green-600">
+                                                                {item.file.name}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                ),
+                                            })
                                             )}
                                             keyMapping={{
                                                 "Sr. No.": "srNo",
-                                                "Document Name":"documentName",
-                                                "Image(jpg,png,pdf)":"image",
+                                                "Document Name": "documentName",
+                                                "Image(jpg,png,pdf)": "image",
                                             }}
                                             pagination={false}
                                         />
@@ -952,8 +970,8 @@ const FrmPlumberLicense = () => {
                                     type="button"
                                     variant="outline"
                                     onClick={() => {
-                                        resetForm({values: {...initialValues,zoneId: "12"}});
-                                        setDocuments((previous) =>previous.map((item) => ({ ...item, file: null})));
+                                        resetForm({ values: { ...initialValues, zoneId: "12" } });
+                                        setDocuments((previous) => previous.map((item) => ({ ...item, file: null })));
                                     }}
                                 >
                                     Reset
