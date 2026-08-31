@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import Swal from "sweetalert2";
 import ShadCNTable from "@/components/ui/table";
+import config from "@/utils/config";
 
 const FrmWaterConnectionApplication = () => {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ const FrmWaterConnectionApplication = () => {
     connectionNo: "",
     consumeType: "",
     meterType: "",
+    nocPurpose:"",
   });
 
   const [zoneList, setZoneList] = useState([]);
@@ -64,6 +66,8 @@ const FrmWaterConnectionApplication = () => {
     motherName: "",
   });
   const [bndDetails, setBndDetails] = useState([]);
+  const [nocPurposeList, setNocPurposeList] = useState([]);
+const [nocPurposeLoading, setNocPurposeLoading] = useState(false);
 
   const [bndHeader, setBndHeader] = useState("");
   const [bndLoading, setBndLoading] = useState(false);
@@ -72,6 +76,8 @@ const FrmWaterConnectionApplication = () => {
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   const BND_SERVICE_IDS = [14, 15, 342, 343];
+  const Fire_Biridage_ServiceId=[12,13];
+  const isFireBrigadeService =Fire_Biridage_ServiceId.includes(Number(serviceId));
 
   const isBndService = BND_SERVICE_IDS.includes(Number(serviceId));
   const isBirthService = [14, 342].includes(Number(serviceId));
@@ -356,14 +362,7 @@ const FrmWaterConnectionApplication = () => {
 
       setDocumentList([]);
 
-      Swal.fire({
-
-        title: "Document Loading Failed",
-        text:
-          error?.response?.data?.message ||
-          error?.response?.data?.error ||
-          "Unable to load service documents.",
-      });
+ 
     } finally {
       setDocumentLoading(false);
     }
@@ -427,7 +426,79 @@ const FrmWaterConnectionApplication = () => {
       setBndLoading(false);
     }
   };
+const fetchNocPurpose = async () => {
+  try {
+    setNocPurposeLoading(true);
 
+    const response = await axios.get(
+      `${BASE_URL}/api/watermodule/noc-purpose`
+    );
+
+    console.log("NOC Purpose API Response:", response.data);
+
+    if (
+      response?.data?.ok === true &&
+      response?.data?.data?.success === true
+    ) {
+      const apiData = response.data.data.data || [];
+
+      console.log("Raw NOC Purpose List:", apiData);
+
+      const formattedData = apiData
+        .map((item, index) => ({
+          // Actual database ID
+          id:
+            item.NUM_NOCPURPOSE_ID ??
+            item.VAR_NOCPURPOSE_ID ??
+            item.NOC_PURPOSE_ID ??
+            item.id,
+
+          name:
+            item.VAR_NOCPURPOSE_NAME ??
+            item.NOC_PURPOSE_NAME ??
+            item.name ??
+            "",
+
+          // only for React key if database ID is missing/duplicate
+          uiKey: `${item.NUM_NOCPURPOSE_ID ?? item.VAR_NOCPURPOSE_ID ?? item.NOC_PURPOSE_ID ?? item.id ?? "noc"}-${index}`,
+        }))
+        .filter(
+          (item) =>
+            item.id !== undefined &&
+            item.id !== null &&
+            item.name
+        );
+
+      console.log(
+        "Formatted NOC Purpose List:",
+        formattedData
+      );
+
+      setNocPurposeList(formattedData);
+    } else {
+      setNocPurposeList([]);
+
+      console.error(
+        "NOC Purpose API Error:",
+        response?.data?.message
+      );
+    }
+  } catch (error) {
+    console.error(
+      "NOC Purpose API Error:",
+      error
+    );
+
+    console.error(
+      "Response:",
+      error?.response?.data
+    );
+
+    setNocPurposeList([]);
+  } finally {
+    setNocPurposeLoading(false);
+  }
+};
   useEffect(() => {
     fetchZones();
     fetchConsumerTypes();
@@ -452,7 +523,25 @@ const FrmWaterConnectionApplication = () => {
     }
   }, [serviceId, ulbId]);
 
+useEffect(() => {
 
+  const currentServiceId = Number(serviceId);
+
+  if (
+    currentServiceId === 12 ||
+    currentServiceId === 13
+  ) {
+    fetchNocPurpose();
+  } else {
+    setNocPurposeList([]);
+
+    handleChange(
+      "nocPurpose",
+      ""
+    );
+  }
+
+}, [serviceId]);
 
   const handleSubmit = async () => {
 
@@ -591,99 +680,110 @@ const FrmWaterConnectionApplication = () => {
       return;
     }
 
-    if (!formData.consumeType) {
-      Swal.fire({
+  if (!isFireBrigadeService && !formData.consumeType) {
+  Swal.fire({
+    text: "Please select Consumer Type.",
+    confirmButtonColor: "#1e3a8a",
+  });
+  return;
+}
 
-        text: "Please select Consumer Type.",
-        confirmButtonColor: "#1e3a8a",
-      });
-      return;
-    }
+if (!isFireBrigadeService && !formData.meterType) {
+  Swal.fire({
+    text: "Please select Meter Type.",
+    confirmButtonColor: "#1e3a8a",
+  });
+  return;
+}
+  if (isFireBrigadeService && !formData.nocPurpose) {
+  await Swal.fire({
+    text: "Please select NOC Purpose.",
+    confirmButtonColor: "#1e3a8a",
+  });
 
-    if (!formData.meterType) {
-      Swal.fire({
+  return;
+}
 
-        text: "Please select Meter Type.",
-        confirmButtonColor: "#1e3a8a",
-      });
-      return;
-    }
+
 
 
     const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-    const selectedDocuments = documentList.map((document) => {
-        const file = documentFiles[document.DOCID];
+const selectedDocuments = documentList
+  .map((document) => {
+    const file = documentFiles[document.DOCID];
 
-        if (!file) {
-          return null;
-        }
-
-        return {
-          documentId: document.DOCID,
-          documentName:
-            document.DOCNAME || "",
-          documentType:
-            document.DOCTYPE || "",
-          file: file,
-        };
-      })
-      .filter(Boolean);
-
-    console.log(
-      "Selected Documents:",
-      selectedDocuments
-    );
-    if (documentList.length === 0) {
-      await Swal.fire({
-
-        title: "Document Required",
-        text: "No documents are configured for this service.",
-        confirmButtonColor: "#1e3a8a",
-      });
-
-      return;
+    if (!file) {
+      return null;
     }
 
+    return {
+      documentId: document.DOCID,
+      documentName: document.DOCNAME || "",
+      documentType: document.DOCTYPE || "",
+      file: file,
+    };
+  })
+  .filter(Boolean);
 
-    // Find documents for which file is not selected
-    const missingDocuments = documentList.filter(
-      (document) => !documentFiles[document.DOCID]
-    );
+console.log("Selected Documents:", selectedDocuments);
 
-    if (missingDocuments.length > 0) {
 
-      const missingDocumentNames = missingDocuments
-        .map(
-          (document, index) =>
-            `${index + 1}. ${document.DOCNAME || "Document"}`
-        )
-        .join("<br/>");
+// =====================================================
+// DOCUMENT VALIDATION
+// NOT REQUIRED FOR FIRE BRIGADE SERVICES 12 & 13
+// =====================================================
 
-      await Swal.fire({
+if (!isFireBrigadeService && Number(serviceId) !== 28) {
 
-        title: "Documents Required",
-        html: `
-      <div style="text-align:left">
-        <p>
-          <strong>All documents are compulsory for submission.</strong>
-        </p>
+  // No documents configured
+  if (documentList.length === 0) {
+    await Swal.fire({
+      title: "Document Required",
+      text: "No documents are configured for this service.",
+      confirmButtonColor: "#1e3a8a",
+    });
 
-        <p class="mt-2">
-          Please upload the following document(s):
-        </p>
+    return;
+  }
 
-        <div style="margin-top:10px">
-          ${missingDocumentNames}
+  // Find documents for which file is not selected
+  const missingDocuments = documentList.filter(
+    (document) => !documentFiles[document.DOCID]
+  );
+
+  if (missingDocuments.length > 0) {
+
+    const missingDocumentNames = missingDocuments
+      .map(
+        (document, index) =>
+          `${index + 1}. ${document.DOCNAME || "Document"}`
+      )
+      .join("<br/>");
+
+    await Swal.fire({
+      title: "Documents Required",
+      html: `
+        <div style="text-align:left">
+          <p>
+            <strong>All documents are compulsory for submission.</strong>
+          </p>
+
+          <p style="margin-top:10px">
+            Please upload the following document(s):
+          </p>
+
+          <div style="margin-top:10px">
+            ${missingDocumentNames}
+          </div>
         </div>
-      </div>
-    `,
-        confirmButtonColor: "#1e3a8a",
-      });
+      `,
+      confirmButtonColor: "#1e3a8a",
+    });
 
-      return;
-    }
-
+    return;
+  }
+}
 
     const confirmResult =
       await Swal.fire({
@@ -793,15 +893,14 @@ const FrmWaterConnectionApplication = () => {
 
         in_wtsewrgtypeid: 1,
 
-        in_nocpurposeid: 1,
-
+        in_nocpurposeid: isFireBrigadeService ? Number(formData.nocPurpose): "",
         in_RegiNo: isBndService ? selectedBndRecord?.regno : "",
 
         in_UniqueNo: isBndService ? selectedBndRecord?.uniqueNo : "",
 
-        in_appsource: "RTS",
+        in_appsource: config?.source,
 
-        in_deliveryflag: "N",
+        in_deliveryflag: null,
 
         in_consumertypeid:
           Number(formData.consumeType),
@@ -1679,206 +1778,276 @@ const FrmWaterConnectionApplication = () => {
                 />
 
               </div>
+{isFireBrigadeService && (
+  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+
+    <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+
+      <Label
+        text="NOC Purpose"
+        required
+      />
+
+      <span>:</span>
+
+    </div>
+
+    <Select
+      value={formData.nocPurpose || ""}
+      onValueChange={(value) => {
+        console.log("Selected NOC Purpose ID:", value);
+
+        handleChange(
+          "nocPurpose",
+          value
+        );
+      }}
+      disabled={nocPurposeLoading}
+    >
+
+      <SelectTrigger className="w-full">
+
+        <SelectValue
+          placeholder={
+            nocPurposeLoading
+              ? "Loading NOC Purpose..."
+              : "-- Select NOC Purpose --"
+          }
+        />
+
+      </SelectTrigger>
+
+      <SelectContent>
+
+        {nocPurposeList.length > 0 ? (
+
+          nocPurposeList.map((item) => (
+
+            <SelectItem
+              key={item.uiKey}
+              value={String(item.id)}
+            >
+              {item.name}
+            </SelectItem>
+
+          ))
+
+        ) : (
+
+          !nocPurposeLoading && (
+
+            <SelectItem
+              value="no-noc-purpose"
+              disabled
+            >
+              No NOC Purpose available
+            </SelectItem>
+
+          )
+
+        )}
+
+      </SelectContent>
+
+    </Select>
+
+  </div>
+)}
+
+          {!isFireBrigadeService && (
+  <>
+    {/* Connection No */}
+
+    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+
+      <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+
+        <Label
+          text="Connection No"
+          required
+        />
+
+        <span>:</span>
+
+      </div>
+
+      <Input
+        value={formData.connectionNo}
+        onChange={(e) =>
+          handleChange(
+            "connectionNo",
+            e.target.value
+          )
+        }
+        placeholder="Connection No"
+      />
+
+    </div>
 
 
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+    {/* Consume Type */}
 
-                <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
 
-                  <Label
-                    text="Connection No"
-                    required
-                  />
+      <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
 
-                  <span>:</span>
+        <Label
+          text="Consume Type"
+          required
+        />
 
-                </div>
+        <span>:</span>
 
-                <Input
-                  value={
-                    formData.connectionNo
+      </div>
+
+      <Select
+        value={formData.consumeType}
+        onValueChange={(value) =>
+          handleChange(
+            "consumeType",
+            value
+          )
+        }
+        disabled={consumerTypeLoading}
+      >
+
+        <SelectTrigger className="w-full">
+
+          <SelectValue
+            placeholder={
+              consumerTypeLoading
+                ? "Loading..."
+                : "-- Select Option --"
+            }
+          />
+
+        </SelectTrigger>
+
+        <SelectContent>
+
+          {consumerTypeList.length > 0 ? (
+
+            consumerTypeList.map(
+              (consumerType) => (
+
+                <SelectItem
+                  key={
+                    consumerType.NUM_WTRCONS_ID
                   }
-                  onChange={(e) =>
-                    handleChange(
-                      "connectionNo",
-                      e.target.value
-                    )
-                  }
-                  placeholder="Connection No"
-                />
-
-              </div>
-
-
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-
-                <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-
-                  <Label
-                    text="Consume Type"
-                    required
-                  />
-
-                  <span>:</span>
-
-                </div>
-
-                <Select
-                  value={
-                    formData.consumeType
-                  }
-                  onValueChange={(value) =>
-                    handleChange(
-                      "consumeType",
-                      value
-                    )
-                  }
-                  disabled={
-                    consumerTypeLoading
-                  }
+                  value={String(
+                    consumerType.NUM_WTRCONS_ID
+                  )}
                 >
-
-                  <SelectTrigger className="w-full">
-
-                    <SelectValue
-                      placeholder={
-                        consumerTypeLoading
-                          ? "Loading..."
-                          : "-- Select Option --"
-                      }
-                    />
-
-                  </SelectTrigger>
-
-                  <SelectContent>
-
-                    {consumerTypeList.length >
-                      0 ? (
-
-                      consumerTypeList.map(
-                        (consumerType) => (
-
-                          <SelectItem
-                            key={
-                              consumerType.NUM_WTRCONS_ID
-                            }
-                            value={String(
-                              consumerType.NUM_WTRCONS_ID
-                            )}
-                          >
-                            {
-                              consumerType.VAR_WTRCONS_NAME
-                            }
-                          </SelectItem>
-
-                        )
-                      )
-
-                    ) : (
-
-                      !consumerTypeLoading && (
-                        <SelectItem
-                          value="no-consumer-type"
-                          disabled
-                        >
-                          No consumer types
-                          available
-                        </SelectItem>
-                      )
-
-                    )}
-
-                  </SelectContent>
-
-                </Select>
-
-              </div>
-
-
-
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-
-                <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-
-                  <Label
-                    text="Meter Type"
-                    required
-                  />
-
-                  <span>:</span>
-
-                </div>
-
-                <Select
-                  value={
-                    formData.meterType
+                  {
+                    consumerType.VAR_WTRCONS_NAME
                   }
-                  onValueChange={(value) =>
-                    handleChange(
-                      "meterType",
-                      value
-                    )
+                </SelectItem>
+
+              )
+            )
+
+          ) : (
+
+            !consumerTypeLoading && (
+              <SelectItem
+                value="no-consumer-type"
+                disabled
+              >
+                No consumer types available
+              </SelectItem>
+            )
+
+          )}
+
+        </SelectContent>
+
+      </Select>
+
+    </div>
+
+
+    {/* Meter Type */}
+
+    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+
+      <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+
+        <Label
+          text="Meter Type"
+          required
+        />
+
+        <span>:</span>
+
+      </div>
+
+      <Select
+        value={formData.meterType}
+        onValueChange={(value) =>
+          handleChange(
+            "meterType",
+            value
+          )
+        }
+        disabled={meterTypeLoading}
+      >
+
+        <SelectTrigger className="w-full">
+
+          <SelectValue
+            placeholder={
+              meterTypeLoading
+                ? "Loading..."
+                : "-- Select Option --"
+            }
+          />
+
+        </SelectTrigger>
+
+        <SelectContent>
+
+          {meterTypeList.length > 0 ? (
+
+            meterTypeList.map(
+              (meterType) => (
+
+                <SelectItem
+                  key={
+                    meterType.NUM_WTRMETER_ID
                   }
-                  disabled={
-                    meterTypeLoading
-                  }
+                  value={String(
+                    meterType.NUM_WTRMETER_ID
+                  )}
                 >
+                  {
+                    meterType.VAR_WTRMETER_NAME
+                  }
+                </SelectItem>
 
-                  <SelectTrigger className="w-full">
+              )
+            )
 
-                    <SelectValue
-                      placeholder={
-                        meterTypeLoading
-                          ? "Loading..."
-                          : "-- Select Option --"
-                      }
-                    />
+          ) : (
 
-                  </SelectTrigger>
+            !meterTypeLoading && (
+              <SelectItem
+                value="no-meter-type"
+                disabled
+              >
+                No meter types available
+              </SelectItem>
+            )
 
-                  <SelectContent>
+          )}
 
-                    {meterTypeList.length >
-                      0 ? (
+        </SelectContent>
 
-                      meterTypeList.map(
-                        (meterType) => (
+      </Select>
 
-                          <SelectItem
-                            key={
-                              meterType.NUM_WTRMETER_ID
-                            }
-                            value={String(
-                              meterType.NUM_WTRMETER_ID
-                            )}
-                          >
-                            {
-                              meterType.VAR_WTRMETER_NAME
-                            }
-                          </SelectItem>
+    </div>
 
-                        )
-                      )
-
-                    ) : (
-
-                      !meterTypeLoading && (
-                        <SelectItem
-                          value="no-meter-type"
-                          disabled
-                        >
-                          No meter types
-                          available
-                        </SelectItem>
-                      )
-
-                    )}
-
-                  </SelectContent>
-
-                </Select>
-
-              </div>
+  </>
+)}
 
             </div>
           </div>
@@ -2009,172 +2178,172 @@ const FrmWaterConnectionApplication = () => {
 
 
 
-          <div>
+        {!isFireBrigadeService && (
+  <div>
 
-            <h4 className="text-md font-semibold mb-3">
-              Document Details
-            </h4>
+    <h4 className="text-md font-semibold mb-3">
+      Document Details
+    </h4>
 
-            <hr className="mb-4" />
+    <hr className="mb-4" />
 
-            <div className="overflow-x-auto">
+    <div className="overflow-x-auto">
 
-              <table className="w-full border-collapse border text-sm">
+      <table className="w-full border-collapse border text-sm">
 
-                <thead>
+        <thead>
 
-                  <tr className="bg-muted">
+          <tr className="bg-muted">
 
-                    <th className="border px-3 py-2 text-left w-20">
-                      Sr No.
-                    </th>
+            <th className="border px-3 py-2 text-left w-20">
+              Sr No.
+            </th>
 
-                    <th className="border px-3 py-2 text-left">
-                      Document Name
-                    </th>
+            <th className="border px-3 py-2 text-left">
+              Document Name
+            </th>
 
-                    <th className="border px-3 py-2 text-left">
-                      Image(jpg,png,pdf)
-                    </th>
+            <th className="border px-3 py-2 text-left">
+              Image(jpg,png,pdf)
+            </th>
 
-                  </tr>
+          </tr>
 
-                </thead>
+        </thead>
 
-                <tbody>
+        <tbody>
 
-                  {/* LOADING */}
+          {/* LOADING */}
 
-                  {documentLoading && (
+          {documentLoading && (
 
-                    <tr>
+            <tr>
 
-                      <td
-                        colSpan={3}
-                        className="border px-3 py-6 text-center text-gray-500"
-                      >
-                        Loading documents...
-                      </td>
+              <td
+                colSpan={3}
+                className="border px-3 py-6 text-center text-gray-500"
+              >
+                Loading documents...
+              </td>
 
-                    </tr>
+            </tr>
 
-                  )}
+          )}
 
-                  {/* NO DOCUMENTS */}
+          {/* NO DOCUMENTS */}
 
-                  {!documentLoading &&
-                    documentList.length === 0 && (
+          {!documentLoading &&
+            documentList.length === 0 && (
 
-                      <tr>
+              <tr>
 
-                        <td
-                          colSpan={3}
-                          className="border px-3 py-6 text-center text-gray-500"
-                        >
-                          No documents required
-                          for this service.
-                        </td>
+                <td
+                  colSpan={3}
+                  className="border px-3 py-6 text-center text-gray-500"
+                >
+                  No documents required
+                  for this service.
+                </td>
 
-                      </tr>
+              </tr>
 
-                    )}
+            )}
 
-                  {/* DOCUMENT LIST */}
+          {/* DOCUMENT LIST */}
 
-                  {!documentLoading &&
-                    documentList.map(
-                      (document, index) => (
+          {!documentLoading &&
+            documentList.map(
+              (document, index) => (
 
-                        <tr
-                          key={
-                            document.DOCID ||
-                            index
+                <tr
+                  key={
+                    document.DOCID ||
+                    index
+                  }
+                >
+
+                  {/* SR NO */}
+
+                  <td className="border px-3 py-2">
+                    {index + 1}
+                  </td>
+
+                  {/* DOCUMENT NAME */}
+
+                  <td className="border px-3 py-2">
+
+                    <div className="flex flex-col">
+
+                      <span className="font-medium">
+                        {
+                          document.DOCNAME
+                        }
+                      </span>
+
+                      {document.ENGDOCDESC && (
+
+                        <span className="text-xs text-gray-500">
+                          {
+                            document.ENGDOCDESC
                           }
-                        >
+                        </span>
 
-                          {/* SR NO */}
+                      )}
 
-                          <td className="border px-3 py-2">
-                            {index + 1}
-                          </td>
+                    </div>
 
-                          {/* DOCUMENT NAME */}
+                  </td>
 
-                          <td className="border px-3 py-2">
+                  {/* FILE UPLOAD */}
 
-                            <div className="flex flex-col">
+                  <td className="border px-3 py-2">
 
-                              <span className="font-medium">
-                                {
-                                  document.DOCNAME
-                                }
-                              </span>
+                    <Input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.pdf"
+                      onChange={(e) =>
+                        handleDocumentFileChange(
+                          document.DOCID,
+                          e.target.files?.[0] ||
+                            null
+                        )
+                      }
+                      className="cursor-pointer"
+                    />
 
-                              {document.ENGDOCDESC && (
+                    {documentFiles[
+                      document.DOCID
+                    ] && (
 
-                                <span className="text-xs text-gray-500">
-                                  {
-                                    document.ENGDOCDESC
-                                  }
-                                </span>
+                      <p className="mt-1 text-xs text-green-600">
 
-                              )}
+                        Selected:{" "}
 
-                            </div>
+                        {
+                          documentFiles[
+                            document.DOCID
+                          ].name
+                        }
 
-                          </td>
+                      </p>
 
-                          {/* FILE UPLOAD */}
-
-                          <td className="border px-3 py-2">
-
-                            <Input
-                              type="file"
-                              accept=".jpg,.jpeg,.png,.pdf"
-                              onChange={(e) =>
-                                handleDocumentFileChange(
-                                  document.DOCID,
-                                  e.target
-                                    .files?.[0] ||
-                                  null
-                                )
-                              }
-                              className="cursor-pointer"
-                            />
-
-                            {documentFiles[
-                              document.DOCID
-                            ] && (
-
-                                <p className="mt-1 text-xs text-green-600">
-
-                                  Selected:{" "}
-
-                                  {
-                                    documentFiles[
-                                      document.DOCID
-                                    ].name
-                                  }
-
-                                </p>
-
-                              )}
-
-                          </td>
-
-                        </tr>
-
-                      )
                     )}
 
-                </tbody>
+                  </td>
 
-              </table>
+                </tr>
 
-            </div>
+              )
+            )}
 
-          </div>
+        </tbody>
 
+      </table>
+
+    </div>
+
+  </div>
+)}
 
           <div className="flex items-center justify-center gap-3 border-t pt-5">
             <Button

@@ -34,7 +34,7 @@ const getNocPurposeRepo = async () => {
         SELECT
             var_nocpurpose_name,
             var_nocpurpose_id
-        FROM fire.aofr_nocpurpose_mas
+        FROM aofr_nocpurpose_mas
         ORDER BY var_nocpurpose_name
     `;
 
