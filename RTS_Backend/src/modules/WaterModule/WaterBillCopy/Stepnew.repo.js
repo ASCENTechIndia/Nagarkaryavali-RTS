@@ -34,7 +34,7 @@ const getNocPurposeRepo = async () => {
         SELECT
             var_nocpurpose_name,
             var_nocpurpose_id
-        FROM fire.aofr_nocpurpose_mas
+        FROM aofr_nocpurpose_mas
         ORDER BY var_nocpurpose_name
     `;
 
@@ -114,7 +114,7 @@ const getWaterSewerageTypesRepo = async () => {
         SELECT
             var_wtsewarage_name,
             num_wtsewarage_id
-        FROM aorts_watersewaragetype_def
+        FROM aorts_watersewaragertype_def
         ORDER BY var_wtsewarage_name
     `;
 

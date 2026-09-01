@@ -1,34 +1,5 @@
 const oracledb = require("oracledb");
-const { getConnectionTMC, getConnectionANCL } = require("../config/db");
-
-async function withTxANCL(fn) {
-  let connection;
-
-  try {
-    connection = await getConnectionANCL();
-
-    const result = await fn(connection);
-
-    await connection.commit();
-
-    return result;
-
-  } catch (err) {
-    if (connection) {
-      try {
-        await connection.rollback();
-      } catch (_) {}
-    }
-    throw err;
-
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (_) {}
-    }
-  }
-}
+const { getConnectionTMC } = require("../config/db");
 
 async function withTxTMC(fn) {
   let connection;
@@ -59,4 +30,4 @@ async function withTxTMC(fn) {
   }
 }
 
-module.exports = {withTxANCL, withTxTMC};
+module.exports = {withTxTMC};

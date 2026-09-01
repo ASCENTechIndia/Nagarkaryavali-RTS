@@ -376,7 +376,7 @@ const getPaymentFlagRepo = async () => {
         ','
       ) AS L_DOCSERVICEID
     FROM aorts_tmcservice_def
-    WHERE var_service_docflag = 'Y'
+    WHERE var_service_payflag = 'Y'
   `;
 
   const result = await executeQueryTMC(query);
