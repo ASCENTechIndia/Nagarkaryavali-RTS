@@ -45,7 +45,7 @@ const FrmServiceApplicationMst = () => {
   const { user, token } = useAuth();
   const isFirstRender = useRef(true);
 
-  const locationState = location.state || {};
+  const locationState = location.state || {}; 
   
   const ulbId = locationState.ulbId || user?.ulbId;
   const userId = locationState.userId || user?.userId;
@@ -89,7 +89,6 @@ const FrmServiceApplicationMst = () => {
         fetchDocumentDefinitions(serviceId, ulbId),
         checkSectorVisibility(serviceId),
         fetchSectors(),
-        //fetchVillages(),
       ]);
 
       results.forEach((result, index) => {
@@ -800,8 +799,7 @@ const fetchVillages = async (sectorId) => {
 
                   {isSectorVisible ? (
                     <>
-
-                      {/* <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                           <Label required text="Sector" />
                           <span>:</span>
@@ -821,57 +819,23 @@ const fetchVillages = async (sectorId) => {
                             <SelectValue placeholder="-- Select Sector --" />
                           </SelectTrigger>
                           <SelectContent>
-                            {sectorList.map((sector) => (
-                              <SelectItem 
-                                key={sector.sectorId || sector.SECTORID} 
-                                value={String(sector.sectorId || sector.SECTORID)}
-                              >
-                                {sector.sectorName || sector.SECTORNAME}
-                              </SelectItem>
-                            ))}
+                            {Array.isArray(sectorList) && sectorList.length > 0 ? (
+                              sectorList.map((sector) => (
+                                <SelectItem 
+                                  key={sector.sectorId || sector.SECTORID || Math.random()} 
+                                  value={String(sector.sectorId || sector.SECTORID)}
+                                >
+                                  {sector.sectorName || sector.SECTORNAME || "Unknown Sector"}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="0">No sectors available</SelectItem>
+                            )}
                           </SelectContent>
                         </Select>
-                      </div> */}
+                      </div>
 
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-  <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-    <Label required text="Sector" />
-    <span>:</span>
-  </div>
-  <Select
-    value={values.sectorId}
-    onValueChange={(value) => {
-      setFieldValue("sectorId", value);
-      setFieldValue("villageId", "");
-      setVillageList([]);
-      if (value && value !== "0") {
-        fetchVillages(value);
-      }
-    }}
-  >
-    <SelectTrigger className="w-full h-9">
-      <SelectValue placeholder="-- Select Sector --" />
-    </SelectTrigger>
-    <SelectContent>
-      {/* Safe check: only map if sectorList is an array */}
-      {Array.isArray(sectorList) && sectorList.length > 0 ? (
-        sectorList.map((sector) => (
-          <SelectItem 
-            key={sector.sectorId || sector.SECTORID || Math.random()} 
-            value={String(sector.sectorId || sector.SECTORID)}
-          >
-            {sector.sectorName || sector.SECTORNAME || "Unknown Sector"}
-          </SelectItem>
-        ))
-      ) : (
-        <SelectItem value="0">No sectors available</SelectItem>
-      )}
-    </SelectContent>
-  </Select>
-</div>
-
-
-                      {/* <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
                           <Label required text="Village" />
                           <span>:</span>
@@ -885,48 +849,21 @@ const fetchVillages = async (sectorId) => {
                             <SelectValue placeholder="-- Select Village --" />
                           </SelectTrigger>
                           <SelectContent>
-                            {villageList.map((village) => (
-                              <SelectItem 
-                                key={village.villageId || village.VILLAGEID} 
-                                value={String(village.villageId || village.VILLAGEID)}
-                              >
-                                {village.villageName || village.VILLAGENAME}
-                              </SelectItem>
-                            ))}
+                            {Array.isArray(villageList) && villageList.length > 0 ? (
+                              villageList.map((village) => (
+                                <SelectItem 
+                                  key={village.villageId || village.VILLAGEID || Math.random()} 
+                                  value={String(village.villageId || village.VILLAGEID)}
+                                >
+                                  {village.villageName || village.VILLAGENAME || "Unknown Village"}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="0">No villages available</SelectItem>
+                            )}
                           </SelectContent>
                         </Select>
-                      </div> */}
-
-<div className="flex flex-col sm:flex-row sm:items-center gap-2">
-  <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-    <Label required text="Village" />
-    <span>:</span>
-  </div>
-  <Select
-    value={values.villageId}
-    onValueChange={(value) => setFieldValue("villageId", value)}
-    disabled={!values.sectorId || values.sectorId === "0"}
-  >
-    <SelectTrigger className="w-full h-9">
-      <SelectValue placeholder="-- Select Village --" />
-    </SelectTrigger>
-    <SelectContent>
-      {/* Safe check: only map if villageList is an array */}
-      {Array.isArray(villageList) && villageList.length > 0 ? (
-        villageList.map((village) => (
-          <SelectItem 
-            key={village.villageId || village.VILLAGEID || Math.random()} 
-            value={String(village.villageId || village.VILLAGEID)}
-          >
-            {village.villageName || village.VILLAGENAME || "Unknown Village"}
-          </SelectItem>
-        ))
-      ) : (
-        <SelectItem value="0">No villages available</SelectItem>
-      )}
-    </SelectContent>
-  </Select>
-</div>
+                      </div>
 
                     </>
                   ) : (
