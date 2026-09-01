@@ -75,15 +75,15 @@ const NavbarContent = ({ withSidebar }) => {
                             <SidebarTrigger className="h-9 w-9 shrink-0 rounded-md text-white hover:bg-white/20 hover:text-white" />
                         )}
 
-                        {corpInfo.logo ? (
+                        {/* {corpInfo.logo ? ( */}
                             <img
-                                src={corpInfo.logo}
+                                src={corpInfo.logo || "/tmc_logo.png"} 
                                 alt="Corporation Logo"
                                 className="h-9 w-9 shrink-0 rounded-md bg-white p-0.5 object-contain sm:h-12 sm:w-12"
                             />
-                        ) : (
+                        {/* ) : (
                             <div className="h-9 w-9 shrink-0 rounded-md bg-white/20 sm:h-12 sm:w-12" />
-                        )}
+                        )} */}
                     </div>
 
                     <h1 onClick={() => navigate("/")}  className="cursor-pointer flex-1 text-center truncate text-sm font-bold text-white sm:text-xl md:text-xl">

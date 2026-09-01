@@ -660,3 +660,64 @@ export const marriageRegistrationSchema = z.object({
     });
   }
 });
+
+
+export const step0ValidationSchema = z.object({
+  firstName: z.string()
+    .min(1, "First Name can not be blank")
+    .refine((val) => val && val.trim() !== "", "First Name can not be blank"),
+  
+  firstNameM: z.string()
+    .min(1, "First Name in Marathi can not be blank")
+    .refine((val) => val && val.trim() !== "", "First Name in Marathi can not be blank"),
+  
+  middleName: z.string()
+    .min(1, "Middle Name can not be blank")
+    .refine((val) => val && val.trim() !== "", "Middle Name can not be blank"),
+  
+  middleNameM: z.string()
+    .min(1, "Middle Name in Marathi can not be blank")
+    .refine((val) => val && val.trim() !== "", "Middle Name in Marathi can not be blank"),
+  
+  lastName: z.string()
+    .min(1, "Last Name can not be blank")
+    .refine((val) => val && val.trim() !== "", "Last Name can not be blank"),
+  
+  lastNameM: z.string()
+    .min(1, "Last Name in Marathi can not be blank")
+    .refine((val) => val && val.trim() !== "", "Last Name in Marathi can not be blank"),
+  
+  mobileNo: z.union([z.string(), z.number()])
+    .optional()
+    .transform((val) => {
+      if (val === undefined || val === null || val === "") return "";
+      return String(val);
+    })
+    .refine((val) => {
+      if (!val || val === "" || val === "0") return true;
+      return /^\d{10}$/.test(val);
+    }, "Invalid Mobile No. Mobile number must be 10 digits"),
+  
+  address: z.string()
+    .min(1, "Address can not be blank")
+    .refine((val) => val && val.trim() !== "", "Address can not be blank"),
+  
+  addressM: z.string()
+    .min(1, "Address in Marathi can not be blank")
+    .refine((val) => val && val.trim() !== "", "Address in Marathi can not be blank"),
+  
+  purpose: z.string()
+    .min(1, "Purpose can not be blank")
+    .refine((val) => val && val.trim() !== "", "Purpose can not be blank"),
+  
+  purposeM: z.string()
+    .min(1, "Purpose in Marathi can not be blank")
+    .refine((val) => val && val.trim() !== "", "Purpose in Marathi can not be blank"),
+  
+  zoneId: z.union([z.string(), z.number()])
+    .transform((val) => String(val))
+    .refine((val) => {
+      if (!val || val === "" || val === "0" || val === "-1") return false;
+      return true;
+    }, "Please select a Zone"),
+});
