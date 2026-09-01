@@ -114,7 +114,7 @@ const getWaterSewerageTypesRepo = async () => {
         SELECT
             var_wtsewarage_name,
             num_wtsewarage_id
-        FROM aorts_watersewaragetype_def
+        FROM aorts_watersewaragertype_def
         ORDER BY var_wtsewarage_name
     `;
 

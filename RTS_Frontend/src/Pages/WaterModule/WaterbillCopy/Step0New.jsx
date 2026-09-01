@@ -617,7 +617,7 @@ const FrmWaterConnectionApplication = () => {
 
     console.log("Selected Documents:", selectedDocuments);
 
-    if (!isFireBrigadeService && Number(serviceId) !== 28) {
+    if (Number(serviceId) !== 28) {
 
       if (documentList.length === 0) {
         await Swal.fire({
@@ -1894,7 +1894,7 @@ const FrmWaterConnectionApplication = () => {
 
 
 
-          {!isFireBrigadeService && (
+          
             <div>
               <h4 className="text-md font-semibold mb-3">Document Details</h4>
               <hr className="mb-4" />
@@ -1953,7 +1953,7 @@ const FrmWaterConnectionApplication = () => {
                 </table>
               </div>
             </div>
-          )}
+          
 
           <div className="flex items-center justify-center gap-3 border-t pt-5">
             <Button type="button" onClick={handleSubmit} disabled={isSubmitting}>{isSubmitting ? "Submitting..." : "Submit"}</Button>
