@@ -1,6 +1,6 @@
 const { executeQueryTMC } = require("../../../db/queryExecutor");
 const oracledb = require("oracledb");
-const { withTxTMC, withTxANCL } = require("../../../db/tx");
+const { withTxTMC } = require("../../../db/tx");
 const { getConnectionTMC } = require("../../../config/db");
 
 // ============================================================

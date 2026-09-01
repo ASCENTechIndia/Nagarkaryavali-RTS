@@ -14,19 +14,6 @@ async function getConnectionTMC() {
     throw err;
   }
 }
-async function getConnectionANCL() {
-  try {
-    const connection = await oracledb.getConnection({
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      connectString: process.env.DB_CONNECT_STRING_ANCL,
-    });
 
-    return connection;
-  } catch (err) {
-    console.error("Oracle DB connection error:", err);
-    throw err;
-  }
-}
 
-module.exports = {getConnectionANCL, getConnectionTMC};
+module.exports = { getConnectionTMC};

@@ -1,5 +1,5 @@
 const oracledb = require("oracledb");
-const { getConnectionANCL, getConnectionTMC } = require("../config/db");
+const { getConnectionTMC } = require("../config/db");
 
 /**
  * Generic query executor (Oracle)
@@ -7,47 +7,7 @@ const { getConnectionANCL, getConnectionTMC } = require("../config/db");
  * @param {Object} binds - bind variables { key: value }
  * @param {Object} options - extra options (optional)
  */
-async function executeQueryANCL(sql, binds = {}, options = {}) {
-  let connection;
 
-  try {
-    connection = await getConnectionANCL();
-
-    const start = Date.now();
-
-    const result = await connection.execute(
-      sql,
-      binds,
-      {
-        outFormat: oracledb.OUT_FORMAT_OBJECT,
-        autoCommit: options.autoCommit || false
-      }
-    );
-
-    const duration = Date.now() - start;
-
-    return {
-      success: true,
-      rows: result.rows || [],
-      rowCount: result.rows ? result.rows.length : 0,
-      executionTimeMs: duration
-    };
-
-  } catch (err) {
-    return {
-      success: false,
-      error: err.message
-    };
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (e) {
-        console.error("Error closing connection:", e);
-      }
-    }
-  }
-}
 
 async function executeQueryTMC(sql, binds = {}, options = {}) {
   let connection;
@@ -91,4 +51,4 @@ async function executeQueryTMC(sql, binds = {}, options = {}) {
   }
 }
 
-module.exports = { executeQueryANCL,  executeQueryTMC};
+module.exports = { executeQueryTMC};
