@@ -104,6 +104,10 @@ app.use("/api/FrmServiceApplicationMst", require("./modules/SolidHealth/FrmServi
 app.use("/api/FrmMarriageRgstn", require("./modules/Marriage/FrmMarriageRgstn/FrmMarriageRgstn.routes"));
 app.use("/api/FrmAppoints", require("./modules/Marriage/FrmAppoints/FrmAppoints.route"));
 
+
+// PWD
+app.use("/api/FrmRoadCutting", require("./modules/PWD/FrmRoadCutting.route"));
+
 app.use(errorMiddleware);
 
 module.exports = app;
