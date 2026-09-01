@@ -21,7 +21,10 @@ app.set("trust proxy", 1);
 
 // security & parsing
 // app.use(cors({ origin: NODE_ENV === "production" ? ["https://yourdomain.com"] : "*", credentials: true }));
-const allowedOrigins = ["https://payroll.nagarkaryavalinewuat.com", "https://nagarkaryavalinewuat.com", "http://localhost:5173"];
+const allowedOrigins = [
+  "https://rts.nagarkaryavalinewuat.com", 
+
+  "http://localhost:5173"];
 
 app.post(
     "/api/payment-response",
