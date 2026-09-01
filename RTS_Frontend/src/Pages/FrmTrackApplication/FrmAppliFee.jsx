@@ -14,7 +14,7 @@ const FrmAppliFee = () => {
     const navigate = useNavigate();
     const { user, token } = useAuth();
     const baseUrl = import.meta.env.VITE_BASE_URL;
-    console.log({location})
+    console.log({location, user})
     const appNo = location.state?.appNo || "TMCPTXAC2502250002";
     const serviceId = Number(location.state?.serviceId);
     const ulbId = Number(location.state?.ulbId ?? user?.ulbId);
@@ -22,7 +22,8 @@ const FrmAppliFee = () => {
     const userUniqueId = Number(location.state?.userUniqueId ?? user?.userUniqueId);
     const trackId = location.state?.trackId ?? user?.trackId ?? "12345";
     const userIdMahaOnline = location.state?.userIdMahaOnline ?? user?.mahaOnlineUserId ?? "MAHA123";
-    const username = location.state?.username ?? user?.username;
+    const username =  user?.email;
+    console.log({username})
     const userFullName = location.state?.userFullName;
     const serviceName = location.state?.serviceName;
 
@@ -200,6 +201,7 @@ const FrmAppliFee = () => {
     const isMahaPayment = String(applicationSource?.APPSOURCE || "").toUpperCase() === "MAHA" && String(applicationSource?.MAHAPAY || "").toUpperCase() === "N";
 
     const createPaymentSession = async () => {
+        debugger;
         if (!appNo) {
             await Swal.fire({ text: "Application No. can not be blank." });
             return null;
@@ -268,8 +270,7 @@ const FrmAppliFee = () => {
                 amount
             };
 
-            const response = await axios.post(
-                `${baseUrl}/api/FrmAppliFee/payment-session`,
+            const response = await axios.post(`${baseUrl}/api/FrmAppliFee/payment-session`,
                 payload,
                 {
                     headers: {
@@ -316,7 +317,7 @@ const FrmAppliFee = () => {
     const paymentUrl = import.meta.env.VITE_PAYMENT_POST_URL;
     const companyCode = import.meta.env.VITE_PAYMENT_COMPANY_CODE;
     const frontendUrl = import.meta.env.VITE_FRONTEND_URL;
-    console.log({paymentUrl, companyCode, frontendUrl})
+    console.log({paymentUrl, companyCode, frontendUrl, transactionId})
     if (!paymentUrl) {
         await Swal.fire({
             icon: "error",
@@ -858,7 +859,7 @@ const FrmAppliFee = () => {
                             <div className="flex flex-wrap items-center justify-center gap-3 pt-6">
                                 {!isMahaPayment && (<Button type="submit">Payment</Button>)}
                                 {isMahaPayment && (<Button type="button" onClick={handleAaplePayment}>Aaple Sarkar Payment</Button>)}
-                                <Button type="button" variant="outline" path="/">Back</Button>
+                                <Button type="button" variant="outline" path="/app/FrmTrackApplication">Back</Button>
                             </div>
                         </CardContent>
                     </Card>
