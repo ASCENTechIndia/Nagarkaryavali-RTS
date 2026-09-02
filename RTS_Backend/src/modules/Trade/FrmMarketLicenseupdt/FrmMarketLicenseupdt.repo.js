@@ -456,19 +456,8 @@ async function updateTradeDirectorImage({
   }
 }
 
-async function getTradeTypesByCategory({
-  categoryId,
-  serviceId,
-  jwalanshilstat,
-}) {
-  let jwalanshilValue = jwalanshilstat;
+async function getTradeTypesByCategory({ categoryId, jwalanshilstat }) {
 
-  // Existing business rule
-  if (Number(serviceId) === 302) {
-    jwalanshilValue = 1;
-  } else if (Number(serviceId) === 310) {
-    jwalanshilValue = 1;
-  }
 
   const query = `
     SELECT
@@ -482,21 +471,15 @@ async function getTradeTypesByCategory({
       AND aomk_tradetype_tradecategoryid = num_categorytype_catgryid
     WHERE var_tradetype_flag = 'Y'
       AND num_categorytype_catgryid = :categoryId
-      AND var_categorytype_type = '1'
       AND var_categorytype_jwalanshilstat = :jwalanshilstat
   `;
 
   const bindParams = {
     categoryId: Number(categoryId),
-    jwalanshilstat: Number(
-      jwalanshilValue !== undefined
-        ? jwalanshilValue
-        : 1
-    ),
+    jwalanshilstat:  jwalanshilstat
   };
 
   console.log("Trade Types Query:", query);
-  console.log("Service ID:", serviceId);
   console.log("Bind Params:", bindParams);
 
   return await executeQueryTMC(query, bindParams);
@@ -535,11 +518,7 @@ async function getTradeCategories({ jwalanshilstat,categoryType }) {
   `;
 
   const bindParams = {
-    jwalanshilstat: Number(
-      jwalanshilstat !== undefined
-        ? jwalanshilstat
-        : 1
-    ),
+    jwalanshilstat: jwalanshilstat,
     categoryType: categoryType
   };
 

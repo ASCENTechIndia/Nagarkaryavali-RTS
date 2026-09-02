@@ -2,11 +2,11 @@ const { executeQueryTMC } = require("../../../db/queryExecutor");
 const { getConnectionTMC } = require("../../../config/db");
 const { executeProcedureTMC } = require("../../../db/procedureExecutor");
 const oracledb = require("oracledb");
-const {lobToBuffer} = require("../../Dashboard/Dashboard.repo")
+const { lobToBuffer } = require("../../Dashboard/Dashboard.repo")
 
 const getWardListRepo = async ({ ulbid }) => {
     console.log("Repo: Fetch Water Ward List", { ulbid });
-    const binds = {ulbid: Number(ulbid)};
+    const binds = { ulbid: Number(ulbid) };
     const conditions = ["ulbid = :ulbid"];
 
     if (Number(ulbid) === 2) {
@@ -34,7 +34,7 @@ const getWardListRepo = async ({ ulbid }) => {
 const getDocumentListRepo = async ({ ulbid, serviceId, corpId }) => {
     console.log("Repo: Fetch Water Document List", { ulbid, serviceId, corpId });
     const binds = { ulbid: Number(ulbid), serviceId: Number(serviceId), corpId: Number(corpId) };
-    const conditions = [ "num_doc_corpid = :corpId", "num_doc_serviceid = :serviceId", "num_serdoc_ulbid = :ulbid" ];
+    const conditions = ["num_doc_corpid = :corpId", "num_doc_serviceid = :serviceId", "num_serdoc_ulbid = :ulbid"];
 
     const sql = `
         SELECT
@@ -64,8 +64,8 @@ const getDocumentListRepo = async ({ ulbid, serviceId, corpId }) => {
 };
 
 const getWaterApplicationDetailsRepo = async ({ applicationNo }) => {
-    console.log("Repo: Fetch Water Application Details", {applicationNo});
-    const binds = {applicationNo: String(applicationNo).trim()};
+    console.log("Repo: Fetch Water Application Details", { applicationNo });
+    const binds = { applicationNo: String(applicationNo).trim() };
 
     const sql = `
         SELECT
@@ -108,14 +108,14 @@ const getWaterApplicationDetailsRepo = async ({ applicationNo }) => {
 };
 
 const getWaterApplicationDocumentsRepo = async ({ applicationId }) => {
-    console.log("Repo: Fetch Water Application Documents", {applicationId});
+    console.log("Repo: Fetch Water Application Documents", { applicationId });
 
     let connection;
 
     try {
         connection = await getConnectionTMC();
 
-        const binds = {applicationId: Number(applicationId)};
+        const binds = { applicationId: Number(applicationId) };
 
         const sql = `
             SELECT
@@ -129,7 +129,7 @@ const getWaterApplicationDocumentsRepo = async ({ applicationId }) => {
             ORDER BY num_wtapplidoc_id
         `;
 
-        const result = await connection.execute(sql, binds, {outFormat: oracledb.OUT_FORMAT_OBJECT});
+        const result = await connection.execute(sql, binds, { outFormat: oracledb.OUT_FORMAT_OBJECT });
 
         const documents = await Promise.all(
             (result.rows || []).map(async (row) => {
@@ -143,21 +143,21 @@ const getWaterApplicationDocumentsRepo = async ({ applicationId }) => {
                     }
                 }
 
-                return {...row, FILEBYTS: fileBuffer ? fileBuffer.toString("base64") : null};
+                return { ...row, FILEBYTS: fileBuffer ? fileBuffer.toString("base64") : null };
             })
         );
 
         return documents;
 
     } catch (error) {
-        console.error( "GET WATER APPLICATION DOCUMENTS REPO ERROR:", error );
+        console.error("GET WATER APPLICATION DOCUMENTS REPO ERROR:", error);
         throw error;
     } finally {
         if (connection) {
             try {
                 await connection.close();
             } catch (closeError) {
-                console.error( "Error closing Water Application Documents connection:", closeError );
+                console.error("Error closing Water Application Documents connection:", closeError);
             }
         }
     }
@@ -248,10 +248,10 @@ const saveWaterApplicationRepo = async (payload) => {
         in_detAadhaar: payload.detAadhaar || null,
         in_detEmail: payload.detEmail || null,
         in_detAddress: payload.detAddress || null,
-        out_errcode: {dir: oracledb.BIND_OUT, type: oracledb.NUMBER},
-        out_ErrMsg: {dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 4000},
-        Out_DocStr: {dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 4000},
-        out_AppliNo: {dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 1000},
+        out_errcode: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+        out_ErrMsg: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 4000 },
+        Out_DocStr: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 4000 },
+        out_AppliNo: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 1000 },
     };
 
     const result = await executeProcedureTMC({ sql, binds });
@@ -294,8 +294,8 @@ const uploadWaterApplicationDocumentRepo = async ({ corpId, serviceId, applicati
         BLOBDocImage: fileBuffer,
     };
 
-    const result = await executeQueryTMC(sql, binds);
-
+    const result = await executeQueryTMC(sql, binds, { autoCommit: true });
+    console.log({ result, binds })
     if (!result || !result.success) {
         throw new Error(result?.error || "Failed to upload application document");
     }

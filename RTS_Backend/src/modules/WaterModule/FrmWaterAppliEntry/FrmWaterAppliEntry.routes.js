@@ -20,10 +20,10 @@ router.post(
   controller.uploadDocument
 );
 
-router.post("/submit", controller.submitApplication);
+router.post("/submit", auth(), controller.submitApplication);
 router.post("/application-details", auth(), controller.getApplicationDetails);
 
 router.post("/payment-flag", auth(), controller.getServicePaymentFlag);
-router.post("/check-payment", controller.checkPayment);
+router.post("/check-payment", auth(), controller.checkPayment);
 
 module.exports = router;
