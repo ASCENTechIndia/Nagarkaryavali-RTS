@@ -118,6 +118,7 @@ const FrmPropertyTransfer = () => {
 
   const fetchTransferTypes = async (setFieldValue) => {
     try {
+      
       const response = await axios.post(
         `${BASE_URL}/api/FrmPropertyTransfer/transfer-types`,
         {},
@@ -125,8 +126,10 @@ const FrmPropertyTransfer = () => {
           headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
         }
       );
+      console.log("response: ", response)
 
-      if (response.data.ok && response.data.data?.rows) {
+      if (response.data.ok && response.data.data?.rows) { 
+        debugger;
         setTransferTypes(response.data.data.rows);
         let autoSelectType = null;
         
@@ -739,6 +742,7 @@ const FrmPropertyTransfer = () => {
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
+      enableReinitialize={true}
     >
       {({ values, handleChange, setFieldValue, resetForm }) => {
 
@@ -883,20 +887,24 @@ const FrmPropertyTransfer = () => {
                         <Select
                           value={values.transferType}
                           onValueChange={(value) => setFieldValue("transferType", value)}
-                          disabled
+                          // disabled
                         >
                           <SelectTrigger className="w-full h-9">
                             <SelectValue placeholder="-- Select Option --" />
                           </SelectTrigger>
                           <SelectContent>
-                            {transferTypes.map((type) => (
+                            {transferTypes.map((type) => {
+                              console.log("transferTypes", transferTypes);
+                              console.log("type", type);
+
+                              return (
                               <SelectItem
                                 key={type.NUM_TRANSFERTYPE_ID}
                                 value={String(type.NUM_TRANSFERTYPE_ID)}
                               >
                                 {type.VAR_TRANSFERTYPE_NAME}
                               </SelectItem>
-                            ))}
+                            )})}
                           </SelectContent>
                         </Select>
                       </div>

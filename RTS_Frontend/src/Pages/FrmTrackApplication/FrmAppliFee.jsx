@@ -358,8 +358,9 @@ const FrmAppliFee = () => {
 
     const confirmed = await Swal.fire({
         icon: "success",
-        text: `Transaction No. : ${transactionId}`,
+        // text: `Transaction No. : ${transactionId}`,
         confirmButtonText: "Continue",
+        // timer: 1500,
         allowOutsideClick: false
     });
 
