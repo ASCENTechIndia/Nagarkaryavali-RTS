@@ -29,6 +29,7 @@ import FrmMarketLicenseUpdt from "./Pages/Trade/FrmMarketLicenseupdt";
 import FrmMarriageRgstn from "./Pages/Marriage/FrmMarriageRgstn";
 import FrmServiceApplicationMstNew from "./Pages/PWD/FrmServiceApplicationMstNew";
 import FrmAppoints from "./Pages/Marriage/FrmAppoints";
+import FrmWaterAppliEntry from "./Pages/WaterModule/FrmWaterAppliEntry";
 
 const router = createBrowserRouter([
   {
@@ -160,6 +161,11 @@ const router = createBrowserRouter([
          path: "/app/FrmAppoints",
         element: <FrmAppoints />
       },
+
+      {
+        path:"/app/FrmWaterAppliEntry",
+        element:<FrmWaterAppliEntry />
+      }
 
     ]
   },
