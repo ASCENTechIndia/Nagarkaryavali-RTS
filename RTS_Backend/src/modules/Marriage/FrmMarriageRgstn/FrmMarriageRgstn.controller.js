@@ -314,7 +314,7 @@ exports.checkPayment = asyncHandler(async (req, res) => {
     res,
     {
       payFlag,
-      redirectTo: payFlag === "N" ? "FrmMarriageRgstn.aspx" : "FrmAppliFee.aspx",
+      redirectTo: payFlag === "N" ? "FrmMarriageRgstn" : "FrmAppliFee",
       message: message || "Application processed successfully",
       applicationNo,
     },

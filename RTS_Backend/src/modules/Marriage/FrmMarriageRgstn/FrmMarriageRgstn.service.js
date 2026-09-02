@@ -773,7 +773,7 @@ async function submitMarriageRegistrationService(payload) {
         mrrgid: insertResult.outBinds?.out_Mrrgid,
         formId: insertResult.outBinds?.out_Formid,
         payFlag: "Y",
-        redirectTo: "FrmAppliFee.aspx",
+        redirectTo: "FrmAppliFee",
       };
     }
     throw new AppError(errorMsg || "Application submission failed", 500);
@@ -1051,7 +1051,7 @@ async function submitMarriageRegistrationService(payload) {
     mrrgid: mrrgid,
     formId: formId,
     payFlag: payFlag,
-    redirectTo: payFlag === "N" ? "FrmMarriageRgstn.aspx" : "FrmAppliFee.aspx",
+    redirectTo: payFlag === "N" ? "FrmMarriageRgstn" : "FrmAppliFee",
   };
 }
 

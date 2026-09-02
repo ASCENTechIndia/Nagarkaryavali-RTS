@@ -84,6 +84,7 @@ app.use("/api/FrmAfterTransactionTMC", require("./modules/Property/FrmAfterTrans
 app.use("/api/watermodule", require("./modules/WaterModule/WaterBillCopy/Stepnew.route"))
 app.use("/api/FrmWaterRegister", require("./modules/WaterModule/FrmWaterRegister/FrmWaterRegister.route"))
 app.use("/api/FrmPlumberLicense", require("./modules/WaterModule/FrmPlumberLicense/FrmPlumberLicense.route"))
+app.use("/api/FrmWaterAppliEntry", require("./modules/WaterModule/FrmWaterAppliEntry/FrmWaterAppliEntry.routes"));
 
 //Trade
 app.use("/api/FrmMarketEntry", require("./modules/Trade/FrmMarketEntry/FrmMarketEntry.routes"));
