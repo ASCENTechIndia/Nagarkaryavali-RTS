@@ -294,7 +294,7 @@ async function submitAssessmentApplicationService(payload) {
     message: message,
     applicationNo: applicationNo,
     payFlag: payFlag,
-    redirectTo: payFlag === "N" ? "FrmAssessmentCerti.aspx" : "FrmAppliFee.aspx",
+    redirectTo: payFlag === "N" ? "FrmAssessmentCerti" : "FrmAppliFee",
   };
 }
 

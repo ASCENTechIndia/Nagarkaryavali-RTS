@@ -259,7 +259,8 @@ const getServicesByDeptIdRepo = async ({ ulbid, deptId }) => {
         FROM aorts.aorts_tmcservice_def
         inner join admins.aoms_dept_mas on num_dept_id = num_service_deptid
         WHERE 
-            num_service_deptid = :deptId
+            num_service_deptid = :deptId 
+            and var_service_url is not null 
             AND var_service_active = 'Y' 
         ORDER BY num_service_serviceid
 

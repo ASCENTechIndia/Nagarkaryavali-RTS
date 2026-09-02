@@ -21,7 +21,10 @@ app.set("trust proxy", 1);
 
 // security & parsing
 // app.use(cors({ origin: NODE_ENV === "production" ? ["https://yourdomain.com"] : "*", credentials: true }));
-const allowedOrigins = ["https://payroll.nagarkaryavalinewuat.com", "https://nagarkaryavalinewuat.com", "http://localhost:5173"];
+const allowedOrigins = [
+  "https://rts.nagarkaryavalinewuat.com", 
+
+  "http://localhost:5173"];
 
 app.post(
     "/api/payment-response",
@@ -84,6 +87,8 @@ app.use("/api/FrmAfterTransactionTMC", require("./modules/Property/FrmAfterTrans
 app.use("/api/watermodule", require("./modules/WaterModule/WaterBillCopy/Stepnew.route"))
 app.use("/api/FrmWaterRegister", require("./modules/WaterModule/FrmWaterRegister/FrmWaterRegister.route"))
 app.use("/api/FrmPlumberLicense", require("./modules/WaterModule/FrmPlumberLicense/FrmPlumberLicense.route"))
+app.use("/api/FrmWaterAppliEntry", require("./modules/WaterModule/FrmWaterAppliEntry/FrmWaterAppliEntry.routes"));
+app.use("/api/FrmWaterAppliDetails", require("./modules/WaterModule/FrmWaterAppliDetails/FrmWaterAppliDetails.route"))
 
 //Trade
 app.use("/api/FrmMarketEntry", require("./modules/Trade/FrmMarketEntry/FrmMarketEntry.routes"));

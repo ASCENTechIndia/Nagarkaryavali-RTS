@@ -8,8 +8,6 @@ const service = require("./FrmRoadCutting.service");
 const getRoadTypeList = asyncHandler(async (req, res) => {
 
 
-
-
   const result = await service.getRoadTypeListService();
 
   return ok(res, {
