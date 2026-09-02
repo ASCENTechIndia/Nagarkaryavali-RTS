@@ -31,6 +31,7 @@ import FrmServiceApplicationMstNew from "./Pages/PWD/FrmServiceApplicationMstNew
 import FrmAppoints from "./Pages/Marriage/FrmAppoints";
 import FrmRoadCutting from "./Pages/PWD/FrmRoadCutting";
 import Step0 from "./Pages/TownPlanning/Step0";
+import FrmWaterAppliEntry from "./Pages/WaterModule/FrmWaterAppliEntry";
 
 const router = createBrowserRouter([
   {
@@ -166,6 +167,10 @@ const router = createBrowserRouter([
          path: "/app/Step0",
         element: <Step0 />
       },
+      {
+        path:"/app/FrmWaterAppliEntry",
+        element:<FrmWaterAppliEntry />
+      }
 
     ]
   },
