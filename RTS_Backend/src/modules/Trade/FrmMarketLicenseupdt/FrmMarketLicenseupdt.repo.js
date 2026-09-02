@@ -471,7 +471,6 @@ async function getTradeTypesByCategory({ categoryId, jwalanshilstat }) {
       AND aomk_tradetype_tradecategoryid = num_categorytype_catgryid
     WHERE var_tradetype_flag = 'Y'
       AND num_categorytype_catgryid = :categoryId
-      AND var_categorytype_type = '1'
       AND var_categorytype_jwalanshilstat = :jwalanshilstat
   `;
 

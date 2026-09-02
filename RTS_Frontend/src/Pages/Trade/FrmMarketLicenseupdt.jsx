@@ -796,21 +796,21 @@ const FrmMarketLicenseUpdt = () => {
     );
   };
 
-  const handleViewDocument = (docId) => {
-    const document = fileUploadsGrid.find(
-      (item) => String(item.id) === String(docId)
-    );
+  // const handleViewDocument = (docId) => {
+  //   const document = fileUploadsGrid.find(
+  //     (item) => String(item.id) === String(docId)
+  //   );
 
-    if (document?.imageUrl) {
-      window.open(document.imageUrl, "_blank");
-      return;
-    }
+  //   if (document?.imageUrl) {
+  //     window.open(document.imageUrl, "_blank");
+  //     return;
+  //   }
 
-    Swal.fire({
-      icon: "info",
-      text: `Document ID: ${docId}`,
-    });
-  };
+  //   Swal.fire({
+  //     icon: "info",
+  //     text: `Document ID: ${docId}`,
+  //   });
+  // };
 
   const handleSubmit = async (values) => {
     if (!values.licno) {
@@ -844,6 +844,7 @@ const FrmMarketLicenseUpdt = () => {
       const partnerstr = partnerCorrGrid.map((item) => `${item.applitypeid || ""}$${item.newname || ""}$${item.aadharno || ""}$${item.address || ""}$${item.mobileno || ""}$${item.email || ""}$NEW$${item.gender || ""}`).join("#");
       const corrpartnerstr = partnerCorrGrid.map((item) => `${item.existname || ""}$${item.newname || ""}$${item.aadharno || ""}$${item.gender || ""}$${item.address || ""}$${item.applitypeid || ""}`).join("#");
       const tradeaddrstr = tradeAddrGrid.map((item) => `${item.TRADEADDR_ID || item.tradeaddrid || ""}$${item.TRADEADDR || item.tradeaddr || ""}`).join("#");
+
       const payload = {
         licenseno: values.licno || "",
         appfname: values.appliFname || "",
@@ -893,52 +894,54 @@ const FrmMarketLicenseUpdt = () => {
         BusiAddr: values.tradeAddr || "",
         type: "ONLINE",
       };
+
       const response = await axios.post(`${BASE_URL}/api/FrmMarketLicenseupdt/submit`,
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
       const submitData = response.data?.data?.data || response.data?.data || response.data;
+
       if (response.data?.ok === false || submitData?.success === false) {
-        throw new Error(response.data?.message || submitData?.message || "Application submission failed.");
+        throw new Error(response.data?.data.error || submitData?.error || "Application submission failed.");
       }
+
       let applicationId = Number(submitData?.appid || submitData?.applicationId || submitData?.APPLI_ID || values.appid || locationState.appId || 0);
+
       if (!applicationId) {
         const licenseResponse = await axios.post(`${BASE_URL}/api/FrmMarketLicenseupdt/market-license-details`,
-          {
-            licenseNo: values.licno, ulbId,
-          },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { licenseNo: values.licno, ulbId },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
+
         const licenseData = licenseResponse.data?.data?.rows || licenseResponse.data?.data || [];
         const licenseDetails = Array.isArray(licenseData) ? licenseData[0] : licenseData;
         applicationId = Number(licenseDetails?.APPLI_ID || licenseDetails?.APPLICATION_ID || 0);
       }
+
       const imageRows = [...directorGrid, ...transferGrid].filter((row) => row.image instanceof File);
+
       if (imageRows.length) {
         if (!applicationId) {
           throw new Error("Application ID was not returned after submission. Director image cannot be uploaded.");
         }
+
         const directorResponse = await axios.post(`${BASE_URL}/api/FrmMarketLicenseupdt/trade-director-id`,
           { applicationId },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` }, }
         );
+
         const directorIds = directorResponse.data?.data?.rows || directorResponse.data?.data || [];
         if (!Array.isArray(directorIds) || !directorIds.length) {
           throw new Error("Trade director ID not found after submission.");
         }
-        const imageResults = await Promise.allSettled(
-          imageRows.map((row, index) => {
+
+        const imageResults = await Promise.allSettled(imageRows.map((row, index) => {
             const directorId = row.directorId || row.DIRECTOR_ID || directorIds[index]?.DIRECTOR_ID || directorIds[index]?.directorId;
             if (!directorId) {
-              return Promise.reject(
-                new Error(`Director ID not found for ${row.dirctorname || "director"}.`)
-              );
+              return Promise.reject(new Error(`Director ID not found for ${row.dirctorname || "director"}.`));
             }
             const formData = new FormData();
             formData.append("directorId", String(directorId));
@@ -946,19 +949,11 @@ const FrmMarketLicenseUpdt = () => {
             formData.append("document", row.image);
             return axios.post(`${BASE_URL}/api/FrmMarketLicenseupdt/trade-director-image`,
               formData,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
+              { headers: {Authorization: `Bearer ${token}`} }
             );
           })
         );
-        const imageFailures = imageResults.map((result, index) => ({
-          result,
-          name: imageRows[index]?.dirctorname || `Director ${index + 1}`,
-        }))
-          .filter(({ result }) => result.status === "rejected");
+        const imageFailures = imageResults.map((result, index) => ({ result, name: imageRows[index]?.dirctorname || `Director ${index + 1}`})).filter(({ result }) => result.status === "rejected");
         if (imageFailures.length) {
           throw new Error(
             imageFailures.map(({ name, result }) => `${name}: ${result.reason?.response?.data?.message || result.reason?.message || "Director image upload failed."}`).join("\n"));
@@ -975,7 +970,7 @@ const FrmMarketLicenseUpdt = () => {
       Swal.close();
       await Swal.fire({
         icon: "error",
-        text: error?.response?.data?.message || error?.message || "Unable to submit application.",
+        text: error?.response?.data?.message || error?.response?.data?.error || error?.message || "Unable to submit application.",
       });
     } finally {
       setLoading(false);
@@ -1105,7 +1100,7 @@ const FrmMarketLicenseUpdt = () => {
     "Document Name",
     "Image",
     "Document Upload",
-    "View",
+    // "View",
   ];
 
   const fileUploadKeyMapping = {
@@ -1114,7 +1109,7 @@ const FrmMarketLicenseUpdt = () => {
     "Document Name": "DocName",
     Image: "image",
     "Document Upload": "upload",
-    View: "view",
+    // View: "view",
   };
 
   // const uploadDocHeaders = [
@@ -1227,16 +1222,16 @@ const FrmMarketLicenseUpdt = () => {
         className="h-9 p-1 text-sm"
       />
     ),
-    view: (
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={() => handleViewDocument(item.id)}
-      >
-        View
-      </Button>
-    ),
+    // view: (
+    //   <Button
+    //     type="button"
+    //     variant="outline"
+    //     size="sm"
+    //     onClick={() => handleViewDocument(item.id)}
+    //   >
+    //     View
+    //   </Button>
+    // ),
   }));
 
   // const transformedUploadDocGrid = uploadDocGrid.map((item) => ({
@@ -1865,15 +1860,15 @@ const FrmMarketLicenseUpdt = () => {
                         <Select
                           value={values.tradeCategory || ""}
                           onValueChange={(value) =>
-                            handleTradeCategoryChange( value, values.buisiJwalan, setFieldValue )
+                            handleTradeCategoryChange(value, values.buisiJwalan, setFieldValue)
                           }
-                          disabled={ !values.buisiJwalan || !values.licenseType || !tradeCategory?.length }
+                          disabled={!values.buisiJwalan || !values.licenseType || !tradeCategory?.length}
                         >
                           <SelectTrigger className="h-9 w-full sm:h-10">
                             <SelectValue
-                              placeholder={ !values.buisiJwalan ? "Select Business Jalanshil first" : !values.licenseType ? "Select License Type first" : !tradeCategory?.length ? "No Business Category available" : "-- Select --"}
+                              placeholder={!values.buisiJwalan ? "Select Business Jalanshil first" : !values.licenseType ? "Select License Type first" : !tradeCategory?.length ? "No Business Category available" : "-- Select --"}
                             />
-                          </SelectTrigger> 
+                          </SelectTrigger>
 
                           <SelectContent>
                             {tradeCategory?.map((item, index) => {

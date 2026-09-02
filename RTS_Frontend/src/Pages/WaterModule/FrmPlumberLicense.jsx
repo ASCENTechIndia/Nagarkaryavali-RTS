@@ -185,7 +185,6 @@ const FrmPlumberLicense = () => {
     };
 
     const handleSubmit = async (values, { resetForm }) => {
-        debugger;
         if (!values.zoneId) {
             Swal.fire({
                 // icon: "warning",
