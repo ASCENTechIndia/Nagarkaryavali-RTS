@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import { Formik, Form } from "formik";
 import Swal from "sweetalert2";
 
@@ -20,17 +21,54 @@ import ShadCNTable from "@/components/ui/table";
 import { useAuth } from "@/context/AuthContext";
 import { useLocation } from "react-router-dom";
 
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
 function FrmWaterAppliEntry() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const location = useLocation();
 
+  const [zones, setZones] = useState([]);
+  const [connectionTypes, setConnectionTypes] = useState([]);
+  const [connectionSizes, setConnectionSizes] = useState([]);
+  const [usageTypes, setUsageTypes] = useState([]);
+  const [usageSubTypes, setUsageSubTypes] = useState([]);
+  const [connectionStatuses, setConnectionStatuses] = useState([]);
+  const [businessCertificates, setBusinessCertificates] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState({});
+  const [paymentFlag, setPaymentFlag] = useState("N");
+
+  const serviceId =
+    location?.state?.serviceId ||
+    location?.state?.serviceid ||
+    location?.state?.service?.serviceId ||
+    "141";
+
+  const corpId =
+    user?.corpId ||
+    user?.corpid ||
+    user?.corpID ||
+    location?.state?.corpId ||
+    location?.state?.corpid ||
+    "10001";
+
+  const ulbId =
+    user?.ulbId ||
+    user?.ulbid ||
+    user?.ULBID ||
+    location?.state?.ulbId ||
+    "3";
+
+  const axiosConfig = useMemo(
+    () => ({
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }),
+    [token],
+  );
 
   const initialValues = {
-    // =========================
-    // APPLICANT DETAILS
-    // =========================
     zoneId: "",
 
     applicantFirstName: "",
@@ -49,9 +87,6 @@ function FrmWaterAppliEntry() {
     address: "",
     addressMarathi: "",
 
-    // =========================
-    // CONSUMER DETAILS
-    // =========================
     consumerFirstName: "",
     consumerMiddleName: "",
     consumerLastName: "",
@@ -66,9 +101,6 @@ function FrmWaterAppliEntry() {
     consumerPropertyNumber: "",
     consumerResidentialNumber: "",
 
-    // =========================
-    // CO OWNER
-    // =========================
     includeCoOwner: "No",
 
     coOwnerFirstName: "",
@@ -85,9 +117,6 @@ function FrmWaterAppliEntry() {
     remark: "",
     reason: "",
 
-    // =========================
-    // CONNECTION DETAILS
-    // =========================
     connectionType: "",
     connectionSize: "",
     usageType: "",
@@ -104,25 +133,215 @@ function FrmWaterAppliEntry() {
     isGovtProperty: "No",
   };
 
-  const handleCopyApplicantToConsumer = (values, setFieldValue) => {
-    setFieldValue("consumerFirstName", values.applicantFirstName);
-    setFieldValue("consumerMiddleName", values.applicantMiddleName);
-    setFieldValue("consumerLastName", values.applicantLastName);
+  const getRows = (result) => {
+    if (result?.status !== "fulfilled") return [];
 
-    setFieldValue("consumerFirstNameMarathi", values.applicantFirstNameMarathi);
+    return result?.value?.data?.data?.rows || [];
+  };
+
+  const loadMasters = async () => {
+    Swal.fire({
+      title: "Loading...",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+    try {
+      const results = await Promise.allSettled([
+        axios.post(
+          `${baseUrl}/api/FrmWaterAppliEntry/zones`,
+          {
+            ulbId,
+          },
+          axiosConfig,
+        ),
+
+        axios.post(
+          `${baseUrl}/api/FrmWaterAppliEntry/connection-types`,
+          {},
+          axiosConfig,
+        ),
+
+        axios.post(
+          `${baseUrl}/api/FrmWaterAppliEntry/connection-sizes`,
+          {},
+          axiosConfig,
+        ),
+
+        axios.post(
+          `${baseUrl}/api/FrmWaterAppliEntry/usage-types`,
+          {},
+          axiosConfig,
+        ),
+
+        axios.post(
+          `${baseUrl}/api/FrmWaterAppliEntry/connection-statuses`,
+          {},
+          axiosConfig,
+        ),
+
+        axios.post(
+          `${baseUrl}/api/FrmWaterAppliEntry/business-certificates`,
+          {},
+          axiosConfig,
+        ),
+
+        axios.post(
+          `${baseUrl}/api/FrmWaterAppliEntry/document-definitions`,
+          {
+            corpId,
+            serviceId,
+            ulbId,
+          },
+          axiosConfig,
+        ),
+
+        axios.post(
+          `${baseUrl}/api/FrmWaterAppliEntry/payment-flag`,
+          {
+            serviceId,
+          },
+          axiosConfig,
+        ),
+      ]);
+
+      const failedResult = results.find(
+        (result) => result.status === "rejected",
+      );
+
+      if (failedResult) {
+        throw failedResult.reason;
+      }
+
+      setZones(getRows(results[0]));
+      setConnectionTypes(getRows(results[1]));
+      setConnectionSizes(getRows(results[2]));
+      setUsageTypes(getRows(results[3]));
+      setConnectionStatuses(getRows(results[4]));
+      setBusinessCertificates(getRows(results[5]));
+
+      const documentRows = getRows(results[6]).map((item) => ({
+        ...item,
+        id: item.NUM_DOCUMENT_ID,
+        documentName: item.VAR_DOCUMENT_NAME,
+      }));
+
+      setDocuments(documentRows);
+
+      const paymentRows = getRows(results[7]);
+
+      setPaymentFlag(
+        paymentRows?.[0]?.VAR_SERVICE_PAYFLAG || "N",
+      );
+    } catch (error) {
+      await Swal.fire({
+        icon: "error",
+        text:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Unable to load application master data.",
+      });
+    } finally {
+      Swal.close();
+    }
+  };
+
+  useEffect(() => {
+    if (ulbId && serviceId) {
+      loadMasters();
+    }
+  }, [ulbId, serviceId, corpId]);
+
+  const loadUsageSubTypes = async (usageTypeId) => {
+    if (!usageTypeId) {
+      setUsageSubTypes([]);
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${baseUrl}/api/FrmWaterAppliEntry/usage-subtypes`,
+        {
+          usageTypeId,
+        },
+        axiosConfig,
+      );
+
+      setUsageSubTypes(
+        response?.data?.data?.rows || [],
+      );
+    } catch (error) {
+      setUsageSubTypes([]);
+
+      await Swal.fire({
+        icon: "error",
+        text:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Unable to load usage sub-types.",
+      });
+    }
+  };
+
+  const handleCopyApplicantToConsumer = (
+    values,
+    setFieldValue,
+  ) => {
+    setFieldValue(
+      "consumerFirstName",
+      values.applicantFirstName,
+    );
+
+    setFieldValue(
+      "consumerMiddleName",
+      values.applicantMiddleName,
+    );
+
+    setFieldValue(
+      "consumerLastName",
+      values.applicantLastName,
+    );
+
+    setFieldValue(
+      "consumerFirstNameMarathi",
+      values.applicantFirstNameMarathi,
+    );
 
     setFieldValue(
       "consumerMiddleNameMarathi",
       values.applicantMiddleNameMarathi,
     );
 
-    setFieldValue("consumerLastNameMarathi", values.applicantLastNameMarathi);
+    setFieldValue(
+      "consumerLastNameMarathi",
+      values.applicantLastNameMarathi,
+    );
 
-    setFieldValue("consumerMobileNumber", values.mobileNumber);
-    setFieldValue("consumerEmail", values.email);
-    setFieldValue("consumerAadharCardNo", values.aadharCardNo);
-    setFieldValue("consumerPropertyNumber", values.propertyNumber);
-    setFieldValue("consumerResidentialNumber", values.residentialNumber);
+    setFieldValue(
+      "consumerMobileNumber",
+      values.mobileNumber,
+    );
+
+    setFieldValue(
+      "consumerEmail",
+      values.email,
+    );
+
+    setFieldValue(
+      "consumerAadharCardNo",
+      values.aadharCardNo,
+    );
+
+    setFieldValue(
+      "consumerPropertyNumber",
+      values.propertyNumber,
+    );
+
+    setFieldValue(
+      "consumerResidentialNumber",
+      values.residentialNumber,
+    );
 
     Swal.fire({
       icon: "success",
@@ -133,8 +352,36 @@ function FrmWaterAppliEntry() {
     });
   };
 
-  const handleFileChange = (documentId, file) => {
+  const handleFileChange = (
+    documentId,
+    file,
+  ) => {
     if (!file) return;
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "application/pdf",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      Swal.fire({
+        icon: "warning",
+        text: "Only JPG, JPEG, PNG and PDF files are allowed.",
+      });
+
+      return;
+    }
+
+    if (file.size > 15 * 1024 * 1024) {
+      Swal.fire({
+        icon: "warning",
+        text: "Document size should not exceed 15 MB.",
+      });
+
+      return;
+    }
 
     setSelectedFiles((previous) => ({
       ...previous,
@@ -142,7 +389,26 @@ function FrmWaterAppliEntry() {
     }));
   };
 
-  const documentHeaders = ["Select", "Document Name", "Upload Document"];
+  const handleDocumentSelect = (
+    documentId,
+    checked,
+  ) => {
+    if (!checked) {
+      setSelectedFiles((previous) => {
+        const updatedFiles = { ...previous };
+
+        delete updatedFiles[documentId];
+
+        return updatedFiles;
+      });
+    }
+  };
+
+  const documentHeaders = [
+    "Select",
+    "Document Name",
+    "Upload Document",
+  ];
 
   const documentKeyMapping = {
     Select: "select",
@@ -150,45 +416,263 @@ function FrmWaterAppliEntry() {
     "Upload Document": "upload",
   };
 
-  const tableData = documents.map((document, index) => ({
-    id: document.id || index,
+  const tableData = documents.map((document, index) => {
+    const documentId =
+      document.NUM_DOCUMENT_ID || document.id || index;
 
-    select: (
-      <Input
-        type="checkbox"
-        checked={Boolean(selectedFiles[document.id])}
-        onChange={() => {}}
-      />
-    ),
+    return {
+      id: documentId,
 
-    documentName: document.documentName || "",
+      select: (
+        <Input
+          type="checkbox"
+          checked={Boolean(selectedFiles[documentId])}
+          onChange={(event) =>
+            handleDocumentSelect(
+              documentId,
+              event.target.checked,
+            )
+          }
+        />
+      ),
 
-    upload: (
-      <Input
-        type="file"
-        onChange={(event) =>
-          handleFileChange(document.id, event.target.files?.[0])
-        }
-      />
-    ),
-  }));
+      documentName:
+        document.VAR_DOCUMENT_NAME ||
+        document.documentName ||
+        "",
 
-  const handleSubmit = async (values, { resetForm }) => {
+      upload: (
+        <Input
+          type="file"
+          accept=".jpg,.jpeg,.png,.pdf"
+          onChange={(event) =>
+            handleFileChange(
+              documentId,
+              event.target.files?.[0],
+            )
+          }
+        />
+      ),
+    };
+  });
+
+  const checkPayment = async (applicationNo) => {
+    const response = await axios.post(
+      `${baseUrl}/api/FrmWaterAppliEntry/check-payment`,
+      {
+        serviceId,
+        applicationNo,
+      },
+      axiosConfig,
+    );
+
+    return response?.data?.data;
+  };
+
+  const handleSubmit = async (
+    values,
+    { resetForm },
+  ) => {
     try {
-      console.log("Form Values:", values);
+      const selectedDocumentIds = Object.keys(selectedFiles);
 
-      // ============================
-      // API CALL WILL BE ADDED HERE
-      // ============================
+      if (!values.zoneId) {
+        await Swal.fire({
+          icon: "warning",
+          text: "Please select Zone.",
+        });
+
+        return;
+      }
+
+      if (!values.applicantFirstName?.trim()) {
+        await Swal.fire({
+          icon: "warning",
+          text: "Please enter Applicant First Name.",
+        });
+
+        return;
+      }
+
+      if (!values.mobileNumber?.trim()) {
+        await Swal.fire({
+          icon: "warning",
+          text: "Please enter Mobile Number.",
+        });
+
+        return;
+      }
+
+      if (!values.connectionType) {
+        await Swal.fire({
+          icon: "warning",
+          text: "Please select Connection Type.",
+        });
+
+        return;
+      }
+
+      if (!values.usageType) {
+        await Swal.fire({
+          icon: "warning",
+          text: "Please select Usage Type.",
+        });
+
+        return;
+      }
+
+      if (!values.usageSubType) {
+        await Swal.fire({
+          icon: "warning",
+          text: "Please select Usage Sub-Type.",
+        });
+
+        return;
+      }
+
+      if (selectedDocumentIds.length === 0) {
+        await Swal.fire({
+          icon: "warning",
+          text: "Please upload at least one document.",
+        });
+
+        return;
+      }
+
+      const payload = {
+        ulbId: Number(ulbId),
+        corpId: Number(corpId),
+        serviceId: Number(serviceId),
+
+        zoneId: Number(values.zoneId),
+
+        afName: values.applicantFirstName,
+        amName: values.applicantMiddleName,
+        alName: values.applicantLastName,
+
+        mobileNo: values.mobileNumber,
+        email: values.email,
+        aadharNo: values.aadharCardNo,
+
+        propNo: values.propertyNumber,
+        resNo: values.residentialNumber,
+
+        address: values.address,
+
+        afNameMr: values.applicantFirstNameMarathi,
+        amNameMr: values.applicantMiddleNameMarathi,
+        alNameMr: values.applicantLastNameMarathi,
+
+        addressMr: values.addressMarathi,
+
+        conFName: values.consumerFirstName,
+        conMName: values.consumerMiddleName,
+        conLName: values.consumerLastName,
+
+        conFNameMr: values.consumerFirstNameMarathi,
+        conMNameMr: values.consumerMiddleNameMarathi,
+        conLNameMr: values.consumerLastNameMarathi,
+
+        conMobNo: values.consumerMobileNumber,
+        conEmail: values.consumerEmail,
+        conAadharNo: values.consumerAadharCardNo,
+
+        conPropNo: values.consumerPropertyNumber,
+        conResNo: values.consumerResidentialNumber,
+
+        cooFlag:
+          values.includeCoOwner === "Yes"
+            ? "Y"
+            : "N",
+
+        cooFName1:
+          values.includeCoOwner === "Yes"
+            ? values.coOwnerFirstName
+            : "",
+
+        cooMName1:
+          values.includeCoOwner === "Yes"
+            ? values.coOwnerMiddleName
+            : "",
+
+        cooLName1:
+          values.includeCoOwner === "Yes"
+            ? values.coOwnerLastName
+            : "",
+
+        cooFName2:
+          values.includeCoOwner === "Yes"
+            ? values.coOwnerFirstNameMarathi
+            : "",
+
+        cooMName2:
+          values.includeCoOwner === "Yes"
+            ? values.coOwnerMiddleNameMarathi
+            : "",
+
+        cooLName2:
+          values.includeCoOwner === "Yes"
+            ? values.coOwnerLastNameMarathi
+            : "",
+
+        connType: Number(values.connectionType),
+        connSize: Number(values.connectionSize),
+
+        usageType: Number(values.usageType),
+        usageSubType: Number(values.usageSubType),
+
+        noOfPerson: Number(values.noOfPerson || 0),
+        noOfFamily: Number(values.noOfFamily || 0),
+        noOfConn: Number(values.noOfConnection || 0),
+
+        connStatus: Number(values.connectionStatus),
+        busiCert: Number(values.businessCertificate),
+
+        billingType: values.billingType,
+
+        govPropFlag:
+          values.isGovtProperty === "Yes"
+            ? "Y"
+            : "N",
+
+        remark: values.remark,
+        reason: values.reason,
+
+        userId:
+          user?.userId ||
+          user?.userid ||
+          user?.id ||
+          null,
+      };
+
+      console.log("Water Application Payload:", payload);
+
+      /*
+        ============================================================
+        SAVE API
+
+        The save API endpoint/request format was not included
+        in the APIs provided.
+
+        Add your final save endpoint here:
+
+        const response = await axios.post(
+          `${baseUrl}/api/FrmWaterAppliEntry/save`,
+          payload,
+          axiosConfig
+        );
+
+        const applicationNo =
+          response?.data?.data?.applicationNo;
+
+        ============================================================
+      */
 
       await Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: "Water application submitted successfully.",
+        icon: "info",
+        title: "API Ready",
+        text: "Master APIs and form bindings have been implemented. Add the final save API endpoint to submit the application.",
       });
-
-      resetForm();
-      setSelectedFiles({});
     } catch (error) {
       await Swal.fire({
         icon: "error",
@@ -203,21 +687,22 @@ function FrmWaterAppliEntry() {
   return (
     <div className="w-full p-4">
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        {({ values, handleChange, setFieldValue, resetForm }) => (
+        {({
+          values,
+          handleChange,
+          setFieldValue,
+          resetForm,
+        }) => (
           <Form className="space-y-4">
-            {/* ================================= */}
-            {/* APPLICANT DETAILS */}
-            {/* ================================= */}
-
             <Card>
-              <CardHeader className="border-b  py-3">
-                <CardTitle className="text-start text-xl ">
+              <CardHeader className="border-b py-3">
+                <CardTitle className="text-start text-xl">
                   Applicant Details
                 </CardTitle>
               </CardHeader>
+
               <CardContent className="pt-5">
                 <div className="space-y-4">
-                  {/* Zone ID */}
                   <div className="grid grid-cols-1 items-center gap-x-6 gap-y-4 md:grid-cols-2">
                     <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
                       <Label
@@ -232,18 +717,24 @@ function FrmWaterAppliEntry() {
                           setFieldValue("zoneId", value)
                         }
                       >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="-- Select Option --" />
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Zone" />
                         </SelectTrigger>
 
                         <SelectContent>
-                          {/* API DATA WILL COME HERE */}
+                          {zones.map((item) => (
+                            <SelectItem
+                              key={item.WARDID}
+                              value={String(item.WARDID)}
+                            >
+                              {item.WARDNAME}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
 
-                  {/* Applicant Name */}
                   <div className="grid grid-cols-1 items-center gap-x-6 gap-y-4 lg:grid-cols-2">
                     <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
                       <Label
@@ -277,7 +768,6 @@ function FrmWaterAppliEntry() {
                     </div>
                   </div>
 
-                  {/* Applicant Name Marathi */}
                   <div className="grid grid-cols-1 items-center gap-x-6 gap-y-4 lg:grid-cols-2">
                     <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
                       <Label
@@ -311,7 +801,6 @@ function FrmWaterAppliEntry() {
                     </div>
                   </div>
 
-                  {/* Mobile Number / Email */}
                   <div className="grid grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-2">
                     <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
                       <Label
@@ -345,7 +834,6 @@ function FrmWaterAppliEntry() {
                     </div>
                   </div>
 
-                  {/* Aadhar Card / Property Number */}
                   <div className="grid grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-2">
                     <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
                       <Label
@@ -376,7 +864,6 @@ function FrmWaterAppliEntry() {
                     </div>
                   </div>
 
-                  {/* Residential Number / Address */}
                   <div className="grid grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-2">
                     <div className="grid grid-cols-[250px_minmax(0,1fr)] items-start gap-4">
                       <Label
@@ -411,7 +898,6 @@ function FrmWaterAppliEntry() {
                     </div>
                   </div>
 
-                  {/* Address Marathi */}
                   <div className="grid grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-2">
                     <div className="grid grid-cols-[250px_minmax(0,1fr)] items-start gap-4 lg:col-start-2">
                       <Label
@@ -432,37 +918,31 @@ function FrmWaterAppliEntry() {
               </CardContent>
             </Card>
 
-            {/* ================================= */}
-            {/* COPY AS ABOVE */}
-            {/* ================================= */}
-
             <div className="flex items-center gap-4 px-2">
               <Label className="text-base">Copy as Above</Label>
 
               <Button
                 type="button"
                 onClick={() =>
-                  handleCopyApplicantToConsumer(values, setFieldValue)
+                  handleCopyApplicantToConsumer(
+                    values,
+                    setFieldValue,
+                  )
                 }
               >
                 Add
               </Button>
             </div>
 
-            {/* ================================= */}
-            {/* CONSUMER DETAILS */}
-            {/* ================================= */}
-
             <Card>
-               <CardHeader className="border-b  py-3">
-                <CardTitle className="text-start text-xl ">
+              <CardHeader className="border-b py-3">
+                <CardTitle className="text-start text-xl">
                   Consumer Details
                 </CardTitle>
               </CardHeader>
 
               <CardContent className="pt-5">
                 <div className="space-y-4">
-                  {/* Consumer Name */}
                   <div className="grid grid-cols-1 items-center gap-x-6 gap-y-4 lg:grid-cols-2">
                     <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
                       <Label
@@ -496,7 +976,6 @@ function FrmWaterAppliEntry() {
                     </div>
                   </div>
 
-                  {/* Consumer Marathi Name */}
                   <div className="grid grid-cols-1 items-center gap-x-6 gap-y-4 lg:grid-cols-2">
                     <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
                       <Label
@@ -530,7 +1009,6 @@ function FrmWaterAppliEntry() {
                     </div>
                   </div>
 
-                  {/* Consumer Mobile / Email */}
                   <div className="grid grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-2">
                     <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
                       <Label
@@ -564,7 +1042,6 @@ function FrmWaterAppliEntry() {
                     </div>
                   </div>
 
-                  {/* Consumer Aadhar / Property Number */}
                   <div className="grid grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-2">
                     <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
                       <Label
@@ -595,7 +1072,6 @@ function FrmWaterAppliEntry() {
                     </div>
                   </div>
 
-                  {/* Consumer Residential Number */}
                   <div className="grid grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-2">
                     <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
                       <Label
@@ -616,20 +1092,15 @@ function FrmWaterAppliEntry() {
               </CardContent>
             </Card>
 
-            {/* ================================= */}
-            {/* CO OWNER DETAILS */}
-            {/* ================================= */}
-
             <Card>
-                <CardHeader className="border-b  py-3">
-                <CardTitle className="text-start text-xl ">
+              <CardHeader className="border-b py-3">
+                <CardTitle className="text-start text-xl">
                   Co-Owner Details
                 </CardTitle>
               </CardHeader>
 
               <CardContent className="pt-5">
                 <div className="space-y-4">
-                  {/* Other Co-Owner */}
                   <div className="grid grid-cols-1 items-center gap-4 md:grid-cols-[250px_1fr]">
                     <Label
                       text="Other Co-Owner names to include"
@@ -643,7 +1114,9 @@ function FrmWaterAppliEntry() {
                           type="radio"
                           name="includeCoOwner"
                           value="Yes"
-                          checked={values.includeCoOwner === "Yes"}
+                          checked={
+                            values.includeCoOwner === "Yes"
+                          }
                           onChange={handleChange}
                           className="h-4 w-4 cursor-pointer"
                         />
@@ -655,7 +1128,9 @@ function FrmWaterAppliEntry() {
                           type="radio"
                           name="includeCoOwner"
                           value="No"
-                          checked={values.includeCoOwner === "No"}
+                          checked={
+                            values.includeCoOwner === "No"
+                          }
                           onChange={handleChange}
                           className="h-4 w-4 cursor-pointer"
                         />
@@ -666,7 +1141,6 @@ function FrmWaterAppliEntry() {
 
                   {values.includeCoOwner === "Yes" && (
                     <>
-                      {/* Co-Owner Name */}
                       <div className="grid grid-cols-1 items-center gap-x-6 gap-y-4 lg:grid-cols-2">
                         <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
                           <Label
@@ -699,7 +1173,6 @@ function FrmWaterAppliEntry() {
                         </div>
                       </div>
 
-                      {/* Co-Owner Marathi Name */}
                       <div className="grid grid-cols-1 items-center gap-x-6 gap-y-4 lg:grid-cols-2">
                         <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
                           <Label
@@ -732,7 +1205,6 @@ function FrmWaterAppliEntry() {
                         </div>
                       </div>
 
-                      {/* Co-Owner Address / Marathi Address */}
                       <div className="grid grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-2">
                         <div className="grid grid-cols-[250px_minmax(0,1fr)] items-start gap-4">
                           <Label
@@ -767,103 +1239,7 @@ function FrmWaterAppliEntry() {
                     </>
                   )}
 
-                  {/* Remark / Reason */}
                   <div className="grid grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-2">
-                    {/* Co-Owner Name */}
-                    <div className="lg:col-span-2 grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
-                      <Label
-                        text="Co-Owner Name"
-                        className="text-black !w-full whitespace-nowrap"
-                      />
-
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                        <Input
-                          name="coOwnerFirstName"
-                          placeholder="First Name"
-                          value={values.coOwnerFirstName}
-                          onChange={handleChange}
-                        />
-
-                        <Input
-                          name="coOwnerMiddleName"
-                          placeholder="Middle Name"
-                          value={values.coOwnerMiddleName}
-                          onChange={handleChange}
-                        />
-
-                        <Input
-                          name="coOwnerLastName"
-                          placeholder="Last Name"
-                          value={values.coOwnerLastName}
-                          onChange={handleChange}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Co-Owner Name Marathi */}
-                    <div className="lg:col-span-2 grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
-                      <Label
-                        text="सह-मालकाचे नाव मराठी"
-                        className="text-black !w-full whitespace-nowrap"
-                      />
-
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                        <Input
-                          name="coOwnerFirstNameMarathi"
-                          placeholder="पहिले नाव"
-                          value={values.coOwnerFirstNameMarathi}
-                          onChange={handleChange}
-                        />
-
-                        <Input
-                          name="coOwnerMiddleNameMarathi"
-                          placeholder="मधले नाव"
-                          value={values.coOwnerMiddleNameMarathi}
-                          onChange={handleChange}
-                        />
-
-                        <Input
-                          name="coOwnerLastNameMarathi"
-                          placeholder="आडनाव"
-                          value={values.coOwnerLastNameMarathi}
-                          onChange={handleChange}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Address */}
-                    <div className="grid grid-cols-[250px_minmax(0,1fr)] items-start gap-4">
-                      <Label
-                        text="Address"
-                        className="text-black !w-full whitespace-nowrap pt-2"
-                      />
-
-                      <textarea
-                        name="address"
-                        placeholder="Enter Address"
-                        value={values.address}
-                        onChange={handleChange}
-                        className="min-h-[90px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-                      />
-                    </div>
-
-                    {/* Address Marathi */}
-                    <div className="grid grid-cols-[250px_minmax(0,1fr)] items-start gap-4">
-                      <Label
-                        text="Address Marathi"
-                        className="text-black !w-full whitespace-nowrap pt-2"
-                      />
-
-                      <textarea
-                        name="addressMarathi"
-                        placeholder="पत्ता मराठी"
-                        value={values.addressMarathi}
-                        onChange={handleChange}
-                        className="min-h-[90px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-                      />
-                    </div>
-
-                    {/* Remark */}
                     <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
                       <Label
                         text="Remark"
@@ -878,7 +1254,6 @@ function FrmWaterAppliEntry() {
                       />
                     </div>
 
-                    {/* Reason */}
                     <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
                       <Label
                         text="Reason"
@@ -896,19 +1271,16 @@ function FrmWaterAppliEntry() {
                 </div>
               </CardContent>
             </Card>
-            {/* ================================= */}
-            {/* CONNECTION DETAILS */}
-            {/* ================================= */}
 
             <Card>
-               <CardHeader className="border-b  py-3">
-                <CardTitle className="text-start text-xl ">
+              <CardHeader className="border-b py-3">
+                <CardTitle className="text-start text-xl">
                   Connection Details
                 </CardTitle>
               </CardHeader>
+
               <CardContent className="pt-5">
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-4">
-                  {/* Connection Type */}
                   <div className="space-y-2">
                     <Label
                       text="Connection Type"
@@ -918,18 +1290,31 @@ function FrmWaterAppliEntry() {
                     <Select
                       value={values.connectionType}
                       onValueChange={(value) =>
-                        setFieldValue("connectionType", value)
+                        setFieldValue(
+                          "connectionType",
+                          value,
+                        )
                       }
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="-- Select Option --" />
                       </SelectTrigger>
 
-                      <SelectContent />
+                      <SelectContent>
+                        {connectionTypes.map((item) => (
+                          <SelectItem
+                            key={item.NUM_CONNTYPE_ID}
+                            value={String(
+                              item.NUM_CONNTYPE_ID,
+                            )}
+                          >
+                            {item.VAR_CONNTYPE_NAME}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
                     </Select>
                   </div>
 
-                  {/* Connection Size */}
                   <div className="space-y-2">
                     <Label
                       text="Connection Size"
@@ -939,36 +1324,65 @@ function FrmWaterAppliEntry() {
                     <Select
                       value={values.connectionSize}
                       onValueChange={(value) =>
-                        setFieldValue("connectionSize", value)
+                        setFieldValue(
+                          "connectionSize",
+                          value,
+                        )
                       }
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="-- Select Option --" />
                       </SelectTrigger>
 
-                      <SelectContent />
+                      <SelectContent>
+                        {connectionSizes.map((item) => (
+                          <SelectItem
+                            key={item.NUM_CONNSIZE_ID}
+                            value={String(
+                              item.NUM_CONNSIZE_ID,
+                            )}
+                          >
+                            {item.NUM_CONNSIZE_SIZE}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
                     </Select>
                   </div>
 
-                  {/* Usage Type */}
                   <div className="space-y-2">
-                    <Label text="Usage Type" className="text-black !w-full" />
+                    <Label
+                      text="Usage Type"
+                      className="text-black !w-full"
+                    />
 
                     <Select
                       value={values.usageType}
-                      onValueChange={(value) =>
-                        setFieldValue("usageType", value)
-                      }
+                      onValueChange={(value) => {
+                        setFieldValue("usageType", value);
+                        setFieldValue("usageSubType", "");
+                        setUsageSubTypes([]);
+                        loadUsageSubTypes(value);
+                      }}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="-- Select Option --" />
                       </SelectTrigger>
 
-                      <SelectContent />
+                      <SelectContent>
+                        {usageTypes.map((item) => (
+                          <SelectItem
+                            key={item.NUM_USAGETYPE_ID}
+                            value={String(
+                              item.NUM_USAGETYPE_ID,
+                            )}
+                          >
+                            {item.VAR_USAGETYPE_NAME}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
                     </Select>
                   </div>
 
-                  {/* Usage Sub-Type */}
                   <div className="space-y-2">
                     <Label
                       text="Usage Sub-Type"
@@ -978,18 +1392,32 @@ function FrmWaterAppliEntry() {
                     <Select
                       value={values.usageSubType}
                       onValueChange={(value) =>
-                        setFieldValue("usageSubType", value)
+                        setFieldValue(
+                          "usageSubType",
+                          value,
+                        )
                       }
+                      disabled={!values.usageType}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="-- Select Option --" />
                       </SelectTrigger>
 
-                      <SelectContent />
+                      <SelectContent>
+                        {usageSubTypes.map((item) => (
+                          <SelectItem
+                            key={item.NUM_USAGESUBTYPE_ID}
+                            value={String(
+                              item.NUM_USAGESUBTYPE_ID,
+                            )}
+                          >
+                            {item.VAR_USAGESUBTYPE_NAME}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
                     </Select>
                   </div>
 
-                  {/* No. Of Person */}
                   <div className="space-y-2">
                     <Label
                       text="No. Of Person"
@@ -1004,7 +1432,6 @@ function FrmWaterAppliEntry() {
                     />
                   </div>
 
-                  {/* No. Of Family */}
                   <div className="space-y-2">
                     <Label
                       text="No. Of Family"
@@ -1019,7 +1446,6 @@ function FrmWaterAppliEntry() {
                     />
                   </div>
 
-                  {/* No. Of Connection */}
                   <div className="space-y-2">
                     <Label
                       text="No. Of Connection"
@@ -1034,7 +1460,6 @@ function FrmWaterAppliEntry() {
                     />
                   </div>
 
-                  {/* Connection Status */}
                   <div className="space-y-2">
                     <Label
                       text="Connection Status"
@@ -1044,18 +1469,31 @@ function FrmWaterAppliEntry() {
                     <Select
                       value={values.connectionStatus}
                       onValueChange={(value) =>
-                        setFieldValue("connectionStatus", value)
+                        setFieldValue(
+                          "connectionStatus",
+                          value,
+                        )
                       }
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="-- Select Option --" />
                       </SelectTrigger>
 
-                      <SelectContent />
+                      <SelectContent>
+                        {connectionStatuses.map((item) => (
+                          <SelectItem
+                            key={item.NUM_CONNSTATUS_ID}
+                            value={String(
+                              item.NUM_CONNSTATUS_ID,
+                            )}
+                          >
+                            {item.VAR_CONNSTATUS_NAME}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
                     </Select>
                   </div>
 
-                  {/* Business Certificate */}
                   <div className="space-y-2">
                     <Label
                       text="Business Certificate"
@@ -1065,20 +1503,36 @@ function FrmWaterAppliEntry() {
                     <Select
                       value={values.businessCertificate}
                       onValueChange={(value) =>
-                        setFieldValue("businessCertificate", value)
+                        setFieldValue(
+                          "businessCertificate",
+                          value,
+                        )
                       }
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="-- Select Option --" />
                       </SelectTrigger>
 
-                      <SelectContent />
+                      <SelectContent>
+                        {businessCertificates.map((item) => (
+                          <SelectItem
+                            key={item.NUM_BUSINESSCERTI_ID}
+                            value={String(
+                              item.NUM_BUSINESSCERTI_ID,
+                            )}
+                          >
+                            {item.VAR_BUSINESSCERTI_NAME}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
                     </Select>
                   </div>
 
-                  {/* Billing Type */}
                   <div className="space-y-2">
-                    <Label text="Billing Type" className="text-black !w-full" />
+                    <Label
+                      text="Billing Type"
+                      className="text-black !w-full"
+                    />
 
                     <Input
                       name="billingType"
@@ -1087,7 +1541,6 @@ function FrmWaterAppliEntry() {
                     />
                   </div>
 
-                  {/* Govt Property */}
                   <div className="space-y-2">
                     <Label
                       text="Is this Govt. Property?"
@@ -1100,7 +1553,9 @@ function FrmWaterAppliEntry() {
                           type="radio"
                           name="isGovtProperty"
                           value="Yes"
-                          checked={values.isGovtProperty === "Yes"}
+                          checked={
+                            values.isGovtProperty === "Yes"
+                          }
                           onChange={handleChange}
                         />
                         Yes
@@ -1111,7 +1566,9 @@ function FrmWaterAppliEntry() {
                           type="radio"
                           name="isGovtProperty"
                           value="No"
-                          checked={values.isGovtProperty === "No"}
+                          checked={
+                            values.isGovtProperty === "No"
+                          }
                           onChange={handleChange}
                         />
                         No
@@ -1121,10 +1578,6 @@ function FrmWaterAppliEntry() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* ================================= */}
-            {/* DOCUMENT TABLE */}
-            {/* ================================= */}
 
             <Card>
               <CardContent className="pt-5">
@@ -1136,12 +1589,11 @@ function FrmWaterAppliEntry() {
               </CardContent>
             </Card>
 
-            {/* ================================= */}
-            {/* BUTTONS */}
-            {/* ================================= */}
-
             <div className="flex justify-center gap-4 py-4">
-              <Button type="submit" className="min-w-[140px]">
+              <Button
+                type="submit"
+                className="min-w-[140px]"
+              >
                 Submit
               </Button>
 
@@ -1152,6 +1604,7 @@ function FrmWaterAppliEntry() {
                 onClick={() => {
                   resetForm();
                   setSelectedFiles({});
+                  setUsageSubTypes([]);
                 }}
               >
                 Reset
