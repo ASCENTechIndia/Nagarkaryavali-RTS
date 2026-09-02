@@ -416,12 +416,12 @@ async function updateTradeDirectorImageService({
 }
 
 
-async function getTradeTypesByCategoryService({ categoryId, jwalanshilstat }) {
+async function getTradeTypesByCategoryService({ categoryId, categoryType, jwalanshilstat }) {
   if (!categoryId) {
     throw new AppError("Category ID is required", 400);
   }
 
-  const result = await repo.getTradeTypesByCategory({categoryId,jwalanshilstat});
+  const result = await repo.getTradeTypesByCategory({categoryId, categoryType, jwalanshilstat});
 
   if (!result.success) {
     throw new AppError(result.error, 500);

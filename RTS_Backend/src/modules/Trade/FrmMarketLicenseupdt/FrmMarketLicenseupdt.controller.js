@@ -254,17 +254,17 @@ exports.updateTradeDirectorImage = asyncHandler(async (req, res) => {
 });
 
 exports.getTradeTypesByCategory = asyncHandler(async (req, res) => {
-  const { categoryId, jwalanshilstat } = req.body;
+  const { categoryId, categoryType, jwalanshilstat } = req.body;
 
   if (!categoryId) {
     return fail(res, "Category ID is required");
   }
 
-  if (!jwalanshilstat) {
-    return fail(res, "ज्वलनशील is required");
+  if (!categoryType) {
+    return fail(res, "categoryType is required");
   }
 
-  const result = await service.getTradeTypesByCategoryService({ categoryId, jwalanshilstat });
+  const result = await service.getTradeTypesByCategoryService({ categoryId, categoryType, jwalanshilstat });
   return ok(res, result, "Trade types fetched successfully");
 });
 

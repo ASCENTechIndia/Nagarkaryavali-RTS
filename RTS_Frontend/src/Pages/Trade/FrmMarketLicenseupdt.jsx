@@ -56,8 +56,8 @@ const FrmMarketLicenseUpdt = () => {
   const ulbId = locationState.ulbId || user?.ulbId;
   const userId = locationState.userId || user?.userId;
   const zoneId = locationState.zoneId || user?.zoneId;
-  const serviceid = 302;
-  // const serviceid = locationState.serviceId || user?.serviceId;
+  // const serviceid = 302;
+  const serviceid = locationState.serviceId || user?.serviceId;
   const servicename = locationState.serviceName || "";
   const serviceMap = { 306: "TSC", 310: "TLC", 302: "TRBC", 500: "TRBC", 307: "TRNC", 309: "ARPS", 308: "CP", 508: "TTRF", 311: "TEN" };
   const serviceName = serviceMap[String(serviceid)] || "";
@@ -222,26 +222,31 @@ const FrmMarketLicenseUpdt = () => {
     }
   };
 
-  const fetchTradeTypes = async (categoryId, jwalanshilstat) => {
+  const fetchTradeTypes = async (categoryId, categoryType, jwalanshilstat) => {
     try {
-      if (!categoryId || !jwalanshilstat) {
+      if (!categoryId || !categoryType) {
         setTradeType([]);
         return [];
       }
 
+      const payload = { categoryId: Number(categoryId), categoryType: String(categoryType) };
+
+      //Jalanshil only for service 302 and 310
+      if (Number(serviceid) === 302 || Number(serviceid) === 310) {
+        if (jwalanshilstat) { payload.jwalanshilstat = String(jwalanshilstat) }
+      }
+
+      console.log("Trade Types Payload:", payload);
+
       const response = await axios.post(`${BASE_URL}/api/FrmMarketLicenseupdt/trade-types-by-category`,
-        { categoryId: Number(categoryId), jwalanshilstat },
+        payload,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
       const data = response.data?.data?.rows || response.data?.data || [];
-
       setTradeType(Array.isArray(data) ? data : []);
-
       return data;
     } catch (error) {
       console.error("Trade Types fetch error:", error);
@@ -471,17 +476,17 @@ const FrmMarketLicenseUpdt = () => {
     }
   };
 
-  const handleTradeCategoryChange = async (categoryId, jwalanshilstat, setFieldValue) => {
+  const handleTradeCategoryChange = async ( categoryId, categoryType, jwalanshilstat, setFieldValue ) => {
     setFieldValue("tradeCategory", categoryId);
     setFieldValue("tradeType", "");
     setFieldValue("rate", "0");
     setTradeType([]);
 
-    if (!categoryId || !jwalanshilstat) {
+    if (!categoryId || !categoryType) {
       return;
     }
 
-    await fetchTradeTypes(categoryId, jwalanshilstat);
+    await fetchTradeTypes( categoryId, categoryType, jwalanshilstat);
   };
 
   const handleFileUploadChange = (id, event) => {
@@ -537,22 +542,11 @@ const FrmMarketLicenseUpdt = () => {
       return;
     }
 
-    const category = tradeCategory.find(
-      (item) =>
-        String(item.CATEGORY_CATGRYID || item.categoryId || item.id) ===
-        String(values.tradeCategory)
-    );
+    const category = tradeCategory.find((item) =>String(item.CATEGORY_CATGRYID || item.categoryId || item.id) === String(values.tradeCategory));
 
-    const type = tradeType.find(
-      (item) =>
-        String(item.CATEGORYTYPE_CATGTYPID || item.tradeTypeId || item.id) ===
-        String(values.tradeType)
-    );
+    const type = tradeType.find((item) => String(item.CATEGORYTYPE_CATGTYPID || item.tradeTypeId || item.id) === String(values.tradeType));
 
-    const exists = tradeTypeGrid.some(
-      (item) =>
-        String(item.tradetypeid) === String(values.tradeType)
-    );
+    const exists = tradeTypeGrid.some((item) =>String(item.tradetypeid) === String(values.tradeType));
 
     if (exists) {
       Swal.fire({
@@ -565,31 +559,15 @@ const FrmMarketLicenseUpdt = () => {
     const newEntry = {
       tradetypeid: values.tradeType,
       tradecategory_id: values.tradeCategory,
-      tradecategory:
-        category?.TRADECATEGORY_NAME ||
-        category?.name ||
-        "",
-      tradetype:
-        type?.TRADETYPE_NAME ||
-        type?.CATEGORYTYPE_NAME ||
-        type?.name ||
-        "",
+      tradecategory: category?.TRADECATEGORY_NAME || category?.name || "",
+      tradetype: type?.TRADETYPE_NAME || type?.CATEGORYTYPE_NAME || type?.name || "",
       rate: values.rate || "0",
     };
 
     const updated = [...tradeTypeGrid, newEntry];
-
     setTradeTypeGrid(updated);
-
-    setFieldValue(
-      "rate",
-      "0"
-    );
-
-    setFieldValue(
-      "tradeType",
-      ""
-    );
+    setFieldValue( "rate", "0");
+    setFieldValue( "tradeType", "");
   };
 
   const handleRemoveFromGrid = (gridSetter, index) => {
@@ -939,21 +917,21 @@ const FrmMarketLicenseUpdt = () => {
         }
 
         const imageResults = await Promise.allSettled(imageRows.map((row, index) => {
-            const directorId = row.directorId || row.DIRECTOR_ID || directorIds[index]?.DIRECTOR_ID || directorIds[index]?.directorId;
-            if (!directorId) {
-              return Promise.reject(new Error(`Director ID not found for ${row.dirctorname || "director"}.`));
-            }
-            const formData = new FormData();
-            formData.append("directorId", String(directorId));
-            formData.append("applicationId", String(applicationId));
-            formData.append("document", row.image);
-            return axios.post(`${BASE_URL}/api/FrmMarketLicenseupdt/trade-director-image`,
-              formData,
-              { headers: {Authorization: `Bearer ${token}`} }
-            );
-          })
+          const directorId = row.directorId || row.DIRECTOR_ID || directorIds[index]?.DIRECTOR_ID || directorIds[index]?.directorId;
+          if (!directorId) {
+            return Promise.reject(new Error(`Director ID not found for ${row.dirctorname || "director"}.`));
+          }
+          const formData = new FormData();
+          formData.append("directorId", String(directorId));
+          formData.append("applicationId", String(applicationId));
+          formData.append("document", row.image);
+          return axios.post(`${BASE_URL}/api/FrmMarketLicenseupdt/trade-director-image`,
+            formData,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        })
         );
-        const imageFailures = imageResults.map((result, index) => ({ result, name: imageRows[index]?.dirctorname || `Director ${index + 1}`})).filter(({ result }) => result.status === "rejected");
+        const imageFailures = imageResults.map((result, index) => ({ result, name: imageRows[index]?.dirctorname || `Director ${index + 1}` })).filter(({ result }) => result.status === "rejected");
         if (imageFailures.length) {
           throw new Error(
             imageFailures.map(({ name, result }) => `${name}: ${result.reason?.response?.data?.message || result.reason?.message || "Director image upload failed."}`).join("\n"));
@@ -998,7 +976,7 @@ const FrmMarketLicenseUpdt = () => {
     "Business CategoryId",
     "Business Category",
     "Business Type",
-    "Rate",
+    // "Rate",
   ];
 
   const tradeTypeKeyMapping = {
@@ -1007,7 +985,7 @@ const FrmMarketLicenseUpdt = () => {
     "Business CategoryId": "tradecategory_id",
     "Business Category": "tradecategory",
     "Business Type": "tradetype",
-    Rate: "rate",
+    // Rate: "rate",
   };
 
   const directorHeaders = [
@@ -1860,9 +1838,9 @@ const FrmMarketLicenseUpdt = () => {
                         <Select
                           value={values.tradeCategory || ""}
                           onValueChange={(value) =>
-                            handleTradeCategoryChange(value, values.buisiJwalan, setFieldValue)
+                            handleTradeCategoryChange(value, values.licenseType, values.buisiJwalan, setFieldValue)
                           }
-                          disabled={!values.buisiJwalan || !values.licenseType || !tradeCategory?.length}
+                          disabled={!values.buisiJwalan || !values.licenseType }
                         >
                           <SelectTrigger className="h-9 w-full sm:h-10">
                             <SelectValue
@@ -1900,6 +1878,7 @@ const FrmMarketLicenseUpdt = () => {
 
                             setFieldValue("rate", selected?.RATE || selected?.rate || "0");
                           }}
+                          disabled={ !values.tradeCategory || !values.licenseType}
                         >
                           <SelectTrigger className="h-9 w-full sm:h-10">
                             <SelectValue placeholder="-- Select --" />
