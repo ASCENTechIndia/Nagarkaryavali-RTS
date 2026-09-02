@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { waterApplicationValidationSchema } from "@/validations/global.validation";
 
 import {
   Select,
@@ -21,7 +22,7 @@ import ShadCNTable from "@/components/ui/table";
 import { useAuth } from "@/context/AuthContext";
 import { useLocation } from "react-router-dom";
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL;
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 function FrmWaterAppliEntry() {
   const { user, token } = useAuth();
@@ -41,8 +42,7 @@ function FrmWaterAppliEntry() {
   const serviceId =
     location?.state?.serviceId ||
     location?.state?.serviceid ||
-    location?.state?.service?.serviceId ||
-    "141";
+    location?.state?.service?.serviceId ;
 
   const corpId =
     user?.corpId ||
@@ -53,11 +53,7 @@ function FrmWaterAppliEntry() {
     "10001";
 
   const ulbId =
-    user?.ulbId ||
-    user?.ulbid ||
-    user?.ULBID ||
-    location?.state?.ulbId ||
-    "3";
+    user?.ulbId || user?.ulbid || user?.ULBID || location?.state?.ulbId || "3";
 
   const axiosConfig = useMemo(
     () => ({
@@ -231,9 +227,7 @@ function FrmWaterAppliEntry() {
 
       const paymentRows = getRows(results[7]);
 
-      setPaymentFlag(
-        paymentRows?.[0]?.VAR_SERVICE_PAYFLAG || "N",
-      );
+      setPaymentFlag(paymentRows?.[0]?.VAR_SERVICE_PAYFLAG || "N");
     } catch (error) {
       await Swal.fire({
         icon: "error",
@@ -268,9 +262,7 @@ function FrmWaterAppliEntry() {
         axiosConfig,
       );
 
-      setUsageSubTypes(
-        response?.data?.data?.rows || [],
-      );
+      setUsageSubTypes(response?.data?.data?.rows || []);
     } catch (error) {
       setUsageSubTypes([]);
 
@@ -284,64 +276,31 @@ function FrmWaterAppliEntry() {
     }
   };
 
-  const handleCopyApplicantToConsumer = (
-    values,
-    setFieldValue,
-  ) => {
-    setFieldValue(
-      "consumerFirstName",
-      values.applicantFirstName,
-    );
+  const handleCopyApplicantToConsumer = (values, setFieldValue) => {
+    setFieldValue("consumerFirstName", values.applicantFirstName);
 
-    setFieldValue(
-      "consumerMiddleName",
-      values.applicantMiddleName,
-    );
+    setFieldValue("consumerMiddleName", values.applicantMiddleName);
 
-    setFieldValue(
-      "consumerLastName",
-      values.applicantLastName,
-    );
+    setFieldValue("consumerLastName", values.applicantLastName);
 
-    setFieldValue(
-      "consumerFirstNameMarathi",
-      values.applicantFirstNameMarathi,
-    );
+    setFieldValue("consumerFirstNameMarathi", values.applicantFirstNameMarathi);
 
     setFieldValue(
       "consumerMiddleNameMarathi",
       values.applicantMiddleNameMarathi,
     );
 
-    setFieldValue(
-      "consumerLastNameMarathi",
-      values.applicantLastNameMarathi,
-    );
+    setFieldValue("consumerLastNameMarathi", values.applicantLastNameMarathi);
 
-    setFieldValue(
-      "consumerMobileNumber",
-      values.mobileNumber,
-    );
+    setFieldValue("consumerMobileNumber", values.mobileNumber);
 
-    setFieldValue(
-      "consumerEmail",
-      values.email,
-    );
+    setFieldValue("consumerEmail", values.email);
 
-    setFieldValue(
-      "consumerAadharCardNo",
-      values.aadharCardNo,
-    );
+    setFieldValue("consumerAadharCardNo", values.aadharCardNo);
 
-    setFieldValue(
-      "consumerPropertyNumber",
-      values.propertyNumber,
-    );
+    setFieldValue("consumerPropertyNumber", values.propertyNumber);
 
-    setFieldValue(
-      "consumerResidentialNumber",
-      values.residentialNumber,
-    );
+    setFieldValue("consumerResidentialNumber", values.residentialNumber);
 
     Swal.fire({
       icon: "success",
@@ -352,10 +311,7 @@ function FrmWaterAppliEntry() {
     });
   };
 
-  const handleFileChange = (
-    documentId,
-    file,
-  ) => {
+  const handleFileChange = (documentId, file) => {
     if (!file) return;
 
     const allowedTypes = [
@@ -389,10 +345,7 @@ function FrmWaterAppliEntry() {
     }));
   };
 
-  const handleDocumentSelect = (
-    documentId,
-    checked,
-  ) => {
+  const handleDocumentSelect = (documentId, checked) => {
     if (!checked) {
       setSelectedFiles((previous) => {
         const updatedFiles = { ...previous };
@@ -404,11 +357,7 @@ function FrmWaterAppliEntry() {
     }
   };
 
-  const documentHeaders = [
-    "Select",
-    "Document Name",
-    "Upload Document",
-  ];
+  const documentHeaders = ["Select", "Document Name", "Upload Document"];
 
   const documentKeyMapping = {
     Select: "select",
@@ -417,8 +366,7 @@ function FrmWaterAppliEntry() {
   };
 
   const tableData = documents.map((document, index) => {
-    const documentId =
-      document.NUM_DOCUMENT_ID || document.id || index;
+    const documentId = document.NUM_DOCUMENT_ID || document.id || index;
 
     return {
       id: documentId,
@@ -428,28 +376,19 @@ function FrmWaterAppliEntry() {
           type="checkbox"
           checked={Boolean(selectedFiles[documentId])}
           onChange={(event) =>
-            handleDocumentSelect(
-              documentId,
-              event.target.checked,
-            )
+            handleDocumentSelect(documentId, event.target.checked)
           }
         />
       ),
 
-      documentName:
-        document.VAR_DOCUMENT_NAME ||
-        document.documentName ||
-        "",
+      documentName: document.VAR_DOCUMENT_NAME || document.documentName || "",
 
       upload: (
         <Input
           type="file"
           accept=".jpg,.jpeg,.png,.pdf"
           onChange={(event) =>
-            handleFileChange(
-              documentId,
-              event.target.files?.[0],
-            )
+            handleFileChange(documentId, event.target.files?.[0])
           }
         />
       ),
@@ -469,230 +408,309 @@ function FrmWaterAppliEntry() {
     return response?.data?.data;
   };
 
-  const handleSubmit = async (
-    values,
-    { resetForm },
-  ) => {
-    try {
-      const selectedDocumentIds = Object.keys(selectedFiles);
+  const fileToBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
 
-      if (!values.zoneId) {
-        await Swal.fire({
-          icon: "warning",
-          text: "Please select Zone.",
-        });
+      reader.onload = () => {
+        const result = reader.result || "";
 
-        return;
-      }
+        const base64String = String(result).includes(",")
+          ? String(result).split(",")[1]
+          : result;
 
-      if (!values.applicantFirstName?.trim()) {
-        await Swal.fire({
-          icon: "warning",
-          text: "Please enter Applicant First Name.",
-        });
-
-        return;
-      }
-
-      if (!values.mobileNumber?.trim()) {
-        await Swal.fire({
-          icon: "warning",
-          text: "Please enter Mobile Number.",
-        });
-
-        return;
-      }
-
-      if (!values.connectionType) {
-        await Swal.fire({
-          icon: "warning",
-          text: "Please select Connection Type.",
-        });
-
-        return;
-      }
-
-      if (!values.usageType) {
-        await Swal.fire({
-          icon: "warning",
-          text: "Please select Usage Type.",
-        });
-
-        return;
-      }
-
-      if (!values.usageSubType) {
-        await Swal.fire({
-          icon: "warning",
-          text: "Please select Usage Sub-Type.",
-        });
-
-        return;
-      }
-
-      if (selectedDocumentIds.length === 0) {
-        await Swal.fire({
-          icon: "warning",
-          text: "Please upload at least one document.",
-        });
-
-        return;
-      }
-
-      const payload = {
-        ulbId: Number(ulbId),
-        corpId: Number(corpId),
-        serviceId: Number(serviceId),
-
-        zoneId: Number(values.zoneId),
-
-        afName: values.applicantFirstName,
-        amName: values.applicantMiddleName,
-        alName: values.applicantLastName,
-
-        mobileNo: values.mobileNumber,
-        email: values.email,
-        aadharNo: values.aadharCardNo,
-
-        propNo: values.propertyNumber,
-        resNo: values.residentialNumber,
-
-        address: values.address,
-
-        afNameMr: values.applicantFirstNameMarathi,
-        amNameMr: values.applicantMiddleNameMarathi,
-        alNameMr: values.applicantLastNameMarathi,
-
-        addressMr: values.addressMarathi,
-
-        conFName: values.consumerFirstName,
-        conMName: values.consumerMiddleName,
-        conLName: values.consumerLastName,
-
-        conFNameMr: values.consumerFirstNameMarathi,
-        conMNameMr: values.consumerMiddleNameMarathi,
-        conLNameMr: values.consumerLastNameMarathi,
-
-        conMobNo: values.consumerMobileNumber,
-        conEmail: values.consumerEmail,
-        conAadharNo: values.consumerAadharCardNo,
-
-        conPropNo: values.consumerPropertyNumber,
-        conResNo: values.consumerResidentialNumber,
-
-        cooFlag:
-          values.includeCoOwner === "Yes"
-            ? "Y"
-            : "N",
-
-        cooFName1:
-          values.includeCoOwner === "Yes"
-            ? values.coOwnerFirstName
-            : "",
-
-        cooMName1:
-          values.includeCoOwner === "Yes"
-            ? values.coOwnerMiddleName
-            : "",
-
-        cooLName1:
-          values.includeCoOwner === "Yes"
-            ? values.coOwnerLastName
-            : "",
-
-        cooFName2:
-          values.includeCoOwner === "Yes"
-            ? values.coOwnerFirstNameMarathi
-            : "",
-
-        cooMName2:
-          values.includeCoOwner === "Yes"
-            ? values.coOwnerMiddleNameMarathi
-            : "",
-
-        cooLName2:
-          values.includeCoOwner === "Yes"
-            ? values.coOwnerLastNameMarathi
-            : "",
-
-        connType: Number(values.connectionType),
-        connSize: Number(values.connectionSize),
-
-        usageType: Number(values.usageType),
-        usageSubType: Number(values.usageSubType),
-
-        noOfPerson: Number(values.noOfPerson || 0),
-        noOfFamily: Number(values.noOfFamily || 0),
-        noOfConn: Number(values.noOfConnection || 0),
-
-        connStatus: Number(values.connectionStatus),
-        busiCert: Number(values.businessCertificate),
-
-        billingType: values.billingType,
-
-        govPropFlag:
-          values.isGovtProperty === "Yes"
-            ? "Y"
-            : "N",
-
-        remark: values.remark,
-        reason: values.reason,
-
-        userId:
-          user?.userId ||
-          user?.userid ||
-          user?.id ||
-          null,
+        resolve(base64String);
       };
 
-      console.log("Water Application Payload:", payload);
+      reader.onerror = reject;
 
-      /*
-        ============================================================
-        SAVE API
+      reader.readAsDataURL(file);
+    });
 
-        The save API endpoint/request format was not included
-        in the APIs provided.
+const handleSubmit = async (values, { resetForm }) => {
+  try {
+    const validationResult =
+      waterApplicationValidationSchema.safeParse(values);
 
-        Add your final save endpoint here:
+    if (!validationResult.success) {
+      const firstError =
+        validationResult.error.issues?.[0];
 
-        const response = await axios.post(
-          `${baseUrl}/api/FrmWaterAppliEntry/save`,
-          payload,
-          axiosConfig
+      await Swal.fire({
+        icon: "warning",
+        text:
+          firstError?.message ||
+          "Please fill all required fields correctly.",
+      });
+
+      return;
+    }
+
+    const selectedDocumentIds = Object.keys(selectedFiles);
+
+    if (selectedDocumentIds.length === 0) {
+      await Swal.fire({
+        icon: "warning",
+        text: "Please upload at least one document.",
+      });
+
+      return;
+    }
+
+    Swal.fire({
+      title: "Submitting...",
+      text: "Please wait while your application is being submitted.",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+    const documentsPayload = await Promise.all(
+      selectedDocumentIds.map(async (documentId) => {
+        const file = selectedFiles[documentId];
+
+        const document = documents.find(
+          (item) =>
+            String(
+              item.NUM_DOCUMENT_ID || item.id,
+            ) === String(documentId),
         );
 
-        const applicationNo =
-          response?.data?.data?.applicationNo;
+        const fileExtension =
+          file?.name?.split(".").pop()?.toUpperCase() || "";
 
-        ============================================================
-      */
+        const fileBuffer = await fileToBase64(file);
 
-      await Swal.fire({
-        icon: "info",
-        title: "API Ready",
-        text: "Master APIs and form bindings have been implemented. Add the final save API endpoint to submit the application.",
-      });
-    } catch (error) {
-      await Swal.fire({
-        icon: "error",
-        text:
-          error?.response?.data?.message ||
-          error?.message ||
+        return {
+          docId: String(documentId),
+
+          docName:
+            document?.VAR_DOCUMENT_NAME ||
+            document?.documentName ||
+            file?.name ||
+            "",
+
+          fileExtension,
+
+          checked: true,
+
+          fileBuffer,
+        };
+      }),
+    );
+
+    const payload = {
+      ulbId: String(ulbId),
+
+      corpId: String(corpId),
+
+      userId: String(
+        user?.userId ||
+          user?.userid ||
+          user?.USERID ||
+          user?.id ||
+          "",
+      ),
+
+      serviceId: String(serviceId),
+
+      zoneId: String(values.zoneId),
+
+      appSource: "WEB",
+
+      afName: values.applicantFirstName || "",
+      amName: values.applicantMiddleName || "",
+      alName: values.applicantLastName || "",
+
+      mobileNo: values.mobileNumber || "",
+      email: values.email || "",
+      aadharNo: values.aadharCardNo || "",
+
+      propNo: values.propertyNumber || "",
+      resNo: values.residentialNumber || "",
+
+      address: values.address || "",
+
+      afNameMr:
+        values.applicantFirstNameMarathi || "",
+
+      amNameMr:
+        values.applicantMiddleNameMarathi || "",
+
+      alNameMr:
+        values.applicantLastNameMarathi || "",
+
+      addressMr: values.addressMarathi || "",
+
+      conFName: values.consumerFirstName || "",
+      conMName: values.consumerMiddleName || "",
+      conLName: values.consumerLastName || "",
+
+      conMobNo:
+        values.consumerMobileNumber || "",
+
+      conEmail:
+        values.consumerEmail || "",
+
+      conAadharNo:
+        values.consumerAadharCardNo || "",
+
+      conPropNo:
+        values.consumerPropertyNumber || "",
+
+      conResNo:
+        values.consumerResidentialNumber || "",
+
+      conFNameMr:
+        values.consumerFirstNameMarathi || "",
+
+      conMNameMr:
+        values.consumerMiddleNameMarathi || "",
+
+      conLNameMr:
+        values.consumerLastNameMarathi || "",
+
+      cooFlag:
+        values.includeCoOwner === "Yes"
+          ? "Y"
+          : "N",
+
+      cooFName1:
+        values.includeCoOwner === "Yes"
+          ? values.coOwnerFirstName || ""
+          : "",
+
+      cooMName1:
+        values.includeCoOwner === "Yes"
+          ? values.coOwnerMiddleName || ""
+          : "",
+
+      cooLName1:
+        values.includeCoOwner === "Yes"
+          ? values.coOwnerLastName || ""
+          : "",
+
+      cooFName2:
+        values.includeCoOwner === "Yes"
+          ? values.coOwnerFirstNameMarathi || ""
+          : "",
+
+      cooMName2:
+        values.includeCoOwner === "Yes"
+          ? values.coOwnerMiddleNameMarathi || ""
+          : "",
+
+      cooLName2:
+        values.includeCoOwner === "Yes"
+          ? values.coOwnerLastNameMarathi || ""
+          : "",
+
+      cooAddress:
+        values.includeCoOwner === "Yes"
+          ? values.coOwnerAddress || ""
+          : "",
+
+      cooAddressMr:
+        values.includeCoOwner === "Yes"
+          ? values.coOwnerAddressMarathi || ""
+          : "",
+
+      connType: String(values.connectionType),
+
+      connSize: String(values.connectionSize),
+
+      usageType: String(values.usageType),
+
+      usageSubType: String(values.usageSubType),
+
+      noOfPerson: String(values.noOfPerson),
+
+      noOfFamily: String(values.noOfFamily),
+
+      noOfConn: String(values.noOfConnection),
+
+      connStatus: String(values.connectionStatus),
+
+      busiCert: String(values.businessCertificate),
+
+      billingType: values.billingType,
+
+      govPropFlag:
+        values.isGovtProperty === "Yes"
+          ? "Y"
+          : "N",
+
+      remark: values.remark,
+
+      reason: values.reason,
+
+      documents: documentsPayload,
+    };
+
+    console.log(
+      "Water Application Submit Payload:",
+      payload,
+    );
+
+    const response = await axios.post(
+      `${baseUrl}/api/FrmWaterAppliEntry/submit`,
+      payload,
+      axiosConfig,
+    );
+
+    Swal.close();
+
+    const responseData = response?.data;
+
+    if (!responseData?.ok) {
+      throw new Error(
+        responseData?.message ||
           "Unable to submit water application.",
-      });
+      );
     }
-  };
+
+    const submitData =
+      responseData?.data || {};
+
+    if (!submitData?.success) {
+      throw new Error(
+        submitData?.message ||
+          "Unable to submit water application.",
+      );
+    }
+
+    await Swal.fire({
+      icon: "success",
+      title: "Success",
+      text:
+        submitData?.message ||
+        responseData?.message ||
+        "Application submitted successfully.",
+    });
+
+    resetForm();
+
+    setSelectedFiles({});
+
+    setUsageSubTypes([]);
+  } catch (error) {
+    Swal.close();
+
+    await Swal.fire({
+      icon: "error",
+      text:
+        error?.response?.data?.data?.message ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Unable to submit water application.",
+    });
+  }
+};
 
   return (
     <div className="w-full p-4">
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        {({
-          values,
-          handleChange,
-          setFieldValue,
-          resetForm,
-        }) => (
+        {({ values, handleChange, setFieldValue, resetForm }) => (
           <Form className="space-y-4">
             <Card>
               <CardHeader className="border-b py-3">
@@ -717,7 +735,7 @@ function FrmWaterAppliEntry() {
                           setFieldValue("zoneId", value)
                         }
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select Zone" />
                         </SelectTrigger>
 
@@ -924,10 +942,7 @@ function FrmWaterAppliEntry() {
               <Button
                 type="button"
                 onClick={() =>
-                  handleCopyApplicantToConsumer(
-                    values,
-                    setFieldValue,
-                  )
+                  handleCopyApplicantToConsumer(values, setFieldValue)
                 }
               >
                 Add
@@ -1114,9 +1129,7 @@ function FrmWaterAppliEntry() {
                           type="radio"
                           name="includeCoOwner"
                           value="Yes"
-                          checked={
-                            values.includeCoOwner === "Yes"
-                          }
+                          checked={values.includeCoOwner === "Yes"}
                           onChange={handleChange}
                           className="h-4 w-4 cursor-pointer"
                         />
@@ -1128,9 +1141,7 @@ function FrmWaterAppliEntry() {
                           type="radio"
                           name="includeCoOwner"
                           value="No"
-                          checked={
-                            values.includeCoOwner === "No"
-                          }
+                          checked={values.includeCoOwner === "No"}
                           onChange={handleChange}
                           className="h-4 w-4 cursor-pointer"
                         />
@@ -1139,106 +1150,102 @@ function FrmWaterAppliEntry() {
                     </div>
                   </div>
 
-                  {values.includeCoOwner === "Yes" && (
-                    <>
-                      <div className="grid grid-cols-1 items-center gap-x-6 gap-y-4 lg:grid-cols-2">
-                        <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
-                          <Label
-                            text="Co-Owner Name"
-                            className="text-black !w-full whitespace-nowrap"
-                          />
+                  {/* Co-Owner Name */}
+                  <div className="grid grid-cols-1 items-center gap-x-6 gap-y-4 lg:grid-cols-[250px_1fr]">
+                    <Label
+                      text="Co-Owner Name"
+                      className="text-black !w-full whitespace-nowrap"
+                    />
 
-                          <Input
-                            name="coOwnerFirstName"
-                            placeholder="First Name"
-                            value={values.coOwnerFirstName}
-                            onChange={handleChange}
-                          />
-                        </div>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                      <Input
+                        name="coOwnerFirstName"
+                        placeholder="First Name"
+                        value={values.coOwnerFirstName}
+                        onChange={handleChange}
+                      />
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <Input
-                            name="coOwnerMiddleName"
-                            placeholder="Middle Name"
-                            value={values.coOwnerMiddleName}
-                            onChange={handleChange}
-                          />
+                      <Input
+                        name="coOwnerMiddleName"
+                        placeholder="Middle Name"
+                        value={values.coOwnerMiddleName}
+                        onChange={handleChange}
+                      />
 
-                          <Input
-                            name="coOwnerLastName"
-                            placeholder="Last Name"
-                            value={values.coOwnerLastName}
-                            onChange={handleChange}
-                          />
-                        </div>
-                      </div>
+                      <Input
+                        name="coOwnerLastName"
+                        placeholder="Last Name"
+                        value={values.coOwnerLastName}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
 
-                      <div className="grid grid-cols-1 items-center gap-x-6 gap-y-4 lg:grid-cols-2">
-                        <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
-                          <Label
-                            text="Co-Owner Name Marathi"
-                            className="text-black !w-full whitespace-nowrap"
-                          />
+                  {/* Co-Owner Name Marathi */}
+                  <div className="grid grid-cols-1 items-center gap-x-6 gap-y-4 lg:grid-cols-[250px_1fr]">
+                    <Label
+                      text="Co-Owner Name Marathi"
+                      className="text-black !w-full whitespace-nowrap"
+                    />
 
-                          <Input
-                            name="coOwnerFirstNameMarathi"
-                            placeholder="पहिले नाव"
-                            value={values.coOwnerFirstNameMarathi}
-                            onChange={handleChange}
-                          />
-                        </div>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                      <Input
+                        name="coOwnerFirstNameMarathi"
+                        placeholder="पहिले नाव"
+                        value={values.coOwnerFirstNameMarathi}
+                        onChange={handleChange}
+                      />
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <Input
-                            name="coOwnerMiddleNameMarathi"
-                            placeholder="मधले नाव"
-                            value={values.coOwnerMiddleNameMarathi}
-                            onChange={handleChange}
-                          />
+                      <Input
+                        name="coOwnerMiddleNameMarathi"
+                        placeholder="मधले नाव"
+                        value={values.coOwnerMiddleNameMarathi}
+                        onChange={handleChange}
+                      />
 
-                          <Input
-                            name="coOwnerLastNameMarathi"
-                            placeholder="आडनाव"
-                            value={values.coOwnerLastNameMarathi}
-                            onChange={handleChange}
-                          />
-                        </div>
-                      </div>
+                      <Input
+                        name="coOwnerLastNameMarathi"
+                        placeholder="आडनाव"
+                        value={values.coOwnerLastNameMarathi}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
 
-                      <div className="grid grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-2">
-                        <div className="grid grid-cols-[250px_minmax(0,1fr)] items-start gap-4">
-                          <Label
-                            text="Co-Owner Address"
-                            className="text-black !w-full pt-2 whitespace-nowrap"
-                          />
+                  {/* Address */}
+                  <div className="grid grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-2">
+                    <div className="grid grid-cols-[250px_minmax(0,1fr)] items-start gap-4">
+                      <Label
+                        text="Address"
+                        className="text-black !w-full pt-2 whitespace-nowrap"
+                      />
 
-                          <textarea
-                            name="coOwnerAddress"
-                            placeholder="Enter Co-Owner Address"
-                            value={values.coOwnerAddress}
-                            onChange={handleChange}
-                            className="min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-                          />
-                        </div>
+                      <textarea
+                        name="coOwnerAddress"
+                        placeholder="Enter Address"
+                        value={values.coOwnerAddress}
+                        onChange={handleChange}
+                        className="min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                      />
+                    </div>
 
-                        <div className="grid grid-cols-[250px_minmax(0,1fr)] items-start gap-4">
-                          <Label
-                            text="Co-Owner Address Marathi"
-                            className="text-black !w-full pt-2 whitespace-nowrap"
-                          />
+                    <div className="grid grid-cols-[250px_minmax(0,1fr)] items-start gap-4">
+                      <Label
+                        text="Address Marathi"
+                        className="text-black !w-full pt-2 whitespace-nowrap"
+                      />
 
-                          <textarea
-                            name="coOwnerAddressMarathi"
-                            placeholder="सह-मालकाचा पत्ता"
-                            value={values.coOwnerAddressMarathi}
-                            onChange={handleChange}
-                            className="min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-                          />
-                        </div>
-                      </div>
-                    </>
-                  )}
+                      <textarea
+                        name="coOwnerAddressMarathi"
+                        placeholder="पत्ता मराठी"
+                        value={values.coOwnerAddressMarathi}
+                        onChange={handleChange}
+                        className="min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                      />
+                    </div>
+                  </div>
 
+                  {/* Remark and Reason */}
                   <div className="grid grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-2">
                     <div className="grid grid-cols-[250px_minmax(0,1fr)] items-center gap-4">
                       <Label
@@ -1290,10 +1297,7 @@ function FrmWaterAppliEntry() {
                     <Select
                       value={values.connectionType}
                       onValueChange={(value) =>
-                        setFieldValue(
-                          "connectionType",
-                          value,
-                        )
+                        setFieldValue("connectionType", value)
                       }
                     >
                       <SelectTrigger className="w-full">
@@ -1304,9 +1308,7 @@ function FrmWaterAppliEntry() {
                         {connectionTypes.map((item) => (
                           <SelectItem
                             key={item.NUM_CONNTYPE_ID}
-                            value={String(
-                              item.NUM_CONNTYPE_ID,
-                            )}
+                            value={String(item.NUM_CONNTYPE_ID)}
                           >
                             {item.VAR_CONNTYPE_NAME}
                           </SelectItem>
@@ -1324,10 +1326,7 @@ function FrmWaterAppliEntry() {
                     <Select
                       value={values.connectionSize}
                       onValueChange={(value) =>
-                        setFieldValue(
-                          "connectionSize",
-                          value,
-                        )
+                        setFieldValue("connectionSize", value)
                       }
                     >
                       <SelectTrigger className="w-full">
@@ -1338,9 +1337,7 @@ function FrmWaterAppliEntry() {
                         {connectionSizes.map((item) => (
                           <SelectItem
                             key={item.NUM_CONNSIZE_ID}
-                            value={String(
-                              item.NUM_CONNSIZE_ID,
-                            )}
+                            value={String(item.NUM_CONNSIZE_ID)}
                           >
                             {item.NUM_CONNSIZE_SIZE}
                           </SelectItem>
@@ -1350,10 +1347,7 @@ function FrmWaterAppliEntry() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label
-                      text="Usage Type"
-                      className="text-black !w-full"
-                    />
+                    <Label text="Usage Type" className="text-black !w-full" />
 
                     <Select
                       value={values.usageType}
@@ -1372,9 +1366,7 @@ function FrmWaterAppliEntry() {
                         {usageTypes.map((item) => (
                           <SelectItem
                             key={item.NUM_USAGETYPE_ID}
-                            value={String(
-                              item.NUM_USAGETYPE_ID,
-                            )}
+                            value={String(item.NUM_USAGETYPE_ID)}
                           >
                             {item.VAR_USAGETYPE_NAME}
                           </SelectItem>
@@ -1392,10 +1384,7 @@ function FrmWaterAppliEntry() {
                     <Select
                       value={values.usageSubType}
                       onValueChange={(value) =>
-                        setFieldValue(
-                          "usageSubType",
-                          value,
-                        )
+                        setFieldValue("usageSubType", value)
                       }
                       disabled={!values.usageType}
                     >
@@ -1407,9 +1396,7 @@ function FrmWaterAppliEntry() {
                         {usageSubTypes.map((item) => (
                           <SelectItem
                             key={item.NUM_USAGESUBTYPE_ID}
-                            value={String(
-                              item.NUM_USAGESUBTYPE_ID,
-                            )}
+                            value={String(item.NUM_USAGESUBTYPE_ID)}
                           >
                             {item.VAR_USAGESUBTYPE_NAME}
                           </SelectItem>
@@ -1469,10 +1456,7 @@ function FrmWaterAppliEntry() {
                     <Select
                       value={values.connectionStatus}
                       onValueChange={(value) =>
-                        setFieldValue(
-                          "connectionStatus",
-                          value,
-                        )
+                        setFieldValue("connectionStatus", value)
                       }
                     >
                       <SelectTrigger className="w-full">
@@ -1483,9 +1467,7 @@ function FrmWaterAppliEntry() {
                         {connectionStatuses.map((item) => (
                           <SelectItem
                             key={item.NUM_CONNSTATUS_ID}
-                            value={String(
-                              item.NUM_CONNSTATUS_ID,
-                            )}
+                            value={String(item.NUM_CONNSTATUS_ID)}
                           >
                             {item.VAR_CONNSTATUS_NAME}
                           </SelectItem>
@@ -1503,10 +1485,7 @@ function FrmWaterAppliEntry() {
                     <Select
                       value={values.businessCertificate}
                       onValueChange={(value) =>
-                        setFieldValue(
-                          "businessCertificate",
-                          value,
-                        )
+                        setFieldValue("businessCertificate", value)
                       }
                     >
                       <SelectTrigger className="w-full">
@@ -1517,9 +1496,7 @@ function FrmWaterAppliEntry() {
                         {businessCertificates.map((item) => (
                           <SelectItem
                             key={item.NUM_BUSINESSCERTI_ID}
-                            value={String(
-                              item.NUM_BUSINESSCERTI_ID,
-                            )}
+                            value={String(item.NUM_BUSINESSCERTI_ID)}
                           >
                             {item.VAR_BUSINESSCERTI_NAME}
                           </SelectItem>
@@ -1529,10 +1506,7 @@ function FrmWaterAppliEntry() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label
-                      text="Billing Type"
-                      className="text-black !w-full"
-                    />
+                    <Label text="Billing Type" className="text-black !w-full" />
 
                     <Input
                       name="billingType"
@@ -1553,9 +1527,7 @@ function FrmWaterAppliEntry() {
                           type="radio"
                           name="isGovtProperty"
                           value="Yes"
-                          checked={
-                            values.isGovtProperty === "Yes"
-                          }
+                          checked={values.isGovtProperty === "Yes"}
                           onChange={handleChange}
                         />
                         Yes
@@ -1566,9 +1538,7 @@ function FrmWaterAppliEntry() {
                           type="radio"
                           name="isGovtProperty"
                           value="No"
-                          checked={
-                            values.isGovtProperty === "No"
-                          }
+                          checked={values.isGovtProperty === "No"}
                           onChange={handleChange}
                         />
                         No
@@ -1590,10 +1560,7 @@ function FrmWaterAppliEntry() {
             </Card>
 
             <div className="flex justify-center gap-4 py-4">
-              <Button
-                type="submit"
-                className="min-w-[140px]"
-              >
+              <Button type="submit" className="min-w-[140px]">
                 Submit
               </Button>
 
