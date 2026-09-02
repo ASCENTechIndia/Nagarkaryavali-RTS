@@ -32,6 +32,7 @@ import FrmAppoints from "./Pages/Marriage/FrmAppoints";
 import FrmRoadCutting from "./Pages/PWD/FrmRoadCutting";
 import Step0 from "./Pages/TownPlanning/Step0";
 import FrmWaterAppliEntry from "./Pages/WaterModule/FrmWaterAppliEntry";
+import FrmWaterAppliDetails from "./Pages/WaterModule/FrmWaterAppliDetails";
 
 const router = createBrowserRouter([
   {
@@ -170,7 +171,11 @@ const router = createBrowserRouter([
       {
         path:"/app/FrmWaterAppliEntry",
         element:<FrmWaterAppliEntry />
-      }
+      },
+      {
+        path: "/app/FrmWaterAppliDetails",
+        element: <FrmWaterAppliDetails />
+      },
 
     ]
   },
