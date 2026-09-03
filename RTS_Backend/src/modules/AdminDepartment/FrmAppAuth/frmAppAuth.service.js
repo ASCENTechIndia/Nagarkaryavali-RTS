@@ -120,6 +120,98 @@ const getApplicationDetailsService = async ({ serviceId, appNo }) => {
 };
 
 
+const applicationAuthService = async ({
+  userId,
+  applicationNo,
+  status,
+  reasonForReject,
+  amount,
+  mode,
+  clerkId,
+  tinyUrl,
+}) => {
+  if (!userId) {
+    throw new Error("User ID is required.");
+  }
+
+  if (!applicationNo) {
+    throw new Error("Application number is required.");
+  }
+
+  if (!status) {
+    throw new Error("Status is required.");
+  }
+
+  if (!mode) {
+    throw new Error("Mode is required.");
+  }
+
+  return await repo.applicationAuthRepo({
+    userId,
+    applicationNo,
+    status,
+    reasonForReject,
+    amount,
+    mode,
+    clerkId,
+    tinyUrl,
+  });
+};
+const saveApplicationVerificationDocumentService = async ({
+  ulbid,
+  applino,
+  userid,
+  docname,
+  docbyte,
+}) => {
+  if (!ulbid) {
+    throw new Error("ULB ID is required.");
+  }
+
+  if (!applino) {
+    throw new Error("Application number is required.");
+  }
+
+  if (!userid) {
+    throw new Error("User ID is required.");
+  }
+
+  if (!docbyte) {
+    throw new Error("Document is required.");
+  }
+
+  return await repo.saveApplicationVerificationDocumentRepo({
+    ulbid,
+    applino,
+    userid,
+    docname: docname || "CertificateORG",
+    docbyte,
+  });
+};
+const getMenuDetailsService = async ({ serviceId, appNo, authMode }) => {
+  if (!serviceId) {
+    return {
+      success: false,
+      status: "FAILED",
+      message: "serviceId is required",
+    };
+  }
+
+  if (!appNo) {
+    return {
+      success: false,
+      status: "FAILED",
+      message: "appNo is required",
+    };
+  }
+
+  return await repo.getMenuDetailsRepo({
+    serviceId,
+    appNo,
+    authMode,
+  });
+};
+
 
 
 module.exports = {
@@ -128,5 +220,8 @@ module.exports = {
   getUserSectorListService,
   getApplicationAuthListService,
   getHodClerkListService,
-  getApplicationDetailsService
+  getApplicationDetailsService,
+  applicationAuthService,
+  saveApplicationVerificationDocumentService,
+  getMenuDetailsService
 };

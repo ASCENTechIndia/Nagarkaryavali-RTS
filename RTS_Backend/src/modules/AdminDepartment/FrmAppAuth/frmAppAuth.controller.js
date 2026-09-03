@@ -179,6 +179,160 @@ const getApplicationDetails = asyncHandler(async (req, res) => {
   });
 });
 
+const applicationAuth = asyncHandler(async (req, res) => {
+  console.log("================================================");
+  console.log("Request: Application Authorization");
+  console.log("Request Body:", req.body);
+  console.log("================================================");
+
+  const {
+    userId,
+    applicationNo,
+    status,
+    reasonForReject,
+    amount,
+    mode,
+    clerkId,
+    tinyUrl,
+  } = req.body;
+
+  if (!userId) {
+    throw new AppError("userId is required", 400);
+  }
+
+  if (!applicationNo) {
+    throw new AppError("applicationNo is required", 400);
+  }
+
+  if (!status) {
+    throw new AppError("status is required", 400);
+  }
+
+  if (!mode) {
+    throw new AppError("mode is required", 400);
+  }
+
+  const result = await service.applicationAuthService({
+    userId,
+    applicationNo,
+    status,
+    reasonForReject,
+    amount,
+    mode,
+    clerkId,
+    tinyUrl,
+  });
+
+  if (!result.success) {
+    throw new AppError(
+      result.errorMsg || "Application authorization failed.",
+      500
+    );
+  }
+
+  return ok(res, {
+    status: "SUCCESS",
+    message: result.errorMsg || "Application authorized successfully.",
+    errorCode: result.errorCode,
+    data: result,
+  });
+});
+
+const saveApplicationVerificationDocument = asyncHandler(
+  async (req, res) => {
+    console.log("================================================");
+    console.log("Request: Save Application Verification Document");
+    console.log("Request Body:", req.body);
+    console.log("Uploaded File:", req.file?.originalname);
+    console.log("================================================");
+
+    const {
+      ulbid,
+      applino,
+      userid,
+      docname,
+    } = req.body;
+
+    const file = req.file;
+
+  
+
+    if (!ulbid) {
+      throw new AppError("ulbid is required", 400);
+    }
+
+    if (!applino) {
+      throw new AppError("applino is required", 400);
+    }
+
+    if (!userid) {
+      throw new AppError("userid is required", 400);
+    }
+
+    if (!file) {
+      throw new AppError("Document file is required", 400);
+    }
+
+
+    const result =
+      await service.saveApplicationVerificationDocumentService({
+        ulbid,
+        applino,
+        userid,
+        docname: docname || "CertificateORG",
+        docbyte: file.buffer,
+      });
+
+    if (!result.success) {
+      throw new AppError(
+        result.error ||
+          "Failed to save application verification document.",
+        500
+      );
+    }
+
+    return ok(res, {
+      status: "SUCCESS",
+      message: result.message,
+      data: {
+        deletedRows: result.deletedRows,
+        insertedRows: result.insertedRows,
+      },
+    });
+  }
+);
+
+const getMenuDetails = asyncHandler(async (req, res) => {
+  const { serviceId, appNo, authMode } = req.body;
+
+  if (!serviceId) {
+    throw new AppError("serviceId is required", 400);
+  }
+
+  if (!appNo) {
+    throw new AppError("appNo is required", 400);
+  }
+
+  const result = await service.getMenuDetailsService({
+    serviceId,
+    appNo,
+    authMode,
+  });
+
+  if (!result || result.status === "FAILED") {
+    throw new AppError(result?.message || "Failed to fetch menu details", 500);
+  }
+
+  if (result.status === "NOT_FOUND") {
+    return res.status(404).json({
+      success: false,
+      message: "No record found",
+    });
+  }
+
+  return ok(res, result);
+});
+
 module.exports = {
   getUserPrabhagList,
   getUserDeptList,
@@ -186,4 +340,7 @@ module.exports = {
   getApplicationAuthList,
   getHodClerkList,
   getApplicationDetails,
+  applicationAuth,
+  saveApplicationVerificationDocument,
+  getMenuDetails
 };
