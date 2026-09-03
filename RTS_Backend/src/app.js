@@ -87,6 +87,8 @@ app.use("/api/FrmAfterTransactionTMC", require("./modules/Property/FrmAfterTrans
 app.use("/api/watermodule", require("./modules/WaterModule/WaterBillCopy/Stepnew.route"))
 app.use("/api/FrmWaterRegister", require("./modules/WaterModule/FrmWaterRegister/FrmWaterRegister.route"))
 app.use("/api/FrmPlumberLicense", require("./modules/WaterModule/FrmPlumberLicense/FrmPlumberLicense.route"))
+app.use("/api/FrmWaterAppliEntry", require("./modules/WaterModule/FrmWaterAppliEntry/FrmWaterAppliEntry.routes"));
+app.use("/api/FrmWaterAppliDetails", require("./modules/WaterModule/FrmWaterAppliDetails/FrmWaterAppliDetails.route"))
 
 //Trade
 app.use("/api/FrmMarketEntry", require("./modules/Trade/FrmMarketEntry/FrmMarketEntry.routes"));
@@ -110,6 +112,15 @@ app.use("/api/FrmAppoints", require("./modules/Marriage/FrmAppoints/FrmAppoints.
 
 // PWD
 app.use("/api/FrmRoadCutting", require("./modules/PWD/FrmRoadCutting.route"));
+
+
+
+//AdminDepartmet
+
+//AFrmAppAutherisation
+
+app.use("/api/frmAppAuth", require("./modules/AdminDepartment/FrmAppAuth/frmAppAuth.routes"));
+
 
 app.use(errorMiddleware);
 

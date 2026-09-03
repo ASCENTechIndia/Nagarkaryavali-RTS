@@ -25,7 +25,7 @@ import { propertySearchValidationSchema } from "@/validations/global.validation"
 
 const initialValues = {
   ptn: "",
-  subcode: "",
+  // subcode: "",
   landHolder: "",
   structureHolder: "",
   ownerDetails: "",
@@ -99,7 +99,7 @@ const FrmPropertyAppel = () => {
     }
   };
 
-   const fetchZones = async () => {
+  const fetchZones = async () => {
     try {
       const response = await axios.get(
         `${BASE_URL}/api/FrmWaterRegister/ward-dropdown`,
@@ -215,13 +215,13 @@ const FrmPropertyAppel = () => {
 
   const handleSearchProperty = async (
     ptn,
-    subcode,
+    // subcode,
     setFieldValue,
     resetForm,
   ) => {
     const validationResult = propertySearchValidationSchema.safeParse({
       ptn: ptn,
-      subcode: subcode,
+      // subcode: subcode,
     });
 
     if (!validationResult.success) {
@@ -241,9 +241,9 @@ const FrmPropertyAppel = () => {
       setPropertyFound(false);
 
       let fullPropNo = ptn;
-      if (subcode && subcode.trim() !== "") {
-        fullPropNo = ptn + "/" + subcode;
-      }
+      // if (subcode && subcode.trim() !== "") {
+      //   fullPropNo = ptn + "/" + subcode;
+      // }
 
       const result = await getPropertyDetails(fullPropNo, userId);
 
@@ -551,7 +551,7 @@ const FrmPropertyAppel = () => {
         zoneId: values.zone,
         serviceId: Number(serviceId),
         propNo: values.ptn,
-        subCode: values.subcode,
+        // subCode: values.subcode,
         landHolder: values.landHolder,
         structHolder: values.structureHolder,
         ownDetails: values.ownerDetails,
@@ -762,7 +762,7 @@ const FrmPropertyAppel = () => {
                     />
                   </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  {/* <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-24 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label text="Subcode" />
                       <span>:</span>
@@ -774,7 +774,7 @@ const FrmPropertyAppel = () => {
                       onChange={handleChange}
                       className="w-full h-9"
                     />
-                  </div>
+                  </div> */}
 
                   <div className="flex items-center">
                     <Button
@@ -783,7 +783,7 @@ const FrmPropertyAppel = () => {
                       onClick={() =>
                         handleSearchProperty(
                           values.ptn,
-                          values.subcode,
+                          // values.subcode,
                           setFieldValue,
                           resetForm,
                         )
@@ -843,31 +843,31 @@ const FrmPropertyAppel = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
- <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
-                      <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                        <Label className="text-sm sm:text-base" text="झोन" />
-                        <span className="hidden md:block">:</span>
-                      </div>
-
-                      <Select
-                        value={values.zone}
-                        onValueChange={(value) => setFieldValue("zone", value)}
-                      >
-                        <SelectTrigger className="w-full h-9 sm:h-10">
-                          <SelectValue placeholder="-- Select Option --" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {zones.map((ward) => (
-                            <SelectItem
-                              key={ward.WARDID}
-                              value={String(ward.WARDID)}
-                            >
-                              {ward.WARDNAME}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
+                    <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                      <Label className="text-sm sm:text-base" text="झोन" />
+                      <span className="hidden md:block">:</span>
                     </div>
+
+                    <Select
+                      value={values.zone}
+                      onValueChange={(value) => setFieldValue("zone", value)}
+                    >
+                      <SelectTrigger className="w-full h-9 sm:h-10">
+                        <SelectValue placeholder="-- Select Option --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {zones.map((ward) => (
+                          <SelectItem
+                            key={ward.WARDID}
+                            value={String(ward.WARDID)}
+                          >
+                            {ward.WARDNAME}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">

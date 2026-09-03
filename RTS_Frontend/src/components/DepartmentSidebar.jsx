@@ -43,9 +43,9 @@ const DepartmentSidebar = ({ departments = [], selectedDepartmentId, onDepartmen
                                         onClick={() =>
                                             onDepartmentSelect?.(department)
                                         }
-                                        className={`h-10 rounded-md ${isActive ? "bg-[#184aa6] text-white hover:bg-[#123d89] hover:text-white" : "hover:bg-blue-50 hover:text-[#184aa6]"}`}
+                                        className={`h-10 rounded-md ${isActive ? "bg-[#184aa6]! text-white! hover:bg-[#123d89] hover:text-white" : "hover:bg-blue-50 hover:text-[#184aa6]"}`}
                                     >
-                                        <Icon size={17} />
+                                        <Icon size={17}/>
                                         <span className="truncate">{department.name}</span>
                                         {state === "expanded" && (<ChevronRight size={15} className="ml-auto shrink-0" />)}
                                     </SidebarMenuButton>

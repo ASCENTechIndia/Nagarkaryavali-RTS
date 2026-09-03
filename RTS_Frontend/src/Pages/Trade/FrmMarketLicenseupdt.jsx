@@ -56,18 +56,10 @@ const FrmMarketLicenseUpdt = () => {
   const ulbId = locationState.ulbId || user?.ulbId;
   const userId = locationState.userId || user?.userId;
   const zoneId = locationState.zoneId || user?.zoneId;
+  // const serviceid = 302;
   const serviceid = locationState.serviceId || user?.serviceId;
-  const servicename = locationState.serviceName || "";const serviceMap = {
-    306: "TSC",
-    310: "TLC",
-    302: "TRBC",
-    500: "TRBC",
-    307: "TRNC",
-    309: "ARPS",
-    308: "CP",
-    508: "TTRF",
-    311: "TEN",
-  };
+  const servicename = locationState.serviceName || "";
+  const serviceMap = { 306: "TSC", 310: "TLC", 302: "TRBC", 500: "TRBC", 307: "TRNC", 309: "ARPS", 308: "CP", 508: "TTRF", 311: "TEN" };
   const serviceName = serviceMap[String(serviceid)] || "";
   const showTypePanel = ["306", "310", "302", "307", "309", "308", "508", "311"].includes(String(serviceid));
   const showLicensCancelPanel = ["310", "311"].includes(String(serviceid));
@@ -179,13 +171,6 @@ const FrmMarketLicenseUpdt = () => {
         fetchInstructions(),
       ]);
 
-      const jalanshilResult = results[4];
-      const jalanshilRows = jalanshilResult?.status === "fulfilled" ? jalanshilResult.value : [];
-      const jwalanshilstat = jalanshilRows?.[0]?.JALANSHIL_CODE || "";
-      if (jwalanshilstat) {
-        await fetchTradeCategory(jwalanshilstat);
-      }
-
       const failed = results.filter((item) => item.status === "rejected");
 
       if (failed.length === results.length) {
@@ -212,38 +197,62 @@ const FrmMarketLicenseUpdt = () => {
     return data;
   };
 
-  const fetchTradeCategory = async (jwalanshilstat) => {
-    const response = await axios.post(
-      `${BASE_URL}/api/FrmMarketLicenseupdt/trade-categories`,
-      { jwalanshilstat },
-      {
-        headers: { Authorization: `Bearer ${token}` },
+  const fetchTradeCategory = async (jwalanshilstat, categoryType) => {
+    try {
+      if (!jwalanshilstat || !categoryType) {
+        setTradeCategory([]);
+        return [];
       }
-    );
-    const data = response.data?.data?.rows || response.data?.data || [];
-    setTradeCategory(data);
-    return data;
+
+      const response = await axios.post(`${BASE_URL}/api/FrmMarketLicenseupdt/trade-categories`,
+        { jwalanshilstat, categoryType },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = response.data?.data?.rows || response.data?.data || [];
+      setTradeCategory(Array.isArray(data) ? data : []);
+      return data;
+    } catch (error) {
+      console.error("Trade category fetch error:", error);
+
+      setTradeCategory([]);
+      return [];
+    }
   };
 
-  const fetchTradeType = async (categoryId) => {
-    if (!categoryId) {
+  const fetchTradeTypes = async (categoryId, categoryType, jwalanshilstat) => {
+    try {
+      if (!categoryId || !categoryType) {
+        setTradeType([]);
+        return [];
+      }
+
+      const payload = { categoryId: Number(categoryId), categoryType: String(categoryType) };
+
+      //Jalanshil only for service 302 and 310
+      if (Number(serviceid) === 302 || Number(serviceid) === 310) {
+        if (jwalanshilstat) { payload.jwalanshilstat = String(jwalanshilstat) }
+      }
+
+      console.log("Trade Types Payload:", payload);
+
+      const response = await axios.post(`${BASE_URL}/api/FrmMarketLicenseupdt/trade-types-by-category`,
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = response.data?.data?.rows || response.data?.data || [];
+      setTradeType(Array.isArray(data) ? data : []);
+      return data;
+    } catch (error) {
+      console.error("Trade Types fetch error:", error);
       setTradeType([]);
       return [];
     }
-
-    const response = await axios.post(
-      `${BASE_URL}/api/FrmMarketLicenseupdt/trade-types-by-category`,
-      {
-        categoryId,
-        serviceId: Number(serviceid),
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-    const data = response.data?.data?.rows || response.data?.data || [];
-    setTradeType(data);
-    return data;
   };
 
   const fetchCancelGender = async () => {
@@ -362,7 +371,7 @@ const FrmMarketLicenseUpdt = () => {
       DocId: doc.DOCID || index + 1,
       docid: doc.DOCID || index + 1,
       DocName: doc.DOCTYPENAME || doc.ENGDOCDESC || "",
-      doctypename: doc.DOCTYPENAME  || doc.ENGDOCDESC || "",
+      doctypename: doc.DOCTYPENAME || doc.ENGDOCDESC || "",
       remark: doc.REMARK || "",
       file: null,
       fileName: "",
@@ -433,9 +442,9 @@ const FrmMarketLicenseUpdt = () => {
           licenseNo,
           ulbId,
         },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
       const data = response.data?.data;
 
@@ -467,11 +476,17 @@ const FrmMarketLicenseUpdt = () => {
     }
   };
 
-  const handleTradeCategoryChange = async (categoryId, setFieldValue) => {
+  const handleTradeCategoryChange = async ( categoryId, categoryType, jwalanshilstat, setFieldValue ) => {
     setFieldValue("tradeCategory", categoryId);
     setFieldValue("tradeType", "");
     setFieldValue("rate", "0");
-    await fetchTradeType(categoryId);
+    setTradeType([]);
+
+    if (!categoryId || !categoryType) {
+      return;
+    }
+
+    await fetchTradeTypes( categoryId, categoryType, jwalanshilstat);
   };
 
   const handleFileUploadChange = (id, event) => {
@@ -527,22 +542,11 @@ const FrmMarketLicenseUpdt = () => {
       return;
     }
 
-    const category = tradeCategory.find(
-      (item) =>
-        String(item.CATEGORY_CATGRYID || item.categoryId || item.id) ===
-        String(values.tradeCategory)
-    );
+    const category = tradeCategory.find((item) =>String(item.CATEGORY_CATGRYID || item.categoryId || item.id) === String(values.tradeCategory));
 
-    const type = tradeType.find(
-      (item) =>
-        String(item.CATEGORYTYPE_CATGTYPID || item.tradeTypeId || item.id) ===
-        String(values.tradeType)
-    );
+    const type = tradeType.find((item) => String(item.CATEGORYTYPE_CATGTYPID || item.tradeTypeId || item.id) === String(values.tradeType));
 
-    const exists = tradeTypeGrid.some(
-      (item) =>
-        String(item.tradetypeid) === String(values.tradeType)
-    );
+    const exists = tradeTypeGrid.some((item) =>String(item.tradetypeid) === String(values.tradeType));
 
     if (exists) {
       Swal.fire({
@@ -555,31 +559,15 @@ const FrmMarketLicenseUpdt = () => {
     const newEntry = {
       tradetypeid: values.tradeType,
       tradecategory_id: values.tradeCategory,
-      tradecategory:
-        category?.TRADECATEGORY_NAME ||
-        category?.name ||
-        "",
-      tradetype:
-        type?.TRADETYPE_NAME ||
-        type?.CATEGORYTYPE_NAME ||
-        type?.name ||
-        "",
+      tradecategory: category?.TRADECATEGORY_NAME || category?.name || "",
+      tradetype: type?.TRADETYPE_NAME || type?.CATEGORYTYPE_NAME || type?.name || "",
       rate: values.rate || "0",
     };
 
     const updated = [...tradeTypeGrid, newEntry];
-
     setTradeTypeGrid(updated);
-
-    setFieldValue(
-      "rate",
-      "0"
-    );
-
-    setFieldValue(
-      "tradeType",
-      ""
-    );
+    setFieldValue( "rate", "0");
+    setFieldValue( "tradeType", "");
   };
 
   const handleRemoveFromGrid = (gridSetter, index) => {
@@ -786,21 +774,21 @@ const FrmMarketLicenseUpdt = () => {
     );
   };
 
-  const handleViewDocument = (docId) => {
-    const document = fileUploadsGrid.find(
-      (item) => String(item.id) === String(docId)
-    );
+  // const handleViewDocument = (docId) => {
+  //   const document = fileUploadsGrid.find(
+  //     (item) => String(item.id) === String(docId)
+  //   );
 
-    if (document?.imageUrl) {
-      window.open(document.imageUrl, "_blank");
-      return;
-    }
+  //   if (document?.imageUrl) {
+  //     window.open(document.imageUrl, "_blank");
+  //     return;
+  //   }
 
-    Swal.fire({
-      icon: "info",
-      text: `Document ID: ${docId}`,
-    });
-  };
+  //   Swal.fire({
+  //     icon: "info",
+  //     text: `Document ID: ${docId}`,
+  //   });
+  // };
 
   const handleSubmit = async (values) => {
     if (!values.licno) {
@@ -829,11 +817,12 @@ const FrmMarketLicenseUpdt = () => {
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading(),
       });
-      const tradechkstr = tradeTypeGrid.map((item) =>`${item.tradetypeid || ""}$${item.tradecategory_id || ""}$${item.rate || ""}`).join("#");
-      const directorstr = directorGrid.map((item) =>`${item.adharno || ""}$${item.dirctorname || ""}$${item.mobileno || ""}$${item.email || ""}$${item.gender || ""}$${item.address || ""}$${item.applitypeid || ""}`).join("#");
-      const partnerstr = partnerCorrGrid.map((item) =>`${item.applitypeid || ""}$${item.newname || ""}$${item.aadharno || ""}$${item.address || ""}$${item.mobileno || ""}$${item.email || ""}$NEW$${item.gender || ""}`).join("#");
-      const corrpartnerstr = partnerCorrGrid.map((item) =>`${item.existname || ""}$${item.newname || ""}$${item.aadharno || ""}$${item.gender || ""}$${item.address || ""}$${item.applitypeid || ""}`).join("#");
-      const tradeaddrstr = tradeAddrGrid.map((item) =>`${item.TRADEADDR_ID || item.tradeaddrid || ""}$${item.TRADEADDR || item.tradeaddr || ""}`).join("#");
+      const tradechkstr = tradeTypeGrid.map((item) => `${item.tradetypeid || ""}$${item.tradecategory_id || ""}$${item.rate || ""}`).join("#");
+      const directorstr = directorGrid.map((item) => `${item.adharno || ""}$${item.dirctorname || ""}$${item.mobileno || ""}$${item.email || ""}$${item.gender || ""}$${item.address || ""}$${item.applitypeid || ""}`).join("#");
+      const partnerstr = partnerCorrGrid.map((item) => `${item.applitypeid || ""}$${item.newname || ""}$${item.aadharno || ""}$${item.address || ""}$${item.mobileno || ""}$${item.email || ""}$NEW$${item.gender || ""}`).join("#");
+      const corrpartnerstr = partnerCorrGrid.map((item) => `${item.existname || ""}$${item.newname || ""}$${item.aadharno || ""}$${item.gender || ""}$${item.address || ""}$${item.applitypeid || ""}`).join("#");
+      const tradeaddrstr = tradeAddrGrid.map((item) => `${item.TRADEADDR_ID || item.tradeaddrid || ""}$${item.TRADEADDR || item.tradeaddr || ""}`).join("#");
+
       const payload = {
         licenseno: values.licno || "",
         appfname: values.appliFname || "",
@@ -883,75 +872,69 @@ const FrmMarketLicenseUpdt = () => {
         BusiAddr: values.tradeAddr || "",
         type: "ONLINE",
       };
+
       const response = await axios.post(`${BASE_URL}/api/FrmMarketLicenseupdt/submit`,
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
       const submitData = response.data?.data?.data || response.data?.data || response.data;
+
       if (response.data?.ok === false || submitData?.success === false) {
-        throw new Error(response.data?.message || submitData?.message || "Application submission failed.");
+        throw new Error(response.data?.data.error || submitData?.error || "Application submission failed.");
       }
+
       let applicationId = Number(submitData?.appid || submitData?.applicationId || submitData?.APPLI_ID || values.appid || locationState.appId || 0);
+
       if (!applicationId) {
         const licenseResponse = await axios.post(`${BASE_URL}/api/FrmMarketLicenseupdt/market-license-details`,
-          {
-            licenseNo: values.licno, ulbId,
-          },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { licenseNo: values.licno, ulbId },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
+
         const licenseData = licenseResponse.data?.data?.rows || licenseResponse.data?.data || [];
         const licenseDetails = Array.isArray(licenseData) ? licenseData[0] : licenseData;
         applicationId = Number(licenseDetails?.APPLI_ID || licenseDetails?.APPLICATION_ID || 0);
       }
+
       const imageRows = [...directorGrid, ...transferGrid].filter((row) => row.image instanceof File);
+
       if (imageRows.length) {
         if (!applicationId) {
           throw new Error("Application ID was not returned after submission. Director image cannot be uploaded.");
         }
+
         const directorResponse = await axios.post(`${BASE_URL}/api/FrmMarketLicenseupdt/trade-director-id`,
           { applicationId },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` }, }
         );
+
         const directorIds = directorResponse.data?.data?.rows || directorResponse.data?.data || [];
         if (!Array.isArray(directorIds) || !directorIds.length) {
           throw new Error("Trade director ID not found after submission.");
         }
-        const imageResults = await Promise.allSettled(
-          imageRows.map((row, index) => {
-            const directorId = row.directorId || row.DIRECTOR_ID || directorIds[index]?.DIRECTOR_ID || directorIds[index]?.directorId;
-            if (!directorId) {
-              return Promise.reject(
-                new Error(`Director ID not found for ${row.dirctorname || "director"}.`)
-              );
-            }
-            const formData = new FormData();
-            formData.append("directorId", String(directorId));
-            formData.append("applicationId", String(applicationId));
-            formData.append("document", row.image);
-            return axios.post(`${BASE_URL}/api/FrmMarketLicenseupdt/trade-director-image`,
-              formData,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-          })
+
+        const imageResults = await Promise.allSettled(imageRows.map((row, index) => {
+          const directorId = row.directorId || row.DIRECTOR_ID || directorIds[index]?.DIRECTOR_ID || directorIds[index]?.directorId;
+          if (!directorId) {
+            return Promise.reject(new Error(`Director ID not found for ${row.dirctorname || "director"}.`));
+          }
+          const formData = new FormData();
+          formData.append("directorId", String(directorId));
+          formData.append("applicationId", String(applicationId));
+          formData.append("document", row.image);
+          return axios.post(`${BASE_URL}/api/FrmMarketLicenseupdt/trade-director-image`,
+            formData,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        })
         );
-        const imageFailures = imageResults.map((result, index) => ({
-            result,
-            name: imageRows[index]?.dirctorname || `Director ${index + 1}`,
-          }))
-          .filter(({ result }) => result.status === "rejected");
+        const imageFailures = imageResults.map((result, index) => ({ result, name: imageRows[index]?.dirctorname || `Director ${index + 1}` })).filter(({ result }) => result.status === "rejected");
         if (imageFailures.length) {
           throw new Error(
-            imageFailures.map(({ name, result }) =>`${name}: ${result.reason?.response?.data?.message || result.reason?.message || "Director image upload failed."}`).join("\n"));
+            imageFailures.map(({ name, result }) => `${name}: ${result.reason?.response?.data?.message || result.reason?.message || "Director image upload failed."}`).join("\n"));
         }
       }
       Swal.close();
@@ -965,7 +948,7 @@ const FrmMarketLicenseUpdt = () => {
       Swal.close();
       await Swal.fire({
         icon: "error",
-        text: error?.response?.data?.message || error?.message || "Unable to submit application.",
+        text: error?.response?.data?.message || error?.response?.data?.error || error?.message || "Unable to submit application.",
       });
     } finally {
       setLoading(false);
@@ -993,7 +976,7 @@ const FrmMarketLicenseUpdt = () => {
     "Business CategoryId",
     "Business Category",
     "Business Type",
-    "Rate",
+    // "Rate",
   ];
 
   const tradeTypeKeyMapping = {
@@ -1002,7 +985,7 @@ const FrmMarketLicenseUpdt = () => {
     "Business CategoryId": "tradecategory_id",
     "Business Category": "tradecategory",
     "Business Type": "tradetype",
-    Rate: "rate",
+    // Rate: "rate",
   };
 
   const directorHeaders = [
@@ -1095,7 +1078,7 @@ const FrmMarketLicenseUpdt = () => {
     "Document Name",
     "Image",
     "Document Upload",
-    "View",
+    // "View",
   ];
 
   const fileUploadKeyMapping = {
@@ -1104,7 +1087,7 @@ const FrmMarketLicenseUpdt = () => {
     "Document Name": "DocName",
     Image: "image",
     "Document Upload": "upload",
-    View: "view",
+    // View: "view",
   };
 
   // const uploadDocHeaders = [
@@ -1217,16 +1200,16 @@ const FrmMarketLicenseUpdt = () => {
         className="h-9 p-1 text-sm"
       />
     ),
-    view: (
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={() => handleViewDocument(item.id)}
-      >
-        View
-      </Button>
-    ),
+    // view: (
+    //   <Button
+    //     type="button"
+    //     variant="outline"
+    //     size="sm"
+    //     onClick={() => handleViewDocument(item.id)}
+    //   >
+    //     View
+    //   </Button>
+    // ),
   }));
 
   // const transformedUploadDocGrid = uploadDocGrid.map((item) => ({
@@ -1272,7 +1255,7 @@ const FrmMarketLicenseUpdt = () => {
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit} enableReinitialize>
-      {({values, handleChange, setFieldValue, resetForm}) => (
+      {({ values, handleChange, setFieldValue, resetForm }) => (
         <Form className="w-full">
           <motion.div
             initial={{ opacity: 0 }}
@@ -1301,29 +1284,47 @@ const FrmMarketLicenseUpdt = () => {
                           required
                         />
                         <div className="flex gap-6">
-                          <label className="flex cursor-pointer items-center gap-2">
-                            <Input
-                              type="radio"
-                              name="licenseType"
-                              value="T"
-                              checked={values.licenseType === "T"}
-                              onChange={handleChange}
-                              className="h-4 w-4"
-                            />
-                            <span>Trade</span>
-                          </label>
+                          <Input
+                            type="radio"
+                            name="licenseType"
+                            value="T"
+                            checked={values.licenseType === "T"}
+                            onChange={async (e) => {
+                              const categoryType = e.target.value;
+                              setFieldValue("licenseType", categoryType);
+                              setFieldValue("tradeCategory", "");
+                              setFieldValue("tradeType", "");
+                              setFieldValue("rate", "0");
+                              setTradeCategory([]);
+                              setTradeType([]);
+                              if (values.buisiJwalan) {
+                                await fetchTradeCategory(values.buisiJwalan, categoryType);
+                              }
+                            }}
+                            className="h-4 w-4"
+                          />
+                          <Label text="Trade" className="flex cursor-pointer items-center gap-2" />
 
-                          <label className="flex cursor-pointer items-center gap-2">
-                            <Input
-                              type="radio"
-                              name="licenseType"
-                              value="S"
-                              checked={values.licenseType === "S"}
-                              onChange={handleChange}
-                              className="h-4 w-4"
-                            />
-                            <span>Storage</span>
-                          </label>
+                          <Input
+                            type="radio"
+                            name="licenseType"
+                            value="S"
+                            checked={values.licenseType === "S"}
+                            onChange={async (e) => {
+                              const categoryType = e.target.value;
+                              setFieldValue("licenseType", categoryType);
+                              setFieldValue("tradeCategory", "");
+                              setFieldValue("tradeType", "");
+                              setFieldValue("rate", "0");
+                              setTradeCategory([]);
+                              setTradeType([]);
+                              if (values.buisiJwalan) {
+                                await fetchTradeCategory(values.buisiJwalan, categoryType);
+                              }
+                            }}
+                            className="h-4 w-4"
+                          />
+                          <Label text="Storage" className="flex cursor-pointer items-center gap-2" />
                         </div>
                       </div>
                     </div>
@@ -1591,9 +1592,17 @@ const FrmMarketLicenseUpdt = () => {
                             />
                             <Select
                               value={values.cancelJwalan}
-                              onValueChange={(value) =>
-                                setFieldValue("cancelJwalan", value)
-                              }
+                              onValueChange={async (value) => {
+                                setFieldValue("buisiJwalan", value);
+                                setFieldValue("tradeCategory", "");
+                                setFieldValue("tradeType", "");
+                                setFieldValue("rate", "0");
+                                setTradeCategory([]);
+                                setTradeType([]);
+                                if (values.licenseType) {
+                                  await fetchTradeCategory(value, values.licenseType);
+                                }
+                              }}
                             >
                               <SelectTrigger className="h-9 w-full sm:h-10">
                                 <SelectValue placeholder="-- Select --" />
@@ -1781,23 +1790,36 @@ const FrmMarketLicenseUpdt = () => {
                           required
                         />
                         <Select
-                          value={values.buisiJwalan}
-                          onValueChange={(value) =>
-                            setFieldValue("buisiJwalan", value)
-                          }
+                          value={values.buisiJwalan || ""}
+                          onValueChange={async (value) => {
+                            setFieldValue("buisiJwalan", value);
+
+                            setFieldValue("tradeCategory", "");
+                            setFieldValue("tradeType", "");
+                            setFieldValue("rate", "0");
+
+                            setTradeCategory([]);
+                            setTradeType([]);
+
+                            if (values.licenseType) {
+                              await fetchTradeCategory(
+                                value,
+                                values.licenseType
+                              );
+                            }
+                          }}
                         >
                           <SelectTrigger className="h-9 w-full sm:h-10">
                             <SelectValue placeholder="-- Select --" />
                           </SelectTrigger>
+
                           <SelectContent>
                             {buisiJwalan.map((item, index) => (
                               <SelectItem
-                                key={item.id || index}
-                                value={String(item.id)}
+                                key={item.JALANSHIL_CODE || index}
+                                value={String(item.JALANSHIL_CODE)}
                               >
-                                {item.name ||
-                                  item.JALANSHIL_NAME ||
-                                  item.JWALANSHIL_NAME}
+                                {item.JALANSHIL_NAME}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1812,24 +1834,32 @@ const FrmMarketLicenseUpdt = () => {
                           text="Business Category"
                           required
                         />
+
                         <Select
-                          value={values.tradeCategory}
+                          value={values.tradeCategory || ""}
                           onValueChange={(value) =>
-                            handleTradeCategoryChange( value, setFieldValue)
+                            handleTradeCategoryChange(value, values.licenseType, values.buisiJwalan, setFieldValue)
                           }
+                          disabled={!values.buisiJwalan || !values.licenseType }
                         >
                           <SelectTrigger className="h-9 w-full sm:h-10">
-                            <SelectValue placeholder="-- Select --" />
+                            <SelectValue
+                              placeholder={!values.buisiJwalan ? "Select Business Jalanshil first" : !values.licenseType ? "Select License Type first" : !tradeCategory?.length ? "No Business Category available" : "-- Select --"}
+                            />
                           </SelectTrigger>
+
                           <SelectContent>
-                            {tradeCategory?.map((item, index) => (
-                              <SelectItem
-                                key={item.CATEGORY_CATGRYID || item.id || index}
-                                value={String(item.CATEGORY_CATGRYID || item.id)}
-                              >
-                                {item.TRADECATEGORY_NAME || item.name || item.TRADECATEGORY}
-                              </SelectItem>
-                            ))}
+                            {tradeCategory?.map((item, index) => {
+                              const categoryId = item.CATEGORY_CATGRYID ?? item.id;
+                              return (
+                                <SelectItem
+                                  key={String(categoryId ?? index)}
+                                  value={String(categoryId)}
+                                >
+                                  {item.TRADECATEGORY_NAME || item.name || item.TRADECATEGORY}
+                                </SelectItem>
+                              );
+                            })}
                           </SelectContent>
                         </Select>
                       </div>
@@ -1844,23 +1874,11 @@ const FrmMarketLicenseUpdt = () => {
                           value={values.tradeType}
                           onValueChange={(value) => {
                             setFieldValue("tradeType", value);
+                            const selected = tradeType.find((item) => String(item.CATEGORYTYPE_CATGTYPID || item.tradeTypeId || item.id) === String(value));
 
-                            const selected = tradeType.find(
-                              (item) =>
-                                String(
-                                  item.CATEGORYTYPE_CATGTYPID ||
-                                  item.tradeTypeId ||
-                                  item.id
-                                ) === String(value)
-                            );
-
-                            setFieldValue(
-                              "rate",
-                              selected?.RATE ||
-                              selected?.rate ||
-                              "0"
-                            );
+                            setFieldValue("rate", selected?.RATE || selected?.rate || "0");
                           }}
+                          disabled={ !values.tradeCategory || !values.licenseType}
                         >
                           <SelectTrigger className="h-9 w-full sm:h-10">
                             <SelectValue placeholder="-- Select --" />
@@ -1868,22 +1886,10 @@ const FrmMarketLicenseUpdt = () => {
                           <SelectContent>
                             {tradeType.map((item, index) => (
                               <SelectItem
-                                key={
-                                  item.CATEGORYTYPE_CATGTYPID ||
-                                  item.tradeTypeId ||
-                                  item.id ||
-                                  index
-                                }
-                                value={String(
-                                  item.CATEGORYTYPE_CATGTYPID ||
-                                  item.tradeTypeId ||
-                                  item.id
-                                )}
+                                key={item.CATEGORYTYPE_CATGTYPID || item.tradeTypeId || item.id || index}
+                                value={String(item.CATEGORYTYPE_CATGTYPID || item.tradeTypeId || item.id)}
                               >
-                                {item.TRADETYPE_NAME ||
-                                  item.CATEGORYTYPE_NAME ||
-                                  item.name ||
-                                  item.TRADETYPE}
+                                {item.TRADETYPE_NAME || item.CATEGORYTYPE_NAME || item.name || item.TRADETYPE}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -2156,20 +2162,19 @@ const FrmMarketLicenseUpdt = () => {
                         onClick={() =>
                           handleAddDirector(values, setFieldValue)
                         }
-                        className="bg-blue-600 hover:bg-blue-700"
                       >
                         Add Director
                       </Button>
                     </div>
-
-                    <div className="overflow-auto">
+                    {transformedDirectorGrid.length > 0 &&
                       <ShadCNTable
                         headers={directorHeaders}
                         data={transformedDirectorGrid}
                         keyMapping={directorKeyMapping}
                         pagination={false}
                       />
-                    </div>
+                    }
+
                   </div>
                 )}
 
@@ -2314,20 +2319,17 @@ const FrmMarketLicenseUpdt = () => {
                         onClick={() =>
                           handleAddCP(values, setFieldValue)
                         }
-                        className="bg-blue-600 hover:bg-blue-700"
                       >
                         Add Director
                       </Button>
                     </div>
 
-                    <div className="overflow-auto">
-                      <ShadCNTable
-                        headers={partnerCorrHeaders}
-                        data={transformedPartnerCorrGrid}
-                        keyMapping={partnerCorrKeyMapping}
-                        pagination={false}
-                      />
-                    </div>
+                    <ShadCNTable
+                      headers={partnerCorrHeaders}
+                      data={transformedPartnerCorrGrid}
+                      keyMapping={partnerCorrKeyMapping}
+                      pagination={false}
+                    />
                   </div>
                 )}
 
@@ -2569,7 +2571,6 @@ const FrmMarketLicenseUpdt = () => {
                         onClick={() =>
                           handleTransferAdd(values, setFieldValue)
                         }
-                        className="bg-blue-600 hover:bg-blue-700"
                       >
                         Add Director
                       </Button>

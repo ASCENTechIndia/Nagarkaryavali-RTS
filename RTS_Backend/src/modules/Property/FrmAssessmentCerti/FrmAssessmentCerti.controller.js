@@ -200,7 +200,7 @@ exports.submitApplication = asyncHandler(async (req, res) => {
 
     return ok(res, {
       payFlag,
-      redirectTo: payFlag === "N" ? "FrmAssessmentCerti.aspx" : "FrmAppliFee.aspx",
+      redirectTo: payFlag === "N" ? "FrmAssessmentCerti" : "FrmAppliFee",
       message: message || "Application processed successfully",
       applicationNo,
     }, "Payment check completed");

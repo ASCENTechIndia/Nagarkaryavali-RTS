@@ -721,3 +721,294 @@ export const step0ValidationSchema = z.object({
       return true;
     }, "Please select a Zone"),
 });
+
+
+
+export const waterApplicationValidationSchema = z
+  .object({
+    zoneId: commonValidationSchema.selectOption,
+
+    applicantFirstName: z
+      .string()
+      .trim()
+      .min(1, "Applicant First Name is required"),
+
+    applicantMiddleName: z
+      .string()
+      .trim()
+      .min(1, "Applicant Middle Name is required"),
+
+    applicantLastName: z
+      .string()
+      .trim()
+      .min(1, "Applicant Last Name is required"),
+
+    mobileNumber: commonValidationSchema.mobile,
+
+    email: z
+      .string()
+      .trim()
+      .min(1, "Email ID is required")
+      .regex(emailRegex, "Invalid Email Address"),
+
+    aadharCardNo: z
+      .string()
+      .trim()
+      .min(1, "Aadhar Card Number is required")
+      .regex(aadharRegex, "Aadhar Card Number must be 12 digits"),
+
+    propertyNumber: z
+      .string()
+      .trim()
+      .min(1, "Property Number is required"),
+
+    residentialNumber: z
+      .string()
+      .trim()
+      .min(1, "Residential Number is required"),
+
+    address: z
+      .string()
+      .trim()
+      .min(1, "Address is required"),
+
+    applicantFirstNameMarathi: z
+      .string()
+      .trim()
+      .min(1, "Applicant First Name in Marathi is required"),
+
+    applicantMiddleNameMarathi: z
+      .string()
+      .trim()
+      .min(1, "Applicant Middle Name in Marathi is required"),
+
+    applicantLastNameMarathi: z
+      .string()
+      .trim()
+      .min(1, "Applicant Last Name in Marathi is required"),
+
+    addressMarathi: z
+      .string()
+      .trim()
+      .min(1, "Address in Marathi is required"),
+
+    consumerFirstName: z
+      .string()
+      .trim()
+      .min(1, "Consumer First Name is required"),
+
+    consumerMiddleName: z
+      .string()
+      .trim()
+      .min(1, "Consumer Middle Name is required"),
+
+    consumerLastName: z
+      .string()
+      .trim()
+      .min(1, "Consumer Last Name is required"),
+
+    consumerMobileNumber: z
+      .string()
+      .trim()
+      .min(1, "Consumer Mobile Number is required")
+      .regex(mobileRegex, "Consumer Mobile Number must be 10 digits"),
+
+    consumerEmail: z
+      .string()
+      .trim()
+      .min(1, "Consumer Email ID is required")
+      .regex(emailRegex, "Invalid Consumer Email Address"),
+
+    consumerAadharCardNo: z
+      .string()
+      .trim()
+      .min(1, "Consumer Aadhar Card Number is required")
+      .regex(
+        aadharRegex,
+        "Consumer Aadhar Card Number must be 12 digits",
+      ),
+
+    consumerPropertyNumber: z
+      .string()
+      .trim()
+      .min(1, "Consumer Property Number is required"),
+
+    consumerResidentialNumber: z
+      .string()
+      .trim()
+      .min(1, "Consumer Residential Number is required"),
+
+    consumerFirstNameMarathi: z
+      .string()
+      .trim()
+      .min(1, "Consumer First Name in Marathi is required"),
+
+    consumerMiddleNameMarathi: z
+      .string()
+      .trim()
+      .min(1, "Consumer Middle Name in Marathi is required"),
+
+    consumerLastNameMarathi: z
+      .string()
+      .trim()
+      .min(1, "Consumer Last Name in Marathi is required"),
+
+    includeCoOwner: z
+      .string()
+      .min(1, "Please select whether Co-Owner details are required")
+      .refine(
+        (value) => ["Yes", "No"].includes(value),
+        "Please select Yes or No",
+      ),
+
+    coOwnerFirstName: z.string().optional().default(""),
+
+    coOwnerMiddleName: z.string().optional().default(""),
+
+    coOwnerLastName: z.string().optional().default(""),
+
+    coOwnerFirstNameMarathi: z.string().optional().default(""),
+
+    coOwnerMiddleNameMarathi: z.string().optional().default(""),
+
+    coOwnerLastNameMarathi: z.string().optional().default(""),
+
+    coOwnerAddress: z.string().optional().default(""),
+
+    coOwnerAddressMarathi: z.string().optional().default(""),
+
+    connectionType: commonValidationSchema.selectOption,
+
+    connectionSize: commonValidationSchema.selectOption,
+
+    usageType: commonValidationSchema.selectOption,
+
+    usageSubType: commonValidationSchema.selectOption,
+
+    noOfPerson: z
+      .union([z.string(), z.number()])
+      .transform((value) => String(value))
+      .refine(
+        (value) =>
+          value.trim() !== "" &&
+          /^\d+$/.test(value) &&
+          Number(value) > 0,
+        "Number of Person must be greater than 0",
+      ),
+
+    noOfFamily: z
+      .union([z.string(), z.number()])
+      .transform((value) => String(value))
+      .refine(
+        (value) =>
+          value.trim() !== "" &&
+          /^\d+$/.test(value) &&
+          Number(value) > 0,
+        "Number of Family must be greater than 0",
+      ),
+
+    noOfConnection: z
+      .union([z.string(), z.number()])
+      .transform((value) => String(value))
+      .refine(
+        (value) =>
+          value.trim() !== "" &&
+          /^\d+$/.test(value) &&
+          Number(value) > 0,
+        "Number of Connection must be greater than 0",
+      ),
+
+    connectionStatus: commonValidationSchema.selectOption,
+
+    businessCertificate: commonValidationSchema.selectOption,
+
+    billingType: z
+      .string()
+      .trim()
+      .min(1, "Billing Type is required"),
+
+    isGovtProperty: z
+      .string()
+      .min(1, "Please select Government Property status")
+      .refine(
+        (value) => ["Yes", "No"].includes(value),
+        "Please select Yes or No",
+      ),
+
+    remark: z
+      .string()
+      .trim()
+      .min(1, "Remark is required"),
+
+    reason: z
+      .string()
+      .trim()
+      .min(1, "Reason is required"),
+  })
+  .superRefine((values, ctx) => {
+    if (values.includeCoOwner === "Yes") {
+      if (!values.coOwnerFirstName?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["coOwnerFirstName"],
+          message: "Co-Owner First Name is required",
+        });
+      }
+
+      if (!values.coOwnerMiddleName?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["coOwnerMiddleName"],
+          message: "Co-Owner Middle Name is required",
+        });
+      }
+
+      if (!values.coOwnerLastName?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["coOwnerLastName"],
+          message: "Co-Owner Last Name is required",
+        });
+      }
+
+      if (!values.coOwnerFirstNameMarathi?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["coOwnerFirstNameMarathi"],
+          message: "Co-Owner First Name in Marathi is required",
+        });
+      }
+
+      if (!values.coOwnerMiddleNameMarathi?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["coOwnerMiddleNameMarathi"],
+          message: "Co-Owner Middle Name in Marathi is required",
+        });
+      }
+
+      if (!values.coOwnerLastNameMarathi?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["coOwnerLastNameMarathi"],
+          message: "Co-Owner Last Name in Marathi is required",
+        });
+      }
+
+      if (!values.coOwnerAddress?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["coOwnerAddress"],
+          message: "Co-Owner Address is required",
+        });
+      }
+
+      if (!values.coOwnerAddressMarathi?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["coOwnerAddressMarathi"],
+          message: "Co-Owner Address in Marathi is required",
+        });
+      }
+    }
+  });

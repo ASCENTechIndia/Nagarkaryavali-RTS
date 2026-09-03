@@ -254,22 +254,17 @@ exports.updateTradeDirectorImage = asyncHandler(async (req, res) => {
 });
 
 exports.getTradeTypesByCategory = asyncHandler(async (req, res) => {
-  const { categoryId, serviceId, jwalanshilstat } = req.body;
+  const { categoryId, categoryType, jwalanshilstat } = req.body;
 
   if (!categoryId) {
     return fail(res, "Category ID is required");
   }
 
-  if (!serviceId) {
-    return fail(res, "Service ID is required");
+  if (!categoryType) {
+    return fail(res, "categoryType is required");
   }
 
-  const result = await service.getTradeTypesByCategoryService({
-    categoryId,
-    serviceId,
-    jwalanshilstat,
-  });
-
+  const result = await service.getTradeTypesByCategoryService({ categoryId, categoryType, jwalanshilstat });
   return ok(res, result, "Trade types fetched successfully");
 });
 

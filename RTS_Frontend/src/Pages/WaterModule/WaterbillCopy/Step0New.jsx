@@ -46,6 +46,7 @@ const FrmWaterConnectionApplication = () => {
     connectionNo: "",
     consumeType: "",
     meterType: "",
+    sewrageType: "",
     nocPurpose: "",
   });
 
@@ -55,6 +56,8 @@ const FrmWaterConnectionApplication = () => {
   const [consumerTypeLoading, setConsumerTypeLoading] = useState(false);
   const [meterTypeList, setMeterTypeList] = useState([]);
   const [meterTypeLoading, setMeterTypeLoading] = useState(false);
+  const [sewerageTypeList, setSewerageTypeList] = useState([]);
+  const [sewerageTypeLoading, setSewerageTypeLoading] = useState(false);
   const [documentList, setDocumentList] = useState([]);
   const [documentLoading, setDocumentLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,10 +78,12 @@ const FrmWaterConnectionApplication = () => {
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
   const BND_SERVICE_IDS = [14, 15, 342, 343];
+  const SEWERAGE_SERVICE_IDS = [513];
   const Fire_Biridage_ServiceId = [12, 13];
   const isFireBrigadeService = Fire_Biridage_ServiceId.includes(Number(serviceId));
 
   const isBndService = BND_SERVICE_IDS.includes(Number(serviceId));
+  const isSewerageService = SEWERAGE_SERVICE_IDS.includes(Number(serviceId));
   const isBirthService = [14, 342].includes(Number(serviceId));
   const bndDateLabel = isBirthService ? "Birth Date" : "Death Date";
 
@@ -143,6 +148,27 @@ const FrmWaterConnectionApplication = () => {
 
 
 
+  const fetchSewerageTypes = async () => {
+    try {
+      setSewerageTypeLoading(true);
+
+      const response = await axios.get(`${BASE_URL}/api/watermodule/water-sewerage-types`);
+
+      if (response?.data?.ok === true && response?.data?.data?.success === true) {
+        const meterTypes = response.data.data.data || [];
+        setSewerageTypeList(meterTypes);
+      } else {
+        setSewerageTypeList([]);
+        console.error("Meter Type API Error:", response?.data?.message);
+      }
+    } catch (error) {
+      console.error("Meter Type API Error:", error);
+      console.error("Meter Type Error Response:", error?.response?.data);
+      setSewerageTypeList([]);
+    } finally {
+      setSewerageTypeLoading(false);
+    }
+  };
   const fetchMeterTypes = async () => {
     try {
       setMeterTypeLoading(true);
@@ -393,6 +419,7 @@ const FrmWaterConnectionApplication = () => {
     fetchZones();
     fetchConsumerTypes();
     fetchMeterTypes();
+    fetchSewerageTypes();
   }, []);
 
   useEffect(() => {
@@ -721,7 +748,8 @@ const FrmWaterConnectionApplication = () => {
         in_TransferToWhom: "",
         in_AgreementDate: new Date().toISOString().split("T")[0],
         in_AppNo: "",
-        in_wtsewrgtypeid: 1,
+        in_wtsewrgtypeid: isSewerageService ? Number(formData.sewrageType) : "",
+        // in_wtsewrgtypeid: 1,
         in_nocpurposeid: isFireBrigadeService ? Number(formData.nocPurpose) : "",
         in_RegiNo: isBndService ? selectedBndRecord?.regno : "",
         in_UniqueNo: isBndService ? selectedBndRecord?.uniqueNo : "",
@@ -1709,19 +1737,19 @@ const FrmWaterConnectionApplication = () => {
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                     <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                      <Label text="Consume Type" required/>
+                      <Label text="Consume Type" required />
                       <span>:</span>
                     </div>
 
                     <Select
                       value={formData.consumeType}
                       onValueChange={(value) =>
-                        handleChange("consumeType",value)
+                        handleChange("consumeType", value)
                       }
                       disabled={consumerTypeLoading}
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder={consumerTypeLoading ? "Loading...": "-- Select Option --"}/>
+                        <SelectValue placeholder={consumerTypeLoading ? "Loading..." : "-- Select Option --"} />
                       </SelectTrigger>
 
                       <SelectContent>
@@ -1763,10 +1791,42 @@ const FrmWaterConnectionApplication = () => {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {isSewerageService && (
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                      <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                        <Label text="Sewerage Type Type" required />
+                        <span>:</span>
+                      </div>
+
+                      <Select
+                        value={formData.sewrageType}
+                        onValueChange={(value) =>
+                          handleChange("sewrageType", value)
+                        }
+                        disabled={sewerageTypeLoading}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder={sewerageTypeLoading ? "Loading..." : "-- Select Option --"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {sewerageTypeList.length > 0 ? (
+                            sewerageTypeList.map((sewerageType) => (
+                              <SelectItem key={sewerageType.NUM_WTSEWARAGE_ID} value={String(sewerageType.NUM_WTSEWARAGE_ID)}>
+                                {sewerageType.VAR_WTSEWARAGE_NAME}
+                              </SelectItem>
+                            )))
+                            :
+                            (!sewerageTypeLoading && (<SelectItem value="no-meter-type" disabled>No meter types available</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </>
               )}
             </div>
           </div>
+
 
           {isBndService && (
             <Card className="border-gray-200 shadow-sm">
@@ -1894,66 +1954,66 @@ const FrmWaterConnectionApplication = () => {
 
 
 
-          
-            <div>
-              <h4 className="text-md font-semibold mb-3">Document Details</h4>
-              <hr className="mb-4" />
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse border text-sm">
-                  <thead className="bg-[#083c76] text-white">
-                    <tr >
-                      <th className="border px-3 py-2 text-left w-20">Sr No.</th>
-                      <th className="border px-3 py-2 text-left">Document Name</th>
-                      <th className="border px-3 py-2 text-left">Image(jpg,png,pdf)</th>
+
+          <div>
+            <h4 className="text-md font-semibold mb-3">Document Details</h4>
+            <hr className="mb-4" />
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border text-sm">
+                <thead className="bg-[#083c76] text-white">
+                  <tr >
+                    <th className="border px-3 py-2 text-left w-20">Sr No.</th>
+                    <th className="border px-3 py-2 text-left">Document Name</th>
+                    <th className="border px-3 py-2 text-left">Image(jpg,png,pdf)</th>
+                  </tr>
+                </thead>
+                <tbody>
+
+                  {documentLoading && (
+                    <tr>
+                      <td colSpan={3} className="border px-3 py-6 text-center text-gray-500">Loading documents...</td>
                     </tr>
-                  </thead>
-                  <tbody>
+                  )}
 
-                    {documentLoading && (
-                      <tr>
-                        <td colSpan={3} className="border px-3 py-6 text-center text-gray-500">Loading documents...</td>
+                  {!documentLoading && documentList.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="border px-3 py-6 text-center text-gray-500">No documents required for this service.</td>
+                    </tr>
+                  )}
+
+                  {!documentLoading && documentList.map(
+                    (document, index) => (
+                      <tr key={document.DOCID || index}>
+                        <td className="border px-3 py-2">{index + 1}</td>
+                        <td className="border px-3 py-2">
+                          <div className="flex flex-col">
+                            <span className="font-medium">{document.DOCNAME}</span>
+                            {document.ENGDOCDESC && (<span className="text-xs text-gray-500">{document.ENGDOCDESC}</span>)}
+                          </div>
+                        </td>
+                        <td className="border px-3 py-2">
+                          <Input
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.pdf"
+                            onChange={(e) =>
+                              handleDocumentFileChange(
+                                document.DOCID,
+                                e.target.files?.[0] ||
+                                null
+                              )
+                            }
+                            className="cursor-pointer"
+                          />
+                          {documentFiles[document.DOCID] && (<p className="mt-1 text-xs text-green-600">Selected:{" "}{documentFiles[document.DOCID].name}</p>)}
+                        </td>
                       </tr>
-                    )}
-
-                    {!documentLoading && documentList.length === 0 && (
-                      <tr>
-                        <td colSpan={3} className="border px-3 py-6 text-center text-gray-500">No documents required for this service.</td>
-                      </tr>
-                    )}
-
-                    {!documentLoading && documentList.map(
-                      (document, index) => (
-                        <tr key={document.DOCID || index}>
-                          <td className="border px-3 py-2">{index + 1}</td>
-                          <td className="border px-3 py-2">
-                            <div className="flex flex-col">
-                              <span className="font-medium">{document.DOCNAME}</span>
-                              {document.ENGDOCDESC && (<span className="text-xs text-gray-500">{document.ENGDOCDESC}</span>)}
-                            </div>
-                          </td>
-                          <td className="border px-3 py-2">
-                            <Input
-                              type="file"
-                              accept=".jpg,.jpeg,.png,.pdf"
-                              onChange={(e) =>
-                                handleDocumentFileChange(
-                                  document.DOCID,
-                                  e.target.files?.[0] ||
-                                  null
-                                )
-                              }
-                              className="cursor-pointer"
-                            />
-                            {documentFiles[document.DOCID] && (<p className="mt-1 text-xs text-green-600">Selected:{" "}{documentFiles[document.DOCID].name}</p>)}
-                          </td>
-                        </tr>
-                      )
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                    )
+                  )}
+                </tbody>
+              </table>
             </div>
-          
+          </div>
+
 
           <div className="flex items-center justify-center gap-3 border-t pt-5">
             <Button type="button" onClick={handleSubmit} disabled={isSubmitting}>{isSubmitting ? "Submitting..." : "Submit"}</Button>

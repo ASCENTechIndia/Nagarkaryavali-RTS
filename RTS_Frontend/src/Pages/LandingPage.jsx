@@ -199,26 +199,26 @@ const LandingPage = () => {
         const department = selectedDepartment.name;
         const serviceId = String(selectedService.id);
 
-        if (department === "FireBrigade") {
-            window.location.href = "https://mahavastu.maharashtra.gov.in/";
-            return;
-        }
-        if (department === "Encroachment") {
-            window.location.href = "http://tmcmandap.vidhsiddinfotechllp.com";
-            return;
-        }
-        if (department === "InfoRel") {
-            window.location.href = "https://www.filmcell.maharashtra.gov.in";
-            return;
-        }
-        if (department === "PWD" && serviceId === "E79C935C43A49FF22A228595FC9B1EDC") {
-            window.location.href = "https://mahasanchar.emahapwd.com";
-            return;
-        }
-        if (department === "Sewerage") {
-            window.location.href = "https://thanecity.gov.in/tmc/CitizenHome.html";
-            return;
-        }
+        // if (department === "FireBrigade") {
+        //     window.location.href = "https://mahavastu.maharashtra.gov.in/";
+        //     return;
+        // }
+        // if (department === "Encroachment") {
+        //     window.location.href = "http://tmcmandap.vidhsiddinfotechllp.com";
+        //     return;
+        // }
+        // if (department === "InfoRel") {
+        //     window.location.href = "https://www.filmcell.maharashtra.gov.in";
+        //     return;
+        // }
+        // if (department === "PWD" && serviceId === "E79C935C43A49FF22A228595FC9B1EDC") {
+        //     window.location.href = "https://mahasanchar.emahapwd.com";
+        //     return;
+        // }
+        // if (department === "Sewerage") {
+        //     window.location.href = "https://thanecity.gov.in/tmc/CitizenHome.html";
+        //     return;
+        // }
 
         try {
             showLoader("Fetching service details...");

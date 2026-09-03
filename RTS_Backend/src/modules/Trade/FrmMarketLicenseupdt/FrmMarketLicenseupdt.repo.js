@@ -456,21 +456,21 @@ async function updateTradeDirectorImage({
   }
 }
 
-async function getTradeTypesByCategory({
-  categoryId,
-  serviceId,
-  jwalanshilstat,
-}) {
-  let jwalanshilValue = jwalanshilstat;
+async function getTradeTypesByCategory({ categoryId, categoryType, jwalanshilstat}) {
+  const conditions = [
+    `var_tradetype_flag = 'Y'`,
+    `num_categorytype_catgryid = :categoryId`,
+    `var_categorytype_type = :categoryType`,
+  ];
 
-  // Existing business rule
-  if (Number(serviceId) === 302) {
-    jwalanshilValue = 1;
-  } else if (Number(serviceId) === 310) {
-    jwalanshilValue = 1;
+  const bindParams = {categoryId: Number(categoryId), categoryType};
+
+  if ( jwalanshilstat !== undefined && jwalanshilstat !== null && String(jwalanshilstat).trim() !== "") {
+    conditions.push(`var_categorytype_jwalanshilstat = :jwalanshilstat`);
+    bindParams.jwalanshilstat = String(jwalanshilstat).trim();
   }
 
-  const query = `
+  const query = `     
     SELECT
       var_tradetype_name AS TRADETYPE_NAME,
       num_categorytype_catgtypid AS CATEGORYTYPE_CATGTYPID
@@ -480,27 +480,12 @@ async function getTradeTypesByCategory({
     INNER JOIN aorts_tradetypes_mas
       ON num_tradetype_id = num_categorytype_catgtypid
       AND aomk_tradetype_tradecategoryid = num_categorytype_catgryid
-    WHERE var_tradetype_flag = 'Y'
-      AND num_categorytype_catgryid = :categoryId
-      AND var_categorytype_type = '1'
-      AND var_categorytype_jwalanshilstat = :jwalanshilstat
+    WHERE ${conditions.join("\n AND ")}
   `;
-
-  const bindParams = {
-    categoryId: Number(categoryId),
-    jwalanshilstat: Number(
-      jwalanshilValue !== undefined
-        ? jwalanshilValue
-        : 1
-    ),
-  };
-
-  console.log("Trade Types Query:", query);
-  console.log("Service ID:", serviceId);
-  console.log("Bind Params:", bindParams);
 
   return await executeQueryTMC(query, bindParams);
 }
+
 
 async function getServiceInstructions({ serviceId }) {
   const query = `
@@ -521,7 +506,7 @@ async function getServiceInstructions({ serviceId }) {
   return await executeQueryTMC(query, bindParams);
 }
 
-async function getTradeCategories({ jwalanshilstat,categoryType }) {
+async function getTradeCategories({ jwalanshilstat, categoryType }) {
   const query = `
     SELECT
       var_tradecategory_name AS TRADECATEGORY_NAME,
@@ -535,11 +520,7 @@ async function getTradeCategories({ jwalanshilstat,categoryType }) {
   `;
 
   const bindParams = {
-    jwalanshilstat: Number(
-      jwalanshilstat !== undefined
-        ? jwalanshilstat
-        : 1
-    ),
+    jwalanshilstat: jwalanshilstat,
     categoryType: categoryType
   };
 
@@ -805,7 +786,7 @@ async function insertTradeApplication(params) {
 
     In_LicType: LicType || null,
 
-  
+
     In_LicFrmDt: LicFrmDt
       ? new Date(LicFrmDt)
       : null,
@@ -814,7 +795,7 @@ async function insertTradeApplication(params) {
       ? new Date(LicToDt)
       : null,
 
- 
+
     In_BusiName: BusiName || null,
 
 
@@ -889,7 +870,7 @@ async function insertTradeApplication(params) {
   if (!result.success) {
     throw new Error(
       result.error ||
-        "aorts_applitrade_ins procedure execution failed"
+      "aorts_applitrade_ins procedure execution failed"
     );
   }
 
@@ -1040,7 +1021,7 @@ async function insertTradeTypeLog(params) {
   if (!result.success) {
     throw new Error(
       result.error ||
-        "aorts_tradetypelog_ins procedure execution failed"
+      "aorts_tradetypelog_ins procedure execution failed"
     );
   }
 
