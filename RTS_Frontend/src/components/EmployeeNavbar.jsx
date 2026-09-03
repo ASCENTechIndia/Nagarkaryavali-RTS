@@ -44,22 +44,22 @@ const EmployeeNavbar = () => {
                             </PopoverTrigger>
 
                             <PopoverContent align="end" sideOffset={10} className="w-64 p-0">
-                                <div className="border-b bg-[#184aa6] px-4 py-4">
+                                {/* <div className="border-b bg-[#184aa6] px-4 py-4">
                                     <div className="flex items-center gap-3">
                                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15">
                                             <User size={18} className="text-white"/>
                                         </div>
 
                                         <div className="min-w-0">
-                                            {/* <p className="text-xs text-blue-100">Welcome</p> */}
-                                            {/* <p className="truncate font-semibold text-white">{user?.username || "Employee"}</p> */}
+                                            <p className="text-xs text-blue-100">Welcome</p>
+                                            <p className="truncate font-semibold text-white">{user?.username || "Employee"}</p>
                                             <p className="mt-0.5 text-xs text-blue-100">User ID: {user?.userId || "-"}</p>
                                         </div>
                                     </div>
-                                </div>
+                                </div> */}
 
-                                <div className="space-y-1 px-3">
-                                    <div className="flex items-center gap-3 rounded-md  hover:bg-blue-50">
+                                <div className="space-y-1 cursor-none p-3">
+                                    <div className="flex items-center gap-3 rounded-md hover:bg-blue-50">
                                         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-50 text-[#184aa6]">
                                             <Clock3 size={16} />
                                         </div>
@@ -70,7 +70,7 @@ const EmployeeNavbar = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-3 rounded-md  hover:bg-blue-50">
+                                    <div className="flex items-center gap-3 rounded-md hover:bg-blue-50">
                                         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-50 text-[#184aa6]">
                                             <History size={16} />
                                         </div>
