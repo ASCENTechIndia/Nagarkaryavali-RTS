@@ -35,6 +35,7 @@ import FrmWaterAppliEntry from "./Pages/WaterModule/FrmWaterAppliEntry";
 import FrmWaterAppliDetails from "./Pages/WaterModule/FrmWaterAppliDetails";
 import FrmEmpLogin from "./Pages/Login/FrmEmpLogin";
 import AdminLayout from "./layout/admin-layout";
+import FrmAppAuthorisationList from "./Pages/Admin/FrmAppAuthorisationList";
 
 function HomePage() {
     return <div>Welcome to Employee Portal</div>;
@@ -196,6 +197,10 @@ const router = createBrowserRouter([
       {
         path: "/home",
         element: <HomePage />,
+      },
+      {
+        path: "/app/FrmAppAuthorisationList",
+        element: <FrmAppAuthorisationList />
       },
     ]
   },
