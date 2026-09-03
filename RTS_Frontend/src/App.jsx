@@ -36,6 +36,10 @@ import FrmWaterAppliDetails from "./Pages/WaterModule/FrmWaterAppliDetails";
 import FrmEmpLogin from "./Pages/Login/FrmEmpLogin";
 import AdminLayout from "./layout/admin-layout";
 
+function HomePage() {
+    return <div>Welcome to Employee Portal</div>;
+}
+
 const router = createBrowserRouter([
     {
     path: "app/frmEmpLogin",
@@ -190,8 +194,8 @@ const router = createBrowserRouter([
     element: <AdminLayout />,
     children: [
       {
-        path: "/forgot-password",
-        element: <ForgotPassword />,
+        path: "/home",
+        element: <HomePage />,
       },
     ]
   },

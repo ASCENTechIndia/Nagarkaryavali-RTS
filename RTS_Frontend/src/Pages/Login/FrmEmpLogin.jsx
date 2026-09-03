@@ -79,7 +79,7 @@ const FrmEmpLogin = () => {
             // }
 
             await Swal.fire({
-                // icon: "success",
+                icon: "success",
                 // title: "Welcome Back!",
                 text: `Hello ${loginData.user?.username || ""}`,
                 timer: 1200,
@@ -87,7 +87,7 @@ const FrmEmpLogin = () => {
                 confirmButtonColor: "#184aa6",
             });
 
-            navigate("/forgot-password");
+            navigate("/home");
         } catch (error) {
             Swal.close();
 
