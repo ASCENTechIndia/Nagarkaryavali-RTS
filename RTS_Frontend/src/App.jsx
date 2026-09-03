@@ -33,6 +33,8 @@ import FrmRoadCutting from "./Pages/PWD/FrmRoadCutting";
 import Step0 from "./Pages/TownPlanning/Step0";
 import FrmWaterAppliEntry from "./Pages/WaterModule/FrmWaterAppliEntry";
 import FrmWaterAppliDetails from "./Pages/WaterModule/FrmWaterAppliDetails";
+import FrmAppAuthorisationList from "./Pages/Admin/FrmAppAuthorisationList";
+import FrmAppAuthorisationMst from "./Pages/Admin/FrmAppAuthorisationMst";
 
 const router = createBrowserRouter([
   {
@@ -176,7 +178,14 @@ const router = createBrowserRouter([
         path: "/app/FrmWaterAppliDetails",
         element: <FrmWaterAppliDetails />
       },
-
+      {
+        path: "/app/FrmAppAuthorisationList",
+        element: <FrmAppAuthorisationList />
+      },
+      {
+        path: "/app/FrmAppAuthorisationMst",
+        element: <FrmAppAuthorisationMst />
+      },
     ]
   },
 
