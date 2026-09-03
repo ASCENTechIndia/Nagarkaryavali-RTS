@@ -113,6 +113,15 @@ app.use("/api/FrmAppoints", require("./modules/Marriage/FrmAppoints/FrmAppoints.
 // PWD
 app.use("/api/FrmRoadCutting", require("./modules/PWD/FrmRoadCutting.route"));
 
+
+
+//AdminDepartmet
+
+//AFrmAppAutherisation
+
+app.use("/api/frmAppAuth", require("./modules/AdminDepartment/FrmAppAuth/frmAppAuth.routes"));
+
+
 app.use(errorMiddleware);
 
 module.exports = app;
