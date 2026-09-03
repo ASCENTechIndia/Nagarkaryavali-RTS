@@ -22,9 +22,7 @@ const EmployeeNavbar = () => {
                             src={"/tmc_logo.png"} 
                             alt="Logo"
                             className="h-9 w-9 shrink-0 rounded-md bg-white p-0.5 object-contain sm:h-10 sm:w-10"
-                        />
-
-                        
+                        />                       
                     </div>
 
                     <div className="absolute left-1/2 -translate-x-1/2">
@@ -85,26 +83,8 @@ const EmployeeNavbar = () => {
                                 </div>
 
                                 <div className="flex gap-2 border-t p-1">
-                                    <Button
-                                        path="/admin"
-                                        variant="outline"
-                                        size="sm"
-                                        className="flex-1"
-                                    >
-                                        <Home size={15} />
-                                        Home
-                                    </Button>
-
-                                    <Button
-                                        type="button"
-                                        variant="destructive"
-                                        size="sm"
-                                        onClick={handleLogout}
-                                        className="flex-1"
-                                    >
-                                        <LogOut size={15} />
-                                        Sign Out
-                                    </Button>
+                                    <Button path="/home" variant="outline" size="sm" className="flex-1"><Home size={15}/>Home</Button>
+                                    <Button type="button" variant="destructive" size="sm" onClick={handleLogout} className="flex-1"><LogOut size={15}/>Sign Out</Button>
                                 </div>
                             </PopoverContent>
                         </Popover>
