@@ -429,6 +429,60 @@ async function getCitizenDetailsByMobile({ mobile }) {
   }
 }
 
+async function employeeLoginRepo({ corpId = 10001, userId, password }) {
+  let connection;
+
+  try {
+    connection = await getConnectionTMC();
+    const result = await connection.execute(
+      `
+        BEGIN
+          aorts_emp_login(
+            :In_CorpId,
+            :in_UserID,
+            :in_password,
+            :out_errcode,
+            :out_errmsg,
+            :out_StrInfo
+          );
+        END;
+      `,
+      {
+        In_CorpId: { dir: oracledb.BIND_IN, val: Number(corpId), type: oracledb.NUMBER },
+        in_UserID: { dir: oracledb.BIND_IN, val: String(userId).trim(), type: oracledb.STRING },
+        in_password: { dir: oracledb.BIND_IN, val: String(password), type: oracledb.STRING },
+        out_errcode: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+        out_errmsg: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 1000 },
+        out_StrInfo: { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 4000 },
+      },
+      {
+        autoCommit: true,
+      }
+    );
+
+    return {
+      success: true,
+      errCode: result.outBinds.out_errcode,
+      errMsg: result.outBinds.out_errmsg,
+      strInfo: result.outBinds.out_StrInfo,
+    };
+  } catch (error) {
+    console.error("Employee Login Repo Error:", error);
+    return {
+      success: false,
+      error: error.message,
+    };
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (error) {
+        console.error("Oracle connection close error:", error);
+      }
+    }
+  }
+}
+
 module.exports = {
   registerUser,
   loginByProcedure,
@@ -436,5 +490,6 @@ module.exports = {
   getForgotPasswordDetails,
   loginWithOtpProcedure,
   changePassword,
-  getCitizenDetailsByMobile
+  getCitizenDetailsByMobile,
+  employeeLoginRepo,
 };

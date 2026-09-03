@@ -33,10 +33,18 @@ import FrmRoadCutting from "./Pages/PWD/FrmRoadCutting";
 import Step0 from "./Pages/TownPlanning/Step0";
 import FrmWaterAppliEntry from "./Pages/WaterModule/FrmWaterAppliEntry";
 import FrmWaterAppliDetails from "./Pages/WaterModule/FrmWaterAppliDetails";
-import FrmAppAuthorisationList from "./Pages/Admin/FrmAppAuthorisationList";
-import FrmAppAuthorisationMst from "./Pages/Admin/FrmAppAuthorisationMst";
+import FrmEmpLogin from "./Pages/Login/FrmEmpLogin";
+import AdminLayout from "./layout/admin-layout";
+
+function HomePage() {
+    return <div>Welcome to Employee Portal</div>;
+}
 
 const router = createBrowserRouter([
+    {
+    path: "app/frmEmpLogin",
+    element: <FrmEmpLogin />
+  },
   {
     path: "/",
     element: <Layout />,
@@ -159,7 +167,7 @@ const router = createBrowserRouter([
         element: <FrmServiceApplicationMstNew />
       },
       {
-         path: "/app/FrmAppoints",
+        path: "/app/FrmAppoints",
         element: <FrmAppoints />
       },
       {
@@ -167,24 +175,27 @@ const router = createBrowserRouter([
         element: <FrmRoadCutting />
       },
       {
-         path: "/app/Step0",
+        path: "/app/Step0",
         element: <Step0 />
       },
       {
-        path:"/app/FrmWaterAppliEntry",
-        element:<FrmWaterAppliEntry />
+        path: "/app/FrmWaterAppliEntry",
+        element: <FrmWaterAppliEntry />
       },
       {
         path: "/app/FrmWaterAppliDetails",
         element: <FrmWaterAppliDetails />
       },
+
+    ]
+  },
+  {
+    path: "/",
+    element: <AdminLayout />,
+    children: [
       {
-        path: "/app/FrmAppAuthorisationList",
-        element: <FrmAppAuthorisationList />
-      },
-      {
-        path: "/app/FrmAppAuthorisationMst",
-        element: <FrmAppAuthorisationMst />
+        path: "/home",
+        element: <HomePage />,
       },
     ]
   },

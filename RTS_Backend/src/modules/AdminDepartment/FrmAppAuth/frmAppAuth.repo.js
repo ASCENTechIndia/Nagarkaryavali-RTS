@@ -873,6 +873,336 @@ const getApplicationDetailsRepo = async ({ serviceId, appNo }) => {
   };
 };
 
+const applicationAuthRepo = async ({
+  userId,
+  applicationNo,
+  status,
+  reasonForReject,
+  amount,
+  mode,
+  clerkId,
+  tinyUrl,
+}) => {
+  try {
+    const result = await withTxTMC(async (connection) => {
+      const query = `
+        BEGIN
+          aorts_appliauth_ins(
+            :in_userid,
+            :in_applicationno,
+            :in_status,
+            :in_ReasonForReject,
+            :in_amount,
+            :in_mode,
+            :in_Clerkid,
+            :in_tinyurl,
+            :out_errcode,
+            :out_ErrMsg
+          );
+        END;
+      `;
+
+      const binds = {
+        in_userid: String(userId || ""),
+        in_applicationno: String(applicationNo || ""),
+        in_status: String(status || ""),
+        in_ReasonForReject: String(reasonForReject || ""),
+        in_amount: Number(amount) || 0,
+        in_mode: String(mode || ""),
+        in_Clerkid: String(clerkId || ""),
+        in_tinyurl: String(tinyUrl || ""),
+
+        out_errcode: {
+          dir: oracledb.BIND_OUT,
+          type: oracledb.NUMBER,
+        },
+
+        out_ErrMsg: {
+          dir: oracledb.BIND_OUT,
+          type: oracledb.STRING,
+          maxSize: 32767,
+        },
+      };
+
+      console.log("================================================");
+      console.log("APPLICATION AUTH PROCEDURE");
+      console.log("================================================");
+      console.log("Procedure: aorts_appliauth_ins");
+      console.log("Binds:", {
+        ...binds,
+        out_errcode: "BIND_OUT",
+        out_ErrMsg: "BIND_OUT",
+      });
+      console.log("================================================");
+
+      const procedureResult = await connection.execute(query, binds, {
+        autoCommit: false,
+      });
+
+      return procedureResult.outBinds;
+    });
+
+    console.log("APPLICATION AUTH PROCEDURE RESULT:", result);
+
+    return {
+      success: true,
+      errorCode: result?.out_errcode,
+      errorMsg: result?.out_ErrMsg,
+    };
+  } catch (error) {
+    console.error("APPLICATION AUTH REPO ERROR:", error);
+
+    return {
+      success: false,
+      errorCode: 1500,
+      errorMsg: error.message,
+    };
+  }
+};
+
+
+const saveApplicationVerificationDocumentRepo = async ({
+  ulbid,
+  applino,
+  userid,
+  docname,
+  docbyte,
+}) => {
+  try {
+    const result = await withTxTMC(async (connection) => {
+
+
+      const deleteQuery = `
+        DELETE FROM aorts_appverifdoc_det
+        WHERE num_appVerifdoc_ulbid = :ulbid
+          AND var_appVerifdoc_appliNo = :applino
+          AND var_appVerifdoc_docname = 'CertificateORG'
+      `;
+
+      const deleteResult = await connection.execute(
+        deleteQuery,
+        {
+          ulbid: String(ulbid),
+          applino: String(applino),
+        },
+        {
+          autoCommit: false,
+        }
+      );
+
+      console.log(
+        "Existing CertificateORG documents deleted:",
+        deleteResult.rowsAffected
+      );
+
+    
+      const insertQuery = `
+        INSERT INTO aorts_appverifdoc_det
+        (
+          num_appVerifdoc_ulbid,
+          var_appVerifdoc_appliNo,
+          var_appVerifdoc_docname,
+          blob_appVerifdoc_documentimg,
+          var_appVerifdoc_instby,
+          dat_appVerifdoc_instdt
+        )
+        VALUES
+        (
+          :ulbid,
+          :applino,
+          :docname,
+          :docbyte,
+          :userid,
+          SYSDATE
+        )
+      `;
+
+      const insertResult = await connection.execute(
+        insertQuery,
+        {
+          ulbid: String(ulbid),
+          applino: String(applino),
+          docname: docname || "CertificateORG",
+          docbyte: {
+            val: docbyte,
+            type: oracledb.BLOB,
+          },
+          userid: String(userid),
+        },
+        {
+          autoCommit: false,
+        }
+      );
+
+      console.log(
+        "Application verification document inserted:",
+        insertResult.rowsAffected
+      );
+
+      return {
+        deletedRows: deleteResult.rowsAffected || 0,
+        insertedRows: insertResult.rowsAffected || 0,
+      };
+    });
+
+    return {
+      success: true,
+      message: "Application verification document saved successfully.",
+      ...result,
+    };
+
+  } catch (error) {
+    console.error(
+      "SAVE APPLICATION VERIFICATION DOCUMENT REPO ERROR:",
+      error
+    );
+
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+};
+
+const getMenuDetailsRepo = async ({ serviceId, appNo, authMode }) => {
+  try {
+    return await withTxTMC(async (connection) => {
+      // ---------------------------------------------------------
+      // 1. APPLICATION DETAILS
+      // ---------------------------------------------------------
+      const applicationQuery = `
+        SELECT
+          SERVICID,
+          SERVICNAME,
+          APLINO,
+          APLIDT,
+          APLINM,
+          MOBNO,
+          AADHARNO,
+          EMAIL,
+          ADDRESS,
+          PROPERTYNO,
+          ZONENAME,
+          AMOUNT,
+          PURPOSE,
+          CONS_NAME,
+          METER_NAME,
+          HODREMARK,
+          HOAUTH,
+          SECTOR_NAME,
+          VILLAGE_NAME,
+          LOCALITY,
+          LANDMARK,
+          PINCODE,
+          REFNO,
+          ZONEID
+        FROM vw_authservdtl
+        WHERE SERVICID = :serviceId
+          AND APLINO = :appNo
+      `;
+
+      const applicationResult = await connection.execute(
+        applicationQuery,
+        {
+          serviceId: Number(serviceId),
+          appNo: appNo,
+        },
+        {
+          outFormat: oracledb.OUT_FORMAT_OBJECT,
+          autoCommit: false,
+        },
+      );
+
+      const applicationRows = applicationResult.rows || [];
+
+      if (applicationRows.length === 0) {
+        return {
+          success: false,
+          status: "NOT_FOUND",
+          message: "No record found",
+          data: null,
+        };
+      }
+
+      // ---------------------------------------------------------
+      // 2. DOCUMENT DETAILS
+      // ---------------------------------------------------------
+      let documentQuery = `
+        SELECT
+          num_appdoc_documentid AS "docId",
+          var_doc_engname AS "docName",
+          var_doc_engname AS "filename",
+          blob_appdoc_documentimg AS "fileBytes",
+          '.PDF' AS "fileExtension",
+          'Citizen' AS "docType",
+          CASE
+            WHEN VAR_APPDOC_VRFYFLAG IS NULL THEN 'N'
+            ELSE 'Y'
+          END AS "vrfyFlag"
+        FROM aorts_appdoc_det
+        LEFT JOIN aorts_doc_def
+          ON num_doc_serviceid = num_appdoc_serviceid
+         AND num_appdoc_documentid = num_doc_id
+        WHERE var_appdoc_appno = :appNo
+      `;
+
+      const documentBinds = {
+        appNo: appNo,
+      };
+
+      // ---------------------------------------------------------
+      // 3. HO DOCUMENTS
+      // Legacy code adds Clerk documents only for HO mode
+      // ---------------------------------------------------------
+      if (String(authMode) === "HO") {
+        documentQuery += `
+          UNION ALL
+
+          SELECT
+            ROWNUM AS "docId",
+            var_appverifdoc_docname AS "docName",
+            var_appverifdoc_docname AS "filename",
+            blob_appverifdoc_documentimg AS "fileBytes",
+            '.pdf' AS "fileExtension",
+            'Clerk' AS "docType",
+            'Y' AS "vrfyFlag"
+          FROM aorts_appverifdoc_det
+          WHERE var_appverifdoc_applino = :appNo
+        `;
+      }
+
+      const documentResult = await connection.execute(documentQuery, documentBinds, {
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+        autoCommit: false,
+      });
+
+      const documentRows = documentResult.rows || [];
+
+      // ---------------------------------------------------------
+      // 4. CONVERT BLOB → BASE64 WHILE CONNECTION IS OPEN
+      // ---------------------------------------------------------
+      const documents = await convertLobsInRows(documentRows);
+
+      return {
+        success: true,
+        status: "SUCCESS",
+        message: "Menu details fetched successfully",
+        data: {
+          application: applicationRows[0],
+          documents,
+        },
+      };
+    });
+  } catch (error) {
+    console.error("Repo: Get Menu Details Error:", error);
+
+    return {
+      success: false,
+      status: "FAILED",
+      message: error.message,
+    };
+  }
+};
 module.exports = {
   getUserPrabhagListRepo,
   getUserDeptListRepo,
@@ -880,4 +1210,7 @@ module.exports = {
   getApplicationAuthListRepo,
   getHodClerkListRepo,
   getApplicationDetailsRepo,
+  applicationAuthRepo,
+  saveApplicationVerificationDocumentRepo,
+  getMenuDetailsRepo
 };

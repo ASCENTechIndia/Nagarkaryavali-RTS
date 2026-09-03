@@ -5,6 +5,7 @@ const auth = require("../../middlewares/auth.middleware");
 
 router.get("/corporation-details", controller.getCorporationDetailsController);
 router.get("/department-menu", controller.getDepartmentMenuController);
+router.get("/employee-department-menu", auth(), controller.getEmployeeDepartmentMenuController);
 router.get("/services-by-dept", controller.getServicesByDeptIdController);
 router.get("/documents-for-service", controller.getDocumentsForServiceController);
 router.get("/instructions-for-service", controller.getInstructionsForServiceController);

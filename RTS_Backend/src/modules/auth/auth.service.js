@@ -176,29 +176,18 @@ async function loginWithOtp({ userId, ulbId, mobileNumber, otp }) {
   if (!mobileNumber) {
     throw new AppError("Mobile number is required", 422);
   }
-
   if (!otp) {
     throw new AppError("OTP is required", 422);
   }
 
-  const result = await repo.loginWithOtpProcedure({
-    userId,
-    ulbId,
-    mobileNumber,
-    otp
-  });
-
+  const result = await repo.loginWithOtpProcedure({ userId, ulbId, mobileNumber, otp });
   if (!result) {
     throw new AppError("OTP login failed", 500);
   }
 
   const errorCode = Number(result.errorCode ?? 0);
-
   if (errorCode !== 9999) {
-    throw new AppError(
-      result.errorMsg || "OTP verification failed",
-      401
-    );
+    throw new AppError(result.errorMsg || "OTP verification failed", 401);
   }
 
   const corpId = 10001;
@@ -234,7 +223,7 @@ async function getForgotPasswordDetails({ mobile }) {
     throw new AppError("Invalid mobile number", 422);
   }
 
-  const result = await repo.getForgotPasswordDetails({mobile: Number(mobile)});
+  const result = await repo.getForgotPasswordDetails({ mobile: Number(mobile) });
 
   if (!result) {
     throw new AppError("Mobile number is not registered", 404);
@@ -328,6 +317,78 @@ async function getCitizenDetailsByMobile({ mobile }) {
   };
 }
 
+async function employeeLoginService({ corpId = 10001, userId, password }) {
+
+  if (!userId?.trim()) {
+    throw new AppError("User ID is required.", 422);
+  }
+  if (!password) {
+    throw new AppError("Password is required.", 422);
+  }
+
+  const employeeCorpId = Number(corpId);
+
+  const result = await repo.employeeLoginRepo({ corpId: employeeCorpId, userId: userId.trim(), password });
+  if (!result?.success) {
+    throw new AppError( result?.error || "Unable to process employee login.", 500 );
+  }
+
+  const errCode = Number(result?.errCode ?? 0);
+  if (errCode !== 9999) {
+    throw new AppError( result?.errMsg || "Invalid Username or Password.", 401 );
+  }
+
+  const strInfo = String(result?.strInfo || "");
+  const values = strInfo.split("$");
+
+  if (values.length < 9) {
+    throw new AppError( "Invalid employee information received from login procedure.", 500 );
+  }
+
+  const [ procedureCorpId, username, lastLogin, lastLogout, empType, zoneId, ulbId, otpValidate, mobileNo ] = values.map((value) => String(value ?? "").trim());
+
+  if (!username) {
+    throw new AppError( "Employee username was not returned from login procedure.", 500 );
+  }
+  if (!ulbId) {
+    throw new AppError( "ULB ID was not returned from login procedure.", 500 );
+  }
+
+  const finalCorpId = Number(procedureCorpId || employeeCorpId);
+
+  const employeeUser = {
+    userId: userId.trim(),
+    username,
+    corpId: finalCorpId,
+    ulbId: Number(ulbId),
+    lastLogin: lastLogin,
+    lastLogout: lastLogout,
+    empType: empType,
+    zoneId: zoneId,
+    otpValidate: otpValidate,
+    mobileNo: mobileNo,
+  };
+
+  const token = signAccessToken({
+    sub: employeeUser.userId,
+    name: employeeUser.username,
+    ulbId: employeeUser.ulbId,
+    corpId: employeeUser.corpId,
+    empType: employeeUser.empType,
+    zoneId: employeeUser.zoneId,
+  });
+
+  return {
+    success: true,
+    errCode: 9999,
+    resultString: result.strInfo,
+    message: "Login successful.",
+    token,
+    user: employeeUser,
+  };
+}
+
+
 module.exports = {
   registerUser,
   loginProc,
@@ -336,5 +397,6 @@ module.exports = {
   getForgotPasswordDetails,
   changePassword,
   verifyToken,
-  getCitizenDetailsByMobile
+  getCitizenDetailsByMobile,
+  employeeLoginService
 };
