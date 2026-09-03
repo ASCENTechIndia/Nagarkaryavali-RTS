@@ -9,8 +9,11 @@ const DepartmentSidebar = ({ items = [], selectedId, onSelect, title = "DEPARTME
     const [openMenus, setOpenMenus] = useState({});
 
     const handleNavigation = (item) => {
-        if (!item.path) return false;
-        navigate(item.path);
+        if (!item?.path) return false;
+
+        const serviceUrl = item.path ? item.path.replace(/^\~?\.?\//, "/").replace(/\.aspx(?=\?|$)/i, "") : "";
+        if (!serviceUrl) return false;
+        navigate(serviceUrl);
         return true;
     };
 
@@ -31,7 +34,7 @@ const DepartmentSidebar = ({ items = [], selectedId, onSelect, title = "DEPARTME
 
     const handleChildClick = (parent, child) => {
         handleNavigation(child);
-        onSelect?.({parent, child});
+        onSelect?.({ parent, child });
     };
 
     return (
@@ -39,7 +42,7 @@ const DepartmentSidebar = ({ items = [], selectedId, onSelect, title = "DEPARTME
             collapsible="icon"
             variant="sidebar"
             onClick={() => {
-                if (state === "collapsed") {toggleSidebar()}
+                if (state === "collapsed") { toggleSidebar() }
             }}
         >
             <SidebarHeader className="border-b bg-[#184aa6]">
@@ -75,7 +78,7 @@ const DepartmentSidebar = ({ items = [], selectedId, onSelect, title = "DEPARTME
                                                         className={`ml-auto shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
                                                     />
                                                 ) : (
-                                                    <ChevronRight size={15} className="ml-auto shrink-0"/>
+                                                    <ChevronRight size={15} className="ml-auto shrink-0" />
                                                 )}
                                             </>
                                         )}
@@ -90,7 +93,7 @@ const DepartmentSidebar = ({ items = [], selectedId, onSelect, title = "DEPARTME
                                                         <SidebarMenuSubButton
                                                             isActive={childActive}
                                                             onClick={() =>
-                                                                handleChildClick(item, child )
+                                                                handleChildClick(item, child)
                                                             }
                                                             className={`cursor-pointer ${childActive ? "bg-blue-50 text-[#184aa6]" : "hover:bg-blue-50 hover:text-[#184aa6]"}`}
                                                         >
