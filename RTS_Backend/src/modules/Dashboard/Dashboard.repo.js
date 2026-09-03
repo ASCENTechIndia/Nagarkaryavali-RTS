@@ -157,6 +157,37 @@ const getCorporationDetailsRepo = async ({ corporationId }) => {
     }
 };
 
+const getemployeeDepartmentMenuRepo = async ({ userId }) => {
+    console.log("Repo: Fetch Employee Department Menu", { userId });
+    const binds = { userId: userId };
+
+    const sql = `
+        select 
+            num_menumaster_menuid,
+            num_menumaster_parentmenuid,
+            var_menumaster_pagetitle, 
+            var_menumaster_pagepath , 
+            'M' Type
+        from aorts_menumaster_def where num_menumaster_parentmenuid=0 
+        union all 
+        select 
+            num_menumaster_menuid, 
+            num_menumaster_parentmenuid,
+            var_menumaster_pagetitle, 
+            var_menumaster_pagepath, 
+            'T' Type 
+        from aorts_menumaster_def a 
+        inner join aorts_menuuser_def c on c.num_menuuser_menuid = a.num_menumaster_menuid 
+        where var_menuuser_userid = :userId
+    `;
+
+    const result = await executeQueryTMC(sql, binds);
+
+    if (!result || !result.success) {
+        throw new Error(result?.error || "Failed to fetch Employee department menu");
+    }
+    return result.rows;
+};
 
 const getDepartmentMenuRepo = async ({ ulbid }) => {
     console.log("Repo: Fetch Department Menu", { ulbid });
@@ -432,6 +463,7 @@ module.exports = {
     lobToBuffer,
     decryptRequestRepo,
     getCorporationDetailsRepo,
+    getemployeeDepartmentMenuRepo,
     getDepartmentMenuRepo,
     getServicesByDeptIdRepo,
     getDocumentsForServiceRepo,

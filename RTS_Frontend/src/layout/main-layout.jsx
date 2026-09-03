@@ -45,25 +45,25 @@ const Layout = () => {
 
         const fetchDepartments = async () => {
             if (ulbId == 3) {
-                setDepartments(ULB3_DEPARTMENTS.map((department) => ({...department, ulbId: 3})));
+                setDepartments(ULB3_DEPARTMENTS.map((department) => ({ ...department, ulbId: 3 })));
                 return;
             }
 
             Swal.fire({
-            text: "Loading departments..",
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            showConfirmButton: false,
-            didOpen: () => {
-                Swal.showLoading();
-            },
-        });
+                text: "Loading departments..",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
 
             try {
                 const res = await axios.get(
                     `${BASE_URL}/api/Dashboard/department-menu`,
                     {
-                      params: {ulbid: ulbId},
+                        params: { ulbid: ulbId },
                     }
                 );
 
@@ -83,7 +83,7 @@ const Layout = () => {
 
                 setDepartments(mappedDepartments);
             } catch (error) {
-                console.error( "Department fetch error:", error);
+                console.error("Department fetch error:", error);
                 setDepartments([]);
 
                 await Swal.fire({
@@ -108,20 +108,22 @@ const Layout = () => {
         <SidebarProvider>
             <div className="flex min-h-screen w-full bg-[#f4f7fb]">
                 <DepartmentSidebar
-                    departments={departments}
-                    selectedDepartmentId={selectedDepartment?.id}
-                    onDepartmentSelect={handleDepartmentSelect}
+                    items={departments}
+                    selectedId={selectedDepartment?.id}
+                    onSelect={handleDepartmentSelect}
+                    title="DEPARTMENTS"
+                    icon={Building2}
                 />
 
                 <SidebarInset className="min-w-0 flex-1">
                     <Navbar />
                     <motion.main
-                        initial={{opacity: 0, y: 8}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{duration: 0.25, ease: "easeOut"}}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
                         className="flex w-full min-w-0 flex-1 flex-col overflow-x-hidden px-2 py-2 sm:px-4 md:px-5 lg:px-6"
                     >
-                        <Outlet context={{departments, selectedDepartment, setSelectedDepartment, handleDepartmentSelect}}/>
+                        <Outlet context={{ departments, selectedDepartment, setSelectedDepartment, handleDepartmentSelect }} />
                     </motion.main>
                 </SidebarInset>
             </div>

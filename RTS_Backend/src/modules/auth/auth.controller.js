@@ -3,9 +3,9 @@ const { ok, fail } = require("../../libs/response");
 const service = require("./auth.service");
 
 exports.registerUser = asyncHandler(async (req, res) => {
-  const {userId, orgId, name, email, mobile, dob, password, confirmPassword, ipAddress, source, propNo} = req.body;
+  const { userId, orgId, name, email, mobile, dob, password, confirmPassword, ipAddress, source, propNo } = req.body;
 
-  const data = await service.registerUser({userId, orgId, name, email, mobile, dob, password, confirmPassword, ipAddress: ipAddress || req.ip, source: source, propNo});
+  const data = await service.registerUser({ userId, orgId, name, email, mobile, dob, password, confirmPassword, ipAddress: ipAddress || req.ip, source: source, propNo });
   return ok(res, data, data.errorMsg);
 });
 
@@ -34,29 +34,29 @@ exports.sendLoginOtp = asyncHandler(async (req, res) => {
 });
 
 exports.getForgotPasswordDetails = asyncHandler(async (req, res) => {
-    const data = await service.getForgotPasswordDetails(req.body);
+  const data = await service.getForgotPasswordDetails(req.body);
 
-    return res.status(200).json({
-        ok: true,
-        message: "Forgot password details fetched successfully",
-        data
-    });
+  return res.status(200).json({
+    ok: true,
+    message: "Forgot password details fetched successfully",
+    data
+  });
 });
 
 exports.changePassword = asyncHandler(async (req, res) => {
-    const data = await service.changePassword(req.body);
+  const data = await service.changePassword(req.body);
 
-    return res.status(200).json({
-        ok: true,
-        message: "Password changed successfully",
-        data
-    });
+  return res.status(200).json({
+    ok: true,
+    message: "Password changed successfully",
+    data
+  });
 });
 
 exports.loginWithOtp = asyncHandler(async (req, res) => {
   const data = await service.loginWithOtp({
-    userId: req.body.userId ,
-    ulbId: req.body.ulbId ,
+    userId: req.body.userId,
+    ulbId: req.body.ulbId,
     mobileNumber: req.body.mobileNumber,
     otp: req.body.otp
   });
@@ -71,6 +71,17 @@ exports.me = asyncHandler(async (req, res) => {
 exports.getCitizenDetailsByMobile = asyncHandler(async (req, res) => {
   const { mobile } = req.body;
 
-  const data = await service.getCitizenDetailsByMobile({mobile});
+  const data = await service.getCitizenDetailsByMobile({ mobile });
   return ok(res, data, "Citizen details fetched successfully");
+});
+
+
+exports.employeeLoginController = asyncHandler(async (req, res) => {
+  const data = await service.employeeLoginService({
+    corpId : req.body.corpId,
+    userId : req.body.userId,
+    password: req.body.password,
+  });
+
+  return ok(res, data, " login success");
 });

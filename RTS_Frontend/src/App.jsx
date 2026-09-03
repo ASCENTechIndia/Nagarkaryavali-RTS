@@ -33,6 +33,8 @@ import FrmRoadCutting from "./Pages/PWD/FrmRoadCutting";
 import Step0 from "./Pages/TownPlanning/Step0";
 import FrmWaterAppliEntry from "./Pages/WaterModule/FrmWaterAppliEntry";
 import FrmWaterAppliDetails from "./Pages/WaterModule/FrmWaterAppliDetails";
+import FrmEmpLogin from "./Pages/Login/FrmEmpLogin";
+import AdminLayout from "./layout/admin-layout";
 
 const router = createBrowserRouter([
   {
@@ -61,10 +63,10 @@ const router = createBrowserRouter([
         path: "/registration",
         element: <Registration />,
       },
-      {
-        path: "/forgot-password",
-        element: <ForgotPassword />,
-      },
+      // {
+      //   path: "/forgot-password",
+      //   element: <ForgotPassword />,
+      // },
       {
         path: "/app/FrmAfterTransactionTMC",
         element: <FrmAfterTransactionTMC />
@@ -157,7 +159,7 @@ const router = createBrowserRouter([
         element: <FrmServiceApplicationMstNew />
       },
       {
-         path: "/app/FrmAppoints",
+        path: "/app/FrmAppoints",
         element: <FrmAppoints />
       },
       {
@@ -165,12 +167,12 @@ const router = createBrowserRouter([
         element: <FrmRoadCutting />
       },
       {
-         path: "/app/Step0",
+        path: "/app/Step0",
         element: <Step0 />
       },
       {
-        path:"/app/FrmWaterAppliEntry",
-        element:<FrmWaterAppliEntry />
+        path: "/app/FrmWaterAppliEntry",
+        element: <FrmWaterAppliEntry />
       },
       {
         path: "/app/FrmWaterAppliDetails",
@@ -179,6 +181,20 @@ const router = createBrowserRouter([
 
     ]
   },
+  {
+    path: "/",
+    element: <AdminLayout />,
+    children: [
+      {
+        path: "/forgot-password",
+        element: <ForgotPassword />,
+      },
+    ]
+  },
+  {
+    path: "app/frmEmpLogin",
+    element: <FrmEmpLogin />
+  }
 
 ]);
 

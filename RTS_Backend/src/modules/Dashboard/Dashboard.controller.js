@@ -2,8 +2,7 @@ const asyncHandler = require("../../libs/asyncHandler");
 const { fail, ok } = require("../../libs/response");
 const service = require("./Dashboard.service");
 
-exports.decryptRequestController =
-    asyncHandler(async (req, res) => {
+exports.decryptRequestController = asyncHandler(async (req, res) => {
         console.log("Decrypt Request:", req.query);
         const { request } = req.query;
 
@@ -32,6 +31,24 @@ exports.getCorporationDetailsController = asyncHandler(
         }
 
         return ok(res, data, data.message || "Corporation details fetched successfully");
+    }
+);
+
+exports.getEmployeeDepartmentMenuController = asyncHandler(
+    async (req, res) => {
+        console.log("Employee Department Menu Request:", req.query);
+        const { userId } = req.query;
+
+        if (!userId) {
+            return fail(res, "ulbid is required");
+        }
+
+        const data = await service.getEmployeeDepartmentMenuService({ userId });
+
+        if (!data.success) {
+            return fail(res, data.message);
+        }
+        return ok(res, data, data.message || "Employee Department menu fetched successfully");
     }
 );
 

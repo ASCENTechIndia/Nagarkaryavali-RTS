@@ -21,6 +21,16 @@ const getCorporationDetailsService = async (payload) => {
     return { success: true, data };
 };
 
+const getEmployeeDepartmentMenuService = async (payload) => {
+    console.log("Service: Fetch Employee Department Menu", payload);
+    const data = await repo.getemployeeDepartmentMenuRepo(payload);
+
+    if (!data || data.length === 0) {
+        return { success: false, message: "No Employee department menu found", data: [] };
+    }
+    return { success: true, count: data.length, data };
+};
+
 const getDepartmentMenuService = async (payload) => {
     console.log("Service: Fetch Department Menu", payload);
     const data = await repo.getDepartmentMenuRepo(payload);
@@ -73,7 +83,6 @@ const getDownloadDocsService = async (payload) => {
     return { success: true, count: data.length, data };
 };
 
-
 async function getServiceDetails({ serviceId }) {
     console.log("Service: Fetch Sevice Documents", { serviceId });
     const data = await repo.getServiceDetails({serviceId});
@@ -82,13 +91,13 @@ async function getServiceDetails({ serviceId }) {
         return { success: false, message: "Service details not found", data: [] };
     }
 
-
     return data;
 }
 
 module.exports = {
     decryptRequestService,
     getCorporationDetailsService,
+    getEmployeeDepartmentMenuService,
     getDepartmentMenuService,
     getServicesByDeptIdService,
     getDocumentsForServiceService,
