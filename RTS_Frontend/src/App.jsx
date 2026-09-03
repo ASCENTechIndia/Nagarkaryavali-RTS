@@ -37,6 +37,10 @@ import FrmEmpLogin from "./Pages/Login/FrmEmpLogin";
 import AdminLayout from "./layout/admin-layout";
 
 const router = createBrowserRouter([
+    {
+    path: "app/frmEmpLogin",
+    element: <FrmEmpLogin />
+  },
   {
     path: "/",
     element: <Layout />,
@@ -63,10 +67,10 @@ const router = createBrowserRouter([
         path: "/registration",
         element: <Registration />,
       },
-      // {
-      //   path: "/forgot-password",
-      //   element: <ForgotPassword />,
-      // },
+      {
+        path: "/forgot-password",
+        element: <ForgotPassword />,
+      },
       {
         path: "/app/FrmAfterTransactionTMC",
         element: <FrmAfterTransactionTMC />
@@ -191,10 +195,6 @@ const router = createBrowserRouter([
       },
     ]
   },
-  {
-    path: "app/frmEmpLogin",
-    element: <FrmEmpLogin />
-  }
 
 ]);
 
