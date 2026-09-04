@@ -42,6 +42,9 @@ import FrmDocMst from "./Pages/Admin/FrmDocMst";
 import FrmServiceDocConfig from "./Pages/Admin/FrmServiceDocConfig";
 import FrmRTSOnlineColl from "./Pages/Admin/FrmRTSOnlineColl";
 import FrmRTSOnlineCollDetails from "./Pages/Admin/FrmRTSOnlineCollDetails";
+import FrmTownPlanningSectorMapping from "./Pages/Admin/FrmTownPlanningSectorMapping";
+import FrmTradeCategoryConfigMst from "./Pages/Admin/FrmTradeCategoryConfigMst";
+import FrmTradeCategoryConfigList from "./Pages/Admin/FrmTradeCategoryConfigList";
 
 function HomePage() {
   return <div>Welcome to Employee Portal</div>;
