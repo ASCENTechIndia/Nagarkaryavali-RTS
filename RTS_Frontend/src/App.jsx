@@ -1,5 +1,9 @@
-import "./App.css"
-import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
+import "./App.css";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
 import Login from "./Pages/Login/UserID.Login";
 import OTPLogin from "./Pages/Login/OTP.Login";
 import Registration from "./Pages/Login/Registration";
@@ -7,7 +11,7 @@ import ForgotPassword from "./Pages/Login/ForgotPassword";
 import LandingPage from "./Pages/LandingPage";
 import Layout from "./layout/main-layout";
 import PageLayout from "./layout/page-layout";
-import Watermodule from "./Pages/WaterModule/WaterbillCopy/Step0New"
+import Watermodule from "./Pages/WaterModule/WaterbillCopy/Step0New";
 import FrmPropertyAppel from "./Pages/Property/FrmPropertyAppel";
 import FrmRebateTax from "./Pages/Property/FrmRebateTax";
 import FrmNoDuesCerti from "./Pages/Property/FrmNoDuesCerti";
@@ -40,13 +44,13 @@ import FrmMappingConfig from "./Pages/Admin/FrmMappingConfig/FrmMappingConfig";
 import FrmDeptMappingConfig from "./Pages/Admin/FrmDeptMappingConfig/FrmDeptMappingConfig";
 
 function HomePage() {
-    return <div>Welcome to Employee Portal</div>;
+  return <div>Welcome to Employee Portal</div>;
 }
 
 const router = createBrowserRouter([
-    {
+  {
     path: "app/frmEmpLogin",
-    element: <FrmEmpLogin />
+    element: <FrmEmpLogin />,
   },
   {
     path: "/",
@@ -56,7 +60,7 @@ const router = createBrowserRouter([
         path: "/",
         element: <LandingPage />,
       },
-    ]
+    ],
   },
   {
     path: "/",
@@ -80,9 +84,9 @@ const router = createBrowserRouter([
       },
       {
         path: "/app/FrmAfterTransactionTMC",
-        element: <FrmAfterTransactionTMC />
+        element: <FrmAfterTransactionTMC />,
       },
-    ]
+    ],
   },
   {
     path: "/",
@@ -90,28 +94,28 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/app/FrmTrackApplication",
-        element: <FrmTrackApplication />
+        element: <FrmTrackApplication />,
       },
       {
         path: "/app/FrmAppeal",
-        element: <FrmAppeal />
+        element: <FrmAppeal />,
       },
       {
         path: "/app/FrmAppliFee",
-        element: <FrmAppliFee />
+        element: <FrmAppliFee />,
       },
 
       {
         path: "app/Step0New",
-        element: <Watermodule />
+        element: <Watermodule />,
       },
       {
         path: "app/FrmWaterRegister",
-        element: <FrmWaterRegister />
+        element: <FrmWaterRegister />,
       },
       {
         path: "app/FrmPlumberLicense",
-        element: <FrmPlumberLicense />
+        element: <FrmPlumberLicense />,
       },
       {
         path: "/app/FrmAssessmentCerti",
@@ -139,11 +143,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/app/FrmMarketEntry",
-        element: <FrmMarketEntry />
+        element: <FrmMarketEntry />,
       },
       {
         path: "app/FrmMarketLicenseupdt",
-        element: <FrmMarketLicenseUpdt />
+        element: <FrmMarketLicenseUpdt />,
       },
       {
         path: "/app/FrmFirstAppealDocUpload",
@@ -159,7 +163,7 @@ const router = createBrowserRouter([
       // },
       {
         path: "/app/FrmMarriageRgstn",
-        element: <FrmMarriageRgstn />
+        element: <FrmMarriageRgstn />,
       },
       {
         path: "/app/FrmServiceApplicationMst",
@@ -167,40 +171,29 @@ const router = createBrowserRouter([
       },
       {
         path: "/app/FrmServiceApplicationMstNew",
-        element: <FrmServiceApplicationMstNew />
+        element: <FrmServiceApplicationMstNew />,
       },
       {
         path: "/app/FrmAppoints",
-        element: <FrmAppoints />
+        element: <FrmAppoints />,
       },
       {
         path: "/app/FrmRoadCutting",
-        element: <FrmRoadCutting />
+        element: <FrmRoadCutting />,
       },
       {
         path: "/app/Step0",
-        element: <Step0 />
+        element: <Step0 />,
       },
       {
         path: "/app/FrmWaterAppliEntry",
-        element: <FrmWaterAppliEntry />
+        element: <FrmWaterAppliEntry />,
       },
       {
         path: "/app/FrmWaterAppliDetails",
-        element: <FrmWaterAppliDetails />
+        element: <FrmWaterAppliDetails />,
       },
-
-        {
-        path: "/app/FrmMappingConfig",
-        element: <FrmMappingConfig />
-      },
-
-       {
-        path: "/app/FrmDeptMappingConfig",
-        element: <FrmDeptMappingConfig />
-      },
-
-    ]
+    ],
   },
   {
     path: "/",
@@ -212,11 +205,18 @@ const router = createBrowserRouter([
       },
       {
         path: "/app/FrmAppAuthorisationList",
-        element: <FrmAppAuthorisationList />
+        element: <FrmAppAuthorisationList />,
       },
-    ]
+      {
+        path: "/app/FrmMappingConfig",
+        element: <FrmMappingConfig />,
+      },
+      {
+        path: "/app/FrmDeptMappingConfig",
+        element: <FrmDeptMappingConfig />,
+      },
+    ],
   },
-
 ]);
 
 function App() {
