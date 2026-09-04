@@ -17,10 +17,12 @@ const FrmAppAuthorisationList = () => {
 
   const locationState = location.state || {};
 
-  //   const userId = locationState.userId || user?.userId;
-  //   const authMode = locationState.authMode;
-  const userId = "151";
-  const authMode = "CKV";
+  const queryParams = new URLSearchParams(location.search);
+  const authModeFromUrl = queryParams.get("@");
+
+  const authMode = authModeFromUrl;
+  const userId = locationState.userId || user?.userId;
+  const ulbId = locationState.ulbId || user?.ulbId;
 
   const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -165,18 +167,22 @@ const FrmAppAuthorisationList = () => {
     console.log("Selected Row:", row);
 
     const selectedData = {
-      servicid: row.SERVICID,
-      applino: row.APLINO,
-      serviceName: row.SERVICNAME,
-      departId: row.DEPTID,
+        servicid: row.SERVICID,
+        applino: row.APLINO,
+        serviceName: row.SERVICNAME,
+        departId: row.DEPTID,
     };
+
+    const currentAuthMode = authMode;
+
     navigate("/app/FrmAppAuthorisationMst", {
-      state: {
-        selectedData: selectedData,
-        mode: "2",
-      },
+        state: {
+            selectedData: selectedData,
+            mode: "2",
+            authMode: currentAuthMode,
+        },
     });
-  };
+   };
 
   const tableRows = filteredData.map((row) => {
     const formattedRow = {};
