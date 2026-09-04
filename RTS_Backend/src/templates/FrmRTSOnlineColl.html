@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="mr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Transactions Entry Status</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      @page {
+        size: A4 landscape;
+        margin: 5mm;
+      }
+
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: #fff;
+        color: #000;
+      }
+
+      .page {
+        width: 100%;
+        padding: 5px;
+        border: 1px solid #000;
+      }
+
+      .header {
+        position: relative;
+        text-align: center;
+        margin-bottom: 15px;
+        min-height: 90px;
+        border-bottom: 2px solid #000;
+      }
+
+      .logo {
+        position: absolute;
+        left: 10px;
+        top: 5px;
+        width: 85px;
+        height: 70px;
+        object-fit: contain;
+        margin-bottom: 20px;
+      }
+
+      .main-title {
+        font-size: 22px;
+        font-weight: bold;
+        margin-top: 10px;
+        color: #000;
+      }
+
+      .subtitle {
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 2px;
+        color: #000;
+      }
+
+      .report-title {
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 4px;
+      }
+
+      .date-range {
+        font-size: 13px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 6px;
+      }
+
+      .report-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+
+      .report-table th,
+      .report-table td {
+        border: 1px solid #000;
+        padding: 3px 5px;
+        white-space: nowrap;
+      }
+
+      .report-table th {
+        font-weight: bold;
+        text-align: center;
+        color: #000;
+      }
+
+      /* Column Alignments */
+      .col-srno {
+        width: 4%;
+        text-align: center;
+      }
+
+      .col-date {
+        width: 9%;
+        text-align: center;
+      }
+
+      .col-zone {
+        width: 8%;
+        text-align: center;
+      }
+
+      .col-dept {
+        width: 30%;
+        text-align: left;
+      }
+
+      .col-user {
+        width: 12%;
+        text-align: center;
+      }
+
+      .col-receipt {
+        width: 12%;
+        text-align: center;
+      }
+
+      .col-txn {
+        width: 12%;
+        text-align: center;
+      }
+
+      .col-count {
+        width: 6%;
+        text-align: center;
+      }
+
+      .col-amount {
+        width: 7%;
+        text-align: right;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <!-- HEADER SECTION -->
+      <div class="header">
+        <img src="{{leftLogo}}" class="logo" />
+        <div class="main-title">ठाणे महानगरपालिका, ठाणे</div>
+        <div class="subtitle">
+          महाराष्ट्र लोकसेवा हक्क अधिनियम, २०१५ अंतर्गत
+        </div>
+      </div>
+
+      <!-- TABLE SECTION -->
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th class="col-srno">Sr.No.</th>
+            <th class="col-date">Application No.</th>
+            <th class="col-zone">Name </th>
+            <th class="col-dept">No. of copy</th>
+            <th class="col-user">STATUS</th>
+            <th class="col-receipt">Reciept No.</th>
+            <th class="col-txn">Online Ref No.</th>
+            <th class="col-count">Reciept Date</th>
+            <th class="col-amount">EmailId</th>
+            <th class="col-amount"> Moblile No.</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each rows}}
+          <tr>
+            <td class="col-srno">{{srNo}}</td>
+            <td class="col-date">{{appNo}}</td>
+            <td class="col-zone">{{name}}</td>
+            <td class="col-dept">{{noOfCopy}}</td>
+            <td class="col-user">{{status}}</td>
+            <td class="col-receipt">{{receiptNo}}</td>
+            <td class="col-txn">{{billdeskRefNo}}</td>
+            <td class="col-count">{{receiptDate}}</td>
+            <td class="col-amount">{{emailId}}</td>
+            <td class="col-amount">{{mobileNo}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>
