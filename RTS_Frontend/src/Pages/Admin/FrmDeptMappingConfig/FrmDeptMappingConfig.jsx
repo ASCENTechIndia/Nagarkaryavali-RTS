@@ -8,6 +8,8 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import config from "@/utils/config";
+import getIPAddress from "@/utils/ipHelper";
 
 import {
 Select,
@@ -346,7 +348,7 @@ try {
   /* ============================
      PAYLOAD
   ============================ */
-
+const ipAddress = await getIPAddress();
   const payload = {
     loginUserId: String(loginUserId),
     ulbid: Number(ulbid),
@@ -358,8 +360,8 @@ try {
     deptConfigStr:
       values.selectedDepartments.join("#"),
 
-    ipAddress: "127.0.0.1",
-    source: "WEB",
+    ipAddress: ipAddress,
+    source: config.source ,
   };
 
   console.log(

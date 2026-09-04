@@ -8,6 +8,8 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import config from "@/utils/config";
+import getIPAddress from "@/utils/ipHelper";
 
 import {
   Select,
@@ -230,14 +232,14 @@ const FrmMappingConfig = () => {
 
         return;
       }
-
+const ipAddress = await getIPAddress();
       const payload = {
         loginUserId: String(userId),
         ulbid: Number(ulbid),
         userId: String(values.userId),
         blockConfigStr: values.selectedWards.join("#"),
-        ipAddress: "127.0.0.1",
-        source: "WEB",
+        ipAddress: ipAddress,
+        source: config.source ,
       };
       Swal.fire({
         title: "Saving...",
