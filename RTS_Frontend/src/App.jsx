@@ -37,6 +37,8 @@ import FrmEmpLogin from "./Pages/Login/FrmEmpLogin";
 import AdminLayout from "./layout/admin-layout";
 import FrmAppAuthorisationList from "./Pages/Admin/FrmAppAuthorisationList";
 import FrmAppAuthorisationMst from "./Pages/Admin/FrmAppAuthorisationMst";
+import FrmRTSOnlineColl from "./Pages/Admin/FrmRTSOnlineColl";
+import FrmRTSOnlineCollDetails from "./Pages/Admin/FrmRTSOnlineCollDetails";
 
 function HomePage() {
     return <div>Welcome to Employee Portal</div>;
@@ -206,7 +208,14 @@ const router = createBrowserRouter([
       {
         path: "/App/FrmAppAuthorisationMst",
         element: <FrmAppAuthorisationMst />
+      },{
+      path: "/app/Reports/FrmRTSOnlineColl",
+        element: <FrmRTSOnlineColl />
       },
+      {
+        path: "/app/Reports/FrmRTSOnlineCollDetails",
+        element: <FrmRTSOnlineCollDetails />
+      }
     ]
   },
 
