@@ -11,8 +11,9 @@ const DepartmentSidebar = ({ items = [], selectedId, onSelect, title = "DEPARTME
     const handleNavigation = (item) => {
         if (!item?.path) return false;
 
-        const serviceUrl = item.path ? item.path.replace(/^\~?\.?\//, "/").replace(/\.aspx(?=\?|$)/i, "") : "";
+        const serviceUrl = item.path.trim().replace(/^(\~\/|\.\.\/|\.\/)/, "/").replace(/\.aspx(?=\?|$)/i, "");
         if (!serviceUrl) return false;
+        
         navigate(serviceUrl);
         return true;
     };

@@ -37,13 +37,16 @@ import FrmEmpLogin from "./Pages/Login/FrmEmpLogin";
 import AdminLayout from "./layout/admin-layout";
 import FrmAppAuthorisationList from "./Pages/Admin/FrmAppAuthorisationList";
 import FrmAppAuthorisationMst from "./Pages/Admin/FrmAppAuthorisationMst";
+import FrmDocList from "./Pages/Admin/FrmDocList";
+import FrmDocMst from "./Pages/Admin/FrmDocMst";
+import FrmServiceDocConfig from "./Pages/Admin/FrmServiceDocConfig";
 
 function HomePage() {
-    return <div>Welcome to Employee Portal</div>;
+  return <div>Welcome to Employee Portal</div>;
 }
 
 const router = createBrowserRouter([
-    {
+  {
     path: "app/frmEmpLogin",
     element: <FrmEmpLogin />
   },
@@ -169,7 +172,7 @@ const router = createBrowserRouter([
         element: <FrmServiceApplicationMstNew />
       },
       {
-         path: "/app/FrmAppoints",
+        path: "/app/FrmAppoints",
         element: <FrmAppoints />
       },
       {
@@ -177,12 +180,12 @@ const router = createBrowserRouter([
         element: <FrmRoadCutting />
       },
       {
-         path: "/app/Step0",
+        path: "/app/Step0",
         element: <Step0 />
       },
       {
-        path:"/app/FrmWaterAppliEntry",
-        element:<FrmWaterAppliEntry />
+        path: "/app/FrmWaterAppliEntry",
+        element: <FrmWaterAppliEntry />
       },
       {
         path: "/app/FrmWaterAppliDetails",
@@ -206,6 +209,18 @@ const router = createBrowserRouter([
       {
         path: "/App/FrmAppAuthorisationMst",
         element: <FrmAppAuthorisationMst />
+      },
+      {
+        path: "/app/FrmDocList",
+        element: <FrmDocList />
+      },
+      {
+        path: "/app/FrmDocMst",
+        element: <FrmDocMst />
+      },
+      {
+        path: "/app/FrmServiceDocConfig",
+        element: <FrmServiceDocConfig />
       },
     ]
   },
