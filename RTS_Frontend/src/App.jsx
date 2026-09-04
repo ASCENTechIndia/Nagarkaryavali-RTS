@@ -36,13 +36,16 @@ import FrmWaterAppliDetails from "./Pages/WaterModule/FrmWaterAppliDetails";
 import FrmEmpLogin from "./Pages/Login/FrmEmpLogin";
 import AdminLayout from "./layout/admin-layout";
 import FrmAppAuthorisationList from "./Pages/Admin/FrmAppAuthorisationList";
+import FrmTownPlanningSectorMapping from "./Pages/Admin/FrmTownPlanningSectorMapping";
+import FrmTradeCategoryConfigList from "./Pages/Admin/FrmTradeCategoryConfigList";
+import FrmTradeCategoryConfigMst from "./Pages/Admin/FrmTradeCategoryConfigMst";
 
 function HomePage() {
-    return <div>Welcome to Employee Portal</div>;
+  return <div>Welcome to Employee Portal</div>;
 }
 
 const router = createBrowserRouter([
-    {
+  {
     path: "app/frmEmpLogin",
     element: <FrmEmpLogin />
   },
@@ -201,6 +204,18 @@ const router = createBrowserRouter([
       {
         path: "/app/FrmAppAuthorisationList",
         element: <FrmAppAuthorisationList />
+      },
+      {
+        path: "App/FrmPwdSectorMapingConfg",
+        element: <FrmTownPlanningSectorMapping />
+      },
+      {
+        path: "App/FrmTradeCtgryCnfgList",
+        element: <FrmTradeCategoryConfigList />
+      },
+      {
+        path: "App/FrmTradeCategoryConfigMst",
+        element: <FrmTradeCategoryConfigMst />
       },
     ]
   },

@@ -120,7 +120,13 @@ app.use("/api/FrmRoadCutting", require("./modules/PWD/FrmRoadCutting.route"));
 //AFrmAppAutherisation
 
 app.use("/api/frmAppAuth", require("./modules/AdminDepartment/FrmAppAuth/frmAppAuth.routes"));
-app.use("/api/Doclist",require("./modules/AdminDepartment/FrmDocList/frmDocList.routes"))
+app.use("/api/Doclist",require("./modules/AdminDepartment/FrmDocList/frmDocList.routes"));
+
+// Town Planning Sector Mapping
+app.use("/api/FrmTownPlanningSectorMapping", require("./modules/AdminDepartment/FrmTownPlanningSectorMapping/frmTownPlanningSectorMapping.routes"));
+
+// Trade Category Configuration
+app.use("/api/FrmTradeCategoryConfig", require("./modules/AdminDepartment/FrmTradeCategoryConfigList/frmTradeCategoryConfig.routes"));
 
 
 app.use(errorMiddleware);
