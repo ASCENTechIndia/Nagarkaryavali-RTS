@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-
 import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
 import Swal from "sweetalert2";
@@ -34,7 +33,7 @@ const FrmMappingConfig = () => {
 
   const ulbid = user?.ulbId || user?.ulbid;
 
-  const userId = user?.userId || user?.userid || user?.USERID;
+  const loginUserId = user?.userId || user?.userid || user?.USERID;
 
   const initialValues = {
     userId: "",
@@ -42,48 +41,38 @@ const FrmMappingConfig = () => {
   };
 
   const getUserDropdown = async () => {
-    try {
-      const response = await axios.get(
-        `${baseUrl}/api/FrmMappingConfig/user-dropdown`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+    const response = await axios.get(
+      `${baseUrl}/api/FrmMappingConfig/user-dropdown`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-      );
+      },
+    );
 
-      setUsers(response?.data?.data?.data || []);
-    } catch (error) {
-      console.error("User Dropdown Error:", error);
+    const data = response?.data?.data?.data || [];
 
-      setUsers([]);
-
-      throw error;
-    }
+    setUsers(data);
   };
 
   const getWardDropdown = async () => {
-    try {
-      const response = await axios.get(
-        `${baseUrl}/api/FrmMappingConfig/ward-dropdown`,
-        {
-          params: {
-            ulbid,
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+    const response = await axios.get(
+      `${baseUrl}/api/FrmMappingConfig/ward-dropdown`,
+      {
+        params: {
+          ulbid,
         },
-      );
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
 
-      setWards(response?.data?.data?.data || []);
-    } catch (error) {
-      console.error("Ward Dropdown Error:", error);
+    const data = response?.data?.data?.data || [];
 
-      setWards([]);
-
-      throw error;
-    }
+    setWards(data);
   };
 
   useEffect(() => {
@@ -93,7 +82,7 @@ const FrmMappingConfig = () => {
       setInitialLoading(true);
 
       Swal.fire({
-        title: "Loading...",
+        text: "Loading...",
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
@@ -109,20 +98,18 @@ const FrmMappingConfig = () => {
         const rejected = results.find((result) => result.status === "rejected");
 
         if (rejected) {
-          console.error("Initial API Load Error:", rejected.reason);
-
-          Swal.fire({
-            icon: "error",
-            text:
-              rejected.reason?.response?.data?.message ||
-              "Failed to load page data",
-            confirmButtonColor: "#083c76",
-          });
-        } else {
-          Swal.close();
+          throw rejected.reason;
         }
+
+        Swal.close();
       } catch (error) {
-        console.error(error);
+        console.error("Initial Load Error:", error);
+
+        Swal.fire({
+          // icon: "error",
+          text: error?.response?.data?.message || "Failed to load page data",
+          confirmButtonColor: "#083c76",
+        });
       } finally {
         setInitialLoading(false);
       }
@@ -131,8 +118,8 @@ const FrmMappingConfig = () => {
     loadInitialData();
   }, [ulbid, token]);
 
-  const getUserWardConfig = async (userId, setFieldValue) => {
-    if (!userId) {
+  const getUserWardConfig = async (selectedUserId, setFieldValue) => {
+    if (!selectedUserId) {
       setFieldValue("selectedWards", []);
       return;
     }
@@ -144,10 +131,11 @@ const FrmMappingConfig = () => {
         `${baseUrl}/api/FrmMappingConfig/user-ward-config`,
         {
           params: {
-            userId,
+            userId: selectedUserId,
           },
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         },
       );
@@ -162,14 +150,15 @@ const FrmMappingConfig = () => {
 
       setFieldValue("selectedWards", []);
 
-      const message =
-        error?.response?.data?.message || "Failed to load user configuration";
-
-      Swal.fire({
-        icon: "error",
-        text: message,
-        confirmButtonColor: "#083c76",
-      });
+      if (error?.response?.status !== 404) {
+        Swal.fire({
+          // icon: "error",
+          text:
+            error?.response?.data?.message ||
+            "Failed to load user configuration",
+          confirmButtonColor: "#083c76",
+        });
+      }
     } finally {
       setConfigLoading(false);
     }
@@ -177,8 +166,6 @@ const FrmMappingConfig = () => {
 
   const handleUserChange = async (value, setFieldValue) => {
     setFieldValue("userId", value);
-
-    // Clear old user's wards
     setFieldValue("selectedWards", []);
 
     await getUserWardConfig(value, setFieldValue);
@@ -215,32 +202,42 @@ const FrmMappingConfig = () => {
     try {
       if (!values.userId) {
         Swal.fire({
-          icon: "warning",
+          // icon: "warning",
           text: "Please Select User",
           confirmButtonColor: "#083c76",
         });
-
         return;
       }
 
-      if (!values.selectedWards || values.selectedWards.length === 0) {
+      if (values.selectedWards.length === 0) {
         Swal.fire({
-          icon: "warning",
+          // icon: "warning",
           text: "Please Select At Least One Ward",
           confirmButtonColor: "#083c76",
         });
-
         return;
       }
-const ipAddress = await getIPAddress();
+
+      if (!loginUserId || !ulbid) {
+        Swal.fire({
+          // icon: "warning",
+          text: "Login information not found",
+          confirmButtonColor: "#083c76",
+        });
+        return;
+      }
+
+      const ipAddress = await getIPAddress();
+
       const payload = {
-        loginUserId: String(userId),
+        loginUserId: String(loginUserId),
         ulbid: Number(ulbid),
         userId: String(values.userId),
         blockConfigStr: values.selectedWards.join("#"),
-        ipAddress: ipAddress,
-        source: config.source ,
+        ipAddress,
+        source: config.source || "WEB",
       };
+
       Swal.fire({
         title: "Saving...",
         allowOutsideClick: false,
@@ -271,7 +268,7 @@ const ipAddress = await getIPAddress();
       }
 
       Swal.fire({
-        icon: "success",
+        // icon: "success",
         text:
           result?.message ||
           response?.data?.message ||
@@ -282,7 +279,7 @@ const ipAddress = await getIPAddress();
       console.error("Submit Error:", error);
 
       Swal.fire({
-        icon: "error",
+        // icon: "error",
         text:
           error?.response?.data?.data?.message ||
           error?.response?.data?.message ||
@@ -297,11 +294,17 @@ const ipAddress = await getIPAddress();
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-      {({ values, setFieldValue, isSubmitting, resetForm }) => {
+      {({ values, setFieldValue, isSubmitting }) => {
         const tableData = wards.map((item) => ({
           ...item,
           checked: values.selectedWards.includes(Number(item.WARDID)),
         }));
+
+        const allWardsSelected =
+          wards.length > 0 &&
+          wards.every((item) =>
+            values.selectedWards.includes(Number(item.WARDID)),
+          );
 
         const headers = ["Select", "Ward Name"];
 
@@ -381,7 +384,7 @@ const ipAddress = await getIPAddress();
                       className="pt-2"
                     >
                       {configLoading ? (
-                        <div className="py-8 text-center">
+                        <div className="py-8 text-center text-sm text-muted-foreground">
                           Loading configuration...
                         </div>
                       ) : (
@@ -391,6 +394,7 @@ const ipAddress = await getIPAddress();
                           keyMapping={keyMapping}
                           columnStyles={columnStyles}
                           pagination={false}
+                          selectAllChecked={allWardsSelected}
                           onSelectAllChange={(checked) =>
                             handleSelectAll(checked, setFieldValue)
                           }
@@ -404,20 +408,23 @@ const ipAddress = await getIPAddress();
                           }
                         />
                       )}
+
+                      <div className="mt-4 flex flex-col items-center justify-center gap-3 border-t pt-4 sm:flex-row">
+                        <Button
+                          type="submit"
+                          disabled={
+                            isSubmitting || initialLoading || configLoading
+                          }
+                        >
+                          {isSubmitting ? "Submitting..." : "Submit"}
+                        </Button>
+
+                        <Button type="button" variant="outline" path="/">
+                          Back
+                        </Button>
+                      </div>
                     </motion.div>
                   )}
-
-                  <div className="mt-4 flex flex-col items-center justify-center gap-3 border-t pt-4 sm:flex-row">
-                    <Button
-                      type="submit"
-                      disabled={isSubmitting || initialLoading || configLoading}
-                    >
-                      {isSubmitting ? "Submitting..." : "Submit"}
-                    </Button>
-                    <Button type="button" variant="outline" path="/dashboard">
-                      Back
-                    </Button>
-                  </div>
                 </CardContent>
               </Card>
             </motion.div>
