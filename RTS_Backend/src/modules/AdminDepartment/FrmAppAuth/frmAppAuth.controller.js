@@ -3,6 +3,37 @@ const { ok } = require("../../../libs/response");
 const { AppError } = require("../../../libs/errors");
 
 const service = require("./frmAppAuth.service");
+const crypto = require("crypto");
+
+const ENCRYPTION_KEY = "AS23N7E2H4V717DEAS23N7E2H4V717DE";
+const IV_LENGTH = 16;
+
+const encryptString = (plainText) => {
+  try {
+    const key = Buffer.from(ENCRYPTION_KEY, "utf8");
+    const iv = Buffer.alloc(16, 0);
+    
+    const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+    let encrypted = cipher.update(plainText, "utf8", "hex");
+    encrypted += cipher.final("hex");
+    
+    return encrypted.toUpperCase();
+  } catch (error) {
+    console.error("Encryption error:", error);
+    return plainText;
+  }
+};
+
+const generateTinyUrl = (applino) => {
+  try {
+    const encrypted = encryptString(applino);
+    const longUrl = `https://nagarkaryavaliuat.com/TMCRTS_New/APP/FrmAppliFee.aspx?@=${encrypted}`;
+    return longUrl;
+  } catch (error) {
+    console.error("TinyURL generation error:", error);
+    return `https://nagarkaryavaliuat.com/TMCRTS_New/APP/FrmAppliFee.aspx?@=${applino}`;
+  }
+};
 
 // ============================================================
 // GET USER PRABHAG LIST
@@ -212,6 +243,17 @@ const applicationAuth = asyncHandler(async (req, res) => {
     throw new AppError("mode is required", 400);
   }
 
+  let finalTinyUrl = tinyUrl || "";
+  if (mode === "CKV" && applicationNo) {
+    try {
+      finalTinyUrl = generateTinyUrl(applicationNo);
+      console.log("Generated TinyURL for CKV mode:", finalTinyUrl);
+    } catch (error) {
+      console.error("Error generating TinyURL:", error);
+      finalTinyUrl = "";
+    }
+  }
+
   const result = await service.applicationAuthService({
     userId,
     applicationNo,
@@ -220,7 +262,7 @@ const applicationAuth = asyncHandler(async (req, res) => {
     amount,
     mode,
     clerkId,
-    tinyUrl,
+    tinyUrl: finalTinyUrl,
   });
 
   if (!result.success) {
@@ -234,7 +276,10 @@ const applicationAuth = asyncHandler(async (req, res) => {
     status: "SUCCESS",
     message: result.errorMsg || "Application authorized successfully.",
     errorCode: result.errorCode,
-    data: result,
+    data: {
+      ...result,
+      tinyUrl: finalTinyUrl
+    },
   });
 });
 
@@ -333,6 +378,155 @@ const getMenuDetails = asyncHandler(async (req, res) => {
   return ok(res, result);
 });
 
+const certificatePreview = asyncHandler(async (req, res) => {
+  console.log("================================================");
+  console.log("Request: Certificate Preview");
+  console.log("Request Body:", req.body);
+  console.log("================================================");
+
+  const { userId, applino, serviceid, applidata } = req.body;
+
+  if (!userId) {
+    throw new AppError("userId is required", 400);
+  }
+
+  if (!applino) {
+    throw new AppError("applino is required", 400);
+  }
+
+  if (!serviceid) {
+    throw new AppError("serviceid is required", 400);
+  }
+
+  const result = await service.certificateDataService({
+    userId,
+    applino,
+    serviceid,
+    applidata: applidata || "",
+  });
+
+  if (!result.success) {
+    throw new AppError(result.errorMsg || "Failed to generate certificate.", 500);
+  }
+
+  return ok(res, {
+    status: "SUCCESS",
+    message: "Certificate generated successfully.",
+    data: {
+      certificateUrl: `/api/frmAppAuth/certificate-preview/${applino}`,
+      ...result,
+    },
+  });
+});
+
+const tradeCertificate = asyncHandler(async (req, res) => {
+  console.log("================================================");
+  console.log("Request: Trade Certificate");
+  console.log("Request Body:", req.body);
+  console.log("================================================");
+
+  const { userId, applino, serviceid, tradeType, tradeData } = req.body;
+
+  if (!userId) {
+    throw new AppError("userId is required", 400);
+  }
+
+  if (!applino) {
+    throw new AppError("applino is required", 400);
+  }
+
+  if (!serviceid) {
+    throw new AppError("serviceid is required", 400);
+  }
+
+  if (!tradeType) {
+    throw new AppError("tradeType is required", 400);
+  }
+
+  let applidata = "";
+  if (tradeType === "T") {
+    applidata = [
+      tradeType,
+      tradeData.business || "",
+      tradeData.fromDt || "",
+      tradeData.toDt || "",
+      tradeData.totalArea || "",
+      tradeData.machineryCount || "",
+      tradeData.employeeCount || "",
+      tradeData.electricityApproval || "",
+      tradeData.fireSafety || "",
+      tradeData.firstAid || "",
+      tradeData.licenseNo || "",
+      tradeData.year || "",
+      tradeData.renewalDt || "",
+      tradeData.receiptNo || "",
+      tradeData.amount || "",
+    ].join("~");
+  } else if (tradeType === "S") {
+    applidata = [
+      tradeType,
+      tradeData.name || "",
+      tradeData.buildingNo || "",
+      tradeData.situated || "",
+      tradeData.noOfArticles || "",
+      tradeData.quantity || "",
+    ].join("~");
+  }
+
+  const result = await service.certificateDataService({
+    userId,
+    applino,
+    serviceid,
+    applidata,
+  });
+
+  if (!result.success) {
+    throw new AppError(result.errorMsg || "Failed to generate trade certificate.", 500);
+  }
+
+  return ok(res, {
+    status: "SUCCESS",
+    message: "Trade certificate generated successfully.",
+    data: result,
+  });
+});
+
+const updateDocumentFlag = asyncHandler(async (req, res) => {
+  console.log("================================================");
+  console.log("Request: Update Document Flag");
+  console.log("Request Body:", req.body);
+  console.log("================================================");
+
+  const { appNo, docId } = req.body;
+
+  if (!appNo) {
+    throw new AppError("appNo is required", 400);
+  }
+
+  if (!docId) {
+    throw new AppError("docId is required", 400);
+  }
+
+  const result = await service.updateDocumentFlagService({
+    appNo,
+    docId,
+  });
+
+  if (!result.success) {
+    throw new AppError(result.error || "Failed to update document flag.", 500);
+  }
+
+  return ok(res, {
+    status: "SUCCESS",
+    message: "Document verified successfully.",
+    data: {
+      appNo,
+      docId,
+      vrfyFlag: "Y",
+    },
+  });
+});
+
 module.exports = {
   getUserPrabhagList,
   getUserDeptList,
@@ -342,5 +536,8 @@ module.exports = {
   getApplicationDetails,
   applicationAuth,
   saveApplicationVerificationDocument,
-  getMenuDetails
+  getMenuDetails,
+  certificatePreview,
+  tradeCertificate,
+  updateDocumentFlag
 };

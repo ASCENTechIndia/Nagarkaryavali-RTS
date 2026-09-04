@@ -40,8 +40,16 @@ import FrmWaterAppliDetails from "./Pages/WaterModule/FrmWaterAppliDetails";
 import FrmEmpLogin from "./Pages/Login/FrmEmpLogin";
 import AdminLayout from "./layout/admin-layout";
 import FrmAppAuthorisationList from "./Pages/Admin/FrmAppAuthorisationList";
-import FrmMappingConfig from "./Pages/Admin/FrmMappingConfig/FrmMappingConfig";
+import FrmAppAuthorisationMst from "./Pages/Admin/FrmAppAuthorisationMst";
+import FrmDocList from "./Pages/Admin/FrmDocList";
+import FrmDocMst from "./Pages/Admin/FrmDocMst";
+import FrmServiceDocConfig from "./Pages/Admin/FrmServiceDocConfig";
+import FrmRTSOnlineColl from "./Pages/Admin/FrmRTSOnlineColl";
+import FrmRTSOnlineCollDetails from "./Pages/Admin/FrmRTSOnlineCollDetails";
 import FrmDeptMappingConfig from "./Pages/Admin/FrmDeptMappingConfig/FrmDeptMappingConfig";
+import FrmMappingConfig from "./Pages/Admin/FrmMappingConfig/FrmMappingConfig";
+import FrmTradeCtgryList from "./Pages/Admin/FrmTradeCtgList/FrmTradeCtgList";
+import FrmTradeCtgMst from "./Pages/Admin/FrmTradeCtgList/FrmTradeCtgMst";
 
 function HomePage() {
   return <div>Welcome to Employee Portal</div>;
@@ -193,7 +201,29 @@ const router = createBrowserRouter([
         path: "/app/FrmWaterAppliDetails",
         element: <FrmWaterAppliDetails />,
       },
-    ],
+
+        {
+        path: "/app/FrmMappingConfig",
+        element: <FrmMappingConfig />
+      },
+
+       {
+        path: "/app/FrmDeptMappingConfig",
+        element: <FrmDeptMappingConfig />
+      },
+
+       {
+        path: "/App/FrmTradeCtgryList",
+        element: <FrmTradeCtgryList />
+      },
+
+      
+       {
+        path: "/Masters/FrmTradeCtgMst",
+        element: <FrmTradeCtgMst />
+      },
+
+    ]
   },
   {
     path: "/",
@@ -205,17 +235,9 @@ const router = createBrowserRouter([
       },
       {
         path: "/app/FrmAppAuthorisationList",
-        element: <FrmAppAuthorisationList />,
+        element: <FrmAppAuthorisationList />
       },
-      {
-        path: "/app/FrmMappingConfig",
-        element: <FrmMappingConfig />,
-      },
-      {
-        path: "/app/FrmDeptMappingConfig",
-        element: <FrmDeptMappingConfig />,
-      },
-    ],
+    ]
   },
 ]);
 
