@@ -45,6 +45,10 @@ import FrmRTSOnlineCollDetails from "./Pages/Admin/FrmRTSOnlineCollDetails";
 import FrmTownPlanningSectorMapping from "./Pages/Admin/FrmTownPlanningSectorMapping";
 import FrmTradeCategoryConfigMst from "./Pages/Admin/FrmTradeCategoryConfigMst";
 import FrmTradeCategoryConfigList from "./Pages/Admin/FrmTradeCategoryConfigList";
+import FrmMappingConfig from "./Pages/Admin/FrmMappingConfig/FrmMappingConfig";
+import FrmDeptMappingConfig from "./Pages/Admin/FrmDeptMappingConfig/FrmDeptMappingConfig";
+import FrmTradeCtgMst from "./Pages/Admin/FrmTradeCtgList/FrmTradeCtgMst";
+import FrmTradeCtgryList from "./Pages/Admin/FrmTradeCtgList/FrmTradeCtgList";
 
 function HomePage() {
   return <div>Welcome to Employee Portal</div>;
@@ -246,6 +250,23 @@ const router = createBrowserRouter([
       {
         path: "App/FrmTradeCategoryConfigMst",
         element: <FrmTradeCategoryConfigMst />
+      },
+      {
+        path: "/app/FrmMappingConfig",
+        element: <FrmMappingConfig />
+      },
+
+      {
+        path: "/app/FrmDeptMappingConfig",
+        element: <FrmDeptMappingConfig />
+      },
+      {
+        path: "/App/FrmTradeCtgryList",
+        element: <FrmTradeCtgryList />
+      },
+      {
+        path: "/Masters/FrmTradeCtgMst",
+        element: <FrmTradeCtgMst />
       },
 
     ]
