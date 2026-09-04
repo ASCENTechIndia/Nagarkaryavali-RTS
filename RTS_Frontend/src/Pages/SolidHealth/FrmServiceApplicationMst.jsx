@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import config from "@/utils/config";
 
 const initialValues = {
   applicantName: "",
@@ -417,11 +418,6 @@ const fetchVillages = async (sectorId) => {
             Authorization: `Bearer ${token || localStorage.getItem("token")}`,
             "Content-Type": "multipart/form-data",
           },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setUploadProgress(percentCompleted);
-            console.log(`Upload progress: ${percentCompleted}%`);
-          },
         }
       );
 
@@ -515,7 +511,8 @@ const fetchVillages = async (sectorId) => {
         locality: values.locality?.trim() || "",
         landmark: values.landmark?.trim() || "",
         pincode: values.pincode ? Number(values.pincode) : 0,
-        source: "WEB",
+        //source: "WEB",
+        source: config.source,
       };
 
     if (isSectorVisible) {
@@ -549,8 +546,6 @@ const fetchVillages = async (sectorId) => {
 
       const applicationNo = saveResponse.data.applicationNo;
       const message = saveResponse.data.message || "Application submitted successfully";
-
-      console.log(`Application saved with number: ${applicationNo}`);
 
       sessionStorage.setItem("Appno", applicationNo);
       sessionStorage.setItem("Service", pageTitle);
