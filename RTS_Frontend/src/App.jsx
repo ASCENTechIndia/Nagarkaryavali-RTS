@@ -231,7 +231,20 @@ const router = createBrowserRouter([
       {
         path: "/app/Reports/FrmRTSOnlineCollDetails",
         element: <FrmRTSOnlineCollDetails />
-      }
+      },
+      {
+        path: "App/FrmPwdSectorMapingConfg",
+        element: <FrmTownPlanningSectorMapping />
+      },
+      {
+        path: "App/FrmTradeCtgryCnfgList",
+        element: <FrmTradeCategoryConfigList />
+      },
+      {
+        path: "App/FrmTradeCategoryConfigMst",
+        element: <FrmTradeCategoryConfigMst />
+      },
+
     ]
   },
 
