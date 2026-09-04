@@ -116,10 +116,14 @@ app.use("/api/FrmRoadCutting", require("./modules/PWD/FrmRoadCutting.route"));
 
 
 //AdminDepartmet
+app.use("/api/FrmMappingConfig", require("./modules/admin/FrmMappingConfig/FrmMappingConfig.route"));
+app.use("/api/FrmDeptMappingConfig", require("./modules/admin/FrmDeptMappingConfig/FrmDeptMappingConfig.route"));
 
 //AFrmAppAutherisation
-
 app.use("/api/frmAppAuth", require("./modules/AdminDepartment/FrmAppAuth/frmAppAuth.routes"));
+
+
+
 
 
 app.use(errorMiddleware);
