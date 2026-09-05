@@ -131,7 +131,7 @@ app.use("/api/FrmDashboardAll", require("./modules/AdminDepartment/FrmDashboardA
 app.use("/api/FrmTradeCtgrytypListMst", require("./modules/AdminDepartment/FrmTradeCtgrytypListMst/FrmTradeCtgrytypListMst.route"));
 app.use("/api/FrmFirstAppealAuthoRpt", require("./modules/AdminDepartment/FrmFirstAppealAuthoRpt/FrmFirstAppealAuthoRpt.route"));
 app.use("/api/FrmSecondAppealAutoRpt", require("./modules/AdminDepartment/FrmSecondAppealAutoRpt/FrmSecondAppealAutoRpt.route"));
-
+app.use("/api/FrmChallanGenReport", require("./modules/AdminDepartment/FrmChallanGenReport/FrmChallanGenReport.routes"));
 
 app.use(errorMiddleware);
 
