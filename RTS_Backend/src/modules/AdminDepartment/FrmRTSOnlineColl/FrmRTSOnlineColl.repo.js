@@ -13,6 +13,10 @@ async function fetchDepartments() {
 }
 
 async function fetchApplicationsSummary({ fromDate, toDate, deptId }) {
+  console.log("depatment id ", deptId)
+  console.log(typeof(deptId));
+  const binds = {fromDate, toDate};
+
   let sql = `
     SELECT 
       num_application_serviceid AS serviceid,
@@ -28,19 +32,19 @@ async function fetchApplicationsSummary({ fromDate, toDate, deptId }) {
       AND var_application_recieptrefno IS NOT NULL
   `;
 
-  if (deptId && deptId !== -1) {
+  if (deptId !== 0) {
     sql += ` AND num_application_deptid = :deptId `;
+    binds.deptId = deptId;
   }
 
   sql += ` GROUP BY num_application_serviceid, var_service_eng_name`;
 
-  const binds = {
-    fromDate,
-    toDate,
-    deptId: deptId !== -1 ? Number(deptId) : undefined
-  };
+  console.log("SQL", sql);
+
+  console.log("binds: ", binds);
 
   const result = await executeQueryTMC( sql, binds );
+  console.log("result: ", result);
   return result.rows || [];
 }
 

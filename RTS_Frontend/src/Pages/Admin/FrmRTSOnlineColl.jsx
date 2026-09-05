@@ -123,7 +123,7 @@ const FrmRTSOnlineColl = () => {
       const payload = {
         fromDate: formatDate(values.fromDate),
         toDate: formatDate(values.toDate),
-        deptId: Number(values.department) || -1,
+        deptId: Number(values.department) || 0,
       };
 
       console.log("Applications Summary Payload:", payload);
