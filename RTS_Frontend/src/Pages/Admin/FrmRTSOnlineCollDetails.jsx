@@ -11,20 +11,7 @@ import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import * as XLSX from "xlsx";
 
-const initialValues = {
-  ptn: "",
-  landHolder: "",
-  structureHolder: "",
-  ownerDetails: "",
-  address: "",
-  applicantName: "",
-  mobileNo: "",
-  emailId: "",
-  aadharNo: "",
-  objectionType: "",
-  objectionDescription: "",
-  document: null,
-};
+const initialValues = {};
 
 const FrmRTSOnlineCollDetails = () => {
   const navigate = useNavigate();
@@ -77,10 +64,10 @@ const FrmRTSOnlineCollDetails = () => {
     try {
       setIsSearching(true);
 
-      if (!fromDate || !toDate || !deptId || !serviceId) {
+      if (!fromDate || !toDate || !serviceId) {
         Swal.fire({
           title: "Missing Information",
-          text: "From Date, To Date, Service ID and Department ID are required.",
+          text: "From Date, To Date, Service ID are required.",
         });
 
         return;
@@ -316,7 +303,7 @@ const FrmRTSOnlineCollDetails = () => {
             <Card className="border shadow-sm">
               <CardHeader className="border-b">
                 <CardTitle className="text-lg font-semibold">
-                  RTS Online Collection
+                  RTS Online Collection Details
                 </CardTitle>
               </CardHeader>
 

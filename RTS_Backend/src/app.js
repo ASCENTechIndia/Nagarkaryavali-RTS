@@ -126,7 +126,9 @@ app.use("/api/FrmTradeCategoryConfig", require("./modules/AdminDepartment/FrmTra
 app.use("/api/frmAppAuth", require("./modules/AdminDepartment/FrmAppAuth/frmAppAuth.routes"));
 app.use("/api/Doclist",require("./modules/AdminDepartment/FrmDocList/frmDocList.routes"))
 app.use("/api/FrmRTSOnlineColl", require("./modules/AdminDepartment/FrmRTSOnlineColl/FrmRTSOnlineColl.route"));
-
+app.use("/api/FrmTradeCtgrytypListMst", require("./modules/AdminDepartment/FrmTradeCtgrytypListMst/FrmTradeCtgrytypListMst.route"));
+app.use("/api/FrmFirstAppealAuthoRpt", require("./modules/AdminDepartment/FrmFirstAppealAuthoRpt/FrmFirstAppealAuthoRpt.route"));
+app.use("/api/FrmSecondAppealAutoRpt", require("./modules/AdminDepartment/FrmSecondAppealAutoRpt/FrmSecondAppealAutoRpt.route"));
 
 
 

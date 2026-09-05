@@ -49,6 +49,10 @@ import FrmMappingConfig from "./Pages/Admin/FrmMappingConfig/FrmMappingConfig";
 import FrmDeptMappingConfig from "./Pages/Admin/FrmDeptMappingConfig/FrmDeptMappingConfig";
 import FrmTradeCtgMst from "./Pages/Admin/FrmTradeCtgList/FrmTradeCtgMst";
 import FrmTradeCtgryList from "./Pages/Admin/FrmTradeCtgList/FrmTradeCtgList";
+import FrmTradeCtgrytypList from "./Pages/Admin/FrmTradeCtgrytypList";
+import FrmTradeCtgryTypMst from "./Pages/Admin/FrmTradeCtgryTypMst";
+import FrmSecondAppealAutoRpt from "./Pages/Admin/FrmSecondAppealAutoRpt";
+import FrmFirstAppealAuthoRpt from "./Pages/Admin/FrmFirstAppealAuthoRpt";
 
 function HomePage() {
   return <div>Welcome to Employee Portal</div>;
@@ -267,6 +271,21 @@ const router = createBrowserRouter([
       {
         path: "/Masters/FrmTradeCtgMst",
         element: <FrmTradeCtgMst />
+      },
+      { path: "/App/FrmTradeCtgrytypList",
+        element: <FrmTradeCtgrytypList />
+      },
+      {
+        path: "/App/FrmTradeCtgryTypMst",
+        element: <FrmTradeCtgryTypMst />
+      },
+      {
+        path: "/App/FrmFirstAppealAuthoRpt",
+        element: <FrmFirstAppealAuthoRpt />
+      },
+      {
+        path: "/App/FrmSecondAppealAutoRpt",
+        element: <FrmSecondAppealAutoRpt />
       },
 
     ]
