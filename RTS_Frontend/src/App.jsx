@@ -42,6 +42,9 @@ import FrmDocMst from "./Pages/Admin/FrmDocMst";
 import FrmServiceDocConfig from "./Pages/Admin/FrmServiceDocConfig";
 import FrmRTSOnlineColl from "./Pages/Admin/FrmRTSOnlineColl";
 import FrmRTSOnlineCollDetails from "./Pages/Admin/FrmRTSOnlineCollDetails";
+import FrmTradeCtgryTypeCnfgList from "./Pages/Admin/FrmTradeCtgryTypeCnfgList";
+import FrmTradeCtgryTypeCnfgMst from "./Pages/Admin/FrmTradeCtgryTypeCnfgMst";
+import FrmHolidayMst from "./Pages/Admin/FrmHolidayMst";
 import FrmTownPlanningSectorMapping from "./Pages/Admin/FrmTownPlanningSectorMapping";
 import FrmTradeCategoryConfigMst from "./Pages/Admin/FrmTradeCategoryConfigMst";
 import FrmTradeCategoryConfigList from "./Pages/Admin/FrmTradeCategoryConfigList";
@@ -243,6 +246,19 @@ const router = createBrowserRouter([
       {
         path: "/app/Reports/FrmRTSOnlineCollDetails",
         element: <FrmRTSOnlineCollDetails />
+      },
+      {
+        path: "/app/FrmTradeCtgryTypeCnfgList",
+        element: <FrmTradeCtgryTypeCnfgList />
+      },
+      {
+        path: "/app/FrmTradeCtgryTypeCnfgMst",
+        element: <FrmTradeCtgryTypeCnfgMst />
+      },
+      {
+        path: "/app/FrmHolidayMst",
+        element: <FrmHolidayMst />
+      },
       },
       {
         path: "App/FrmPwdSectorMapingConfg",

@@ -120,6 +120,7 @@ app.use("/api/FrmMappingConfig", require("./modules/AdminDepartment/FrmMappingCo
 app.use("/api/FrmDeptMappingConfig", require("./modules/AdminDepartment/FrmDeptMappingConfig/FrmDeptMappingConfig.route"));
 app.use("/api/Doclist",require("./modules/AdminDepartment/FrmDocList/frmDocList.routes"));
 app.use("/api/Tradetypeconfig", require("./modules/AdminDepartment/FrmTradeCtgryTypeCnfgList/frmTradeCtgryTypeCnfgList.routes"))
+app.use("/api/Holiday", require("./modules/AdminDepartment/FrmHolidayMst/FrmHolidayMst.route"));
 app.use("/api/FrmTradeCategoryConfig", require("./modules/AdminDepartment/FrmTradeCategoryConfigList/frmTradeCategoryConfig.routes"));
 
 //AFrmAppAutherisation
