@@ -1704,34 +1704,21 @@ const FrmWaterConnectionApplication = () => {
                 </div>
               )}
 
-              {!isFireBrigadeService && (
+              {!isFireBrigadeService && !isBndService && (
                 <>
-                  {/* Connection No */}
-
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-
                     <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-
-                      <Label
-                        text="Connection No"
-                        required
-                      />
-
+                      <Label text="Connection No" required/>
                       <span>:</span>
-
                     </div>
 
                     <Input
                       value={formData.connectionNo}
                       onChange={(e) =>
-                        handleChange(
-                          "connectionNo",
-                          e.target.value
-                        )
+                        handleChange("connectionNo", e.target.value)
                       }
                       placeholder="Connection No"
                     />
-
                   </div>
 
 

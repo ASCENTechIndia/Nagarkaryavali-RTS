@@ -198,47 +198,43 @@ const FrmNewTaxAssesment = () => {
 
   const handleSubmit = async (values) => {
     if (!values.applicantName.trim()) {
-      return Swal.fire("Please enter Applicant Name (अर्जदाराचे नाव)");
+      return Swal.fire({text: "Please enter Applicant Name (अर्जदाराचे नाव)"});
     }
     if (!values.applicantAddress.trim()) {
-      return Swal.fire("Please enter Applicant Address (अर्जदाराचे पत्ता)");
+      return Swal.fire({text:"Please enter Applicant Address (अर्जदाराचे पत्ता)"});
     }
     if (
       values.constructionPermission === "yes" &&
       !values.constructionCertificateNo.trim()
     ) {
-      return Swal.fire("Please enter Construction Permission Certificate No.");
+      return Swal.fire({text:"Please enter Construction Permission Certificate No."});
     }
     if (values.usePermission === "yes" && !values.useCertificateNo.trim()) {
-      return Swal.fire("Please enter Use Permission Certificate No.");
+      return Swal.fire({text:"Please enter Use Permission Certificate No."});
     }
     if (!values.certificateDate) {
-      return Swal.fire("Please select Certificate Date (प्रमाणपत्र दिनांक)");
+      return Swal.fire({text:"Please select Certificate Date (प्रमाणपत्र दिनांक)"});
     }
     if (!values.prabhagOffice) {
-      return Swal.fire("Please select Prabhag Office (प्रभाग कार्यालय)");
+      return Swal.fire({text:"Please select Prabhag Office (प्रभाग कार्यालय)"});
     }
     if (!values.sectorNo.trim()) {
-      return Swal.fire("Please enter Sector No. (सेक्टर क्रमांक)");
+      return Swal.fire({text:"Please enter Sector No. (सेक्टर क्रमांक)"});
     }
     if (!values.surveyNo.trim()) {
-      return Swal.fire("Please enter Survey No. (टीका व सर्वे)");
+      return Swal.fire({text:"Please enter Survey No. (टीका व सर्वे)"});
     }
     if (!values.developmentProposalNo.trim()) {
-      return Swal.fire(
-        "Please enter Development Proposal No. (विकास प्रस्ताव क्र)",
-      );
+      return Swal.fire({text:  "Please enter Development Proposal No. (विकास प्रस्ताव क्र)"});
     }
     if (!values.landOwnerName.trim()) {
-      return Swal.fire("Please enter Land Owner Name (जमीन मालकाचे नाव)");
+      return Swal.fire({text:"Please enter Land Owner Name (जमीन मालकाचे नाव)"});
     }
     if (!values.developerName.trim()) {
-      return Swal.fire("Please enter Developer Name (विकासकाचे नाव)");
+      return Swal.fire({text:"Please enter Developer Name (विकासकाचे नाव)"});
     }
     if (!values.advanceReceiptNo.trim()) {
-      return Swal.fire(
-        "Please enter Advance Receipt No. (अग्रीम कराची पावती क्र.)",
-      );
+      return Swal.fire({text: "Please enter Advance Receipt No. (अग्रीम कराची पावती क्र.)"});
     }
 
     if (serviceid == 43) {
@@ -322,7 +318,7 @@ const FrmNewTaxAssesment = () => {
 
     try {
       Swal.fire({
-        title: "Processing...",
+        // title: "Processing...",
         text: "Please wait ...",
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading(),
@@ -474,7 +470,7 @@ const FrmNewTaxAssesment = () => {
                     <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
                       <div className="w-full md:w-56 lg:w-64 shrink-0 flex items-center justify-between">
                         <Label
-                          className="text-sm sm:text-base whitespace-nowrap"
+                          className="text-sm sm:text-base min-w-fit"
                           text="मालमत्ता बांधकामास परवानगी आहे का?"
                         />
                         <span className="hidden md:block">:</span>

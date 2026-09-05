@@ -313,7 +313,7 @@ const fetchVillages = async (sectorId) => {
   };
 
   const validateFields = (values) => {
-    const requiredFields = ['applicantName', 'mobileNo', 'emailId'];
+    const requiredFields = ['applicantName', 'address', 'mobileNo', 'emailId'];
     
     for (const field of requiredFields) {
       if (!values[field]?.trim()) {
@@ -659,7 +659,7 @@ const fetchVillages = async (sectorId) => {
           className="h-9 text-sm p-1 w-[60%]"
         />
         {item.fileName && item.fileName !== "No file chosen" && (
-          <span className="text-xs text-gray-500 truncate max-w-[80px]">
+          <span className="text-xs text-gray-500 truncate max-w-20">
             {item.fileName}
             {item.isUploaded && " ✅"}
           </span>
