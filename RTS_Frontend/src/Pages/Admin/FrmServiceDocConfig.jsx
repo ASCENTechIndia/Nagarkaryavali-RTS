@@ -3,13 +3,13 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ShadCNTable from "@/components/ui/table";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import config from "@/utils/config";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 
 const FrmServiceDocConfig = () => {
   const navigate = useNavigate();
@@ -246,9 +246,7 @@ const FrmServiceDocConfig = () => {
   };
 
   const handleSubmit = async () => {
-    
     if (!validateForm()) {
-      console.log("Validation failed");
       return;
     }
 
@@ -291,26 +289,21 @@ const FrmServiceDocConfig = () => {
         const isSuccess = errorCode !== 9999 || responseData.status === 'SUCCESS';
 
         if (isSuccess) {
-          console.log("=== SUCCESS CASE: Showing success and reloading ===");
           Swal.fire({
             text: errorMsg || "Configuration saved successfully!",
             confirmButtonColor: "#1e3a8a",
           }).then((result) => {
-            console.log("Swal result:", result);
             if (result.isConfirmed) {
-              console.log("=== RELOADING PAGE ===");
               window.location.reload();
             }
           });
         } else {
-          console.log("=== ERROR CASE: Showing error ===");
           Swal.fire({
             text: errorMsg || "Error saving configuration",
             confirmButtonColor: "#1e3a8a",
           });
         }
       } else {
-        console.log("=== NO RESPONSE DATA ===");
         Swal.fire({
           text: "Error saving configuration. Please try again.",
           confirmButtonColor: "#1e3a8a",
@@ -324,13 +317,21 @@ const FrmServiceDocConfig = () => {
       });
     } finally {
       setIsSubmitting(false);
-      console.log("=== SUBMIT COMPLETED ===");
     }
   };
 
   const handleCancel = () => {
     navigate("/app/home");
   };
+
+  const serviceOptions = serviceList.map((service) => {
+    const serviceIdValue = service.NUM_SERVICE_SERVICEID || service.num_service_serviceid;
+    const serviceName = service.VAR_SERVICE_ENG_NAME || service.var_service_eng_name;
+    return {
+      value: serviceIdValue.toString(),
+      label: serviceName
+    };
+  });
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4">
@@ -347,29 +348,17 @@ const FrmServiceDocConfig = () => {
               <Label htmlFor="serviceSelect" className="text-sm font-medium whitespace-nowrap min-w-[100px]">
                 Service :
               </Label>
-              <Select
+              <SearchableSelect
                 value={selectedService}
-                onValueChange={handleServiceChange}
+                options={serviceOptions}
+                placeholder="-- Select Option --"
                 disabled={loading}
-              >
-                <SelectTrigger id="serviceSelect" className="flex-1 h-9">
-                  <SelectValue placeholder="-- Select Service --" />
-                </SelectTrigger>
-                <SelectContent>
-                  {serviceList.map((service) => {
-                    const serviceIdValue = service.NUM_SERVICE_SERVICEID || service.num_service_serviceid;
-                    const serviceName = service.VAR_SERVICE_ENG_NAME || service.var_service_eng_name;
-                    return (
-                      <SelectItem 
-                        key={serviceIdValue} 
-                        value={serviceIdValue.toString()}
-                      >
-                        {serviceName}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
+                loading={loading}
+                onChange={handleServiceChange}
+                defaultOptionLabel="-- Select Option --"
+                showDefaultOption={true}
+                className="flex-1"
+              />
             </div>
           </div>
 
