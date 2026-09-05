@@ -128,7 +128,9 @@ app.use("/api/Doclist",require("./modules/AdminDepartment/FrmDocList/frmDocList.
 app.use("/api/FrmRTSOnlineColl", require("./modules/AdminDepartment/FrmRTSOnlineColl/FrmRTSOnlineColl.route"));
 app.use("/api/FrmDashboardAll", require("./modules/AdminDepartment/FrmDashboardAll/FrmDashboardAll.routes"))
 
-
+app.use("/api/FrmTradeCtgrytypListMst", require("./modules/AdminDepartment/FrmTradeCtgrytypListMst/FrmTradeCtgrytypListMst.route"));
+app.use("/api/FrmFirstAppealAuthoRpt", require("./modules/AdminDepartment/FrmFirstAppealAuthoRpt/FrmFirstAppealAuthoRpt.route"));
+app.use("/api/FrmSecondAppealAutoRpt", require("./modules/AdminDepartment/FrmSecondAppealAutoRpt/FrmSecondAppealAutoRpt.route"));
 
 
 app.use(errorMiddleware);
