@@ -49,6 +49,7 @@ import FrmMappingConfig from "./Pages/Admin/FrmMappingConfig/FrmMappingConfig";
 import FrmDeptMappingConfig from "./Pages/Admin/FrmDeptMappingConfig/FrmDeptMappingConfig";
 import FrmTradeCtgMst from "./Pages/Admin/FrmTradeCtgList/FrmTradeCtgMst";
 import FrmTradeCtgryList from "./Pages/Admin/FrmTradeCtgList/FrmTradeCtgList";
+import FrmDashboardAll from "./Pages/Admin/FrmDashboardAll";
 
 function HomePage() {
   return <div>Welcome to Employee Portal</div>;
@@ -267,6 +268,10 @@ const router = createBrowserRouter([
       {
         path: "/Masters/FrmTradeCtgMst",
         element: <FrmTradeCtgMst />
+      },
+      {
+        path: "/App/FrmDashboardAll",
+        element: <FrmDashboardAll />
       },
 
     ]
