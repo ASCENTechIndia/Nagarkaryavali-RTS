@@ -30,7 +30,6 @@ async function getApplicationsSummaryService({ fromDate, toDate, deptId }) {
 async function getApplicationsDetailService(filters) {
   if (!filters.fromDate || !filters.toDate) throw new Error("Date range is required");
   if (!filters.serviceId) throw new Error("Service ID is required");
-  if (!filters.deptId) throw new Error("Department ID is required");
 
   return await repo.fetchApplicationsDetail(filters);
 }

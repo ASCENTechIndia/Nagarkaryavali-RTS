@@ -220,10 +220,10 @@ const FrmRTSOnlineCollDetails = () => {
     try {
       setLoading(true);
 
-      if (!fromDate || !toDate || !deptId || !serviceId) {
+      if (!fromDate || !toDate || !serviceId) {
         Swal.fire({
           title: "Missing Information",
-          text: "From Date, To Date, Service ID and Department ID are required.",
+          text: "From Date, To Date, Service ID are required.",
         });
 
         return;

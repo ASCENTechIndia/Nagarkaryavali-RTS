@@ -49,7 +49,10 @@ async function fetchApplicationsSummary({ fromDate, toDate, deptId }) {
 }
 
 async function fetchApplicationsDetail({ fromDate, toDate, serviceId, deptId }) {
-  const sql = `
+
+  const binds = {fromDate, toDate, serviceId};
+
+  let sql = `
     SELECT 
       var_application_appno AS appno,
       var_user_fname AS name,
@@ -79,17 +82,17 @@ async function fetchApplicationsDetail({ fromDate, toDate, serviceId, deptId }) 
     WHERE TRUNC(dat_application_recieptdate) >= TO_DATE(:fromDate, 'dd/MM/yyyy')
       AND TRUNC(dat_application_recieptdate) <= TO_DATE(:toDate, 'dd/MM/yyyy')
       AND num_application_serviceid = :serviceId
-      AND num_application_deptid = :deptId
-      AND var_application_recieptrefno IS NOT NULL
-    ORDER BY dat_application_recieptdate
   `;
 
-  const binds = {
-    fromDate,
-    toDate,
-    serviceId: Number(serviceId),
-    deptId: Number(deptId)
-  };
+   if (deptId !== 0) {
+    sql += ` AND num_application_deptid = :deptId `;
+    binds.deptId = deptId;
+  }
+
+  sql += ` AND var_application_recieptrefno IS NOT NULL
+    ORDER BY dat_application_recieptdate`;
+
+ 
 
   const result = await executeQueryTMC( sql, binds );
   return result;
