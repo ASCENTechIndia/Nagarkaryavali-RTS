@@ -11,18 +11,27 @@ const formatDate = (date) => {
 const toDataUrl = (filePath) => {
   if (!filePath) return "";
 
-  if (typeof filePath === "string" && filePath.startsWith("data:image")) return filePath;
+  if (typeof filePath === "string" && filePath.startsWith("data:image"))
+    return filePath;
 
-  if (Buffer.isBuffer(filePath)) return `data:image/png;base64,${filePath.toString("base64")}`;
+  if (Buffer.isBuffer(filePath))
+    return `data:image/png;base64,${filePath.toString("base64")}`;
 
-  if (typeof filePath === "string" && (filePath.startsWith("http://") || filePath.startsWith("https://")))
+  if (
+    typeof filePath === "string" &&
+    (filePath.startsWith("http://") || filePath.startsWith("https://"))
+  )
     return filePath;
 
   if (typeof filePath !== "string") return "";
 
   let finalPath = filePath;
   if (!path.isAbsolute(finalPath)) {
-    finalPath = path.resolve(__dirname, "../../../public", filePath.replace(/^[\/\\]+/, ""));
+    finalPath = path.resolve(
+      __dirname,
+      "../../../public",
+      filePath.replace(/^[\/\\]+/, ""),
+    );
   }
 
   if (!fs.existsSync(finalPath)) return "";
@@ -36,17 +45,20 @@ const toDataUrl = (filePath) => {
   return `data:${mime};base64,${buffer.toString("base64")}`;
 };
 
-
 const AppealReportPDFHelper = async ({ reportData, filters }) => {
   try {
     if (!reportData.length) throw new Error("No data found.");
 
-    const templatePath = path.resolve(__dirname, "../../templates/FrmFirstAppealAuthoRpt.html");
-    if (!fs.existsSync(templatePath)) throw new Error(`Template not found: ${templatePath}`);
+    const templatePath = path.resolve(
+      __dirname,
+      "../../templates/FrmFirstAppealAuthoRpt.html",
+    );
+    if (!fs.existsSync(templatePath))
+      throw new Error(`Template not found: ${templatePath}`);
 
-     const leftLogoPath = path.resolve(__dirname, "../../../public/tmclogo.jpg");
+    const leftLogoPath = path.resolve(__dirname, "../../../public/tmclogo.jpg");
 
-      const leftLogo = toDataUrl(leftLogoPath);
+    const leftLogo = toDataUrl(leftLogoPath);
 
     const rows = reportData.map((item, index) => ({
       srNo: index + 1,
@@ -56,7 +68,7 @@ const AppealReportPDFHelper = async ({ reportData, filters }) => {
       nameAndAddress: item.NAMEADDRESS,
       requestedService: item.PUBSERVRQU,
       disposedDateReason: item.REJECTDATE,
-      fineDetails: item.FINE
+      fineDetails: item.FINE,
     }));
 
     const htmlData = {
@@ -64,22 +76,41 @@ const AppealReportPDFHelper = async ({ reportData, filters }) => {
       rows,
       fromDate: filters.fromDate,
       toDate: filters.toDate,
-      printDate: formatDate(new Date())
+      printDate: formatDate(new Date()),
     };
 
     const templateHtml = fs.readFileSync(templatePath, "utf8");
     const template = Handlebars.compile(templateHtml);
     const html = template(htmlData);
 
-    const browser = await puppeteer.launch({ headless: true, args: ["--no-sandbox"] });
+    const chromePath = path.resolve(
+      __dirname,
+      "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe",
+    );
+
+    const launchOptions = {
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    };
+
+    if (fs.existsSync(chromePath)) {
+      launchOptions.executablePath = chromePath;
+    }
+
+    const browser = await puppeteer.launch(launchOptions);
+
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0", timeout: 0 });
+
+    await page.setContent(html, {
+      waitUntil: "networkidle0",
+      timeout: 0,
+    });
 
     const pdfBuffer = await page.pdf({
       format: "A4",
       landscape: true,
       printBackground: true,
-      margin: { top: "5mm", right: "5mm", bottom: "5mm", left: "5mm" }
+      margin: { top: "5mm", right: "5mm", bottom: "5mm", left: "5mm" },
     });
 
     await browser.close();
