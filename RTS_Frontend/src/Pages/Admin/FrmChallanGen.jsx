@@ -104,7 +104,7 @@ const FrmChallanGen = () => {
         if (!values.challanDate) {
             Swal.fire({
                 // icon: "warning",
-                title: "Validation",
+                // title: "Validation",
                 text: "Please select Challan Date",
             });
             return;
@@ -112,7 +112,7 @@ const FrmChallanGen = () => {
         if (!values.fromDate) {
             Swal.fire({
                 // icon: "warning",
-                title: "Validation",
+                // title: "Validation",
                 text: "Please select From Date",
             });
             return;
@@ -120,7 +120,7 @@ const FrmChallanGen = () => {
         if (!values.toDate) {
             Swal.fire({
                 // icon: "warning",
-                title: "Validation",
+                // title: "Validation",
                 text: "Please select To Date",
             });
             return;
@@ -136,7 +136,7 @@ const FrmChallanGen = () => {
         if (fromDate > toDate) {
             Swal.fire({
                 // icon: "warning",
-                title: "Validation",
+                // title: "Validation",
                 text: "To date Should be greater than from date",
             });
             return;
@@ -144,7 +144,7 @@ const FrmChallanGen = () => {
         if (fromDate > today) {
             Swal.fire({
                 // icon: "warning",
-                title: "Validation",
+                // title: "Validation",
                 text: "From Date Cannot be greater than System Date",
             });
             return;
@@ -152,7 +152,7 @@ const FrmChallanGen = () => {
         if (toDate > today) {
             Swal.fire({
                 // icon: "warning",
-                title: "Validation",
+                // title: "Validation",
                 text: "To Date Cannot be greater than System Date",
             });
             return;
@@ -160,7 +160,7 @@ const FrmChallanGen = () => {
         if (!values.wardId) {
             Swal.fire({
                 // icon: "warning",
-                title: "Validation",
+                // title: "Validation",
                 text: "Please select Prabhag",
             });
             return;
