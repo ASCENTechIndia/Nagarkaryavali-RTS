@@ -133,6 +133,7 @@ app.use("/api/FrmChallanGenReport", require("./modules/AdminDepartment/FrmChalla
 app.use("/api/FrmTownPlanningSectorMapping", require("./modules/AdminDepartment/FrmTownPlanningSectorMapping/frmTownPlanningSectorMapping.routes"));
 app.use("/api/FrmAppliReportEMst", require("./modules/AdminDepartment/FrmAppliReportEMst/frmAppliReportEMst.routes"));
 app.use("/api/FrmHearingProccess", require("./modules/AdminDepartment/FrmHearingProccess/FrmHearingProccess.routes"));
+app.use("/api/FrmHearingDateAssign", require("./modules/AdminDepartment/FrmHearingDateAssign/FrmHearingDateAssign.routes"))
 
 app.use(errorMiddleware);
 
