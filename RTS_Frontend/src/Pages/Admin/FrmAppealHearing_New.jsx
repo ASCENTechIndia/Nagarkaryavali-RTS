@@ -261,153 +261,167 @@ const FrmAppealHearing_New = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!formData.briefDescription || formData.briefDescription.trim() === "") {
-      Swal.fire({
-        text: "Please Enter Brief Description",
-        confirmButtonColor: "#1e3a8a",
-      });
-      return;
+  if (!formData.briefDescription || formData.briefDescription.trim() === "") {
+    Swal.fire({
+      text: "Please Enter Brief Description",
+      confirmButtonColor: "#1e3a8a",
+    });
+    return;
+  }
+
+  if (!hasFile || !uploadedFile) {
+    Swal.fire({
+      text: "Please Upload Order",
+      confirmButtonColor: "#1e3a8a",
+    });
+    return;
+  }
+
+  try {
+    setIsSubmitting(true);
+    Swal.fire({
+      title: "Submitting...",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    let presentFlag = "";
+    if (formData.isAppellantPresent && formData.isRespondentPresent) {
+      presentFlag = "All";
+    } else if (formData.isAppellantPresent) {
+      presentFlag = "Appeallent";
+    } else if (formData.isRespondentPresent) {
+      presentFlag = "Respondent";
     }
 
-    if (!hasFile || !uploadedFile) {
-      Swal.fire({
-        text: "Please Upload Order",
-        confirmButtonColor: "#1e3a8a",
-      });
-      return;
-    }
+    const appno = localStorage.getItem("Appno");
+    const appealTypeId = localStorage.getItem("AppealTypeId");
 
-    try {
-      setIsSubmitting(true);
-      Swal.fire({
-        text: "Submitting..",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
+    const userId = user?.userId || user?.EmpUserName || localStorage.getItem("userId") || "admin";
+
+    const hearingPayload = {
+      userId: userId,
+      appealhearId: 0,
+      appealNo: formData.appealNo,
+      appealDate: formData.appealDate.toISOString().split('T')[0],
+      appliNo: appno,
+      appealType: parseInt(formData.appealType) || 0,
+      appealDtls: formData.appealDetails,
+      presents: presentFlag,
+      briefDescr: formData.briefDescription,
+      status: formData.appealStatus,
+      fine: formData.fine || "0",
+      mode: 1,
+      appealTypeId: parseInt(appealTypeId || "0"),
+    };
+
+    const authToken = getAuthToken();
+
+    const hearingResponse = await axios.post(
+      `${BASE_URL}/api/FrmHearingProccess/submit-hearing`,
+      hearingPayload,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
         },
-      });
-
-      let presentFlag = "";
-      if (formData.isAppellantPresent && formData.isRespondentPresent) {
-        presentFlag = "All";
-      } else if (formData.isAppellantPresent) {
-        presentFlag = "Appeallent";
-      } else if (formData.isRespondentPresent) {
-        presentFlag = "Respondent";
       }
+    );
 
-      const appno = localStorage.getItem("Appno");
-      const appealTypeId = localStorage.getItem("AppealTypeId");
+    const isSuccess = hearingResponse.data?.ok || hearingResponse.data?.success;
+    
+    if (isSuccess) {
+      const formDataToSend = new FormData();
+      formDataToSend.append('document', uploadedFile);
+      formDataToSend.append('appNo', appno);
+      formDataToSend.append('appealNo', formData.appealNo);
+      formDataToSend.append('docType', fileExtension);
+      formDataToSend.append('appealTypeId', appealTypeId || "0");
+      formDataToSend.append('serviceId', "0");
 
-      const userId = user?.userId || user?.EmpUserName || localStorage.getItem("userId") || "admin";
-
-      const hearingPayload = {
-        userId: userId,
-        appealhearId: 0,
-        appealNo: formData.appealNo,
-        appealDate: formData.appealDate.toISOString().split('T')[0],
-        appliNo: appno,
-        appealType: parseInt(formData.appealType) || 0,
-        appealDtls: formData.appealDetails,
-        presents: presentFlag,
-        briefDescr: formData.briefDescription,
-        status: formData.appealStatus,
-        fine: formData.fine || "0",
-        mode: 1,
-        appealTypeId: parseInt(appealTypeId || "0"),
-      };
-
-      const authToken = getAuthToken();
-
-      const hearingResponse = await axios.post(
-        `${BASE_URL}/api/FrmHearingProccess/submit-hearing`,
-        hearingPayload,
+      const docResponse = await axios.post(
+        `${BASE_URL}/api/FrmHearingProccess/upload-document`,
+        formDataToSend,
         {
           headers: {
             Authorization: `Bearer ${authToken}`,
-            "Content-Type": "application/json",
+            'Content-Type': 'multipart/form-data',
           },
         }
       );
 
-      const isSuccess = hearingResponse.data?.ok || hearingResponse.data?.success;
-      
-      if (isSuccess) {
-        const formDataToSend = new FormData();
-        formDataToSend.append('document', uploadedFile);
-        formDataToSend.append('appNo', appno);
-        formDataToSend.append('appealNo', formData.appealNo);
-        formDataToSend.append('docType', fileExtension);
-        formDataToSend.append('appealTypeId', appealTypeId || "0");
-        formDataToSend.append('serviceId', "0");
+      const isDocSuccess = docResponse.data?.ok || docResponse.data?.success;
 
-        const docResponse = await axios.post(
-          `${BASE_URL}/api/FrmHearingProccess/upload-document`,
-          formDataToSend,
-          {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
-
-        const isDocSuccess = docResponse.data?.ok || docResponse.data?.success;
-
-        if (isDocSuccess) {
-          const successMessage = docResponse.data?.data?.message || 
-                                 docResponse.data?.message || 
-                                 "Hearing data and document saved successfully.";
-          
-          Swal.fire({
-            text: successMessage,
-            confirmButtonColor: "#1e3a8a",
-          }).then(() => {
-            localStorage.removeItem("Appno");
-            localStorage.removeItem("AppealNo");
-            localStorage.removeItem("AppealTypeId");
-            navigate("/App/FrmHearingProccess");
-          });
-        } else {
-          const errorMessage = docResponse.data?.error || 
+      if (isDocSuccess) {
+        const successMessage = hearingResponse.data?.data?.message || 
+                               hearingResponse.data?.message || 
+                               docResponse.data?.data?.message || 
                                docResponse.data?.message || 
-                               "Document upload failed. Please try again.";
-          
-          Swal.fire({
-            text: errorMessage,
-            confirmButtonColor: "#1e3a8a",
-          });
-        }
-      } else {
-        Swal.close();
-        const errorMessage = hearingResponse.data?.message || 
-                             hearingResponse.data?.error || 
-                             "Failed to save hearing data.";
+                               "Appeal Hearing Details Inserted Successfully";
         
         Swal.fire({
-          text: errorMessage,
+          text: successMessage,
           confirmButtonColor: "#1e3a8a",
+          confirmButtonText: "OK",
+        }).then(() => {
+          localStorage.removeItem("Appno");
+          localStorage.removeItem("AppealNo");
+          localStorage.removeItem("AppealTypeId");
+          navigate("/App/FrmHearingProccess");
+        });
+      } else {
+        const successMessage = hearingResponse.data?.data?.message || 
+                               hearingResponse.data?.message || 
+                               "Appeal Hearing Details Inserted Successfully";
+        
+        const docErrorMessage = docResponse.data?.error || 
+                                docResponse.data?.message || 
+                                "Document upload failed. Please try again.";
+        
+        Swal.fire({
+          title: "",
+          confirmButtonColor: "#1e3a8a",
+          confirmButtonText: "OK",
+        }).then(() => {
+          localStorage.removeItem("Appno");
+          localStorage.removeItem("AppealNo");
+          localStorage.removeItem("AppealTypeId");
+          navigate("/App/FrmHearingProccess");
         });
       }
-    } catch (error) {
+    } else {
       Swal.close();
-      console.error("Submit Error:", error);
-      
-      const errorMessage = error.response?.data?.error || 
-                           error.response?.data?.message || 
-                           "Error saving data. Please try again.";
+      const errorMessage = hearingResponse.data?.message || 
+                           hearingResponse.data?.error || 
+                           "Failed to save hearing data.";
       
       Swal.fire({
         text: errorMessage,
         confirmButtonColor: "#1e3a8a",
       });
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+  } catch (error) {
+    Swal.close();
+    console.error("Submit Error:", error);
+    
+    const errorMessage = error.response?.data?.error || 
+                         error.response?.data?.message || 
+                         "Error saving data. Please try again.";
+    
+    Swal.fire({
+      text: errorMessage,
+      confirmButtonColor: "#1e3a8a",
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   const isViewMode = formData.appealNo !== "" && dataLoaded;
 

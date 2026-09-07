@@ -63,6 +63,9 @@ import FrmFirstAppealAuthoRpt from "./Pages/Admin/FrmFirstAppealAuthoRpt";
 import FrmSecondAppealAutoRpt from "./Pages/Admin/FrmSecondAppealAutoRpt";
 import FrmChallanGenReport from "./Pages/Admin/FrmChallanGenReport";
 import FrmAppliReportEMst from "./Pages/Admin/FrmAppliReportEMst";
+import FrmHearingProccess from "./Pages/Admin/FrmHearingProccess";
+import FrmAppealHearing_New from "./Pages/Admin/FrmAppealHearing_New";
+import FrmHearingDateAssign from "./Pages/Admin/FrmHearingDateAssign";
 
 function HomePage() {
   return <div>Welcome to Employee Portal</div>;
@@ -320,7 +323,20 @@ const router = createBrowserRouter([
        {
         path:"/App/Reports/FrmAppliReportEMst",
         element:<FrmAppliReportEMst />
-       }
+       },
+       {
+        path:"/App/FrmHearingProccess",
+        element:<FrmHearingProccess />
+       },
+       {
+        path:"/App/FrmAppealHearing_New",
+        element:<FrmAppealHearing_New />
+       },
+       {
+        path:"/App/FrmHearingDateAssign",
+        element:<FrmHearingDateAssign />
+       },
+
 
     ]
   },
