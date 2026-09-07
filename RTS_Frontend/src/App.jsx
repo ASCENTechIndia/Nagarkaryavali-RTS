@@ -36,9 +36,28 @@ import FrmWaterAppliDetails from "./Pages/WaterModule/FrmWaterAppliDetails";
 import FrmEmpLogin from "./Pages/Login/FrmEmpLogin";
 import AdminLayout from "./layout/admin-layout";
 import FrmAppAuthorisationList from "./Pages/Admin/FrmAppAuthorisationList";
+import FrmAppAuthorisationMst from "./Pages/Admin/FrmAppAuthorisationMst";
+import FrmDocList from "./Pages/Admin/FrmDocList";
+import FrmDocMst from "./Pages/Admin/FrmDocMst";
+import FrmServiceDocConfig from "./Pages/Admin/FrmServiceDocConfig";
+import FrmRTSOnlineColl from "./Pages/Admin/FrmRTSOnlineColl";
+import FrmRTSOnlineCollDetails from "./Pages/Admin/FrmRTSOnlineCollDetails";
+import FrmTradeCtgryTypeCnfgList from "./Pages/Admin/FrmTradeCtgryTypeCnfgList";
+import FrmTradeCtgryTypeCnfgMst from "./Pages/Admin/FrmTradeCtgryTypeCnfgMst";
+import FrmHolidayMst from "./Pages/Admin/FrmHolidayMst";
 import FrmTownPlanningSectorMapping from "./Pages/Admin/FrmTownPlanningSectorMapping";
-import FrmTradeCategoryConfigList from "./Pages/Admin/FrmTradeCategoryConfigList";
 import FrmTradeCategoryConfigMst from "./Pages/Admin/FrmTradeCategoryConfigMst";
+import FrmTradeCategoryConfigList from "./Pages/Admin/FrmTradeCategoryConfigList";
+import FrmMappingConfig from "./Pages/Admin/FrmMappingConfig/FrmMappingConfig";
+import FrmDeptMappingConfig from "./Pages/Admin/FrmDeptMappingConfig/FrmDeptMappingConfig";
+import FrmTradeCtgMst from "./Pages/Admin/FrmTradeCtgList/FrmTradeCtgMst";
+import FrmTradeCtgryList from "./Pages/Admin/FrmTradeCtgList/FrmTradeCtgList";
+import FrmDashboardAll from "./Pages/Admin/FrmDashboardAll";
+import FrmTradeCtgrytypList from "./Pages/Admin/FrmTradeCtgrytypList";
+import FrmTradeCtgryTypMst from "./Pages/Admin/FrmTradeCtgryTypMst";
+import FrmFirstAppealAuthoRpt from "./Pages/Admin/FrmFirstAppealAuthoRpt";
+import FrmSecondAppealAutoRpt from "./Pages/Admin/FrmSecondAppealAutoRpt";
+import FrmChallanGenReport from "./Pages/Admin/FrmChallanGenReport";
 
 function HomePage() {
   return <div>Welcome to Employee Portal</div>;
@@ -202,8 +221,44 @@ const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: "/app/FrmAppAuthorisationList",
+        path: "/App/FrmAppAuthorisationList",
         element: <FrmAppAuthorisationList />
+      },
+      {
+        path: "/App/FrmAppAuthorisationMst",
+        element: <FrmAppAuthorisationMst />
+      },
+      {
+        path: "/app/FrmDocList",
+        element: <FrmDocList />
+      },
+      {
+        path: "/app/FrmDocMst",
+        element: <FrmDocMst />
+      },
+      {
+        path: "/app/FrmServiceDocConfig",
+        element: <FrmServiceDocConfig />
+      },
+      {
+        path: "/app/Reports/FrmRTSOnlineColl",
+        element: <FrmRTSOnlineColl />
+      },
+      {
+        path: "/app/Reports/FrmRTSOnlineCollDetails",
+        element: <FrmRTSOnlineCollDetails />
+      },
+      {
+        path: "/app/FrmTradeCtgryTypeCnfgList",
+        element: <FrmTradeCtgryTypeCnfgList />
+      },
+      {
+        path: "/app/FrmTradeCtgryTypeCnfgMst",
+        element: <FrmTradeCtgryTypeCnfgMst />
+      },
+      {
+        path: "/app/FrmHolidayMst",
+        element: <FrmHolidayMst />
       },
       {
         path: "App/FrmPwdSectorMapingConfg",
@@ -217,6 +272,48 @@ const router = createBrowserRouter([
         path: "App/FrmTradeCategoryConfigMst",
         element: <FrmTradeCategoryConfigMst />
       },
+      {
+        path: "/app/FrmMappingConfig",
+        element: <FrmMappingConfig />
+      },
+
+      {
+        path: "/app/FrmDeptMappingConfig",
+        element: <FrmDeptMappingConfig />
+      },
+      {
+        path: "/App/FrmTradeCtgryList",
+        element: <FrmTradeCtgryList />
+      },
+      {
+        path: "/Masters/FrmTradeCtgMst",
+        element: <FrmTradeCtgMst />
+      },
+      {
+        path: "/App/FrmDashboardAll",
+        element: <FrmDashboardAll />
+      },
+      {
+        path: "/App/FrmTradeCtgrytypList",
+        element: <FrmTradeCtgrytypList />
+      },
+      {
+        path: "/App/FrmTradeCtgryTypMst",
+        element: <FrmTradeCtgryTypMst />
+      },
+      {
+        path: "/App/FrmFirstAppealAuthoRpt",
+        element: <FrmFirstAppealAuthoRpt />
+      },
+      {
+        path: "/App/FrmSecondAppealAutoRpt",
+        element: <FrmSecondAppealAutoRpt />
+      },
+      {
+        path: "/App/Reports/FrmChallanGenReport",
+        element: <FrmChallanGenReport />
+      }
+
     ]
   },
 

@@ -146,6 +146,11 @@ const applicationAuthService = async ({
     throw new Error("Mode is required.");
   }
 
+  // Log TinyURL for debugging
+  if (mode === "CKV" && tinyUrl) {
+    console.log(`TinyURL for application ${applicationNo}: ${tinyUrl}`);
+  }
+
   return await repo.applicationAuthRepo({
     userId,
     applicationNo,
@@ -157,6 +162,7 @@ const applicationAuthService = async ({
     tinyUrl,
   });
 };
+
 const saveApplicationVerificationDocumentService = async ({
   ulbid,
   applino,
@@ -212,7 +218,41 @@ const getMenuDetailsService = async ({ serviceId, appNo, authMode }) => {
   });
 };
 
+const certificateDataService = async ({ userId, applino, serviceid, applidata }) => {
+  if (!userId) {
+    throw new Error("User ID is required.");
+  }
 
+  if (!applino) {
+    throw new Error("Application number is required.");
+  }
+
+  if (!serviceid) {
+    throw new Error("Service ID is required.");
+  }
+
+  return await repo.certificateDataRepo({
+    userId,
+    applino,
+    serviceid,
+    applidata,
+  });
+};
+
+const updateDocumentFlagService = async ({ appNo, docId }) => {
+  if (!appNo) {
+    throw new Error("Application number is required.");
+  }
+
+  if (!docId) {
+    throw new Error("Document ID is required.");
+  }
+
+  return await repo.updateDocumentFlagRepo({
+    appNo,
+    docId,
+  });
+};
 
 module.exports = {
   getUserPrabhagListService,
@@ -223,5 +263,7 @@ module.exports = {
   getApplicationDetailsService,
   applicationAuthService,
   saveApplicationVerificationDocumentService,
-  getMenuDetailsService
+  getMenuDetailsService,
+  certificateDataService,
+  updateDocumentFlagService
 };

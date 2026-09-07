@@ -528,8 +528,6 @@ const FrmRoadCutting = () => {
 
     loader.close();
 
-    console.log("API Response:", response.data);
-
     const responseData = response.data;
     const isSuccess = responseData?.ok === true && responseData?.data?.errCode === 9999;
     

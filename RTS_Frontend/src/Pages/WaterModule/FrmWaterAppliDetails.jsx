@@ -1034,8 +1034,8 @@ const FrmWaterAppliDetails = () => {
                     </div>
                   </div>
 
-                  <div className="row my-5 py-1 text-center bg-blue-600 text-white rounded">
-                    <h5 className="font-bold m-0">Existing Details</h5>
+                  <div className="row h-[45px]  my-5 py-1 text-center bg-[#184aa6] text-white rounded">
+                    <h5 className="font-bold mt-2">Existing Details</h5>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -1202,8 +1202,8 @@ const FrmWaterAppliDetails = () => {
                     </div>
                   </div>
 
-                  <div className="row my-2 py-1 text-center bg-blue-600 text-white rounded">
-                    <h5 className="font-bold m-0">New Details</h5>
+                  <div className="row h-[45px] my-2 py-1 text-center bg-[#184aa6] text-white rounded">
+                    <h5 className="font-bold mt-2">New Details</h5>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -1389,7 +1389,7 @@ const FrmWaterAppliDetails = () => {
                   <div className="flex justify-center items-center gap-3 pt-4 border-t">
                     <Button
                       type="submit"
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      className="text-white"
                       disabled={loading}
                     >
                       {loading ? "Submitting..." : "Submit"}

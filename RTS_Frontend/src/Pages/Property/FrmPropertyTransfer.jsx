@@ -731,9 +731,9 @@ const FrmPropertyTransfer = () => {
           onChange={(e) => handleFileChange(item.id, e)}
           className="h-9 text-sm p-1 w-[50%]"
         />
-        {/* {item.fileName && item.fileName !== "No file chosen" && (
+        {item.fileName && item.fileName !== "No file chosen" && (
           <span className="text-xs text-gray-500 truncate max-w-[80px]">{item.fileName}</span>
-        )} */}
+        )}
       </div>
     ),
   }));

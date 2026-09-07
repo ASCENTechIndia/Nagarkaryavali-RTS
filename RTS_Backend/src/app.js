@@ -116,18 +116,21 @@ app.use("/api/FrmRoadCutting", require("./modules/PWD/FrmRoadCutting.route"));
 
 
 //AdminDepartmet
-
-//AFrmAppAutherisation
-
-app.use("/api/frmAppAuth", require("./modules/AdminDepartment/FrmAppAuth/frmAppAuth.routes"));
+app.use("/api/FrmMappingConfig", require("./modules/AdminDepartment/FrmMappingConfig/FrmMappingConfig.route"));
+app.use("/api/FrmDeptMappingConfig", require("./modules/AdminDepartment/FrmDeptMappingConfig/FrmDeptMappingConfig.route"));
 app.use("/api/Doclist",require("./modules/AdminDepartment/FrmDocList/frmDocList.routes"));
-
-// Town Planning Sector Mapping
-app.use("/api/FrmTownPlanningSectorMapping", require("./modules/AdminDepartment/FrmTownPlanningSectorMapping/frmTownPlanningSectorMapping.routes"));
-
-// Trade Category Configuration
+app.use("/api/Tradetypeconfig", require("./modules/AdminDepartment/FrmTradeCtgryTypeCnfgList/frmTradeCtgryTypeCnfgList.routes"))
+app.use("/api/Holiday", require("./modules/AdminDepartment/FrmHolidayMst/FrmHolidayMst.route"));
 app.use("/api/FrmTradeCategoryConfig", require("./modules/AdminDepartment/FrmTradeCategoryConfigList/frmTradeCategoryConfig.routes"));
-
+app.use("/api/frmAppAuth", require("./modules/AdminDepartment/FrmAppAuth/frmAppAuth.routes"));
+app.use("/api/Doclist",require("./modules/AdminDepartment/FrmDocList/frmDocList.routes"))
+app.use("/api/FrmRTSOnlineColl", require("./modules/AdminDepartment/FrmRTSOnlineColl/FrmRTSOnlineColl.route"));
+app.use("/api/FrmDashboardAll", require("./modules/AdminDepartment/FrmDashboardAll/FrmDashboardAll.routes"))
+app.use("/api/FrmTradeCtgrytypListMst", require("./modules/AdminDepartment/FrmTradeCtgrytypListMst/FrmTradeCtgrytypListMst.route"));
+app.use("/api/FrmFirstAppealAuthoRpt", require("./modules/AdminDepartment/FrmFirstAppealAuthoRpt/FrmFirstAppealAuthoRpt.route"));
+app.use("/api/FrmSecondAppealAutoRpt", require("./modules/AdminDepartment/FrmSecondAppealAutoRpt/FrmSecondAppealAutoRpt.route"));
+app.use("/api/FrmChallanGenReport", require("./modules/AdminDepartment/FrmChallanGenReport/FrmChallanGenReport.routes"));
+app.use("/api/FrmTownPlanningSectorMapping", require("./modules/AdminDepartment/FrmTownPlanningSectorMapping/frmTownPlanningSectorMapping.routes"));
 
 app.use(errorMiddleware);
 

@@ -197,11 +197,11 @@ const getApplicationAuthListRepo = async ({ userId, authMode, prabhagList, deptL
     // PRABHAG FILTER
     // ========================================================
 
-    if (prabhagList) {
-      query += `
-        AND zoneid IN (${prabhagList})
-      `;
-    }
+    // if (prabhagList) {
+    //   query += `
+    //     AND zoneid IN (${prabhagList})
+    //   `;
+    // }
 
     // ========================================================
     // DEPARTMENT FILTER
@@ -228,12 +228,12 @@ const getApplicationAuthListRepo = async ({ userId, authMode, prabhagList, deptL
       }
     }
 
-    // console.log("================================================");
-    // console.log("APPLICATION AUTH LIST QUERY");
-    // console.log("================================================");
-    // console.log(query);
-    // console.log("BINDS:", binds);
-    // console.log("================================================");
+    console.log("================================================");
+    console.log("APPLICATION AUTH LIST QUERY");
+    console.log("================================================");
+    console.log(query);
+    console.log("BINDS:", binds);
+    console.log("================================================");
 
     const result = await executeQueryTMC(query, binds);
 
@@ -902,6 +902,13 @@ const applicationAuthRepo = async ({
         END;
       `;
 
+      const getValueOrNull = (value) => {
+        if (value === null || value === undefined || value === "") {
+          return null;
+        }
+        return String(value);
+      };
+
       const binds = {
         in_userid: String(userId || ""),
         in_applicationno: String(applicationNo || ""),
@@ -909,8 +916,8 @@ const applicationAuthRepo = async ({
         in_ReasonForReject: String(reasonForReject || ""),
         in_amount: Number(amount) || 0,
         in_mode: String(mode || ""),
-        in_Clerkid: String(clerkId || ""),
-        in_tinyurl: String(tinyUrl || ""),
+        in_Clerkid: getValueOrNull(clerkId),
+        in_tinyurl: getValueOrNull(tinyUrl),
 
         out_errcode: {
           dir: oracledb.BIND_OUT,
@@ -930,6 +937,8 @@ const applicationAuthRepo = async ({
       console.log("Procedure: aorts_appliauth_ins");
       console.log("Binds:", {
         ...binds,
+        in_Clerkid: binds.in_Clerkid,
+        in_tinyurl: binds.in_tinyurl,
         out_errcode: "BIND_OUT",
         out_ErrMsg: "BIND_OUT",
       });
@@ -959,7 +968,6 @@ const applicationAuthRepo = async ({
     };
   }
 };
-
 
 const saveApplicationVerificationDocumentRepo = async ({
   ulbid,
@@ -1203,6 +1211,126 @@ const getMenuDetailsRepo = async ({ serviceId, appNo, authMode }) => {
     };
   }
 };
+
+const certificateDataRepo = async ({ userId, applino, serviceid, applidata }) => {
+  try {
+    const result = await withTxTMC(async (connection) => {
+      const query = `
+        BEGIN
+          aorts_wtrcertificatedata_ins(
+            :in_UserId,
+            :in_applino,
+            :in_serviceid,
+            :in_applidata,
+            :out_ErrorCode,
+            :out_ErrorMsg
+          );
+        END;
+      `;
+
+      const binds = {
+        in_UserId: String(userId || ""),
+        in_applino: String(applino || ""),
+        in_serviceid: String(serviceid || ""),
+        in_applidata: String(applidata || ""),
+        out_ErrorCode: {
+          dir: oracledb.BIND_OUT,
+          type: oracledb.NUMBER,
+        },
+        out_ErrorMsg: {
+          dir: oracledb.BIND_OUT,
+          type: oracledb.STRING,
+          maxSize: 500,
+        },
+      };
+
+      console.log("================================================");
+      console.log("CERTIFICATE DATA PROCEDURE");
+      console.log("================================================");
+      console.log("Procedure: aorts_wtrcertificatedata_ins");
+      console.log("Binds:", {
+        in_UserId: binds.in_UserId,
+        in_applino: binds.in_applino,
+        in_serviceid: binds.in_serviceid,
+        in_applidata: binds.in_applidata,
+        out_ErrorCode: "BIND_OUT",
+        out_ErrorMsg: "BIND_OUT",
+      });
+      console.log("================================================");
+
+      const procedureResult = await connection.execute(query, binds, {
+        autoCommit: false,
+      });
+
+      return procedureResult.outBinds;
+    });
+
+    console.log("CERTIFICATE DATA PROCEDURE RESULT:", result);
+
+    return {
+      success: true,
+      errorCode: result?.out_ErrorCode,
+      errorMsg: result?.out_ErrorMsg,
+    };
+  } catch (error) {
+    console.error("CERTIFICATE DATA REPO ERROR:", error);
+
+    return {
+      success: false,
+      errorCode: 1500,
+      errorMsg: error.message,
+    };
+  }
+};
+
+const updateDocumentFlagRepo = async ({ appNo, docId }) => {
+  try {
+    const result = await withTxTMC(async (connection) => {
+      const query = `
+        UPDATE aorts_appdoc_det
+        SET var_appdoc_vrfyflag = 'Y'
+        WHERE var_appdoc_appno = :appNo
+          AND num_appdoc_documentid = :docId
+      `;
+
+      const binds = {
+        appNo: String(appNo),
+        docId: Number(docId),
+      };
+
+      console.log("================================================");
+      console.log("UPDATE DOCUMENT FLAG");
+      console.log("================================================");
+      console.log("Query:", query);
+      console.log("Binds:", binds);
+      console.log("================================================");
+
+      const updateResult = await connection.execute(query, binds, {
+        autoCommit: false,
+      });
+
+      console.log("Rows affected:", updateResult.rowsAffected);
+
+      return {
+        rowsAffected: updateResult.rowsAffected || 0,
+      };
+    });
+
+    return {
+      success: true,
+      rowsAffected: result.rowsAffected,
+      message: "Document flag updated successfully.",
+    };
+  } catch (error) {
+    console.error("UPDATE DOCUMENT FLAG REPO ERROR:", error);
+
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+};
+
 module.exports = {
   getUserPrabhagListRepo,
   getUserDeptListRepo,
@@ -1212,5 +1340,7 @@ module.exports = {
   getApplicationDetailsRepo,
   applicationAuthRepo,
   saveApplicationVerificationDocumentRepo,
-  getMenuDetailsRepo
+  getMenuDetailsRepo,
+  certificateDataRepo,
+  updateDocumentFlagRepo
 };

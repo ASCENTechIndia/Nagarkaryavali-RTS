@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import config from "@/utils/config";
 
 const initialValues = {
   applicantName: "",
@@ -312,7 +313,7 @@ const fetchVillages = async (sectorId) => {
   };
 
   const validateFields = (values) => {
-    const requiredFields = ['applicantName', 'mobileNo', 'emailId'];
+    const requiredFields = ['applicantName', 'address', 'mobileNo', 'emailId'];
     
     for (const field of requiredFields) {
       if (!values[field]?.trim()) {
@@ -417,11 +418,6 @@ const fetchVillages = async (sectorId) => {
             Authorization: `Bearer ${token || localStorage.getItem("token")}`,
             "Content-Type": "multipart/form-data",
           },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setUploadProgress(percentCompleted);
-            console.log(`Upload progress: ${percentCompleted}%`);
-          },
         }
       );
 
@@ -515,7 +511,8 @@ const fetchVillages = async (sectorId) => {
         locality: values.locality?.trim() || "",
         landmark: values.landmark?.trim() || "",
         pincode: values.pincode ? Number(values.pincode) : 0,
-        source: "WEB",
+        //source: "WEB",
+        source: config.source,
       };
 
     if (isSectorVisible) {
@@ -549,8 +546,6 @@ const fetchVillages = async (sectorId) => {
 
       const applicationNo = saveResponse.data.applicationNo;
       const message = saveResponse.data.message || "Application submitted successfully";
-
-      console.log(`Application saved with number: ${applicationNo}`);
 
       sessionStorage.setItem("Appno", applicationNo);
       sessionStorage.setItem("Service", pageTitle);
@@ -664,7 +659,7 @@ const fetchVillages = async (sectorId) => {
           className="h-9 text-sm p-1 w-[60%]"
         />
         {item.fileName && item.fileName !== "No file chosen" && (
-          <span className="text-xs text-gray-500 truncate max-w-[80px]">
+          <span className="text-xs text-gray-500 truncate max-w-20">
             {item.fileName}
             {item.isUploaded && " ✅"}
           </span>

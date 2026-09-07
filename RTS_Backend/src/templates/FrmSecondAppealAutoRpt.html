@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="mr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Second Appellate Authourity</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      @page {
+        size: A4 landscape;
+        margin: 5mm;
+      }
+
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: #fff;
+        color: #000;
+      }
+
+      .page {
+        width: 100%;
+        padding: 5px;
+        border: 1px solid #000;
+      }
+
+      .header {
+        position: relative;
+        text-align: center;
+        margin-bottom: 15px;
+        min-height: 90px;
+        border-bottom: 2px solid #000;
+      }
+
+      .logo {
+        position: absolute;
+        left: 10px;
+        top: 5px;
+        width: 90px;
+        height: 70px;
+        object-fit: contain;
+        margin-bottom: 20px;
+      }
+
+      .main-title {
+        font-size: 22px;
+        font-weight: bold;
+        margin-top: 10px;
+        color: #000;
+      }
+
+      .subtitle {
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 2px;
+        color: #000;
+      }
+
+      .report-title {
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 4px;
+      }
+
+      .date-range {
+        font-size: 13px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 6px;
+      }
+
+      .report-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+      }
+
+      .report-table th,
+      .report-table td {
+        border: 1px solid #000;
+        padding: 6px 8px;
+        text-align: center;
+        vertical-align: middle;
+      }
+
+      .report-table th {
+        font-weight: normal;
+        background-color: #fff;
+      }
+
+      .report-table td.col-name,
+      .report-table td.col-service {
+        text-align: left;
+      }
+
+      .col-srno {
+        width: 4%;
+        text-align: center;
+      }
+
+      .col-date {
+        width: 9%;
+        text-align: center;
+      }
+
+      .col-zone {
+        width: 8%;
+        text-align: center;
+      }
+
+      .col-dept {
+        width: 30%;
+        text-align: left;
+      }
+
+      .col-user {
+        width: 12%;
+        text-align: center;
+      }
+
+      .col-receipt {
+        width: 12%;
+        text-align: center;
+      }
+
+      .col-txn {
+        width: 12%;
+        text-align: center;
+      }
+
+      .col-count {
+        width: 6%;
+        text-align: center;
+      }
+
+      .col-amount {
+        width: 7%;
+        text-align: right;
+      }
+
+      .total-row td {
+        font-weight: bold;
+        border-top: 2px solid #000;
+      }
+
+      .total-label {
+        text-align: right;
+        font-weight: bold;
+        padding-right: 10px !important;
+      }
+
+      .total-amount {
+        font-weight: bold;
+        color: #000;
+      }
+
+      .total-count {
+        text-align: center;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <div class="header">
+        <img src="{{leftLogo}}" class="logo" />
+        <div class="main-title">ठाणे महानगरपालिका, ठाणे</div>
+        <div class="subtitle">Second Appellate Authourity</div>
+      </div>
+
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th class="col-srno">Sr.No<br />(1)</th>
+            <th class="col-appno">Applicatio<br />No<br />(2)</th>
+            <th class="col-receipt-date">
+              Date of receipt<br />of first aapeal<br />(3)
+            </th>
+            <th class="col-ack-date">
+              Date of acknowled-<br />gement of first<br />appeal<br />(4)
+            </th>
+            <th class="col-name">
+              Name and address of the eligible person<br />(5)
+            </th>
+            <th class="col-service">Public service<br />requested<br />(6)</th>
+            <th class="col-disposed-date">
+              Date on which<br />application is disposed of/if<br />rejected
+              the<br />reason thereof<br />(7)
+            </th>
+            <th class="col-fine">
+              Details of the fine,<br />if any imposed or<br />collected<br />(8)
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each rows}}
+          <tr>
+            <td class="col-srno">{{srNo}}</td>
+            <td class="col-appno">{{appNo}}</td>
+            <td class="col-receipt-date">{{receiptDate}}</td>
+            <td class="col-ack-date">{{ackDate}}</td>
+            <td class="col-name">{{nameAndAddress}}</td>
+            <td class="col-service">{{requestedService}}</td>
+            <td class="col-disposed-date">{{disposedDateReason}}</td>
+            <td class="col-fine">{{fineDetails}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

@@ -125,11 +125,11 @@ const FrmAssessmentCerti = () => {
         setDocumentDefs(docs);
         originalDocumentDefs.current = docs;
         const tableRows = docs.map((doc, index) => ({
-          id: doc.DocId,
+          id: doc.DOCID || index + 1,
           srNo: index + 1,
-          documentName: doc.DocName || doc.engdocdesc || "",
-          docId: doc.DocId,
-          docType: doc.DocType || "",
+          documentName: doc.DOCNAME || doc.ENGDOCDESC || "",
+          docId: doc.DOCID,
+          docType: doc.DOCTYPE || "PDF",
           file: null,
           fileName: "No file chosen",
           fileBuffer: null,
@@ -151,19 +151,13 @@ const FrmAssessmentCerti = () => {
   const handleFileChange = (id, event) => {
     const file = event.currentTarget.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const arrayBuffer = e.target.result;
-        const buffer = buffer.from(new Uint8Array(arrayBuffer));
-        setTableData((prev) =>
-          prev.map((row) =>
-            row.id === id
-              ? { ...row, file: file, fileName: file.name, fileBuffer: buffer }
-              : row
-          )
-        );
-      };
-      reader.readAsArrayBuffer(file);
+      setTableData((prev) =>
+        prev.map((row) =>
+          row.id === id
+            ? { ...row, file: file, fileName: file.name }
+            : row
+        )
+      );
     }
   };
 
@@ -177,9 +171,9 @@ const FrmAssessmentCerti = () => {
           onChange={(e) => handleFileChange(item.id, e)}
           className="h-9 text-sm p-1 w-[50%]"
         />
-        {item.fileName && (
+        {/* {item.fileName && (
           <span className="text-xs text-gray-500">{item.fileName}</span>
-        )}
+        )} */}
       </div>
     ),
   }));
@@ -453,16 +447,19 @@ const FrmAssessmentCerti = () => {
       }
     }
 
-    // const documentValidation = documentValidationSchema.safeParse(documents);
-
-    // if (!documentValidation.success) {
-    //   const firstError = documentValidation.error.issues[0];
-    //   Swal.fire({ 
-    //     text: firstError.message, 
-    //     confirmButtonColor: '#1e3a8a' 
-    //   });
-    //   return;
-    // }
+    const documentValidation = documentValidationSchema.safeParse(tableData);
+    
+    if (tableData.length > 0 && !documentValidation.success) {
+      const firstError = documentValidation.error.issues[0];
+      Swal.fire({
+        text: firstError.message,
+        confirmButtonColor: '#1e3a8a',
+        confirmButtonText: "OK",
+        allowOutsideClick: false,
+      });
+      setIsLoading(false);
+      return;
+    }
 
     const loader = Swal.fire({
       title: "Submitting Application...",
