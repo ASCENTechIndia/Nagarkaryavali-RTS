@@ -11,7 +11,7 @@ import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
-const FrmHearingProcess = () => {
+const FrmHearingProccess = () => {
   const { token, user } = useAuth();
   const navigate = useNavigate();
 
@@ -300,4 +300,4 @@ const FrmHearingProcess = () => {
   );
 };
 
-export default FrmHearingProcess;
+export default FrmHearingProccess;
