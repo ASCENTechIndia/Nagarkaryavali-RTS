@@ -260,7 +260,6 @@ const router = createBrowserRouter([
         path: "/app/FrmHolidayMst",
         element: <FrmHolidayMst />
       },
-      },
       {
         path: "App/FrmPwdSectorMapingConfg",
         element: <FrmTownPlanningSectorMapping />
