@@ -1,5 +1,9 @@
-import "./App.css"
-import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
+import "./App.css";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
 import Login from "./Pages/Login/UserID.Login";
 import OTPLogin from "./Pages/Login/OTP.Login";
 import Registration from "./Pages/Login/Registration";
@@ -7,7 +11,7 @@ import ForgotPassword from "./Pages/Login/ForgotPassword";
 import LandingPage from "./Pages/LandingPage";
 import Layout from "./layout/main-layout";
 import PageLayout from "./layout/page-layout";
-import Watermodule from "./Pages/WaterModule/WaterbillCopy/Step0New"
+import Watermodule from "./Pages/WaterModule/WaterbillCopy/Step0New";
 import FrmPropertyAppel from "./Pages/Property/FrmPropertyAppel";
 import FrmRebateTax from "./Pages/Property/FrmRebateTax";
 import FrmNoDuesCerti from "./Pages/Property/FrmNoDuesCerti";
@@ -58,6 +62,7 @@ import FrmTradeCtgryTypMst from "./Pages/Admin/FrmTradeCtgryTypMst";
 import FrmFirstAppealAuthoRpt from "./Pages/Admin/FrmFirstAppealAuthoRpt";
 import FrmSecondAppealAutoRpt from "./Pages/Admin/FrmSecondAppealAutoRpt";
 import FrmChallanGenReport from "./Pages/Admin/FrmChallanGenReport";
+import FrmAppliReportEMst from "./Pages/Admin/FrmAppliReportEMst";
 
 function HomePage() {
   return <div>Welcome to Employee Portal</div>;
@@ -66,7 +71,7 @@ function HomePage() {
 const router = createBrowserRouter([
   {
     path: "app/frmEmpLogin",
-    element: <FrmEmpLogin />
+    element: <FrmEmpLogin />,
   },
   {
     path: "/",
@@ -76,7 +81,7 @@ const router = createBrowserRouter([
         path: "/",
         element: <LandingPage />,
       },
-    ]
+    ],
   },
   {
     path: "/",
@@ -100,9 +105,9 @@ const router = createBrowserRouter([
       },
       {
         path: "/app/FrmAfterTransactionTMC",
-        element: <FrmAfterTransactionTMC />
+        element: <FrmAfterTransactionTMC />,
       },
-    ]
+    ],
   },
   {
     path: "/",
@@ -110,28 +115,28 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/app/FrmTrackApplication",
-        element: <FrmTrackApplication />
+        element: <FrmTrackApplication />,
       },
       {
         path: "/app/FrmAppeal",
-        element: <FrmAppeal />
+        element: <FrmAppeal />,
       },
       {
         path: "/app/FrmAppliFee",
-        element: <FrmAppliFee />
+        element: <FrmAppliFee />,
       },
 
       {
         path: "app/Step0New",
-        element: <Watermodule />
+        element: <Watermodule />,
       },
       {
         path: "app/FrmWaterRegister",
-        element: <FrmWaterRegister />
+        element: <FrmWaterRegister />,
       },
       {
         path: "app/FrmPlumberLicense",
-        element: <FrmPlumberLicense />
+        element: <FrmPlumberLicense />,
       },
       {
         path: "/app/FrmAssessmentCerti",
@@ -159,11 +164,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/app/FrmMarketEntry",
-        element: <FrmMarketEntry />
+        element: <FrmMarketEntry />,
       },
       {
         path: "app/FrmMarketLicenseupdt",
-        element: <FrmMarketLicenseUpdt />
+        element: <FrmMarketLicenseUpdt />,
       },
       {
         path: "/app/FrmFirstAppealDocUpload",
@@ -179,7 +184,7 @@ const router = createBrowserRouter([
       // },
       {
         path: "/app/FrmMarriageRgstn",
-        element: <FrmMarriageRgstn />
+        element: <FrmMarriageRgstn />,
       },
       {
         path: "/app/FrmServiceApplicationMst",
@@ -187,30 +192,29 @@ const router = createBrowserRouter([
       },
       {
         path: "/app/FrmServiceApplicationMstNew",
-        element: <FrmServiceApplicationMstNew />
+        element: <FrmServiceApplicationMstNew />,
       },
       {
         path: "/app/FrmAppoints",
-        element: <FrmAppoints />
+        element: <FrmAppoints />,
       },
       {
         path: "/app/FrmRoadCutting",
-        element: <FrmRoadCutting />
+        element: <FrmRoadCutting />,
       },
       {
         path: "/app/Step0",
-        element: <Step0 />
+        element: <Step0 />,
       },
       {
         path: "/app/FrmWaterAppliEntry",
-        element: <FrmWaterAppliEntry />
+        element: <FrmWaterAppliEntry />,
       },
       {
         path: "/app/FrmWaterAppliDetails",
-        element: <FrmWaterAppliDetails />
+        element: <FrmWaterAppliDetails />,
       },
-
-    ]
+    ],
   },
   {
     path: "/",
@@ -222,101 +226,103 @@ const router = createBrowserRouter([
       },
       {
         path: "/App/FrmAppAuthorisationList",
-        element: <FrmAppAuthorisationList />
+        element: <FrmAppAuthorisationList />,
       },
       {
         path: "/App/FrmAppAuthorisationMst",
-        element: <FrmAppAuthorisationMst />
+        element: <FrmAppAuthorisationMst />,
       },
       {
         path: "/app/FrmDocList",
-        element: <FrmDocList />
+        element: <FrmDocList />,
       },
       {
         path: "/app/FrmDocMst",
-        element: <FrmDocMst />
+        element: <FrmDocMst />,
       },
       {
         path: "/app/FrmServiceDocConfig",
-        element: <FrmServiceDocConfig />
+        element: <FrmServiceDocConfig />,
       },
       {
         path: "/app/Reports/FrmRTSOnlineColl",
-        element: <FrmRTSOnlineColl />
+        element: <FrmRTSOnlineColl />,
       },
       {
         path: "/app/Reports/FrmRTSOnlineCollDetails",
-        element: <FrmRTSOnlineCollDetails />
+        element: <FrmRTSOnlineCollDetails />,
       },
       {
         path: "/app/FrmTradeCtgryTypeCnfgList",
-        element: <FrmTradeCtgryTypeCnfgList />
+        element: <FrmTradeCtgryTypeCnfgList />,
       },
       {
         path: "/app/FrmTradeCtgryTypeCnfgMst",
-        element: <FrmTradeCtgryTypeCnfgMst />
+        element: <FrmTradeCtgryTypeCnfgMst />,
       },
       {
         path: "/app/FrmHolidayMst",
-        element: <FrmHolidayMst />
+        element: <FrmHolidayMst />,
       },
       {
         path: "App/FrmPwdSectorMapingConfg",
-        element: <FrmTownPlanningSectorMapping />
+        element: <FrmTownPlanningSectorMapping />,
       },
       {
         path: "App/FrmTradeCtgryCnfgList",
-        element: <FrmTradeCategoryConfigList />
+        element: <FrmTradeCategoryConfigList />,
       },
       {
         path: "App/FrmTradeCategoryConfigMst",
-        element: <FrmTradeCategoryConfigMst />
+        element: <FrmTradeCategoryConfigMst />,
       },
       {
         path: "/app/FrmMappingConfig",
-        element: <FrmMappingConfig />
+        element: <FrmMappingConfig />,
       },
 
       {
         path: "/app/FrmDeptMappingConfig",
-        element: <FrmDeptMappingConfig />
+        element: <FrmDeptMappingConfig />,
       },
       {
         path: "/App/FrmTradeCtgryList",
-        element: <FrmTradeCtgryList />
+        element: <FrmTradeCtgryList />,
       },
       {
         path: "/Masters/FrmTradeCtgMst",
-        element: <FrmTradeCtgMst />
+        element: <FrmTradeCtgMst />,
       },
       {
         path: "/App/FrmDashboardAll",
-        element: <FrmDashboardAll />
+        element: <FrmDashboardAll />,
       },
       {
         path: "/App/FrmTradeCtgrytypList",
-        element: <FrmTradeCtgrytypList />
+        element: <FrmTradeCtgrytypList />,
       },
       {
         path: "/App/FrmTradeCtgryTypMst",
-        element: <FrmTradeCtgryTypMst />
+        element: <FrmTradeCtgryTypMst />,
       },
       {
         path: "/App/FrmFirstAppealAuthoRpt",
-        element: <FrmFirstAppealAuthoRpt />
+        element: <FrmFirstAppealAuthoRpt />,
       },
       {
         path: "/App/FrmSecondAppealAutoRpt",
-        element: <FrmSecondAppealAutoRpt />
+        element: <FrmSecondAppealAutoRpt />,
       },
       {
         path: "/App/Reports/FrmChallanGenReport",
-        element: <FrmChallanGenReport />
-      }
-
-    ]
+        element: <FrmChallanGenReport />,
+      },
+      {
+        path: "/App/Reports/FrmAppliReportEMst",
+        element: <FrmAppliReportEMst />,
+      },
+    ],
   },
-
 ]);
 
 function App() {
