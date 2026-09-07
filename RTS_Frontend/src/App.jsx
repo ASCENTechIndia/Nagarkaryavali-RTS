@@ -318,7 +318,10 @@ const router = createBrowserRouter([
         path: "App/FrmChallanGen",
         element: <FrmChallanGen />
       },
-
+      {
+        path: "/App/FrmHearingDateAssign",
+        element: <FrmHearingDateAssign />
+      }
     ]
   },
 
