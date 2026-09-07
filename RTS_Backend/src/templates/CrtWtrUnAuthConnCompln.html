@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="mr">
+  <head>
+    <meta charset="UTF-8" />
+
+    <title>अनधिकृत नळ जोडणी तक्रार</title>
+
+    <style>
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+
+        width: 210mm;
+        height: 297mm;
+
+        background: #ffffff;
+      }
+
+      body {
+        font-family: "Noto Sans Devanagari", "Nirmala UI", "Mangal", Arial, sans-serif;
+
+        color: #000000;
+
+        font-size: 13px;
+      }
+
+      /* =====================================================
+           PAGE
+           ===================================================== */
+
+      .page {
+        position: relative;
+
+        width: 210mm;
+        height: 297mm;
+
+        padding: 5mm 6mm 5mm 6mm;
+
+        border: 1px solid #000000;
+
+        background: #ffffff;
+
+        overflow: hidden;
+      }
+
+      /* =====================================================
+           HEADER
+           ===================================================== */
+
+      .header {
+        position: relative;
+
+        width: 100%;
+
+        height: 30mm;
+
+        border-bottom: 1px solid #000000;
+      }
+
+      .tmc-logo {
+        position: absolute;
+
+        left: 5mm;
+        top: 1mm;
+
+        width: 25mm;
+        height: 25mm;
+
+        object-fit: contain;
+      }
+
+      .aaple-logo {
+        position: absolute;
+
+        right: 4mm;
+        top: 1mm;
+
+        width: 28mm;
+        height: 25mm;
+
+        object-fit: contain;
+      }
+
+      .header-center {
+        position: absolute;
+
+        left: 30mm;
+        right: 30mm;
+
+        top: 0;
+
+        text-align: center;
+
+        line-height: 1.2;
+      }
+
+      .corporation-name {
+        font-size: 22px;
+
+        font-weight: 700;
+
+        margin-bottom: 1.5mm;
+
+        white-space: nowrap;
+      }
+
+      .act-name {
+        font-size: 14.5px;
+
+        font-weight: 700;
+
+        margin-bottom: 1mm;
+
+        white-space: nowrap;
+      }
+
+      .department-name {
+        font-size: 14px;
+
+        font-weight: 700;
+      }
+
+      /* =====================================================
+           OUT NO / DATE
+           ===================================================== */
+
+      .reference-row {
+        display: table;
+
+        width: 100%;
+
+        height: 8mm;
+
+        margin-top: 2mm;
+
+        font-size: 12px;
+      }
+
+      .reference-left {
+        display: table-cell;
+
+        width: 50%;
+
+        text-align: left;
+
+        padding-left: 2mm;
+
+        vertical-align: top;
+      }
+
+      .reference-right {
+        display: table-cell;
+
+        width: 50%;
+
+        text-align: right;
+
+        padding-right: 2mm;
+
+        vertical-align: top;
+      }
+
+      /* =====================================================
+           TITLE
+           ===================================================== */
+
+      .title {
+        width: 100%;
+
+        text-align: center;
+
+        font-size: 17px;
+
+        font-weight: 700;
+
+        margin-top: 7mm;
+
+        margin-bottom: 10mm;
+      }
+
+      /* =====================================================
+           APPLICANT DETAILS
+           ===================================================== */
+
+      .details {
+        width: 100%;
+
+        padding-left: 3mm;
+
+        padding-right: 3mm;
+      }
+
+      /* =====================================================
+           APPLICANT NAME / ADDRESS
+           ===================================================== */
+
+      .applicant-row {
+        display: grid;
+
+        grid-template-columns:
+          30mm
+          54mm
+          7mm
+          1fr;
+
+        width: 100%;
+
+        min-height: 7mm;
+
+        align-items: start;
+
+        margin-bottom: 1.5mm;
+      }
+
+      .applicant-label {
+        grid-column: 2;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        line-height: 1.5;
+      }
+
+      .applicant-colon {
+        grid-column: 3;
+
+        text-align: center;
+
+        font-size: 13px;
+      }
+
+      .applicant-value {
+        grid-column: 4;
+
+        font-size: 13px;
+
+        line-height: 1.5;
+
+        padding-left: 1mm;
+
+        word-break: break-word;
+      }
+
+      .prati {
+        width: 30mm;
+
+        font-size: 13px;
+
+        line-height: 1.5;
+
+        margin-bottom: 2mm;
+      }
+
+      /* =====================================================
+           SUBJECT / REFERENCE
+           ===================================================== */
+
+      .subject-section {
+        margin-top: 5mm;
+
+        margin-left: 30mm;
+
+        width: calc(100% - 30mm);
+      }
+
+      .subject-row {
+        display: grid;
+
+        grid-template-columns:
+          18mm
+          7mm
+          1fr;
+
+        width: 100%;
+
+        min-height: 7mm;
+
+        margin-bottom: 1.2mm;
+
+        align-items: start;
+      }
+
+      .subject-label {
+        font-size: 13px;
+
+        font-weight: 600;
+
+        line-height: 1.5;
+      }
+
+      .subject-colon {
+        text-align: center;
+
+        font-size: 13px;
+      }
+
+      .subject-value {
+        font-size: 13px;
+
+        line-height: 1.5;
+
+        padding-left: 1mm;
+
+        word-break: break-word;
+      }
+
+      /* =====================================================
+           MAIN PARAGRAPH
+           ===================================================== */
+
+      .main-content {
+        width: 100%;
+
+        margin-top: 3mm;
+
+        font-size: 13px;
+
+        line-height: 1.75;
+
+        text-align: justify;
+
+        padding-left: 3mm;
+
+        padding-right: 3mm;
+      }
+
+      .main-content p {
+        margin-top: 0;
+
+        margin-bottom: 3mm;
+      }
+
+      /* =====================================================
+           VERIFICATION DETAILS
+           ===================================================== */
+
+      .verification {
+        width: 100%;
+
+        margin-top: 2mm;
+
+        padding-left: 3mm;
+
+        padding-right: 3mm;
+      }
+
+      .verification-row {
+        display: grid;
+
+        grid-template-columns:
+          85mm
+          7mm
+          1fr;
+
+        width: 100%;
+
+        min-height: 7mm;
+
+        margin-bottom: 1mm;
+
+        align-items: start;
+      }
+
+      .verification-label {
+        font-size: 13px;
+
+        line-height: 1.5;
+
+        font-weight: 500;
+      }
+
+      .verification-colon {
+        text-align: center;
+
+        font-size: 13px;
+      }
+
+      .verification-value {
+        font-size: 13px;
+
+        line-height: 1.5;
+
+        padding-left: 1mm;
+
+        word-break: break-word;
+      }
+
+      /* =====================================================
+           SIGNATURE
+           ===================================================== */
+
+      .signature {
+        position: absolute;
+
+        right: 12mm;
+
+        bottom: 27mm;
+
+        width: 62mm;
+
+        text-align: center;
+
+        font-size: 13px;
+
+        line-height: 1.7;
+      }
+
+      .signature-title {
+        font-weight: 600;
+      }
+
+      /* =====================================================
+           PRINT
+           ===================================================== */
+
+      @media print {
+        html,
+        body {
+          width: 210mm;
+
+          height: 297mm;
+
+          margin: 0;
+
+          padding: 0;
+        }
+
+        .page {
+          width: 210mm;
+
+          height: 297mm;
+
+          border: 1px solid #000000;
+
+          page-break-after: always;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+      <div class="header">
+        {{#if ULBLOGO}}
+
+        <img src="{{ULBLOGO}}" class="tmc-logo" alt="TMC Logo" />
+
+        {{/if}}
+
+        <div class="header-center">
+          <div class="corporation-name">{{CORPORATIONNAME}}</div>
+
+          <div class="act-name">महाराष्ट्र लोकसेवा हक्क अधिनियम, २०१५ अन्वये</div>
+
+          <div class="department-name">पाणी पुरवठा विभाग</div>
+        </div>
+
+        {{#if APLESEVA_LOGO}}
+
+        <img src="{{APLESEVA_LOGO}}" class="aaple-logo" alt="Aaple Sarkar Logo" />
+
+        {{/if}}
+      </div>
+
+      <!-- =====================================================
+         OUT NO / DATE
+         ===================================================== -->
+
+      <div class="reference-row">
+        <div class="reference-left">
+          जा. क्र. क्र.मा.पा. /
+
+          <strong> {{OUTNO}} </strong>
+        </div>
+
+        <div class="reference-right">
+          दिनांक :
+
+          <strong> {{AUTHDATE}} </strong>
+        </div>
+      </div>
+
+      <!-- =====================================================
+         TITLE
+         ===================================================== -->
+
+      <div class="title">अनधिकृत नळ जोडणी तक्रार (C-24)</div>
+
+      <!-- =====================================================
+         APPLICANT
+         ===================================================== -->
+      <!-- =====================================================
+     APPLICANT DETAILS
+     ===================================================== -->
+
+      <div class="details">
+        <div class="prati">प्रति,</div>
+
+        <!-- अर्जदाराचे नाव -->
+
+        <div class="applicant-row">
+          <div></div>
+
+          <div class="applicant-label">अर्जदाराचे नाव</div>
+
+          <div class="applicant-colon">:</div>
+
+          <div class="applicant-value">{{certificate.waterConsumerName}}</div>
+        </div>
+
+        <!-- अर्जदाराचा पत्ता -->
+
+        <div class="applicant-row">
+          <div></div>
+
+          <div class="applicant-label">अर्जदाराचा पत्ता</div>
+
+          <div class="applicant-colon">:</div>
+
+          <div class="applicant-value">{{certificate.customerAddress}}</div>
+        </div>
+
+        <!-- =================================================
+         SUBJECT
+         ================================================= -->
+
+        <div class="subject-section">
+          <div class="subject-row">
+            <div class="subject-label">विषय</div>
+
+            <div class="subject-colon">:</div>
+
+            <div class="subject-value">अनधिकृत नळ जोडणी तक्रार</div>
+          </div>
+
+          <div class="subject-row">
+            <div class="subject-label">संदर्भ</div>
+
+            <div class="subject-colon">:</div>
+
+            <div class="subject-value">{{certificate.customerChannel}}</div>
+          </div>
+        </div>
+
+        <!-- =================================================
+         MAIN LETTER CONTENT
+         ================================================= -->
+
+        <div class="main-content">
+          <p>आपण उपरोक्त संदर्भीय अर्जामध्ये अनधिकृत नळ जोडणी तक्रार केलेल्या ठिकाणी विभागीय कर्मचाऱ्यांमार्फत चौकशी केली असता अनधिकृत नळ जोडणी असल्याचे निदर्शनास आले आहे.</p>
+        </div>
+
+        <!-- =================================================
+         VERIFICATION / ACTION DETAILS
+         ================================================= -->
+
+        <div class="verification">
+          <!-- विभागामार्फत पडताळणी अहवाल -->
+
+          <div class="verification-row">
+            <div class="verification-label">विभागामार्फत पडताळणी अहवाल</div>
+
+            <div class="verification-colon">:</div>
+
+            <div class="verification-value">{{certificate.departmentVerification}}</div>
+          </div>
+
+          <!-- कागदपत्रे -->
+
+          <div class="verification-row">
+            <div class="verification-label">संयोजनाच्या वैधताबाबतची कागदपत्रे आढळून आली</div>
+
+            <div class="verification-colon">:</div>
+
+            <div class="verification-value">{{certificate.documentValid}}</div>
+          </div>
+
+          <!-- संयोजनाची स्थिती -->
+
+          <div class="verification-row">
+            <div class="verification-label">संयोजनाची स्थिती</div>
+
+            <div class="verification-colon">:</div>
+
+            <div class="verification-value">{{certificate.stateComplaint}}</div>
+          </div>
+
+          <!-- कनेक्शन तोडले -->
+
+          <div class="verification-row">
+            <div class="verification-label">संयोजन कनेक्शन तोडण्यात आले</div>
+
+            <div class="verification-colon">:</div>
+
+            <div class="verification-value">{{certificate.connectionBroken}}</div>
+          </div>
+
+          <!-- कारवाई -->
+
+          <div class="verification-row">
+            <div class="verification-label">दंडात्मक कारवाई करण्यात आली</div>
+
+            <div class="verification-colon">:</div>
+
+            <div class="verification-value">{{certificate.pointOfAction}}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =====================================================
+         SIGNATURE
+         ===================================================== -->
+
+      <div class="signature">
+        <div class="signature-title">उप अभियंता</div>
+
+        <div>पाणी पुरवठा विभाग,</div>
+
+        <div>{{CORPORATIONNAME}}</div>
+      </div>
+    </div>
+  </body>
+</html>

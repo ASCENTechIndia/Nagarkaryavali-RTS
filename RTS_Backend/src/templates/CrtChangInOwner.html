@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="mr">
+  <head>
+    <meta charset="UTF-8" />
+
+    <title>मालकी हक्कात बदल</title>
+
+    <style>
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+
+        width: 210mm;
+        height: 297mm;
+
+        background: #ffffff;
+      }
+
+      body {
+        font-family: "Noto Sans Devanagari", "Nirmala UI", "Mangal", Arial, sans-serif;
+
+        color: #000000;
+
+        font-size: 13px;
+      }
+
+      /* =====================================================
+           A4 PAGE
+           ===================================================== */
+
+      .page {
+        position: relative;
+
+        width: 210mm;
+        height: 297mm;
+
+        padding: 5mm 6mm 5mm 6mm;
+
+        background: #ffffff;
+
+        border: 1px solid #000000;
+
+        overflow: hidden;
+      }
+
+      /* =====================================================
+           HEADER
+           ===================================================== */
+
+      .header {
+        position: relative;
+
+        width: 100%;
+        height: 31mm;
+
+        border-bottom: 1px solid #000000;
+      }
+
+      /* -----------------------------------------------------
+           TMC LOGO
+           ----------------------------------------------------- */
+
+      .tmc-logo {
+        position: absolute;
+
+        left: 5mm;
+        top: 1mm;
+
+        width: 25mm;
+        height: 25mm;
+
+        object-fit: contain;
+      }
+
+      /* -----------------------------------------------------
+           AAPLE SARKAR LOGO
+           ----------------------------------------------------- */
+
+      .aaple-logo {
+        position: absolute;
+
+        right: 4mm;
+        top: 1mm;
+
+        width: 28mm;
+        height: 25mm;
+
+        object-fit: contain;
+      }
+
+      /* -----------------------------------------------------
+           HEADER TEXT
+           ----------------------------------------------------- */
+
+      .header-center {
+        position: absolute;
+
+        left: 31mm;
+        right: 31mm;
+
+        top: 0;
+
+        text-align: center;
+
+        line-height: 1.2;
+      }
+
+      .corporation-name {
+        font-size: 22px;
+
+        font-weight: 700;
+
+        margin: 0 0 1.5mm 0;
+
+        white-space: nowrap;
+      }
+
+      .act-name {
+        font-size: 14.5px;
+
+        font-weight: 700;
+
+        margin: 0 0 1mm 0;
+
+        white-space: nowrap;
+      }
+
+      .department-name {
+        font-size: 14px;
+
+        font-weight: 700;
+
+        margin: 0;
+      }
+
+      /* =====================================================
+           OUT NO / DATE
+           ===================================================== */
+
+      .reference-row {
+        width: 100%;
+
+        display: table;
+
+        height: 8mm;
+
+        margin-top: 1mm;
+
+        font-size: 12px;
+      }
+
+      .reference-left,
+      .reference-right {
+        display: table-cell;
+
+        width: 50%;
+
+        vertical-align: top;
+      }
+
+      .reference-left {
+        text-align: left;
+
+        padding-left: 2mm;
+      }
+
+      .reference-right {
+        text-align: right;
+
+        padding-right: 2mm;
+      }
+
+      /* =====================================================
+           TITLE
+           ===================================================== */
+
+      .title {
+        width: 100%;
+
+        text-align: center;
+
+        font-size: 17px;
+
+        font-weight: 700;
+
+        margin-top: 5mm;
+
+        margin-bottom: 10mm;
+      }
+
+      /* =====================================================
+           APPLICANT SECTION
+           ===================================================== */
+
+      .applicant-section {
+        width: 100%;
+
+        padding-left: 2mm;
+
+        min-height: 51mm;
+      }
+
+      .to {
+        font-size: 13px;
+
+        margin-bottom: 2.5mm;
+      }
+
+      .applicant-table {
+        width: 100%;
+
+        border-collapse: collapse;
+
+        table-layout: fixed;
+      }
+
+      .applicant-table td {
+        vertical-align: top;
+
+        font-size: 13px;
+
+        line-height: 1.35;
+
+        padding-top: 0.9mm;
+        padding-bottom: 0.9mm;
+      }
+
+      .applicant-label {
+        width: 34mm;
+      }
+
+      .applicant-colon {
+        width: 7mm;
+
+        text-align: center;
+      }
+
+      .applicant-value {
+        width: auto;
+
+        padding-left: 1mm;
+      }
+
+      /* =====================================================
+           SUBJECT / REFERENCE
+           ===================================================== */
+
+      .subject-section {
+        width: 125mm;
+
+        margin-left: 43mm;
+
+        margin-top: 6mm;
+      }
+
+      .subject-row {
+        display: table;
+
+        width: 100%;
+
+        margin-bottom: 1.5mm;
+
+        line-height: 1.35;
+      }
+
+      .subject-label {
+        display: table-cell;
+
+        width: 16mm;
+
+        font-size: 13px;
+      }
+
+      .subject-colon {
+        display: table-cell;
+
+        width: 7mm;
+
+        text-align: center;
+      }
+
+      .subject-value {
+        display: table-cell;
+
+        padding-left: 1mm;
+
+        font-size: 13px;
+      }
+
+      /* =====================================================
+           MAIN DETAILS
+           ===================================================== */
+
+      .details-section {
+        width: 100%;
+
+        padding-left: 2mm;
+
+        margin-top: 0;
+      }
+
+      .salutation {
+        font-size: 13px;
+
+        margin-bottom: 6mm;
+      }
+
+      /* =====================================================
+           DETAILS TABLE
+           ===================================================== */
+
+      .details-table {
+        width: 100%;
+
+        border-collapse: collapse;
+
+        table-layout: fixed;
+      }
+
+      .details-table td {
+        vertical-align: top;
+
+        font-size: 13px;
+
+        line-height: 1.35;
+
+        padding-top: 1.05mm;
+        padding-bottom: 1.05mm;
+      }
+
+      .detail-label {
+        width: 82mm;
+
+        padding-left: 14mm;
+
+        font-weight: 600;
+      }
+
+      .detail-colon {
+        width: 7mm;
+
+        text-align: center;
+      }
+
+      .detail-value {
+        width: auto;
+
+        padding-left: 1mm;
+
+        font-weight: 400;
+      }
+
+      /* =====================================================
+           SIGNATURE
+           ===================================================== */
+
+      .signature {
+        position: absolute;
+
+        right: 12mm;
+
+        bottom: 35mm;
+
+        width: 62mm;
+
+        text-align: center;
+
+        font-size: 13px;
+
+        line-height: 1.7;
+      }
+
+      /* =====================================================
+           FOOTER NOTE
+           ===================================================== */
+
+      .footer-note {
+        position: absolute;
+
+        left: 10mm;
+
+        right: 10mm;
+
+        bottom: 7mm;
+
+        font-size: 10.5px;
+
+        line-height: 1.55;
+
+        text-align: left;
+      }
+
+      .footer-note p {
+        margin: 0;
+      }
+
+      /* =====================================================
+           PRINT
+           ===================================================== */
+
+      @media print {
+        html,
+        body {
+          width: 210mm;
+          height: 297mm;
+
+          margin: 0;
+          padding: 0;
+        }
+
+        .page {
+          width: 210mm;
+          height: 297mm;
+
+          border: 1px solid #000;
+
+          page-break-after: always;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+      <div class="header">
+        {{#if ULBLOGO}}
+
+        <img src="{{ULBLOGO}}" class="tmc-logo" alt="TMC Logo" />
+
+        {{/if}}
+
+        <div class="header-center">
+          <div class="corporation-name">{{CORPORATIONNAME}}</div>
+
+          <div class="act-name">महाराष्ट्र लोकसेवा हक्क अधिनियम, २०१५ अन्वये</div>
+
+          <div class="department-name">पाणी पुरवठा विभाग</div>
+        </div>
+
+        {{#if APLESEVA_LOGO}}
+
+        <img src="{{APLESEVA_LOGO}}" class="aaple-logo" alt="Aaple Sarkar Logo" />
+
+        {{/if}}
+      </div>
+
+      <!-- =====================================================
+         OUT NO / DATE
+         ===================================================== -->
+
+      <div class="reference-row">
+        <div class="reference-left">
+          जा. क्र. क्र.मा.पा. /
+
+          <strong> {{OUTNO}} </strong>
+        </div>
+
+        <div class="reference-right">
+          दिनांक :
+
+          <strong> {{AUTHDATE}} </strong>
+        </div>
+      </div>
+
+      <!-- =====================================================
+         TITLE
+         ===================================================== -->
+
+      <div class="title">मालकी हक्कात बदल</div>
+
+      <!-- =====================================================
+         APPLICANT
+         ===================================================== -->
+
+      <div class="applicant-section">
+        <div class="to">प्रति,</div>
+
+        <table class="applicant-table">
+          <tr>
+            <td class="applicant-label">ग्राहकाचे नाव</td>
+
+            <td class="applicant-colon">:</td>
+
+            <td class="applicant-value">{{APPLINAME}}</td>
+          </tr>
+
+          <tr>
+            <td class="applicant-label">ग्राहकाचा पत्ता</td>
+
+            <td class="applicant-colon">:</td>
+
+            <td class="applicant-value">{{APPLIADDRESS}}</td>
+          </tr>
+        </table>
+
+        <!-- =================================================
+             SUBJECT
+             ================================================= -->
+
+        <div class="subject-section">
+          <div class="subject-row">
+            <div class="subject-label">विषय</div>
+
+            <div class="subject-colon">:</div>
+
+            <div class="subject-value">{{VISHAY}}</div>
+          </div>
+
+          <div class="subject-row">
+            <div class="subject-label">संदर्भ</div>
+
+            <div class="subject-colon">:</div>
+
+            <div class="subject-value">{{SANDHARBH}}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =====================================================
+         MAIN DETAILS
+         ===================================================== -->
+
+      <div class="details-section">
+        <div class="salutation">महोदय,</div>
+
+        <table class="details-table">
+          <!-- ग्राहक क्रमांक -->
+
+          <tr>
+            <td class="detail-label">ग्राहक क्रमांक</td>
+
+            <td class="detail-colon">:</td>
+
+            <td class="detail-value">{{CONNNO}}</td>
+          </tr>
+
+          <!-- मूळ धारक / ग्राहकाचे नाव -->
+
+          <tr>
+            <td class="detail-label">मूळ धारकाचे / ग्राहकाचे नाव</td>
+
+            <td class="detail-colon">:</td>
+
+            <td class="detail-value">{{CURRCONAME}}</td>
+          </tr>
+
+          <!-- मीटरचा आकार -->
+
+          <tr>
+            <td class="detail-label">मीटरचा आकार (१ इंच, १/२ इंच, २ इंच)</td>
+
+            <td class="detail-colon">:</td>
+
+            <td class="detail-value">{{METERTYPE}}</td>
+          </tr>
+
+          <!-- संयोजनाचे ठिकाण व पत्ता -->
+
+          <tr>
+            <td class="detail-label">संयोजनाचे ठिकाण व पत्ता</td>
+
+            <td class="detail-colon">:</td>
+
+            <td class="detail-value">{{APPLIADDRESS}}</td>
+          </tr>
+
+          <!-- सध्याची वर्गवारी -->
+
+          <tr>
+            <td class="detail-label">सध्याची वर्गवारी घरगुती / बिगर घरगुती</td>
+
+            <td class="detail-colon">:</td>
+
+            <td class="detail-value">{{BCHOUSEHOLD}}</td>
+          </tr>
+
+          <!-- सुधारित धारकाचे / मालकाचे नाव -->
+
+          <tr>
+            <td class="detail-label">सुधारित धारकाचे / मालकाचे नाव</td>
+
+            <td class="detail-colon">:</td>
+
+            <td class="detail-value">{{NEWONAME}}</td>
+          </tr>
+
+          <!-- सुधारित हस्तांतरण लागू केल्याचा दिनांक -->
+
+          <tr>
+            <td class="detail-label">सुधारित हस्तांतरण लागू केल्याचा दिनांक</td>
+
+            <td class="detail-colon">:</td>
+
+            <td class="detail-value">{{ACCEPTDATE}}</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- =====================================================
+         SIGNATURE
+         ===================================================== -->
+
+      <div class="signature">
+        <div>उप अभियंता,</div>
+
+        <div>पाणी पुरवठा विभाग</div>
+
+        <div>{{CORPORATIONNAME}}</div>
+      </div>
+
+      <!-- =====================================================
+         FOOTER NOTE
+         ===================================================== -->
+
+      <div class="footer-note">
+        <p>टीप :- जलप्रवाहक / मीटर रिडर वरीलप्रमाणे कनेक्शनच्या आकारामध्ये / मालकाकमध्ये बदल केल्याची नोंद जलमापक नोंद वहीत तसेच रीडिंग रजिस्टरमध्ये घेऊन बिल सुधारित दराप्रमाणे आकारणीची कार्यवाही करावी.</p>
+      </div>
+    </div>
+  </body>
+</html>

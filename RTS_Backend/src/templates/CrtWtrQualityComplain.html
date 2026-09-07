@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="mr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>पाण्याची गुणवत्ता बाबतचा दाखला</title>
+
+    <style>
+      @page {
+        size: A4;
+        margin: 0;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 210mm;
+        height: 297mm;
+        background: #fff;
+      }
+      body {
+        font-family: "Noto Sans Devanagari", "Nirmala UI", "Mangal", Arial, sans-serif;
+        font-size: 13px;
+        color: #000;
+      }
+      .page {
+        width: 210mm;
+        height: 297mm;
+        border: 1px solid #000;
+        padding: 5mm 6mm;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Header */
+      .header {
+        height: 30mm;
+        border-bottom: 1px solid #000;
+        position: relative;
+      }
+      .logo-left {
+        position: absolute;
+        left: 5mm;
+        top: 1mm;
+        width: 25mm;
+        height: 25mm;
+        object-fit: contain;
+      }
+      .logo-right {
+        position: absolute;
+        right: 4mm;
+        top: 1mm;
+        width: 28mm;
+        height: 25mm;
+        object-fit: contain;
+      }
+      .header-center {
+        position: absolute;
+        left: 30mm;
+        right: 30mm;
+        text-align: center;
+      }
+      .corp {
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .act {
+        font-size: 14px;
+        font-weight: 700;
+        margin-top: 1mm;
+      }
+      .dept {
+        font-size: 14px;
+        font-weight: 700;
+        margin-top: 1mm;
+      }
+
+      /* Ref */
+      .ref {
+        display: table;
+        width: 100%;
+        margin-top: 2mm;
+        font-size: 12px;
+      }
+      .ref-left,
+      .ref-right {
+        display: table-cell;
+        width: 50%;
+      }
+      .ref-right {
+        text-align: right;
+      }
+      .title {
+        text-align: center;
+        font-size: 17px;
+        font-weight: 700;
+        margin: 7mm 0 8mm;
+      }
+
+      /* Applicant */
+      .row {
+        display: grid;
+        grid-template-columns: 28mm 48mm 6mm 1fr;
+        margin-bottom: 1mm;
+        align-items: start;
+      }
+      .lbl {
+        font-weight: 600;
+      }
+      .sub {
+        margin-left: 28mm;
+        margin-top: 4mm;
+      }
+      .subrow {
+        display: grid;
+        grid-template-columns: 18mm 6mm 1fr;
+        margin-bottom: 1mm;
+      }
+
+      /* Info */
+      .info {
+        margin-top: 5mm;
+      }
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6mm;
+      }
+      .info-row {
+        display: grid;
+        grid-template-columns: 48mm 6mm 1fr;
+        margin-bottom: 1mm;
+      }
+      .info-row .lbl {
+        font-weight: 600;
+      }
+
+      /* Table */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 5mm;
+        font-size: 12px;
+      }
+      th,
+      td {
+        border: 1px solid #000;
+        padding: 6px;
+      }
+      th {
+        text-align: center;
+        background: #f5f5f5;
+      }
+      td:first-child {
+        width: 45mm;
+        font-weight: 600;
+      }
+      td:last-child {
+        height: 18px;
+      }
+
+      /* Remarks */
+      .remarks {
+        margin-top: 6mm;
+      }
+      .r-title {
+        font-weight: 700;
+        margin-bottom: 3mm;
+      }
+      .remark-row {
+        display: grid;
+        grid-template-columns: 28mm 1fr;
+        align-items: center;
+        margin-bottom: 2mm;
+      }
+      .box {
+        border: 1px solid #000;
+        height: 12mm;
+      }
+
+      /* Signature */
+      .sign {
+        position: absolute;
+        right: 12mm;
+        bottom: 22mm;
+        width: 60mm;
+        text-align: center;
+        line-height: 1.6;
+      }
+      .sign b {
+        display: block;
+      }
+
+      .quality-details {
+        width: 100%;
+        margin-top: 4mm;
+        padding-left: 3mm;
+        padding-right: 3mm;
+      }
+
+      .quality-row {
+        display: grid;
+
+        grid-template-columns:
+          78mm
+          7mm
+          1fr;
+
+        width: 100%;
+
+        min-height: 6.5mm;
+
+        align-items: start;
+
+        margin-bottom: 0.5mm;
+      }
+
+      .quality-label {
+        font-size: 12.5px;
+        line-height: 1.4;
+        white-space: nowrap;
+      }
+
+      .quality-colon {
+        text-align: center;
+        font-size: 12.5px;
+      }
+
+      .quality-value {
+        font-size: 12.5px;
+        line-height: 1.4;
+        padding-left: 1mm;
+        word-break: break-word;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <div class="header">
+        {{#if ULBLOGO}}<img src="{{ULBLOGO}}" class="logo-left" />{{/if}}
+        <div class="header-center">
+          <div class="corp">{{CORPORATIONNAME}}</div>
+          <div class="act">महाराष्ट्र लोकसेवा हक्क अधिनियम, २०१५ अन्वये</div>
+          <div class="dept">पाणी पुरवठा विभाग</div>
+        </div>
+        {{#if APLESEVA_LOGO}}<img src="{{APLESEVA_LOGO}}" class="logo-right" />{{/if}}
+      </div>
+
+      <div class="ref">
+        <div class="ref-left">जा. क्र. क्र.मा.पा. / <b>{{OUTNO}}</b></div>
+        <div class="ref-right">दिनांक : <b>{{AUTHDATE}}</b></div>
+      </div>
+
+      <div class="title">पाण्याची गुणवत्ता बाबतचा दाखला (C-26)</div>
+
+      <div>प्रति,</div>
+
+      <div class="row">
+        <div></div>
+        <div class="lbl">ग्राहकाचे नाव</div>
+        <div>:</div>
+        <div>{{certificate.waterConsumerName}}</div>
+      </div>
+
+      <div class="row">
+        <div></div>
+        <div class="lbl">ग्राहकाचा पत्ता</div>
+        <div>:</div>
+        <div>{{certificate.customerAddress}}</div>
+      </div>
+
+      <div class="sub">
+        <div class="subrow">
+          <div class="lbl">विषय</div>
+          <div>:</div>
+          <div>{{certificate.vishay}}</div>
+        </div>
+        <div class="subrow">
+          <div class="lbl">संदर्भ</div>
+          <div>:</div>
+          <div>{{certificate.sandharbh}}</div>
+        </div>
+      </div>
+
+      <div class="quality-details">
+        <div class="quality-row">
+          <div class="quality-label">पाणी नमुना घेतल्याचा दिनांक</div>
+
+          <div class="quality-colon">:</div>
+
+          <div class="quality-value">{{certificate.sampleCollectionDate}}</div>
+        </div>
+
+        <div class="quality-row">
+          <div class="quality-label">पाणी नमुना तपासणीचा दिनांक</div>
+
+          <div class="quality-colon">:</div>
+
+          <div class="quality-value">{{certificate.sampleTestDate}}</div>
+        </div>
+
+        <div class="quality-row">
+          <div class="quality-label">ग्राहक क्रमांक</div>
+
+          <div class="quality-colon">:</div>
+
+          <div class="quality-value">{{certificate.connectionNo}}</div>
+        </div>
+
+        <div class="quality-row">
+          <div class="quality-label">मीटरचा आकार इंच. १/२ इंच. १ इंच</div>
+
+          <div class="quality-colon">:</div>
+
+          <div class="quality-value">{{certificate.meterType}}</div>
+        </div>
+
+        <div class="quality-row">
+          <div class="quality-label">संयोजनाचे ठिकाण व पत्ता</div>
+
+          <div class="quality-colon">:</div>
+
+          <div class="quality-value">{{certificate.customerAddress}}</div>
+        </div>
+      </div>
+
+      <!-- =====================================================
+     CHEMICAL TEST
+     ===================================================== -->
+
+      <div class="test-heading">
+        <span class="test-heading-label"> रासायनिक परीक्षण </span>
+
+        <span class="test-heading-colon"> : </span>
+
+        <span class="test-heading-value"> {{certificate.chemicalTest}} </span>
+      </div>
+
+      <table class="chemical-table">
+        <tbody>
+          <tr>
+            <td class="test-name">फ्री क्लोरीन</td>
+
+            <td class="test-value">{{certificate.freeChlorine}}</td>
+
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td class="test-name">पीएच</td>
+
+            <td class="test-value">{{certificate.ph}}</td>
+
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td class="test-name">टर्बिडिटी (एन्.टी.यू)</td>
+
+            <td class="test-value">{{certificate.turbidity}}</td>
+
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td class="test-name">क्लोराईड</td>
+
+            <td class="test-value">{{certificate.chloride}}</td>
+
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td class="test-name">हार्डनेस</td>
+
+            <td class="test-value">{{certificate.hardness}}</td>
+
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- =====================================================
+     BIOLOGICAL TEST
+     ===================================================== -->
+
+      <div class="test-heading biological-heading">
+        <span class="test-heading-label"> जैविक परीक्षण </span>
+
+        <span class="test-heading-colon"> : </span>
+      </div>
+
+      <table class="biological-table">
+        <tbody>
+          <tr>
+            <td class="bio-name">एम.पी. एन</td>
+
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td class="bio-name">एफ.कॉली</td>
+
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+
+          <tr>
+            <td class="bio-name">ई.कॉली</td>
+
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- =====================================================
+     FOOTER / RESULT
+     ===================================================== -->
+
+      <div class="result-section">
+        <div class="result-row">
+          <div class="result-label">योग्य पाणी नमुनेचे</div>
+
+          <div class="result-colon">:</div>
+
+          <div class="result-value">{{certificate.sufficientWaterSupply}}</div>
+        </div>
+
+        <div class="result-row">
+          <div class="result-label">अयोग्य पाणी नमुनेचे</div>
+
+          <div class="result-colon">:</div>
+
+          <div class="result-value">{{certificate.complaintStatus}}</div>
+        </div>
+      </div>
+
+      <div class="sign">
+        <b>उप अभियंता</b>
+        पाणी पुरवठा विभाग,<br />
+        {{CORPORATIONNAME}}
+      </div>
+    </div>
+  </body>
+</html>
