@@ -58,6 +58,8 @@ import FrmTradeCtgryTypMst from "./Pages/Admin/FrmTradeCtgryTypMst";
 import FrmFirstAppealAuthoRpt from "./Pages/Admin/FrmFirstAppealAuthoRpt";
 import FrmSecondAppealAutoRpt from "./Pages/Admin/FrmSecondAppealAutoRpt";
 import FrmChallanGenReport from "./Pages/Admin/FrmChallanGenReport";
+import FrmHearingProcess from "./Pages/Admin/FrmHearingProccess";
+import FrmAppealHearing_New from "./Pages/Admin/FrmAppealHearing_New";
 import FrmChallanGen from "./Pages/Admin/FrmChallanGen";
 
 function HomePage() {
@@ -230,15 +232,15 @@ const router = createBrowserRouter([
         element: <FrmAppAuthorisationMst />
       },
       {
-        path: "/app/FrmDocList",
+        path: "/App/MASTER/FrmDocList",
         element: <FrmDocList />
       },
       {
-        path: "/app/FrmDocMst",
+        path: "/App/MASTER/FrmDocMst",
         element: <FrmDocMst />
       },
       {
-        path: "/app/FrmServiceDocConfig",
+        path: "/App/FrmServiceDocConfig",
         element: <FrmServiceDocConfig />
       },
       {
@@ -313,6 +315,14 @@ const router = createBrowserRouter([
       {
         path: "/App/Reports/FrmChallanGenReport",
         element: <FrmChallanGenReport />
+      },
+      {
+        path: "/App/FrmHearingProccess",
+        element: <FrmHearingProcess />
+      },
+      {
+        path: "/App/FrmAppealHearing_New",
+        element: <FrmAppealHearing_New />
       },
       {
         path: "App/FrmChallanGen",
