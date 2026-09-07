@@ -132,6 +132,7 @@ app.use("/api/FrmSecondAppealAutoRpt", require("./modules/AdminDepartment/FrmSec
 app.use("/api/FrmChallanGenReport", require("./modules/AdminDepartment/FrmChallanGenReport/FrmChallanGenReport.routes"));
 app.use("/api/FrmTownPlanningSectorMapping", require("./modules/AdminDepartment/FrmTownPlanningSectorMapping/frmTownPlanningSectorMapping.routes"));
 app.use("/api/FrmChallanGen", require("./modules/AdminDepartment/FrmChallanGen/FrmChallanGen.route"));
+app.use("/api/FrmHearingProccess", require("./modules/AdminDepartment/FrmHearingProccess/FrmHearingProccess.routes"));
 
 app.use(errorMiddleware);
 
