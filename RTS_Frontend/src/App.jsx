@@ -63,6 +63,7 @@ import FrmFirstAppealAuthoRpt from "./Pages/Admin/FrmFirstAppealAuthoRpt";
 import FrmSecondAppealAutoRpt from "./Pages/Admin/FrmSecondAppealAutoRpt";
 import FrmChallanGenReport from "./Pages/Admin/FrmChallanGenReport";
 import FrmAppliReportEMst from "./Pages/Admin/FrmAppliReportEMst";
+import FrmHearingProccess from "./Pages/Admin/FrmHearingProccess";
 
 function HomePage() {
   return <div>Welcome to Employee Portal</div>;
@@ -317,10 +318,14 @@ const router = createBrowserRouter([
         path: "/App/Reports/FrmChallanGenReport",
         element: <FrmChallanGenReport />
       },
-       {
-        path:"/App/Reports/FrmAppliReportEMst",
-        element:<FrmAppliReportEMst />
-       }
+      {
+        path: "/App/Reports/FrmAppliReportEMst",
+        element: <FrmAppliReportEMst />
+      },
+      {
+        path: "/App/FrmHearingProccess",
+        element: <FrmHearingProccess />
+      },
 
     ]
   },
