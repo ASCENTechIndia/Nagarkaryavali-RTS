@@ -58,6 +58,7 @@ import FrmTradeCtgryTypMst from "./Pages/Admin/FrmTradeCtgryTypMst";
 import FrmFirstAppealAuthoRpt from "./Pages/Admin/FrmFirstAppealAuthoRpt";
 import FrmSecondAppealAutoRpt from "./Pages/Admin/FrmSecondAppealAutoRpt";
 import FrmChallanGenReport from "./Pages/Admin/FrmChallanGenReport";
+import FrmHearingDateAssign from "./Pages/Admin/FrmHearingDateAssign";
 
 function HomePage() {
   return <div>Welcome to Employee Portal</div>;
@@ -312,7 +313,11 @@ const router = createBrowserRouter([
       {
         path: "/App/Reports/FrmChallanGenReport",
         element: <FrmChallanGenReport />
-      }
+      },
+      {
+        path: "/App/FrmHearingDateAssign",
+        element: <FrmHearingDateAssign />
+      },
 
     ]
   },
