@@ -236,11 +236,11 @@ const router = createBrowserRouter([
         element: <FrmAppAuthorisationMst />,
       },
       {
-        path: "/app/FrmDocList",
+        path: "/App/MASTER/FrmDocList",
         element: <FrmDocList />
       },
       {
-        path: "/app/FrmDocMst",
+        path: "/App/MASTER/FrmDocMst",
         element: <FrmDocMst />
       },
       {
