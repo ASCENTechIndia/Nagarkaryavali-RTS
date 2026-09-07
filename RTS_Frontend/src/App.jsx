@@ -234,15 +234,15 @@ const router = createBrowserRouter([
       },
       {
         path: "/app/FrmDocList",
-        element: <FrmDocList />,
+        element: <FrmDocList />
       },
       {
         path: "/app/FrmDocMst",
-        element: <FrmDocMst />,
+        element: <FrmDocMst />
       },
       {
         path: "/app/FrmServiceDocConfig",
-        element: <FrmServiceDocConfig />,
+        element: <FrmServiceDocConfig />
       },
       {
         path: "/app/Reports/FrmRTSOnlineColl",
@@ -315,13 +315,14 @@ const router = createBrowserRouter([
       },
       {
         path: "/App/Reports/FrmChallanGenReport",
-        element: <FrmChallanGenReport />,
+        element: <FrmChallanGenReport />
       },
-      {
-        path: "/App/Reports/FrmAppliReportEMst",
-        element: <FrmAppliReportEMst />,
-      },
-    ],
+       {
+        path:"/App/Reports/FrmAppliReportEMst",
+        element:<FrmAppliReportEMst />
+       }
+
+    ]
   },
 ]);
 

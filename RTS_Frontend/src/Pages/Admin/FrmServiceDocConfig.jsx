@@ -38,7 +38,6 @@ const FrmServiceDocConfig = () => {
   };
 
   useEffect(() => {
-    document.title = "Service Document Configuration";
     fetchActiveServices();
   }, []);
 
@@ -321,7 +320,7 @@ const FrmServiceDocConfig = () => {
   };
 
   const handleCancel = () => {
-    navigate("/app/home");
+    navigate("/home");
   };
 
   const serviceOptions = serviceList.map((service) => {

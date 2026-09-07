@@ -280,7 +280,7 @@ const FrmDocMst = () => {
             text: successMessage,
             confirmButtonColor: "#1e3a8a",
           }).then(() => {
-            navigate("/app/FrmDocList");
+            navigate("/App/MASTER/FrmDocList");
           });
         } else {
           Swal.fire({
@@ -306,7 +306,7 @@ const FrmDocMst = () => {
   };
 
   const handleBack = () => {
-    navigate("/app/FrmDocList");
+    navigate("/App/MASTER/FrmDocList");
   };
 
   const prepareTableData = () => {
