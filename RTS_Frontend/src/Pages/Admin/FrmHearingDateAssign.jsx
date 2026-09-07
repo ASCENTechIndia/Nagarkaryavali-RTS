@@ -74,7 +74,6 @@ const FrmHearingDateAssign = () => {
         setTableData([]);
 
         Swal.fire({
-          title: "Error",
           text:
             response.data?.message || "Failed to fetch hearing process list.",
         });
@@ -85,7 +84,6 @@ const FrmHearingDateAssign = () => {
       setTableData([]);
 
       Swal.fire({
-        title: "Error",
         text:
           error.response?.data?.message ||
           "Failed to fetch hearing process list.",
