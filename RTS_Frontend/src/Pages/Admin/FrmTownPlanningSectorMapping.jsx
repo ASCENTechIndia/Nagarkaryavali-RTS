@@ -1,13 +1,17 @@
+
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
 import { Label } from "@/components/ui/label";
+
 import {
   Select,
   SelectContent,
@@ -15,24 +19,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table";
+
+import ShadCNTable from "@/components/ui/table";
+
 import Swal from "sweetalert2";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 
 const FrmTownPlanningSectorMapping = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { user, token } = useAuth();
+  const { token } = useAuth();
 
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingSectors, setLoadingSectors] = useState(false);
@@ -41,101 +38,170 @@ const FrmTownPlanningSectorMapping = () => {
   const [userList, setUserList] = useState([]);
   const [selectedUser, setSelectedUser] = useState("");
 
-  // sectors: [{ sectorId, sectorName, checked }]
+  // [{ sectorId, sectorName, checked }]
   const [sectors, setSectors] = useState([]);
-  const [selectAll, setSelectAll] = useState(false);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-  // ── On Mount ──────────────────────────────────────────────────────────────
+  const tableHeaders = ["Select", "Sector"];
+
+  const keyMapping = {
+    Select: "checked",
+    Sector: "sectorName",
+  };
+
+  const columnStyles = {
+    Select: {
+      width: "70px",
+    },
+  };
+
+
+
   useEffect(() => {
     document.title = "Town Planning Sector Mapping Configuration";
+
     fetchUserList();
   }, []);
 
-  // ── Fetch sector list whenever user changes ────────────────────────────────
+
+
   useEffect(() => {
     if (selectedUser) {
       fetchSectorList(selectedUser);
     } else {
       setSectors([]);
-      setSelectAll(false);
     }
   }, [selectedUser]);
 
-  // ── API: User List ─────────────────────────────────────────────────────────
+
   const fetchUserList = async () => {
     setLoadingUsers(true);
+
     try {
-      const response = await axios.get(`${BASE_URL}/api/FrmTownPlanningSectorMapping/user-list`, {
-        headers: {
-          Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-        },
-      });
+      const response = await axios.get(
+        `${BASE_URL}/api/FrmTownPlanningSectorMapping/user-list`,
+        {
+          headers: {
+            Authorization: `Bearer ${
+              token || localStorage.getItem("token")
+            }`,
+          },
+        }
+      );
+
       if (response.data?.ok && response.data?.data) {
         const data =
-          response.data.data?.data || response.data.data || [];
+          response.data.data?.data ||
+          response.data.data ||
+          [];
+
         setUserList(Array.isArray(data) ? data : []);
+      } else {
+        setUserList([]);
       }
     } catch (error) {
       console.error("Error fetching user list:", error);
+
+      setUserList([]);
     } finally {
       setLoadingUsers(false);
     }
   };
 
-  // ── API: Sector List for selected user (with pre-mapped flags) ─────────────
-  const fetchSectorList = async (uid) => {
+
+
+  const fetchSectorList = async (userId) => {
     setLoadingSectors(true);
+
     try {
       const response = await axios.get(
         `${BASE_URL}/api/FrmTownPlanningSectorMapping/sector-list`,
         {
-          params: { userId: uid },
+          params: {
+            userId,
+          },
+
           headers: {
-            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+            Authorization: `Bearer ${
+              token || localStorage.getItem("token")
+            }`,
           },
         }
       );
+
       if (response.data?.ok && response.data?.data) {
         const data =
-          response.data.data?.data || response.data.data || [];
-        const mapped = (Array.isArray(data) ? data : []).map((s) => ({
-          sectorId: s.SECTORID || s.sectorId || s.id,
-          sectorName: s.SECTORNAME || s.sectorName || s.name,
-          checked: Number(s.ISMAPPED ?? s.isMapped ?? 0) === 1 || s.checked === true,
+          response.data.data?.data ||
+          response.data.data ||
+          [];
+
+        const mappedSectors = (
+          Array.isArray(data) ? data : []
+        ).map((sector) => ({
+          sectorId:
+            sector.SECTORID ||
+            sector.sectorId ||
+            sector.id,
+
+          sectorName:
+            sector.SECTORNAME ||
+            sector.sectorName ||
+            sector.name ||
+            "",
+
+          checked:
+            Number(
+              sector.ISMAPPED ??
+                sector.isMapped ??
+                0
+            ) === 1 || sector.checked === true,
         }));
-        setSectors(mapped);
-        setSelectAll(mapped.length > 0 && mapped.every((s) => s.checked));
+
+        setSectors(mappedSectors);
       } else {
         setSectors([]);
       }
     } catch (error) {
-      console.error("Error fetching sector list:", error);
+      console.error(
+        "Error fetching sector list:",
+        error
+      );
+
       setSectors([]);
     } finally {
       setLoadingSectors(false);
     }
   };
 
-  // ── Toggle individual row ──────────────────────────────────────────────────
-  const handleRowCheck = (sectorId) => {
-    setSectors((prev) => {
-      const updated = prev.map((s) =>
-        s.sectorId === sectorId ? { ...s, checked: !s.checked } : s
-      );
-      setSelectAll(updated.length > 0 && updated.every((s) => s.checked));
-      return updated;
-    });
+
+  const handleRowCheck = (row, checked) => {
+    setSectors((previousSectors) =>
+      previousSectors.map((sector) =>
+        sector.sectorId === row.sectorId
+          ? {
+              ...sector,
+              checked,
+            }
+          : sector
+      )
+    );
   };
 
-  // ── Toggle all rows ────────────────────────────────────────────────────────
+
+
   const handleSelectAll = (checked) => {
-    setSelectAll(checked);
-    setSectors((prev) => prev.map((s) => ({ ...s, checked })));
+    const isChecked = checked === true;
+
+    setSectors((previousSectors) =>
+      previousSectors.map((sector) => ({
+        ...sector,
+        checked: isChecked,
+      }))
+    );
   };
 
-  // ── Submit ─────────────────────────────────────────────────────────────────
+
   const handleSubmit = async () => {
     if (!selectedUser) {
       Swal.fire({
@@ -143,21 +209,28 @@ const FrmTownPlanningSectorMapping = () => {
         icon: "warning",
         confirmButtonColor: "#1e3a8a",
       });
+
       return;
     }
 
     const selectedSectors = sectors
-      .filter((s) => s.checked)
-      .map((s) => s.sectorId);
+      .filter((sector) => sector.checked)
+      .map((sector) => sector.sectorId);
 
     setSubmitting(true);
+
     try {
       const response = await axios.post(
         `${BASE_URL}/api/FrmTownPlanningSectorMapping/save-mapping`,
-        { userId: selectedUser, sectorIds: selectedSectors },
+        {
+          userId: selectedUser,
+          sectorIds: selectedSectors,
+        },
         {
           headers: {
-            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+            Authorization: `Bearer ${
+              token || localStorage.getItem("token")
+            }`,
           },
         }
       );
@@ -168,15 +241,24 @@ const FrmTownPlanningSectorMapping = () => {
           icon: "success",
           confirmButtonColor: "#1e3a8a",
         });
+
+        // Reload sector mapping after successful save
+        fetchSectorList(selectedUser);
       } else {
         Swal.fire({
-          text: response.data?.message || "Failed to save sector mapping.",
+          text:
+            response.data?.message ||
+            "Failed to save sector mapping.",
           icon: "error",
           confirmButtonColor: "#1e3a8a",
         });
       }
     } catch (error) {
-      console.error("Error saving sector mapping:", error);
+      console.error(
+        "Error saving sector mapping:",
+        error
+      );
+
       Swal.fire({
         text:
           error?.response?.data?.error ||
@@ -190,176 +272,208 @@ const FrmTownPlanningSectorMapping = () => {
     }
   };
 
-  const handleBack = () => navigate(-1);
 
-  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
       <Card className="border shadow-sm">
-        {/* ── Header ── */}
+
+    
+
         <CardHeader className="border-b">
-          <CardTitle className="text-lg font-semibold boxHead">
+          <CardTitle className="boxHead text-lg font-semibold">
             Town Planning Sector Mapping Configuration
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="p-4 sm:p-6 space-y-5">
-          {/* ── User Select Row ── */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+
+
+        <CardContent className="space-y-5 p-4 sm:p-6">
+
+
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+
             <Label
               htmlFor="user-select"
-              className="sm:w-28 sm:text-right font-medium text-sm text-gray-700 shrink-0"
               text="User :"
-              required={true}
+              required
+              className="
+                shrink-0
+                text-sm
+                font-medium
+                text-gray-700
+                sm:w-28
+                sm:text-right
+              "
             />
+
             <Select
               value={selectedUser}
-              onValueChange={(val) => setSelectedUser(val)}
+              onValueChange={setSelectedUser}
               disabled={loadingUsers || submitting}
             >
-              <SelectTrigger id="user-select" className="w-full sm:w-72 h-9">
+              <SelectTrigger
+                id="user-select"
+                className="h-9 w-full sm:w-72"
+              >
                 <SelectValue placeholder="--- Select Option ---" />
               </SelectTrigger>
+
               <SelectContent position="popper">
+
                 {loadingUsers ? (
-                  <SelectItem value="__loading__" disabled>
+
+                  <SelectItem
+                    value="__loading__"
+                    disabled
+                  >
                     Loading...
                   </SelectItem>
+
                 ) : userList.length === 0 ? (
-                  <SelectItem value="__no_data__" disabled>
+
+                  <SelectItem
+                    value="__no_data__"
+                    disabled
+                  >
                     No users available
                   </SelectItem>
+
                 ) : (
-                  userList.map((u) => (
-                    <SelectItem
-                      key={u.USERID || u.userId || u.id}
-                      value={String(u.USERID || u.userId || u.id)}
-                    >
-                      {u.USERNAME || u.userName || u.name || u.USERID}
-                    </SelectItem>
-                  ))
+
+                  userList.map((userItem) => {
+                    const userId =
+                      userItem.USERID ||
+                      userItem.userId ||
+                      userItem.id;
+
+                    const userName =
+                      userItem.USERNAME ||
+                      userItem.userName ||
+                      userItem.name ||
+                      userItem.USERID;
+
+                    return (
+                      <SelectItem
+                        key={userId}
+                        value={String(userId)}
+                      >
+                        {userName}
+                      </SelectItem>
+                    );
+                  })
+
                 )}
+
               </SelectContent>
             </Select>
+
           </div>
 
-          {/* ── Sector Table ── */}
+
           <AnimatePresence>
+
             {selectedUser && (
+
               <motion.div
                 key="sector-table"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 8 }}
                 transition={{ duration: 0.2 }}
-                className="overflow-x-auto rounded border border-[#c8a96e]"
+                className="w-full"
               >
-                {loadingSectors ? (
-                  <div className="flex justify-center items-center py-10">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900 mx-auto" />
-                      <p className="mt-2 text-sm text-gray-500">Loading sectors...</p>
-                    </div>
-                  </div>
-                ) : (
-                  <Table className="w-full text-sm border-collapse">
-                    <TableHeader>
-                      <TableRow className="bg-[#1a3a6b] hover:bg-[#1a3a6b]">
-                        <TableHead className="w-12 px-3 py-2 text-center border-r border-[#c8a96e] text-white">
-                          <Checkbox
-                            id="check-all"
-                            checked={selectAll}
-                            onCheckedChange={handleSelectAll}
-                            disabled={submitting || sectors.length === 0}
-                            className="border-white data-[state=checked]:bg-white data-[state=checked]:text-[#1a3a6b] h-4 w-4 rounded-sm border-2"
-                          />
-                        </TableHead>
-                        <TableHead className="px-4 py-2 text-left font-semibold tracking-wide text-white">
-                          Sector
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
 
-                    <TableBody>
-                      {sectors.length === 0 ? (
-                        <TableRow>
-                          <TableCell
-                            colSpan={2}
-                            className="text-center py-6 text-gray-500"
-                          >
-                            No sectors found
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        sectors.map((sector, idx) => (
-                          <TableRow
-                            key={sector.sectorId}
-                            className={
-                              idx % 2 === 0
-                                ? "bg-white hover:bg-blue-50 transition-colors"
-                                : "bg-[#f5f0e8] hover:bg-blue-50 transition-colors"
-                            }
-                            style={{ borderBottom: "1px solid #c8a96e" }}
-                          >
-                            <TableCell className="w-12 px-3 py-2 text-center border-r border-[#c8a96e]">
-                              <Checkbox
-                                id={`chk-${sector.sectorId}`}
-                                checked={sector.checked}
-                                onCheckedChange={() =>
-                                  handleRowCheck(sector.sectorId)
-                                }
-                                disabled={submitting}
-                                className="border-[#1a3a6b] data-[state=checked]:bg-[#1a3a6b] data-[state=checked]:text-white h-4 w-4 rounded-sm border-2"
-                              />
-                            </TableCell>
-                            <TableCell className="px-4 py-2 text-gray-800">
-                              {sector.sectorName}
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
+                {loadingSectors ? (
+
+                  <div className="flex items-center justify-center py-10">
+
+                    <div className="text-center">
+
+                      <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-900" />
+
+                      <p className="mt-2 text-sm text-gray-500">
+                        Loading sectors...
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                ) : (
+
+                  <ShadCNTable
+                    headers={tableHeaders}
+                    data={sectors}
+                    keyMapping={keyMapping}
+                    columnStyles={columnStyles}
+                    pagination={false}
+                    className="w-full"
+                    onSelectAllChange={handleSelectAll}
+                    onRowCheckChange={handleRowCheck}
+                  />
+
                 )}
+
               </motion.div>
+
             )}
+
           </AnimatePresence>
 
-          {/* ── Action Buttons ── */}
+
           <div className="flex justify-center gap-3 pt-1">
+
             {selectedUser && (
+
               <Button
                 type="button"
                 variant="default"
-                size="sm"
-                // className="bg-blue-900 hover:bg-blue-800 text-white px-6"
+              
                 onClick={handleSubmit}
-                disabled={submitting || loadingSectors || loadingUsers}
+                disabled={
+                  submitting ||
+                  loadingSectors ||
+                  loadingUsers
+                }
               >
+
                 {submitting ? (
+
                   <span className="flex items-center gap-2">
-                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+
+                    <span className="h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
+
                     Saving...
+
                   </span>
+
                 ) : (
+
                   "Submit"
+
                 )}
+
               </Button>
+
             )}
 
 
             <Button
               type="button"
               variant="outline"
-              size="sm"
-              // className="px-6"
-              onClick={handleBack}
+              path="/"
               disabled={submitting}
             >
               Back
             </Button>
+
           </div>
+
         </CardContent>
+
       </Card>
     </motion.div>
   );
