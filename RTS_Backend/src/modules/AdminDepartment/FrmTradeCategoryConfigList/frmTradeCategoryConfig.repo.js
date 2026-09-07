@@ -1,13 +1,5 @@
 const { executeQueryTMC } = require("../../../db/queryExecutor");
-const { withTxTMC } = require("../../../db/tx");
 
-// ============================================================
-// GET TRADE CATEGORY CONFIG LIST
-//
-// .NET FrmTradeCtgryCnfgList page query:
-//   select categoryid, buisnessnm, type, status, jwalanshilstat 
-//   from vw_tradconfg
-// ============================================================
 const getTradeCategoryConfigListRepo = async () => {
   try {
     const query = `
@@ -33,14 +25,6 @@ const getTradeCategoryConfigListRepo = async () => {
   }
 };
 
-// ============================================================
-// GET BUSINESS CATEGORY LIST (for dropdown in master form)
-//
-// .NET Page_Load query (exact):
-//   select var_tradecategory_name, num_tradecategory_id
-//   from aorts_TradeCategory_mas
-//   where var_tradecategory_flag='Y'
-// ============================================================
 const getBusinessCategoryListRepo = async () => {
   try {
     const query = `
@@ -64,17 +48,6 @@ const getBusinessCategoryListRepo = async () => {
   }
 };
 
-// ============================================================
-// GET SINGLE TRADE CATEGORY CONFIG (for Edit pre-fill)
-//
-// .NET GetTradeCtgryCnfg() exact query:
-//   select num_category_catgryid categoryid,
-//          var_category_type type,
-//          var_category_status status,
-//          var_category_jwalanshilstat jwalanshilstat
-//   from aorts_category_confg
-//   Where num_category_catgryid = ':categoryId'
-// ============================================================
 const getTradeCategoryConfigByIdRepo = async ({ categoryId }) => {
   try {
     const query = `
@@ -101,38 +74,25 @@ const getTradeCategoryConfigByIdRepo = async ({ categoryId }) => {
   }
 };
 
-// ============================================================
-// SAVE TRADE CATEGORY CONFIG — mirrors BoTradeCtgryCnfgInsert()
-//
-// .NET BtnSubmit_Click fields:
-//   objTradeCtgryCnfg.categoryTradeid = ddlTradeCategory.SelectedValue
-//   objTradeCtgryCnfg.type            = rdbnLicenseType.SelectedValue ('Trade'|'Storage')
-//   objTradeCtgryCnfg.status          = rdbStatus.SelectedValue       ('Y'|'N')
-//   objTradeCtgryCnfg.jwalan          = rbtnJwalan.SelectedValue       ('Y'|'N')
-//   objTradeCtgryCnfg.mode            = 1 (Insert) | 2 (Update)
-//
-// Node.js: same logic in Oracle transaction
-//   mode "1" → INSERT into aorts_category_confg
-//   mode "2" → UPDATE aorts_category_confg WHERE num_category_catgryid = categoryId
-// ============================================================
-const saveTradeCategoryConfigRepo = async ({
-  tradeCatId,       // used on mode 2 (UPDATE)
-  businessCategoryId,
-  type,             // 'Trade' | 'Storage'
-  inflammable,      // 'Yes' | 'No'  → stored as 'Y' | 'N'
-  status,           // 'Yes' | 'No'  → stored as 'Y' | 'N'
-  mode,             // "1" | "2"
-}) => {
-  return await withTxTMC(async (conn) => {
-    // Convert Yes/No → Y/N  (matches .NET radio button values)
-    const inflammableFlag = inflammable === "Yes" ? "Y" : "N";
-    const statusFlag      = status      === "Yes" ? "Y" : "N";
 
-    let rowsAffected = 0;
-    let operation    = "";
+const saveTradeCategoryConfigRepo = async ({
+  tradeCatId,       
+  businessCategoryId,
+  type,            
+  inflammable,      
+  status,           
+  mode,            
+}) => {
+  try {
+   
+    const inflammableFlag = inflammable === "Yes" ? "Y" : "N";
+    const statusFlag = status === "Yes" ? "Y" : "N";
+
+    let result;
+    let operation = "";
 
     if (mode === "2" && tradeCatId) {
-      // ── UPDATE (mode = 2) ─────────────────────────────────
+      
       const updateQuery = `
         UPDATE aorts_category_confg
         SET
@@ -142,22 +102,21 @@ const saveTradeCategoryConfigRepo = async ({
         WHERE num_category_catgryid   = :tradeCatId
       `;
 
-      const result = await conn.execute(
+      result = await executeQueryTMC(
         updateQuery,
         {
-          type:            String(type),
+          type: String(type),
           inflammableFlag: String(inflammableFlag),
-          statusFlag:      String(statusFlag),
-          tradeCatId:      Number(tradeCatId),
+          statusFlag: String(statusFlag),
+          tradeCatId: Number(tradeCatId),
         },
-        { autoCommit: false }
+        { autoCommit: true }
       );
 
-      rowsAffected = result.rowsAffected || 0;
-      operation    = "UPDATE";
+      operation = "UPDATE";
 
     } else {
-      // ── INSERT (mode = 1) ─────────────────────────────────
+      
       const insertQuery = `
         INSERT INTO aorts_category_confg (
           num_category_catgryid,
@@ -172,29 +131,34 @@ const saveTradeCategoryConfigRepo = async ({
         )
       `;
 
-      const result = await conn.execute(
+      result = await executeQueryTMC(
         insertQuery,
         {
           businessCategoryId: Number(businessCategoryId),
-          type:               String(type),
-          inflammableFlag:    String(inflammableFlag),
-          statusFlag:         String(statusFlag),
+          type: String(type),
+          inflammableFlag: String(inflammableFlag),
+          statusFlag: String(statusFlag),
         },
-        { autoCommit: false }
+        { autoCommit: true }
       );
 
-      rowsAffected = result.rowsAffected || 0;
-      operation    = "INSERT";
+      operation = "INSERT";
     }
 
-    console.log(`[TradeCategoryConfig] ${operation}: rowsAffected=${rowsAffected}`);
+    if (!result.success) {
+      throw new Error(result.error);
+    }
+
+    console.log(`[TradeCategoryConfig] ${operation} successful`);
 
     return {
       success: true,
-      rowsAffected,
       operation,
     };
-  });
+  } catch (error) {
+    console.error("SAVE TRADE CATEGORY CONFIG REPO ERROR:", error);
+    return { success: false, error: error.message };
+  }
 };
 
 module.exports = {

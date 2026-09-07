@@ -1,12 +1,6 @@
 ﻿const { executeQueryTMC } = require("../../../db/queryExecutor");
-const { withTxTMC } = require("../../../db/tx");
 
-// ============================================================
-// GET USER LIST
-// .NET Query:
-//   select var_user_username username, num_user_userid userid
-//   from admins.aoma_user_def
-// ============================================================
+
 const getUserListRepo = async () => {
   try {
     const query = `
@@ -29,24 +23,6 @@ const getUserListRepo = async () => {
   }
 };
 
-// ============================================================
-// GET SECTOR LIST WITH MAPPING FLAG FOR A USER
-//
-// .NET cmbUser_SelectedIndexChanged uses 2 queries:
-//
-// 1) All active sectors:
-//    SELECT var_sector_name sectornm, num_sector_id sectorid
-//    FROM aorts_sector_mst
-//    WHERE var_sector_active = 'Y'
-//    ORDER BY num_sector_id
-//
-// 2) Already mapped sectors for this user:
-//    select num_sector_sectorid sectorid
-//    from aorts_sector_config
-//    where var_sector_userid = ':userId'
-//
-// Combined into one LEFT JOIN → ISMAPPED flag = 1 if mapped, 0 otherwise
-// ============================================================
 const getSectorListWithMappingRepo = async ({ userId }) => {
   try {
     const query = `
@@ -77,34 +53,25 @@ const getSectorListWithMappingRepo = async ({ userId }) => {
   }
 };
 
-// ============================================================
-// SAVE SECTOR MAPPING  — mirrors InsertPWDsectConfig() in .NET
-//
-// .NET BtnSubmit_Click logic:
-//   1. Collects checked sectorIds separated by "#"  → str
-//   2. Obj.InsertPWDsectConfig() which:
-//        - Deletes all rows from aorts_sector_config where var_sector_userid = User
-//        - Inserts one row per selected sectorId
-//
-// Node.js: same inside an Oracle transaction (withTxTMC)
-// ============================================================
+
 const saveSectorMappingRepo = async ({ userId, sectorIds }) => {
-  return await withTxTMC(async (conn) => {
-    // ── Step 1: Delete existing rows for this user ─────────────
+  try {
     const deleteQuery = `
       DELETE FROM aorts_sector_config
       WHERE var_sector_userid = :userId
     `;
 
-    const deleteResult = await conn.execute(
+    const deleteResult = await executeQueryTMC(
       deleteQuery,
       { userId: String(userId) },
-      { autoCommit: false }
+      { autoCommit: true }
     );
-    const deletedRows = deleteResult.rowsAffected || 0;
-    console.log(`[SectorMapping] Deleted ${deletedRows} old rows for user ${userId}`);
 
-    // ── Step 2: Insert newly selected sectors ──────────────────
+    if (!deleteResult.success) {
+      throw new Error(deleteResult.error);
+    }
+
+    console.log(`[SectorMapping] Deleted old rows for user ${userId}`);
     let insertedRows = 0;
 
     if (Array.isArray(sectorIds) && sectorIds.length > 0) {
@@ -119,14 +86,19 @@ const saveSectorMappingRepo = async ({ userId, sectorIds }) => {
       `;
 
       for (const sectorId of sectorIds) {
-        await conn.execute(
+        const insertResult = await executeQueryTMC(
           insertQuery,
           {
-            userId:   String(userId),
+            userId: String(userId),
             sectorId: Number(sectorId),
           },
-          { autoCommit: false }
+          { autoCommit: true }
         );
+
+        if (!insertResult.success) {
+          throw new Error(insertResult.error);
+        }
+
         insertedRows++;
       }
     }
@@ -135,10 +107,12 @@ const saveSectorMappingRepo = async ({ userId, sectorIds }) => {
 
     return {
       success: true,
-      deletedRows,
       insertedRows,
     };
-  });
+  } catch (error) {
+    console.error("SAVE SECTOR MAPPING REPO ERROR:", error);
+    return { success: false, error: error.message };
+  }
 };
 
 module.exports = {
