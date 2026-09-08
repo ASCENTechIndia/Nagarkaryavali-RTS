@@ -290,7 +290,7 @@ const FrmRoadCutting = () => {
       return false;
     }
 
-    const emailRegex = /^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$/;
+    const emailRegex = /^([\w\.\-\+]+)@([\w\-]+)((\.(\w){2,3})+)$/;
     if (!emailRegex.test(values.emailId)) {
       Swal.fire({
         text: "Invalid Email Address",
@@ -601,12 +601,6 @@ const FrmRoadCutting = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         resetForm();
-        Swal.fire({
-          text: "Form has been reset",
-          confirmButtonColor: '#1e3a8a',
-          timer: 1500,
-          showConfirmButton: false,
-        });
       }
     });
   };
@@ -879,8 +873,8 @@ const FrmRoadCutting = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-36 w-full shrink-0 flex justify-start items-center whitespace-nowrap">
-                      <Label text="रस्त्याची लांबीरुंदी (चो.मीटर)" />
+                    <div className="sm:w-36 w-full shrink-0 flex justify-start items-center">
+                      <Label text="रस्त्याची लांबीरुंदी (चो.मीटर)" /> <span><font color="red"> * </font></span>
                     </div>
                     <Input
                       name="roadArea"
@@ -894,8 +888,8 @@ const FrmRoadCutting = () => {
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-36 w-full shrink-0 flex justify-start items-center whitespace-nowrap">
-                      <Label required text="खोदण्याचे आकार (मीटर)" />
+                    <div className="sm:w-36 w-full shrink-0 flex justify-start items-center">
+                      <Label text="खोदण्याचे आकार (मीटर)" /> <span><font color="red"> * </font></span>
                     </div>
                     <Input
                       name="excavationSize"
