@@ -107,8 +107,8 @@ const saveServiceApplication = asyncHandler(async (req, res) => {
     throw new AppError("Email ID is required", 400);
   }
 
-  const emailRegex = /^[\w.-]+@[\w-]+(\.[\w-]+)+$/;
-
+  //const emailRegex = /^[\w.-]+@[\w-]+(\.[\w-]+)+$/;
+  const emailRegex = /^[\w.+-]+@[\w-]+(\.[\w-]+)+$/;
   if (!emailRegex.test(email)) {
     throw new AppError("Invalid Email Address", 400);
   }
