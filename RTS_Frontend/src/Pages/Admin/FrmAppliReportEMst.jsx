@@ -27,7 +27,7 @@ const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const initialValues = {
   serviceId: "",
-  fromDate: "",
+  fromDate: new Date().toISOString().split("T")[0],
   toDate: new Date().toISOString().split("T")[0],
   zoneId: "",
   appliNo: "",
@@ -85,10 +85,6 @@ const formatApiDate = (dateValue) => {
   return `${day}-${month}-${year}`;
 };
 
-// ============================================================
-// DISPLAY DATE
-// ============================================================
-
 const formatDisplayDate = (value) => {
   if (!value) return "-";
 
@@ -123,10 +119,6 @@ const formatDisplayDate = (value) => {
 
   return `${day}-${month}-${year}`;
 };
-
-// ============================================================
-// FILE MIME TYPE
-// ============================================================
 
 const getMimeType = (extension = "") => {
   const ext = String(extension).toLowerCase();
@@ -743,19 +735,18 @@ const FrmAppliReportEMst = () => {
               </CardHeader>
 
               <CardContent className="space-y-6 p-4 sm:p-6">
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                   {/* SERVICE TYPE */}
-
                   <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
-                    {/* Label */}
-                    <div className="flex shrink-0 items-center sm:w-44">
+                    <div className="flex shrink-0 items-center sm:w-36">
                       <Label text="Service Type:" required />
                     </div>
 
-                    {/* Select Wrapper */}
                     <div className="min-w-0 flex-1">
                       <Select
-                        value={values.serviceId || "ALL"}
+                        value={
+                          values.serviceId ? String(values.serviceId) : "ALL"
+                        }
                         onValueChange={(value) =>
                           setFieldValue(
                             "serviceId",
@@ -764,9 +755,8 @@ const FrmAppliReportEMst = () => {
                         }
                         disabled={loadingMasters}
                       >
-                        <SelectTrigger className="h-9 w-full min-w-0 overflow-hidden">
+                        <SelectTrigger className="h-9 w-full">
                           <SelectValue
-                            className="block w-full truncate text-left"
                             placeholder={
                               loadingMasters
                                 ? "Loading services..."
@@ -778,143 +768,165 @@ const FrmAppliReportEMst = () => {
                         <SelectContent
                           position="popper"
                           sideOffset={4}
-                          className="z-[99999] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-y-auto"
+                          showDefaultOption={false}
+                          className="
+      z-[99999]
+      max-h-72
+      min-w-[var(--radix-select-trigger-width)]
+      w-[var(--radix-select-trigger-width)]
+      overflow-y-auto
+    "
                         >
                           <SelectItem value="ALL">-- ALL --</SelectItem>
 
-                          {services.map((service) => (
-                            <SelectItem
-                              key={service.SERVICEID}
-                              value={String(service.SERVICEID)}
-                              className="whitespace-normal"
-                            >
-                              {service.SERVICENAME}
-                            </SelectItem>
-                          ))}
+                          {services
+                            .filter((service) => {
+                              const serviceName = String(
+                                service?.SERVICENAME || "",
+                              )
+                                .replace(/[\s-]+/g, "")
+                                .toLowerCase();
+
+                              return (
+                                service?.SERVICEID !== undefined &&
+                                service?.SERVICEID !== null &&
+                                serviceName !== "" &&
+                                serviceName !== "selectoption"
+                              );
+                            })
+                            .map((service) => (
+                              <SelectItem
+                                key={service.SERVICEID}
+                                value={String(service.SERVICEID)}
+                                className="whitespace-normal break-words py-2"
+                              >
+                                {service.SERVICENAME}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
 
                   {/* FROM DATE */}
-
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <div className="flex shrink-0 items-center sm:w-44">
+                  <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+                    <div className="flex shrink-0 items-center sm:w-36">
                       <Label text="From Date:" required />
                     </div>
 
-                    <div className="w-full">
+                    <div className="min-w-0 flex-1">
                       <DatePicker
                         value={parseFormikDate(values.fromDate)}
                         onChange={(date) => {
                           setFieldValue("fromDate", formatDateForFormik(date));
                         }}
-                        className="w-full"
+                        className="h-9 w-full"
                       />
                     </div>
                   </div>
 
                   {/* TO DATE */}
-
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <div className="flex shrink-0 items-center sm:w-44">
+                  <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+                    <div className="flex shrink-0 items-center sm:w-36">
                       <Label text="To Date:" required />
                     </div>
 
-                    <div className="w-full">
+                    <div className="min-w-0 flex-1">
                       <DatePicker
                         value={parseFormikDate(values.toDate)}
                         onChange={(date) => {
                           setFieldValue("toDate", formatDateForFormik(date));
                         }}
-                        className="w-full"
+                        className="h-9 w-full"
                       />
                     </div>
                   </div>
 
                   {/* MOBILE NUMBER */}
-
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <div className="flex shrink-0 items-center sm:w-44">
+                  <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+                    <div className="flex shrink-0 items-center sm:w-36">
                       <Label text="Mobile No:" />
                     </div>
 
-                    <Input
-                      type="text"
-                      name="mobileNo"
-                      value={values.mobileNo}
-                      onChange={(event) => {
-                        const numericValue = event.target.value.replace(
-                          /\D/g,
-                          "",
-                        );
+                    <div className="min-w-0 flex-1">
+                      <Input
+                        type="text"
+                        name="mobileNo"
+                        value={values.mobileNo}
+                        onChange={(event) => {
+                          const numericValue = event.target.value.replace(
+                            /\D/g,
+                            "",
+                          );
 
-                        setFieldValue("mobileNo", numericValue);
-                      }}
-                      maxLength={10}
-                      placeholder="Enter Mobile Number"
-                      className="h-9 w-full"
-                    />
+                          setFieldValue("mobileNo", numericValue);
+                        }}
+                        maxLength={10}
+                        placeholder="Enter Mobile Number"
+                        className="h-9 w-full"
+                      />
+                    </div>
                   </div>
 
                   {/* APPLICATION NUMBER */}
-
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <div className="flex shrink-0 items-center sm:w-44">
+                  <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+                    <div className="flex shrink-0 items-center sm:w-36">
                       <Label text="Application No:" />
                     </div>
 
-                    <Input
-                      type="text"
-                      name="appliNo"
-                      value={values.appliNo}
-                      onChange={handleChange}
-                      placeholder="Enter Application No"
-                      className="h-9 w-full"
-                    />
+                    <div className="min-w-0 flex-1">
+                      <Input
+                        type="text"
+                        name="appliNo"
+                        value={values.appliNo}
+                        onChange={handleChange}
+                        placeholder="Enter Application No"
+                        className="h-9 w-full"
+                      />
+                    </div>
                   </div>
 
                   {/* ZONE */}
-
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <div className="flex shrink-0 items-center sm:w-44">
+                  <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+                    <div className="flex shrink-0 items-center sm:w-36">
                       <Label text="Zone:" />
                     </div>
 
-                    <Select
-                      value={values.zoneId || "ALL"}
-                      onValueChange={(value) =>
-                        setFieldValue("zoneId", value === "ALL" ? "" : value)
-                      }
-                      disabled={loadingMasters}
-                    >
-                      <SelectTrigger className="h-9 w-full">
-                        <SelectValue
-                          placeholder={
-                            loadingMasters ? "Loading zones..." : "ALL"
-                          }
-                        />
-                      </SelectTrigger>
+                    <div className="min-w-0 flex-1">
+                      <Select
+                        value={values.zoneId ? String(values.zoneId) : "ALL"}
+                        onValueChange={(value) =>
+                          setFieldValue("zoneId", value === "ALL" ? "" : value)
+                        }
+                        disabled={loadingMasters}
+                      >
+                        <SelectTrigger className="w-full  h-9">
+                          <SelectValue
+                            placeholder={
+                              loadingMasters ? "Loading zones..." : "ALL"
+                            }
+                          />
+                        </SelectTrigger>
 
-                      <SelectContent>
-                        <SelectItem value="ALL">ALL</SelectItem>
+                        <SelectContent showDefaultOption={false}>
+                          <SelectItem value="ALL">--ALL--</SelectItem>
 
-                        {zones.map((zone) => (
-                          <SelectItem
-                            key={zone.ZONEID}
-                            value={String(zone.ZONEID)}
-                          >
-                            {zone.ZONENAME}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                          {zones.map((zone) => (
+                            <SelectItem
+                              key={zone.ZONEID}
+                              value={String(zone.ZONEID)}
+                            >
+                              {zone.ZONENAME}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
 
                 {/* BUTTONS */}
-
-                <div className="flex flex-col items-center justify-center gap-3 pt-4 sm:flex-row">
+                <div className="flex flex-col items-center justify-center gap-3 border-t pt-5 sm:flex-row">
                   <Button
                     type="submit"
                     disabled={loadingReport || loadingMasters}
@@ -928,7 +940,6 @@ const FrmAppliReportEMst = () => {
                     disabled={loadingReport}
                     onClick={() => {
                       resetForm();
-
                       setReportData([]);
                     }}
                   >
