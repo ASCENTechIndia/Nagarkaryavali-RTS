@@ -2,8 +2,39 @@ import { z } from "zod";
 
 const mobileRegex = /^\d{10}$/;
 const aadharRegex = /^\d{12}$/;
-const emailRegex = /^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$/;
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const pincodeRegex = /^\d{6}$/;
+
+const emailValidationAlt = z.string()
+  .transform((val) => {
+    if (!val) return val;
+    return val.trim().toLowerCase();
+  })
+  .refine((val) => val && val.length > 0, "Email ID is required")
+  .refine((val) => emailRegex.test(val), "Invalid Email Address");
+
+const emailValidation = z.string()
+  .min(1, "Email ID is required")
+  .transform((val) => {
+    if (!val) return val;
+    return val.trim().toLowerCase();
+  })
+  .refine((val) => val && val.length > 0, "Email ID is required")
+  .refine((val) => emailRegex.test(val), "Invalid Email Address");
+
+const emailValidationCaseSensitive = z.string()
+  .min(1, "Email ID is required")
+  .transform((val) => val.trim())
+  .refine((val) => val && val.length > 0, "Email ID is required")
+  .refine((val) => emailRegex.test(val), "Invalid Email Address");
+
+const MAX_EMAIL_LENGTH = 254;
+const emailValidationWithMaxLength = z.string()
+  .min(1, "Email ID is required")
+  .transform((val) => val.trim().toLowerCase())
+  .refine((val) => val && val.length > 0, "Email ID is required")
+  .refine((val) => val.length <= MAX_EMAIL_LENGTH, `Email cannot exceed ${MAX_EMAIL_LENGTH} characters`)
+  .refine((val) => emailRegex.test(val), "Invalid Email Address");
 
 export const propertySearchValidationSchema = z.object({
   ptn: z.string()
@@ -26,12 +57,7 @@ export const applicantDetailsValidationSchema = z.object({
     .refine((val) => val !== undefined && val !== null && val !== "", {
       message: "Please enter Mobile Number",
     }),
-  emailId: z.string()
-    .min(1, "Email ID is required")
-    .regex(emailRegex, "Invalid Email Address")
-    .refine((val) => val !== undefined && val !== null && val !== "", {
-      message: "Please enter Email ID",
-    }),
+  emailId: emailValidationAlt,
   zoneId: z.string()
     .min(1, "Please select a Zone")
     .refine((val) => val !== undefined && val !== null && val !== "" && val !== "0" && val !== "-1", {
@@ -67,11 +93,7 @@ export const propertyTransferApplicantSchema = z.object({
     .min(1, "Please enter Owner Name")
     .default("")
     .refine((val) => val && val.trim() !== "", "Please enter Owner Name"),
-  emailId: z.string()
-    .min(1, "Please enter Email ID")
-    .regex(emailRegex, "Invalid Email Address")
-    .default("")
-    .refine((val) => val && val.trim() !== "", "Please enter Email ID"),
+  emailId: emailValidationAlt,
   newAddress: z.string()
     .min(1, "Please enter Address")
     .default("")
@@ -120,9 +142,7 @@ export const propertyRebateValidationSchema = z.object({
   mobileNo: z.string()
     .min(1, "Mobile Number cannot be blank")
     .regex(mobileRegex, "Invalid Mobile Number"),
-  emailId: z.string()
-    .min(1, "Email ID cannot be blank")
-    .regex(emailRegex, "Invalid Email Address"),
+  emailId: emailValidationAlt,
   aadharNo: z.string()
     .optional()
     .refine((val) => {
@@ -412,7 +432,7 @@ export const createPersonValidationSchema = (personType) => {
       : z.string().optional(),
     contact: commonValidationSchema.mobile,
     email: requiresAadharEmail
-      ? z.string().min(1, `${prefix}: Email ID is required`).regex(emailRegex, `${prefix}: Invalid Email Address`)
+      ? emailValidationAlt
       : z.string().optional(),
     birthDate: z.union([z.string(), z.date(), z.null(), z.undefined()])
       .refine((val) => val !== null && val !== undefined && val !== "", {
@@ -697,6 +717,17 @@ export const step0ValidationSchema = z.object({
       if (!val || val === "" || val === "0") return true;
       return /^\d{10}$/.test(val);
     }, "Invalid Mobile No. Mobile number must be 10 digits"),
+    
+  email: z.string()
+    .optional()
+    .transform((val) => {
+      if (!val || val.trim() === "") return "";
+      return val.trim().toLowerCase();
+    })
+    .refine((val) => {
+      if (!val || val === "") return true;
+      return emailRegex.test(val);
+    }, "Invalid Email Address"),
   
   address: z.string()
     .min(1, "Address can not be blank")

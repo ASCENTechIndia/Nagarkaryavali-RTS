@@ -548,6 +548,8 @@ const FrmRebateTax = () => {
         return;
       }
 
+      const normalizedEmail = applicantValidation.data.emailId;
+
       if (serviceId == "287") {
         if (!values.rebateType || values.rebateType === "0") {
           Swal.fire({ 
@@ -636,7 +638,8 @@ const FrmRebateTax = () => {
         address: values.address || "",
         appliname: values.applicantName,
         mobile: values.mobileNo,
-        email: values.emailId,
+        // email: values.emailId,
+        email: normalizedEmail,
         aadhar: values.aadharNo || 0,
         pincode: values.pincode,
         exempType: values.rebateType || 0,

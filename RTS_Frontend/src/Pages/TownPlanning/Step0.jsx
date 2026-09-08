@@ -225,6 +225,7 @@ const Step0 = () => {
         lastName: values.lastName,
         lastNameM: values.lastNameM,
         mobileNo: values.mobileNo,
+        email: values.email,
         address: values.address,
         addressM: values.addressM,
         purpose: values.purpose,
@@ -243,6 +244,9 @@ const Step0 = () => {
         setSubmitting(false);
         return;
       }
+
+      const normalizedEmail = validationResult.data.email || "";
+      console.log("normalizedEmail step0: ", normalizedEmail);
 
       if (showPropertyNo && !values.propertyNo) {
         Swal.fire({
@@ -313,7 +317,8 @@ const Step0 = () => {
         in_lastnameM: values.lastNameM || null,
         in_mobileno: values.mobileNo ? Number(values.mobileNo) : null,
         in_adharno: values.aadharNo || null,
-        in_email: values.email || null,
+        // in_email: values.email || null,
+        in_email: normalizedEmail || null,
         in_address: values.address || null,
         in_addressM: values.addressM || null,
         in_purpose: values.purpose || null,
