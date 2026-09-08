@@ -17,4 +17,8 @@ router.post("/certificate-preview", auth(), controller.certificatePreview);
 router.post("/trade-certificate", auth(), controller.tradeCertificate);
 router.post("/update-document-flag", auth(), controller.updateDocumentFlag);
 
+router.post("/menu-details", controller.getMenuDetails);
+
+router.post("/generate-certificate", controller.generateCertificate);
+
 module.exports = router;

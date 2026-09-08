@@ -1,9 +1,13 @@
 const asyncHandler = require("../../../libs/asyncHandler");
 const { ok } = require("../../../libs/response");
 const { AppError } = require("../../../libs/errors");
+const FrmAppAuthReportHelper = require("../../../utils/pdfHelper/FrmAppAuth");
+
 
 const service = require("./frmAppAuth.service");
 const crypto = require("crypto");
+const { getCorporationDetailsService } = require("../../Dashboard/Dashboard.service");
+const path = require("path");
 
 const ENCRYPTION_KEY = "AS23N7E2H4V717DEAS23N7E2H4V717DE";
 const IV_LENGTH = 16;
@@ -527,6 +531,123 @@ const updateDocumentFlag = asyncHandler(async (req, res) => {
   });
 });
 
+
+
+const generateCertificate = asyncHandler(async (req, res) => {
+  const { serviceId, appNo, ulbId } = req.body;
+
+  if (!serviceId) {
+    throw new AppError("serviceId is required", 400);
+  }
+
+  if (!appNo) {
+    throw new AppError("appNo is required", 400);
+  }
+
+  if (!ulbId) {
+    throw new AppError("ulbId is required", 400);
+  }
+
+  // ---------------------------------------------------------
+  // 1. GET CERTIFICATE DATA
+  // ---------------------------------------------------------
+  const serviceResult = await service.getCertificateDataService({
+    serviceId,
+    appNo,
+  });
+
+  if (!serviceResult) {
+    throw new AppError("Unable to fetch certificate data", 500);
+  }
+
+  if (serviceResult.status === "INVALID_SERVICE") {
+    throw new AppError(serviceResult.message, 400);
+  }
+
+  if (serviceResult.status === "NO_TEMPLATE") {
+    throw new AppError(serviceResult.message, 400);
+  }
+
+  if (serviceResult.status === "NOT_FOUND") {
+    return res.status(404).json({
+      success: false,
+      message: "No certificate data found",
+      serviceId,
+      appNo,
+    });
+  }
+
+  if (serviceResult.status === "FAILED" || serviceResult.success === false) {
+    throw new AppError(serviceResult.message || "Failed to fetch certificate data", 500);
+  }
+
+  const reportData = serviceResult.data || [];
+
+  if (!Array.isArray(reportData) || reportData.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "No certificate data found",
+      serviceId,
+      appNo,
+    });
+  }
+
+  // ---------------------------------------------------------
+  // 2. GET CORPORATION DETAILS
+  // ---------------------------------------------------------
+  const corporationResponse = await getCorporationDetailsService({
+    corporationId: ulbId,
+  });
+
+  const corporationData = corporationResponse?.data || {};
+
+  const corporation = corporationData?.corporation || {};
+
+  const corporationName = corporation?.VAR_CORPORATION_NAME || "ठाणे महानगरपालिका, ठाणे";
+
+  // ---------------------------------------------------------
+  // 3. ULB LOGO
+  // ---------------------------------------------------------
+  // Dashboard currently may return empty logo.
+  // Use existing hardcoded tmclogo.jpeg.
+  const ulbLogoPath = path.resolve(__dirname, "../../../public/tmclogo.jpeg");
+
+  // ---------------------------------------------------------
+  // 4. GENERATE PDF USING PDF HELPER
+  // ---------------------------------------------------------
+  const pdf = await FrmAppAuthReportHelper({
+    rows: reportData,
+    corporationName,
+    ulbLogo: ulbLogoPath,
+    serviceId,
+    appNo,
+    ulbId,
+  });
+
+  if (!pdf || !pdf.filePath) {
+    throw new AppError("PDF generation failed", 500);
+  }
+
+  // ---------------------------------------------------------
+  // 5. CREATE PDF URL
+  // ---------------------------------------------------------
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+  const pdfUrl = `${baseUrl}/pdf/${path.basename(pdf.filePath)}`;
+
+  // ---------------------------------------------------------
+  // 6. RESPONSE
+  // ---------------------------------------------------------
+  return ok(res, {
+    success: true,
+    message: "PDF Generated Successfully",
+    fileName: pdf.fileName,
+    pdfUrl,
+    serviceId,
+    appNo,
+  });
+});
+
 module.exports = {
   getUserPrabhagList,
   getUserDeptList,
@@ -539,5 +660,6 @@ module.exports = {
   getMenuDetails,
   certificatePreview,
   tradeCertificate,
-  updateDocumentFlag
+  updateDocumentFlag,
+  generateCertificate
 };

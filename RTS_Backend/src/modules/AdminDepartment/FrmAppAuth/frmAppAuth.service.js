@@ -103,7 +103,6 @@ const getHodClerkListService = async ({ zoneId }) => {
   });
 };
 
-
 const getApplicationDetailsService = async ({ serviceId, appNo }) => {
   if (!serviceId) {
     throw new Error("Service ID is required.");
@@ -119,17 +118,7 @@ const getApplicationDetailsService = async ({ serviceId, appNo }) => {
   });
 };
 
-
-const applicationAuthService = async ({
-  userId,
-  applicationNo,
-  status,
-  reasonForReject,
-  amount,
-  mode,
-  clerkId,
-  tinyUrl,
-}) => {
+const applicationAuthService = async ({ userId, applicationNo, status, reasonForReject, amount, mode, clerkId, tinyUrl }) => {
   if (!userId) {
     throw new Error("User ID is required.");
   }
@@ -163,13 +152,7 @@ const applicationAuthService = async ({
   });
 };
 
-const saveApplicationVerificationDocumentService = async ({
-  ulbid,
-  applino,
-  userid,
-  docname,
-  docbyte,
-}) => {
+const saveApplicationVerificationDocumentService = async ({ ulbid, applino, userid, docname, docbyte }) => {
   if (!ulbid) {
     throw new Error("ULB ID is required.");
   }
@@ -254,6 +237,34 @@ const updateDocumentFlagService = async ({ appNo, docId }) => {
   });
 };
 
+
+const getCertificateDataService = async ({ serviceId, appNo }) => {
+  if (!serviceId) {
+    return {
+      success: false,
+      status: "FAILED",
+      message: "serviceId is required",
+      data: [],
+    };
+  }
+
+  if (!appNo) {
+    return {
+      success: false,
+      status: "FAILED",
+      message: "appNo is required",
+      data: [],
+    };
+  }
+
+  const result = await repo.getCertificateDataRepo({
+    serviceId,
+    appNo,
+  });
+
+  return result;
+};
+
 module.exports = {
   getUserPrabhagListService,
   getUserDeptListService,
@@ -265,5 +276,6 @@ module.exports = {
   saveApplicationVerificationDocumentService,
   getMenuDetailsService,
   certificateDataService,
-  updateDocumentFlagService
+  updateDocumentFlagService,
+  getCertificateDataService,
 };

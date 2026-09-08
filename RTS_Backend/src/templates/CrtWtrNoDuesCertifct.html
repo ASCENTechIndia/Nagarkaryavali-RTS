@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="mr">
+  <head>
+    <meta charset="UTF-8" />
+
+    <title>थकबाकी नसल्याचा दाखला</title>
+
+    <style>
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+
+        width: 210mm;
+        height: 297mm;
+
+        background: #ffffff;
+      }
+
+      body {
+        font-family: "Noto Sans Devanagari", "Nirmala UI", "Mangal", Arial, sans-serif;
+
+        color: #000000;
+
+        font-size: 13px;
+      }
+
+      /* =====================================================
+           A4 PAGE
+           ===================================================== */
+
+      .page {
+        position: relative;
+
+        width: 210mm;
+        height: 297mm;
+
+        padding: 5mm 6mm 5mm 6mm;
+
+        background: #ffffff;
+
+        border: 1px solid #000000;
+
+        overflow: hidden;
+      }
+
+      /* =====================================================
+           HEADER
+           ===================================================== */
+
+      .header {
+        position: relative;
+
+        width: 100%;
+
+        height: 30mm;
+
+        border-bottom: 1px solid #000000;
+      }
+
+      /* =====================================================
+           TMC LOGO
+           ===================================================== */
+
+      .tmc-logo {
+        position: absolute;
+
+        left: 5mm;
+        top: 1mm;
+
+        width: 25mm;
+        height: 25mm;
+
+        object-fit: contain;
+      }
+
+      /* =====================================================
+           AAPLE SARKAR LOGO
+           ===================================================== */
+
+      .aaple-logo {
+        position: absolute;
+
+        right: 4mm;
+        top: 1mm;
+
+        width: 28mm;
+        height: 25mm;
+
+        object-fit: contain;
+      }
+
+      /* =====================================================
+           HEADER TEXT
+           ===================================================== */
+
+      .header-center {
+        position: absolute;
+
+        left: 30mm;
+        right: 30mm;
+
+        top: 0;
+
+        text-align: center;
+
+        line-height: 1.2;
+      }
+
+      .corporation-name {
+        font-size: 22px;
+
+        font-weight: 700;
+
+        margin-bottom: 1.5mm;
+
+        white-space: nowrap;
+      }
+
+      .act-name {
+        font-size: 14.5px;
+
+        font-weight: 700;
+
+        margin-bottom: 1mm;
+
+        white-space: nowrap;
+      }
+
+      .department-name {
+        font-size: 14px;
+
+        font-weight: 700;
+      }
+
+      /* =====================================================
+           OUT NO / DATE
+           ===================================================== */
+
+      .reference-row {
+        display: table;
+
+        width: 100%;
+
+        height: 8mm;
+
+        margin-top: 2mm;
+
+        font-size: 12px;
+      }
+
+      .reference-left {
+        display: table-cell;
+
+        width: 50%;
+
+        text-align: left;
+
+        padding-left: 2mm;
+
+        vertical-align: top;
+      }
+
+      .reference-right {
+        display: table-cell;
+
+        width: 50%;
+
+        text-align: right;
+
+        padding-right: 2mm;
+
+        vertical-align: top;
+      }
+
+      /* =====================================================
+           TITLE
+           ===================================================== */
+
+      .title {
+        width: 100%;
+
+        text-align: center;
+
+        font-size: 17px;
+
+        font-weight: 700;
+
+        margin-top: 8mm;
+
+        margin-bottom: 13mm;
+      }
+
+      /* =====================================================
+           APPLICANT SECTION
+           ===================================================== */
+
+      .applicant-section {
+        width: 100%;
+
+        padding-left: 3mm;
+
+        padding-right: 3mm;
+      }
+
+      .to {
+        font-size: 13px;
+
+        margin-bottom: 2mm;
+      }
+
+      .applicant-row {
+        display: grid;
+
+        grid-template-columns:
+          27mm
+          7mm
+          1fr;
+
+        width: 100%;
+
+        margin-bottom: 1.5mm;
+
+        line-height: 1.45;
+      }
+
+      .applicant-label {
+        font-size: 13px;
+      }
+
+      .applicant-colon {
+        text-align: center;
+      }
+
+      .applicant-value {
+        font-size: 13px;
+      }
+
+      /* =====================================================
+           SUBJECT / REFERENCE
+           ===================================================== */
+
+      .subject-section {
+        width: 100%;
+
+        margin-top: 8mm;
+
+        margin-left: 40mm;
+
+        width: 130mm;
+      }
+
+      .subject-row {
+        display: grid;
+
+        grid-template-columns:
+          14mm
+          7mm
+          1fr;
+
+        margin-bottom: 2mm;
+
+        line-height: 1.45;
+      }
+
+      .subject-label {
+        font-size: 13px;
+      }
+
+      .subject-colon {
+        text-align: center;
+      }
+
+      .subject-value {
+        font-size: 13px;
+      }
+
+      /* =====================================================
+           MAIN CERTIFICATE CONTENT
+           ===================================================== */
+
+      .certificate-content {
+        width: 100%;
+
+        padding-left: 7mm;
+
+        padding-right: 4mm;
+
+        margin-top: 5mm;
+
+        font-size: 13px;
+
+        line-height: 1.65;
+
+        text-align: left;
+      }
+
+      .certificate-content p {
+        margin: 0;
+
+        text-align: justify;
+      }
+
+      /* =====================================================
+           DYNAMIC INLINE VALUE
+           ===================================================== */
+
+      .inline-value {
+        display: inline;
+
+        font-weight: 400;
+
+        padding-left: 1mm;
+
+        padding-right: 1mm;
+      }
+
+      /* =====================================================
+           SECOND PARAGRAPH
+           ===================================================== */
+
+      .second-paragraph {
+        margin-top: 17mm !important;
+
+        text-align: left !important;
+      }
+
+      /* =====================================================
+           SIGNATURE
+           ===================================================== */
+
+      .signature {
+        position: absolute;
+
+        right: 12mm;
+
+        bottom: 31mm;
+
+        width: 62mm;
+
+        text-align: center;
+
+        font-size: 13px;
+
+        line-height: 1.7;
+      }
+
+      /* =====================================================
+           PRINT
+           ===================================================== */
+
+      @media print {
+        html,
+        body {
+          width: 210mm;
+
+          height: 297mm;
+
+          margin: 0;
+
+          padding: 0;
+        }
+
+        .page {
+          width: 210mm;
+
+          height: 297mm;
+
+          border: 1px solid #000;
+
+          page-break-after: always;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+      <div class="header">
+        {{#if ULBLOGO}}
+
+        <img src="{{ULBLOGO}}" class="tmc-logo" alt="TMC Logo" />
+
+        {{/if}}
+
+        <div class="header-center">
+          <div class="corporation-name">{{CORPORATIONNAME}}</div>
+
+          <div class="act-name">महाराष्ट्र लोकसेवा हक्क अधिनियम, २०१५ अन्वये</div>
+
+          <div class="department-name">पाणी पुरवठा विभाग</div>
+        </div>
+
+        {{#if APLESEVA_LOGO}}
+
+        <img src="{{APLESEVA_LOGO}}" class="aaple-logo" alt="Aaple Sarkar Logo" />
+
+        {{/if}}
+      </div>
+
+      <!-- =====================================================
+         OUT NO / DATE
+         ===================================================== -->
+
+      <div class="reference-row">
+        <div class="reference-left">
+          जा. क्र. क्र.मा.पा. /
+
+          <strong> {{OUTNO}} </strong>
+        </div>
+
+        <div class="reference-right">
+          दिनांक :
+
+          <strong> {{AUTHDATE}} </strong>
+        </div>
+      </div>
+
+      <!-- =====================================================
+         TITLE
+         ===================================================== -->
+
+      <div class="title">थकबाकी नसल्याचा दाखला. ( C-22 )</div>
+
+      <!-- =====================================================
+         APPLICANT
+         ===================================================== -->
+
+      <div class="applicant-section">
+        <div class="to">प्रति,</div>
+
+        <div class="applicant-row">
+          <div class="applicant-label">ग्राहकाचे नाव</div>
+
+          <div class="applicant-colon">:</div>
+
+          <div class="applicant-value">{{certificate.waterConsumerName}}</div>
+        </div>
+
+        <div class="applicant-row">
+          <div class="applicant-label">ग्राहकाचा पत्ता</div>
+
+          <div class="applicant-colon">:</div>
+
+          <div class="applicant-value">{{certificate.customerAddress}}</div>
+        </div>
+      </div>
+
+      <!-- =====================================================
+         SUBJECT / REFERENCE
+         ===================================================== -->
+
+      <div class="subject-section">
+        <div class="subject-row">
+          <div class="subject-label">विषय</div>
+
+          <div class="subject-colon">:</div>
+
+          <div class="subject-value">{{VISHAY}}</div>
+        </div>
+
+        <div class="subject-row">
+          <div class="subject-label">संदर्भ</div>
+
+          <div class="subject-colon">:</div>
+
+          <div class="subject-value">{{HANDHARB}}</div>
+        </div>
+      </div>
+
+      <!-- =====================================================
+         CERTIFICATE PARAGRAPH
+         ===================================================== -->
+
+      <div class="certificate-content">
+        <p>
+          उपरोक्त संदर्भान्वये आपण वॉर्ड क्रमांक
+          <!-- <span class="inline-value"> {{PRABHAGID}} </span> -->
+
+          घर क्र.
+          <!-- <span class="inline-value"> {{HOUSENO}} </span> -->
+
+          मालमत्ता क्र.
+          <!-- <span class="inline-value"> {{PROPNO}} </span> -->
+
+          व पाणी बिल पा. क्रमांक
+          <!-- <span class="inline-value"> {{CONNECTIONNO}} </span> -->
+
+          पाणी बिलाची थकबाकी नसल्याबाबतचे दाखला मिळणेबाबत मागणी केली आहे. त्या अनुषंगाने पाणी पुरवठा विभागाकडील पाणी बिलाचे अवलोकन केले असता, उक्त नमुद पाणी बिलाची नोंद
+          <!-- <span class="inline-value"> {{WTRCONNAME}} </span> -->
+
+          यांच्या नावे असून सदर पाणी बिलावर मार्च
+          <!-- <span class="inline-value"> {{MARCHYEAR}} </span> -->
+
+          अखेरपर्यंत कोणत्याही स्वरुपाची थकबाकी नाही. सदर सोसायटीचे पाणी बील संपुर्ण रक्कम पावती क्र.
+          <!-- <span class="inline-value"> {{RECEIPTNO}} </span> -->
+
+          प्रभाग समिती
+          <!-- <span class="inline-value"> {{PRABHAGNAME}} </span> -->
+
+          दि.
+          <!-- <span class="inline-value"> {{certificate.acceptDate}} </span> -->
+
+          अन्वये भरणा केलेले आहे. सबब, आपणास पाणी बिलाची थकबाकी नसल्याचा दाखला देण्यात येत आहे.
+        </p>
+
+        <!-- =================================================
+             SECOND PARAGRAPH
+             ================================================= -->
+
+        <p class="second-paragraph">
+          ब) रु.
+          <!-- <span class="inline-value"> {{AMOUNT}} </span> -->
+
+          ची थकबाकी दिसून येत आहे. सबब, आपणास पाणी बिलाची थकबाकी नसल्याचा दाखला देण्याबाबतचा आपला अर्ज नाकारण्यात येत आहे.
+        </p>
+      </div>
+
+      <!-- =====================================================
+         SIGNATURE
+         ===================================================== -->
+
+      <div class="signature">
+        <div>कार्यकारी अभियंता</div>
+
+        <div>पाणी पुरवठा विभाग</div>
+
+        <div>{{CORPORATIONNAME}}</div>
+      </div>
+    </div>
+  </body>
+</html>

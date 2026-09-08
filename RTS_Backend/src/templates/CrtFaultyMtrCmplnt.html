@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="mr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>नादुरुस्त मीटर दुरुस्त केल्याचा दाखला</title>
+
+    <style>
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+
+            width: 210mm;
+            height: 297mm;
+
+            background: #ffffff;
+        }
+
+        body {
+            font-family:
+                "Noto Sans Devanagari",
+                "Nirmala UI",
+                "Mangal",
+                Arial,
+                sans-serif;
+
+            color: #000000;
+
+            font-size: 13px;
+        }
+
+
+        /* =====================================================
+           PAGE
+           ===================================================== */
+
+        .page {
+
+            position: relative;
+
+            width: 210mm;
+            height: 297mm;
+
+            padding: 5mm 6mm 5mm 6mm;
+
+            border: 1px solid #000000;
+
+            background: #ffffff;
+
+            overflow: hidden;
+        }
+
+
+        /* =====================================================
+           HEADER
+           ===================================================== */
+
+        .header {
+
+            position: relative;
+
+            width: 100%;
+
+            height: 30mm;
+            
+                    border-bottom: 1px solid #000000;
+
+        }
+
+
+        .tmc-logo {
+
+            position: absolute;
+
+            left: 5mm;
+            top: 1mm;
+
+            width: 25mm;
+            height: 25mm;
+
+            object-fit: contain;
+        }
+
+
+        .aaple-logo {
+
+            position: absolute;
+
+            right: 4mm;
+            top: 1mm;
+
+            width: 28mm;
+            height: 25mm;
+
+            object-fit: contain;
+        }
+
+
+        .header-center {
+
+            position: absolute;
+
+            left: 30mm;
+            right: 30mm;
+
+            top: 0;
+
+            text-align: center;
+
+            line-height: 1.2;
+        }
+
+
+        .corporation-name {
+
+            font-size: 22px;
+
+            font-weight: 700;
+
+            margin-bottom: 1.5mm;
+
+            white-space: nowrap;
+        }
+
+
+        .act-name {
+
+            font-size: 14.5px;
+
+            font-weight: 700;
+
+            margin-bottom: 1mm;
+
+            white-space: nowrap;
+        }
+
+
+        .department-name {
+
+            font-size: 14px;
+
+            font-weight: 700;
+        }
+
+
+        /* =====================================================
+           OUT NO / DATE
+           ===================================================== */
+
+        .reference-row {
+
+            display: table;
+
+            width: 100%;
+
+            height: 8mm;
+
+            margin-top: 2mm;
+
+            font-size: 12px;
+        }
+
+
+        .reference-left {
+
+            display: table-cell;
+
+            width: 50%;
+
+            text-align: left;
+
+            padding-left: 2mm;
+
+            vertical-align: top;
+        }
+
+
+        .reference-right {
+
+            display: table-cell;
+
+            width: 50%;
+
+            text-align: right;
+
+            padding-right: 2mm;
+
+            vertical-align: top;
+        }
+
+
+        /* =====================================================
+           TITLE
+           ===================================================== */
+
+        .title {
+
+            width: 100%;
+
+            text-align: center;
+
+            font-size: 17px;
+
+            font-weight: 700;
+
+            margin-top: 7mm;
+
+            margin-bottom: 10mm;
+        }
+
+
+        /* =====================================================
+           DETAILS
+           ===================================================== */
+
+        .details {
+
+            width: 100%;
+
+            padding-left: 3mm;
+
+            padding-right: 3mm;
+        }
+
+
+        /* =====================================================
+           SINGLE ROW
+
+           [ SERIAL ] [ LABEL ] [ : ] [ VALUE ]
+           ===================================================== */
+
+        .single-row {
+
+            display: grid;
+
+            grid-template-columns:
+                9mm
+                54mm
+                7mm
+                1fr;
+
+            width: 100%;
+
+            min-height: 7mm;
+
+            align-items: start;
+
+            margin-bottom: 1.2mm;
+        }
+
+
+        .serial {
+
+            font-size: 13px;
+
+            font-weight: 500;
+
+            white-space: nowrap;
+        }
+
+
+        .label {
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            line-height: 1.4;
+        }
+
+
+        .colon {
+
+            text-align: center;
+
+            font-size: 13px;
+        }
+
+
+        .value {
+
+            font-size: 13px;
+
+            line-height: 1.4;
+
+            padding-left: 1mm;
+
+            word-break: break-word;
+        }
+
+
+        /* =====================================================
+           SUB ROW
+
+           Used under 1) and 2)
+           ===================================================== */
+
+        .sub-row {
+
+            display: grid;
+
+            grid-template-columns:
+                9mm
+                54mm
+                7mm
+                1fr;
+
+            width: 100%;
+
+            min-height: 6.5mm;
+
+            align-items: start;
+
+            margin-bottom: 0.8mm;
+        }
+
+
+        /* =====================================================
+           GAP BETWEEN MAJOR SECTIONS
+           ===================================================== */
+
+        .section-gap {
+
+            margin-top: 2.5mm;
+        }
+
+
+        /* =====================================================
+           TWO COLUMN ROW
+
+           [ SERIAL ][ LEFT LABEL ][ : ][ LEFT VALUE ]
+                    [ RIGHT LABEL ][ : ][ RIGHT VALUE ]
+           ===================================================== */
+
+        .two-column-row {
+
+            display: grid;
+
+            grid-template-columns:
+                9mm
+                43mm
+                6mm
+                34mm
+                38mm
+                6mm
+                1fr;
+
+            width: 100%;
+
+            min-height: 7mm;
+
+            align-items: start;
+
+            margin-bottom: 1.6mm;
+        }
+
+
+        .two-serial {
+
+            font-size: 13px;
+
+            font-weight: 500;
+
+            white-space: nowrap;
+        }
+
+
+        .left-label {
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            line-height: 1.4;
+        }
+
+
+        .left-colon {
+
+            text-align: center;
+
+            font-size: 13px;
+        }
+
+
+        .left-value {
+
+            font-size: 13px;
+
+            line-height: 1.4;
+
+            padding-left: 1mm;
+
+            word-break: break-word;
+        }
+
+
+        .right-label {
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            line-height: 1.4;
+
+            padding-left: 2mm;
+        }
+
+
+        .right-colon {
+
+            text-align: center;
+
+            font-size: 13px;
+        }
+
+
+        .right-value {
+
+            font-size: 13px;
+
+            line-height: 1.4;
+
+            padding-left: 1mm;
+
+            word-break: break-word;
+        }
+
+
+        /* =====================================================
+           SIGNATURE
+           ===================================================== */
+
+        .signature {
+
+            position: absolute;
+
+            right: 12mm;
+
+            bottom: 31mm;
+
+            width: 62mm;
+
+            text-align: center;
+
+            font-size: 13px;
+
+            line-height: 1.7;
+        }
+
+
+        /* =====================================================
+           FOOTER NOTE
+           ===================================================== */
+
+        .footer-note {
+
+            position: absolute;
+
+            left: 10mm;
+
+            right: 10mm;
+
+            bottom: 7mm;
+
+            font-size: 10.5px;
+
+            line-height: 1.55;
+
+            text-align: left;
+        }
+
+
+        .footer-note p {
+
+            margin: 0;
+        }
+
+
+        /* =====================================================
+           PRINT
+           ===================================================== */
+
+        @media print {
+
+            html,
+            body {
+
+                width: 210mm;
+
+                height: 297mm;
+
+                margin: 0;
+
+                padding: 0;
+            }
+
+
+            .page {
+
+                width: 210mm;
+
+                height: 297mm;
+
+                border: 1px solid #000000;
+
+                page-break-after: always;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="page">
+
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <div class="header">
+
+
+        {{#if ULBLOGO}}
+
+        <img
+            src="{{ULBLOGO}}"
+            class="tmc-logo"
+            alt="TMC Logo"
+        >
+
+        {{/if}}
+
+
+        <div class="header-center">
+
+            <div class="corporation-name">
+                {{CORPORATIONNAME}}
+            </div>
+
+
+            <div class="act-name">
+                महाराष्ट्र लोकसेवा हक्क अधिनियम, २०१५ अन्वये
+            </div>
+
+
+            <div class="department-name">
+                पाणी पुरवठा विभाग
+            </div>
+
+        </div>
+
+
+        {{#if APLESEVA_LOGO}}
+
+        <img
+            src="{{APLESEVA_LOGO}}"
+            class="aaple-logo"
+            alt="Aaple Sarkar Logo"
+        >
+
+        {{/if}}
+
+    </div>
+
+
+
+    <!-- =====================================================
+         OUT NO / DATE
+         ===================================================== -->
+
+    <div class="reference-row">
+
+
+        <div class="reference-left">
+
+            जा. क्र. क्र.मा.पा. /
+
+            <strong>
+                {{OUTNO}}
+            </strong>
+
+        </div>
+
+
+        <div class="reference-right">
+
+            दिनांक :
+
+            <strong>
+                {{AUTHDATE}}
+            </strong>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         TITLE
+         ===================================================== -->
+
+    <div class="title">
+
+        नादुरुस्त मीटर दुरुस्त केल्याचा दाखला (C-23)
+
+    </div>
+
+
+
+    <!-- =====================================================
+         DETAILS
+         ===================================================== -->
+
+    <div class="details">
+
+<!-- =====================================================
+     1) APPLICANT NAME
+     ===================================================== -->
+
+<div class="single-row">
+
+    <div class="serial">
+        १)
+    </div>
+
+    <div class="label">
+        नळ जोडणी धारकाचे संपूर्ण नाव
+    </div>
+
+    <div class="colon">
+        :
+    </div>
+
+    <div class="value">
+        {{certificate.waterConsumerName}}
+    </div>
+
+</div>
+
+
+<!-- MOBILE -->
+
+<div class="sub-row">
+
+    <div></div>
+
+    <div class="label">
+        मोबाईल नंबर
+    </div>
+
+    <div class="colon">
+        :
+    </div>
+
+    <div class="value">
+        {{certificate.mobileNo}}
+    </div>
+
+</div>
+
+
+<!-- CUSTOMER ADDRESS -->
+
+<div class="sub-row">
+
+    <div></div>
+
+    <div class="label">
+        ग्राहकाचा पत्ता
+    </div>
+
+    <div class="colon">
+        :
+    </div>
+
+    <div class="value">
+        {{certificate.customerAddress}}
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     2) ADDRESS
+     ===================================================== -->
+
+<div class="single-row section-gap">
+
+    <div class="serial">
+        २)
+    </div>
+
+    <div class="label">
+        संपूर्ण पत्ता
+    </div>
+
+    <div class="colon">
+        :
+    </div>
+
+    <div class="value">
+        {{certificate.customerAddress}}
+    </div>
+
+</div>
+
+
+<!-- HOUSE NO + PRABHAG -->
+
+<div class="two-column-row">
+
+    <div></div>
+
+    <div class="left-label">
+        घर नंबर
+    </div>
+
+    <div class="left-colon">
+        :
+    </div>
+
+    <div class="left-value">
+        {{certificate.houseNo}}
+    </div>
+
+    <div class="right-label">
+        प्रभाग क्रमांक
+    </div>
+
+    <div class="right-colon">
+        :
+    </div>
+
+    <div class="right-value">
+        {{certificate.prabhagName}}
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     3) WATER USAGE + FAMILY COUNT
+     ===================================================== -->
+
+<div class="two-column-row">
+
+    <div class="two-serial">
+        ३)
+    </div>
+
+    <div class="left-label">
+        पाण्याचा वापर
+    </div>
+
+    <div class="left-colon">
+        :
+    </div>
+
+    <div class="left-value">
+        {{certificate.waterUsage}}
+    </div>
+
+    <div class="right-label">
+        कुटुंब संख्या
+    </div>
+
+    <div class="right-colon">
+        :
+    </div>
+
+    <div class="right-value">
+        {{certificate.familyMemberCount}}
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     4) APPLICATION DATE + ACCEPT DATE
+     ===================================================== -->
+
+<div class="two-column-row">
+
+    <div class="two-serial">
+        ४)
+    </div>
+
+    <div class="left-label">
+        नळ कनेक्शन कराराचा क्रमांक तारीख
+    </div>
+
+    <div class="left-colon">
+        :
+    </div>
+
+    <div class="left-value">
+        {{certificate.appliedDate}}
+    </div>
+
+    <div class="right-label">
+        मंजूर क्रमांक तारीख
+    </div>
+
+    <div class="right-colon">
+        :
+    </div>
+
+    <div class="right-value">
+        {{certificate.acceptDate}}
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     5) CONNECTION TYPE + WATER TIMING
+     ===================================================== -->
+
+<div class="two-column-row">
+
+    <div class="two-serial">
+        ५)
+    </div>
+
+    <div class="left-label">
+        नळ कनेक्शन आकार
+    </div>
+
+    <div class="left-colon">
+        :
+    </div>
+
+    <div class="left-value">
+        {{certificate.connectionType}}
+    </div>
+
+    <div class="right-label">
+        वेळेप्रमाणे / चावीची तारीख
+    </div>
+
+    <div class="right-colon">
+        :
+    </div>
+
+    <div class="right-value">
+        {{certificate.waterTiming}}
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     6) METER NOT WORKING DATE
+     ===================================================== -->
+
+<div class="single-row">
+
+    <div class="serial">
+        ६)
+    </div>
+
+    <div class="label">
+        मीटर नादुरुस्त झाल्याची तारीख
+    </div>
+
+    <div class="colon">
+        :
+    </div>
+
+    <div class="value">
+        {{certificate.meterNotWorkingDate}}
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     7) METER WORKING DATE
+     ===================================================== -->
+
+<div class="single-row">
+
+    <div class="serial">
+        ७)
+    </div>
+
+    <div class="label">
+        नळ कनेक्शन दुरुस्त केल्याची तारीख
+    </div>
+
+    <div class="colon">
+        :
+    </div>
+
+    <div class="value">
+        {{certificate.meterWorkingDate}}
+    </div>
+
+</div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             ७) METER REPAIR DATE
+             ================================================= -->
+
+        <div class="single-row">
+
+            <div class="serial">
+                ७)
+            </div>
+
+            <div class="label">
+                नळ कनेक्शन दुरुस्त केल्याची तारीख
+            </div>
+
+            <div class="colon">
+                :
+            </div>
+
+            <div class="value">
+                {{certificate.meterWorkingDate}}
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         SIGNATURE
+         ===================================================== -->
+
+    <div class="signature">
+
+        <div>
+            उप अभियंता
+        </div>
+
+        <div>
+            पाणी पुरवठा विभाग
+        </div>
+
+        <div>
+            {{CORPORATIONNAME}}
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         FOOTER NOTE
+         ===================================================== -->
+
+    <div class="footer-note">
+
+        <p>
+
+            (टीप :- जलप्रवाहक / मीटर रिडर वरीलप्रमाणे कनेक्शनच्या
+            धारकामध्ये / मालकामध्ये बदल केल्याची नोंद जलमापक नोंद
+            वहीत तसेच रीडिंग रजिस्टरमध्ये घेऊन बिल सुधारित
+            दराप्रमाणे आकारणीची कार्यवाही करावी.)
+
+        </p>
+
+    </div>
+
+
+</div>
+
+</body>
+
+</html>

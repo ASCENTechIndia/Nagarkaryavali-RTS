@@ -131,7 +131,9 @@ app.use("/api/FrmFirstAppealAuthoRpt", require("./modules/AdminDepartment/FrmFir
 app.use("/api/FrmSecondAppealAutoRpt", require("./modules/AdminDepartment/FrmSecondAppealAutoRpt/FrmSecondAppealAutoRpt.route"));
 app.use("/api/FrmChallanGenReport", require("./modules/AdminDepartment/FrmChallanGenReport/FrmChallanGenReport.routes"));
 app.use("/api/FrmTownPlanningSectorMapping", require("./modules/AdminDepartment/FrmTownPlanningSectorMapping/frmTownPlanningSectorMapping.routes"));
-app.use("/api/FrmChallanGen", require("./modules/AdminDepartment/FrmChallanGen/FrmChallanGen.route"));
+app.use("/api/FrmAppliReportEMst", require("./modules/AdminDepartment/FrmAppliReportEMst/frmAppliReportEMst.routes"));
+app.use("/api/FrmHearingProccess", require("./modules/AdminDepartment/FrmHearingProccess/FrmHearingProccess.routes"));
+app.use("/api/FrmHearingDateAssign", require("./modules/AdminDepartment/FrmHearingDateAssign/FrmHearingDateAssign.routes"))
 
 app.use(errorMiddleware);
 

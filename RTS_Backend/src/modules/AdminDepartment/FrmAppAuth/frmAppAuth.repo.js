@@ -873,16 +873,7 @@ const getApplicationDetailsRepo = async ({ serviceId, appNo }) => {
   };
 };
 
-const applicationAuthRepo = async ({
-  userId,
-  applicationNo,
-  status,
-  reasonForReject,
-  amount,
-  mode,
-  clerkId,
-  tinyUrl,
-}) => {
+const applicationAuthRepo = async ({ userId, applicationNo, status, reasonForReject, amount, mode, clerkId, tinyUrl }) => {
   try {
     const result = await withTxTMC(async (connection) => {
       const query = `
@@ -969,17 +960,9 @@ const applicationAuthRepo = async ({
   }
 };
 
-const saveApplicationVerificationDocumentRepo = async ({
-  ulbid,
-  applino,
-  userid,
-  docname,
-  docbyte,
-}) => {
+const saveApplicationVerificationDocumentRepo = async ({ ulbid, applino, userid, docname, docbyte }) => {
   try {
     const result = await withTxTMC(async (connection) => {
-
-
       const deleteQuery = `
         DELETE FROM aorts_appverifdoc_det
         WHERE num_appVerifdoc_ulbid = :ulbid
@@ -995,15 +978,11 @@ const saveApplicationVerificationDocumentRepo = async ({
         },
         {
           autoCommit: false,
-        }
+        },
       );
 
-      console.log(
-        "Existing CertificateORG documents deleted:",
-        deleteResult.rowsAffected
-      );
+      console.log("Existing CertificateORG documents deleted:", deleteResult.rowsAffected);
 
-    
       const insertQuery = `
         INSERT INTO aorts_appverifdoc_det
         (
@@ -1039,13 +1018,10 @@ const saveApplicationVerificationDocumentRepo = async ({
         },
         {
           autoCommit: false,
-        }
+        },
       );
 
-      console.log(
-        "Application verification document inserted:",
-        insertResult.rowsAffected
-      );
+      console.log("Application verification document inserted:", insertResult.rowsAffected);
 
       return {
         deletedRows: deleteResult.rowsAffected || 0,
@@ -1058,12 +1034,8 @@ const saveApplicationVerificationDocumentRepo = async ({
       message: "Application verification document saved successfully.",
       ...result,
     };
-
   } catch (error) {
-    console.error(
-      "SAVE APPLICATION VERIFICATION DOCUMENT REPO ERROR:",
-      error
-    );
+    console.error("SAVE APPLICATION VERIFICATION DOCUMENT REPO ERROR:", error);
 
     return {
       success: false,
@@ -1331,6 +1303,688 @@ const updateDocumentFlagRepo = async ({ appNo, docId }) => {
   }
 };
 
+const getCertificateDataRepo = async ({ serviceId, appNo }) => {
+  try {
+    return await withTxTMC(async (connection) => {
+      let query = "";
+      let binds = {
+        appNo: appNo,
+      };
+
+      switch (String(serviceId)) {
+        // =====================================================
+        // 22 - Change In Usage
+        // =====================================================
+        case "22":
+          query = `
+            SELECT
+              REGID,
+              SERVID,
+              CONSNO,
+              DISCONNID,
+              REASON,
+              USAGEID,
+              TARIFRATE,
+              CONNSIZEID,
+              WTREMARK,
+              INSBY,
+              INSDT,
+              RTSNO,
+              ULBID,
+              APPLISTATUS,
+              APPLIAPPRSTATUS,
+              APPLIAPPRREMARK,
+              APPLIAPPRBY,
+              APPLIAPPRDATE,
+              DOCSTATUS,
+              DOCREMARK,
+              DOCBY,
+              DOCDATE,
+              APPLINAME,
+              APPLIMOBILE,
+              APPLIEMAIL,
+              APPLIADDHAR,
+              APPLIADDRESS,
+              CONADDRESSSRCH,
+              OWNERNAMESRCH,
+              CURCONSIZESRCH,
+              USAGETYPENEWSRCH,
+              ERLDISDT,
+              VISHAY,
+              SANDHARBH,
+              WATERUSAGE,
+              CONNPLACE,
+              HOUSENO,
+              FAMCOUNT,
+              APPLDATE,
+              ACCPDATE,
+              WATERTIMING,
+              CONNRECONNDT,
+              METERDT,
+              SUBMETERDT,
+              FULLNAME,
+              METERCUTTINGDT,
+              BECOUSE,
+              REMMARK,
+              USGNAME,
+              OUTNO,
+              AUTHDT,
+              CONNSIZE,
+              ZONENM
+            FROM vw_watrconsize
+            WHERE RTSNO = :appNo
+          `;
+          break;
+
+        // =====================================================
+        // 341 - Change In Connection Size
+        // =====================================================
+        case "341":
+          query = `
+            SELECT
+              REGID,
+              SERVID,
+              CONSNO,
+              DISCONNID,
+              REASON,
+              USAGEID,
+              TARIFRATE,
+              CONNSIZEID,
+              WTREMARK,
+              INSBY,
+              INSDT,
+              RTSNO,
+              ULBID,
+              APPLISTATUS,
+              APPLIAPPRSTATUS,
+              APPLIAPPRREMARK,
+              APPLIAPPRBY,
+              APPLIAPPRDATE,
+              DOCSTATUS,
+              DOCREMARK,
+              DOCBY,
+              DOCDATE,
+              APPLINAME,
+              APPLIMOBILE,
+              APPLIEMAIL,
+              APPLIADDHAR,
+              APPLIADDRESS,
+              CONADDRESSSRCH,
+              OWNERNAMESRCH,
+              CURCONSIZESRCH,
+              USAGETYPENEWSRCH,
+              ERLDISDT,
+              VISHAY,
+              SANDHARBH,
+              WATERUSAGE,
+              CONNPLACE,
+              HOUSENO,
+              FAMCOUNT,
+              APPLDATE,
+              ACCPDATE,
+              WATERTIMING,
+              CONNRECONNDT,
+              METERDT,
+              SUBMETERDT,
+              FULLNAME,
+              METERCUTTINGDT,
+              BECOUSE,
+              REMMARK,
+              USGNAME,
+              OUTNO,
+              AUTHDT,
+              CONNSIZE,
+              ZONENM
+            FROM vw_watrconsize
+            WHERE RTSNO = :appNo
+          `;
+          break;
+
+        // =====================================================
+        // 18 - Change Owner
+        // =====================================================
+        case "18":
+          query = `
+            SELECT
+              OUTNO,
+              AUTHDT,
+              ID,
+              ULBID,
+              CONNNO,
+              APLINAME,
+              MOBILENO,
+              EMAIL,
+              ADHARNO,
+              PROPNO,
+              RESINO,
+              CURRONAME,
+              CURRCONAME,
+              NEWONAME,
+              NEWCONAME,
+              INSBY,
+              INSDATE,
+              RTSNO,
+              APPLIAPPRSTATUS,
+              APPLIAPPRREMARK,
+              DOCSTATUS,
+              DOCREMARK,
+              APPLIAPPRBY,
+              APPLIAPPRDATE,
+              DOCDATE,
+              DOCBY,
+              APPLSTATUS,
+              APPLINAME,
+              APPLIMOBILE,
+              APPLIEMAIL,
+              APPLIADDHAR,
+              APPLIADDRESS,
+              VISHAY,
+              SHANDHARB,
+              METERTYPE,
+              BCHOUSEHOLD,
+              ACCEPTDATE
+            FROM view_wtrchangownertyp
+            WHERE RTSNO = :appNo
+          `;
+          break;
+
+        // =====================================================
+        // 21 - Water Reconnection
+        // =====================================================
+        case "21":
+          query = `
+            SELECT
+              REGID,
+              SERVID,
+              CONSNO,
+              DISCONNID,
+              REASON,
+              USAGEID,
+              TARIFRATE,
+              CONNSIZEID,
+              WTREMARK,
+              INSBY,
+              INSDT,
+              RTSNO,
+              ULBID,
+              APPLISTATUS,
+              APPLIAPPRSTATUS,
+              APPLIAPPRREMARK,
+              APPLIAPPRBY,
+              APPLIAPPRDATE,
+              DOCSTATUS,
+              DOCREMARK,
+              DOCBY,
+              DOCDATE,
+              APPLINAME,
+              APPLIMOBILE,
+              APPLIEMAIL,
+              APPLIADDHAR,
+              APPLIADDRESS,
+              CONADDRESSSRCH,
+              OWNERNAMESRCH,
+              CURCONSIZESRCH,
+              USAGETYPENEWSRCH,
+              ERLDISDT,
+              VISHAY,
+              SANDHARBH,
+              WATERUSAGE,
+              CONNPLACE,
+              HOUSENO,
+              FAMCOUNT,
+              APPLDATE,
+              ACCPDATE,
+              WATERTIMING,
+              CONNRECONNDT,
+              METERDT,
+              SUBMETERDT,
+              FULLNAME,
+              METERCUTTINGDT,
+              BECOUSE,
+              REMMARK,
+              USGNAME,
+              OUTNO,
+              AUTHDT,
+              CONNSIZE,
+              ZONENM
+            FROM vw_watrconsize
+            WHERE RTSNO = :appNo
+          `;
+          break;
+
+        // =====================================================
+        // 24 - Water Plumber License
+        // =====================================================
+        case "24":
+          query = `
+            SELECT
+              ID,
+              RTSNO,
+              APPLILNAME,
+              MOBNO,
+              PANNO,
+              EMAIL,
+              APPLIADDHAR,
+              ADDRESS,
+              LICENSENO,
+              APPLICOL1,
+              APPLICOL2,
+              ACTPDT,
+              OUTNO,
+              AUTHDT
+            FROM vw_wtrplmbr
+            WHERE RTSNO = :appNo
+          `;
+          break;
+
+        // =====================================================
+        // 25
+        // Legacy code has no certificate query
+        // =====================================================
+        case "25":
+          return {
+            success: true,
+            status: "NO_TEMPLATE",
+            message: "No certificate data query configured for service 25",
+            data: [],
+          };
+
+        // =====================================================
+        // 26 - Water No Dues Certificate
+        // =====================================================
+        case "26":
+          query = `
+            SELECT
+              OUTNO,
+              AUTHDATE,
+              WTRCONNAME,
+              MOBILENO,
+              CUSTMADDRES,
+              APPNO,
+              VISHAY,
+              HANDHARB,
+              HOUSENO,
+              WATERUSAGE,
+              FMLYMEMCOUNT,
+              APPLIEDDT,
+              ACCEPTDT,
+              CONNTYPE,
+              WATERTIMING,
+              METERNOWRKDT,
+              METERWRKDT,
+              DEPTVERF,
+              DOCVALID,
+              STATECOMB,
+              CONNBROKEN,
+              PUNTVACTION,
+              SPLRIGHTPRESRE,
+              OBSTRUCTIONTAP,
+              GARBAGESTUCK,
+              SUFFICIENTWTRSUPPLY,
+              LOWWTRPRESRE,
+              CUSTCHANNEL,
+              CMPLTSTATUS,
+              SMPLCOLLDT,
+              SMPLTESTDT,
+              METERTYPE,
+              CHEMICALTEST,
+              FREECHLORINE,
+              PH,
+              TURBIDITY,
+              CHLORIDE,
+              HARDNESS,
+              PRABHAGID,
+              PRABHAGNAME,
+              ULBID,
+              CONNECTIONNO
+            FROM vw_wtrfaultymtrcomln
+            WHERE APPNO = :appNo
+          `;
+          break;
+
+        // =====================================================
+        // 27 - Faulty Meter Complaint
+        // =====================================================
+        case "27":
+          query = `
+            SELECT
+              OUTNO,
+              AUTHDATE,
+              WTRCONNAME,
+              MOBILENO,
+              CUSTMADDRES,
+              APPNO,
+              VISHAY,
+              HANDHARB,
+              HOUSENO,
+              WATERUSAGE,
+              FMLYMEMCOUNT,
+              APPLIEDDT,
+              ACCEPTDT,
+              CONNTYPE,
+              WATERTIMING,
+              METERNOWRKDT,
+              METERWRKDT,
+              DEPTVERF,
+              DOCVALID,
+              STATECOMB,
+              CONNBROKEN,
+              PUNTVACTION,
+              SPLRIGHTPRESRE,
+              OBSTRUCTIONTAP,
+              GARBAGESTUCK,
+              SUFFICIENTWTRSUPPLY,
+              LOWWTRPRESRE,
+              CUSTCHANNEL,
+              CMPLTSTATUS,
+              SMPLCOLLDT,
+              SMPLTESTDT,
+              METERTYPE,
+              CHEMICALTEST,
+              FREECHLORINE,
+              PH,
+              TURBIDITY,
+              CHLORIDE,
+              HARDNESS,
+              PRABHAGID,
+              PRABHAGNAME,
+              ULBID,
+              CONNECTIONNO
+            FROM vw_wtrfaultymtrcomln
+            WHERE APPNO = :appNo
+          `;
+          break;
+
+        // =====================================================
+        // 28 - Unauthorized Connection Complaint
+        // =====================================================
+        case "28":
+          query = `
+            SELECT
+              OUTNO,
+              AUTHDATE,
+              WTRCONNAME,
+              MOBILENO,
+              CUSTMADDRES,
+              APPNO,
+              VISHAY,
+              HANDHARB,
+              HOUSENO,
+              WATERUSAGE,
+              FMLYMEMCOUNT,
+              APPLIEDDT,
+              ACCEPTDT,
+              CONNTYPE,
+              WATERTIMING,
+              METERNOWRKDT,
+              METERWRKDT,
+              DEPTVERF,
+              DOCVALID,
+              STATECOMB,
+              CONNBROKEN,
+              PUNTVACTION,
+              SPLRIGHTPRESRE,
+              OBSTRUCTIONTAP,
+              GARBAGESTUCK,
+              SUFFICIENTWTRSUPPLY,
+              LOWWTRPRESRE,
+              CUSTCHANNEL,
+              CMPLTSTATUS,
+              SMPLCOLLDT,
+              SMPLTESTDT,
+              METERTYPE,
+              CHEMICALTEST,
+              FREECHLORINE,
+              PH,
+              TURBIDITY,
+              CHLORIDE,
+              HARDNESS,
+              PRABHAGID,
+              PRABHAGNAME,
+              ULBID,
+              CONNECTIONNO
+            FROM vw_wtrfaultymtrcomln
+            WHERE APPNO = :appNo
+          `;
+          break;
+
+        // =====================================================
+        // 29 - Water Pressure Complaint
+        // =====================================================
+        case "29":
+          query = `
+            SELECT
+              OUTNO,
+              AUTHDATE,
+              WTRCONNAME,
+              MOBILENO,
+              CUSTMADDRES,
+              APPNO,
+              VISHAY,
+              HANDHARB,
+              HOUSENO,
+              WATERUSAGE,
+              FMLYMEMCOUNT,
+              APPLIEDDT,
+              ACCEPTDT,
+              CONNTYPE,
+              WATERTIMING,
+              METERNOWRKDT,
+              METERWRKDT,
+              DEPTVERF,
+              DOCVALID,
+              STATECOMB,
+              CONNBROKEN,
+              PUNTVACTION,
+              SPLRIGHTPRESRE,
+              OBSTRUCTIONTAP,
+              GARBAGESTUCK,
+              SUFFICIENTWTRSUPPLY,
+              LOWWTRPRESRE,
+              CUSTCHANNEL,
+              CMPLTSTATUS,
+              SMPLCOLLDT,
+              SMPLTESTDT,
+              METERTYPE,
+              CHEMICALTEST,
+              FREECHLORINE,
+              PH,
+              TURBIDITY,
+              CHLORIDE,
+              HARDNESS,
+              PRABHAGID,
+              PRABHAGNAME,
+              ULBID,
+              CONNECTIONNO
+            FROM vw_wtrfaultymtrcomln
+            WHERE APPNO = :appNo
+          `;
+          break;
+
+        // =====================================================
+        // 30 - Water Quality Complaint
+        // =====================================================
+        case "30":
+          query = `
+            SELECT
+              OUTNO,
+              AUTHDATE,
+              WTRCONNAME,
+              MOBILENO,
+              CUSTMADDRES,
+              APPNO,
+              VISHAY,
+              HANDHARB,
+              HOUSENO,
+              WATERUSAGE,
+              FMLYMEMCOUNT,
+              APPLIEDDT,
+              ACCEPTDT,
+              CONNTYPE,
+              WATERTIMING,
+              METERNOWRKDT,
+              METERWRKDT,
+              DEPTVERF,
+              DOCVALID,
+              STATECOMB,
+              CONNBROKEN,
+              PUNTVACTION,
+              SPLRIGHTPRESRE,
+              OBSTRUCTIONTAP,
+              GARBAGESTUCK,
+              SUFFICIENTWTRSUPPLY,
+              LOWWTRPRESRE,
+              CUSTCHANNEL,
+              CMPLTSTATUS,
+              SMPLCOLLDT,
+              SMPLTESTDT,
+              METERTYPE,
+              CHEMICALTEST,
+              FREECHLORINE,
+              PH,
+              TURBIDITY,
+              CHLORIDE,
+              HARDNESS,
+              PRABHAGID,
+              PRABHAGNAME,
+              ULBID,
+              CONNECTIONNO
+            FROM vw_wtrfaultymtrcomln
+            WHERE APPNO = :appNo
+          `;
+          break;
+
+        // =====================================================
+        // 161 - Temporary Disconnection
+        // =====================================================
+        case "161":
+          query = `
+            SELECT
+              REGID,
+              SERVID,
+              CONSNO,
+              DISCONNID,
+              REASON,
+              USAGEID,
+              TARIFRATE,
+              CONNSIZEID,
+              WTREMARK,
+              INSBY,
+              INSDT,
+              RTSNO,
+              ULBID,
+              APPLISTATUS,
+              APPLIAPPRSTATUS,
+              APPLIAPPRREMARK,
+              APPLIAPPRBY,
+              APPLIAPPRDATE,
+              DOCSTATUS,
+              DOCREMARK,
+              DOCBY,
+              DOCDATE,
+              APPLINAME,
+              APPLIMOBILE,
+              APPLIEMAIL,
+              APPLIADDHAR,
+              APPLIADDRESS,
+              CONADDRESSSRCH,
+              OWNERNAMESRCH,
+              CURCONSIZESRCH,
+              USAGETYPENEWSRCH,
+              ERLDISDT,
+              VISHAY,
+              SANDHARBH,
+              WATERUSAGE,
+              CONNPLACE,
+              HOUSENO,
+              FAMCOUNT,
+              APPLDATE,
+              ACCPDATE,
+              WATERTIMING,
+              CONNRECONNDT,
+              METERDT,
+              SUBMETERDT,
+              FULLNAME,
+              METERCUTTINGDT,
+              BECOUSE,
+              REMMARK,
+              USGNAME,
+              OUTNO,
+              AUTHDT,
+              CONNSIZE,
+              ZONENM
+            FROM vw_wtrtmpdisc
+            WHERE RTSNO = :appNo
+          `;
+          break;
+
+        // =====================================================
+        // 23
+        // Legacy code has no certificate query
+        // =====================================================
+        case "23":
+          return {
+            success: true,
+            status: "NO_TEMPLATE",
+            message: "No certificate data query configured for service 23",
+            data: [],
+          };
+
+        // =====================================================
+        // 141
+        // Legacy code has no certificate query
+        // =====================================================
+        case "141":
+          return {
+            success: true,
+            status: "NO_TEMPLATE",
+            message: "No certificate data query configured for service 141",
+            data: [],
+          };
+
+        // =====================================================
+        // DEFAULT
+        // =====================================================
+        default:
+          return {
+            success: false,
+            status: "INVALID_SERVICE",
+            message: `Certificate data query not configured for service ID ${serviceId}`,
+            data: [],
+          };
+      }
+
+      // ---------------------------------------------------------
+      // Execute query
+      // ---------------------------------------------------------
+      const result = await connection.execute(query, binds, {
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+        autoCommit: false,
+      });
+
+      const rows = result.rows || [];
+      console.log("result", rows);
+
+      return {
+        success: true,
+        status: rows.length > 0 ? "SUCCESS" : "NOT_FOUND",
+        message: rows.length > 0 ? "Certificate data fetched successfully" : "No record found for certificate",
+        data: rows,
+        rowCount: rows.length,
+      };
+    });
+  } catch (error) {
+    console.error("Repo: Get Certificate Data Error:", error);
+
+    return {
+      success: false,
+      status: "FAILED",
+      message: error.message,
+      data: [],
+    };
+  }
+};
+
 module.exports = {
   getUserPrabhagListRepo,
   getUserDeptListRepo,
@@ -1342,5 +1996,6 @@ module.exports = {
   saveApplicationVerificationDocumentRepo,
   getMenuDetailsRepo,
   certificateDataRepo,
-  updateDocumentFlagRepo
+  updateDocumentFlagRepo,
+  getCertificateDataRepo,
 };

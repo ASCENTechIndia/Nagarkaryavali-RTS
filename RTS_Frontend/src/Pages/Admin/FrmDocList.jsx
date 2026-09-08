@@ -114,7 +114,7 @@ const FrmDocList = () => {
   };
 
   const handleSelect = (row) => {
-    navigate("/app/FrmDocMst", {
+    navigate("/App/MASTER/FrmDocMst", {
       state: {
         mode: "2",
         serviceId: row.serviceId
@@ -123,7 +123,7 @@ const FrmDocList = () => {
   };
 
   const handleAddNew = () => {
-    navigate("/app/FrmDocMst", {
+    navigate("/App/MASTER/FrmDocMst", {
       state: {
         mode: "1"
       }
