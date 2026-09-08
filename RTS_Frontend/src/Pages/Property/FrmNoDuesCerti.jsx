@@ -525,6 +525,8 @@ const FrmNoDuesCerti = () => {
         return;
       }
 
+      const normalizedEmail = applicantValidation.data.emailId;
+
       if (values.aadharNo && (values.aadharNo.length !== 12 || !/^\d+$/.test(values.aadharNo))) {
         Swal.fire({
           text: "Invalid Aadhar Number. Must be 12 digits.",
@@ -608,7 +610,8 @@ const FrmNoDuesCerti = () => {
         address: values.address || "",
         appliname: values.applicantName || "",
         mobile: values.mobileNo || "",
-        email: values.emailId || "",
+        // email: values.emailId || "",
+        email: normalizedEmail || "",
         taxAmount: yearlyTax || "0",
         aadharNo: values.aadharNo || 0,
         appSource: config.source,

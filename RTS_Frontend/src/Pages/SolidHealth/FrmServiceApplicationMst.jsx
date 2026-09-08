@@ -333,7 +333,12 @@ const fetchVillages = async (sectorId) => {
       return false;
     }
 
-    const emailRegex = /^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$/;
+    //const emailRegex = /^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$/;
+    //const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    //const emailRegex = /^([\w\.\-\+]+)@([\w\-]+)((\.(\w){2,3})+)$/;
+    //const emailRegex = /^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\.[a-zA-Z]{2,}$/
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    
     if (!emailRegex.test(values.emailId)) {
       Swal.fire({
         text: "Invalid Email Address",
@@ -511,7 +516,6 @@ const fetchVillages = async (sectorId) => {
         locality: values.locality?.trim() || "",
         landmark: values.landmark?.trim() || "",
         pincode: values.pincode ? Number(values.pincode) : 0,
-        //source: "WEB",
         source: config.source,
       };
 
@@ -661,7 +665,7 @@ const fetchVillages = async (sectorId) => {
         {item.fileName && item.fileName !== "No file chosen" && (
           <span className="text-xs text-gray-500 truncate max-w-20">
             {item.fileName}
-            {item.isUploaded && " ✅"}
+            {item.isUploaded && " "}
           </span>
         )}
       </div>
@@ -695,7 +699,7 @@ const fetchVillages = async (sectorId) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
+                    <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center whitespace-nowrap">
                       <Label required text="Applicant Name" />
                       <span>:</span>
                     </div>
@@ -758,7 +762,7 @@ const fetchVillages = async (sectorId) => {
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="sm:w-36 shrink-0 flex justify-start sm:justify-between items-center">
-                      <Label text="Aadhar No." />
+                      <Label required text="Aadhar No." />
                       <span>:</span>
                     </div>
                     <Input

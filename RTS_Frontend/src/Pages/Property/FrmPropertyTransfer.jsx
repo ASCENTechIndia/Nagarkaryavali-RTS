@@ -559,6 +559,8 @@ const FrmPropertyTransfer = () => {
         return;
       }
 
+      const normalizedEmail = validationResult.data.emailId;
+
       const propertyValidation = propertyTransferSearchSchema.safeParse({
         ptn: values.ptn,
         subcode: values.subcode,
@@ -636,7 +638,8 @@ const FrmPropertyTransfer = () => {
         areaofProp: values.area || "",
         transType: values.transferType,
         consttype: constType || "0",
-        appliEmail: values.emailId,
+        // appliEmail: values.emailId,
+        appliEmail: normalizedEmail,
         appliAddr: values.newAddress,
         appliMobile: values.mobileNo,
         appliAadhar: values.aadharNo || 0,
