@@ -67,6 +67,8 @@ import FrmHearingProccess from "./Pages/Admin/FrmHearingProccess";
 import FrmAppealHearing_New from "./Pages/Admin/FrmAppealHearing_New";
 import FrmHearingDateAssign from "./Pages/Admin/FrmHearingDateAssign";
 import FrmToursTravels from "./Pages/NOC/FrmToursTravels";
+import FrmNOMNoc from "./Pages/NOC/FrmNOMNoc";
+import FrmNORNoc from "./Pages/NOC/FrmNORNoc";
 
 function HomePage() {
   return <div>Welcome to Employee Portal</div>;
@@ -341,6 +343,15 @@ const router = createBrowserRouter([
         path: "/App/FrmHearingDateAssign",
         element: <FrmHearingDateAssign />
       },
+         {
+        path:"/App/FrmNOMNoc",
+        element:<FrmNOMNoc />
+      },
+
+      {
+        path:"/App/FrmNORNoc",
+        element:<FrmNORNoc />
+      }
     ]
   },
 ]);
