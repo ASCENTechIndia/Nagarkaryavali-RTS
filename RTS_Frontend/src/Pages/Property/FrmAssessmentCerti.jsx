@@ -435,6 +435,10 @@ const FrmAssessmentCerti = () => {
       return;
     }
 
+    const normalizedEmail = applicantValidation.data.emailId;
+
+    console.log("normalizedEmail", normalizedEmail);
+
     const documents = [];
     for (const row of tableData) {
       if (row.fileBuffer) {
@@ -493,7 +497,8 @@ const FrmAssessmentCerti = () => {
       assessmentYear: values.assessmentYear || "",
       applicantName: values.applicantName,
       mobile: values.mobileNo,
-      email: values.emailId,
+      // email: values.emailId,
+      email: normalizedEmail,
       appSource: config.source,
       documents: documents,
       // mahaData: {

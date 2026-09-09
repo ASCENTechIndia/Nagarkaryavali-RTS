@@ -463,10 +463,23 @@ const FrmPropertyAppel = () => {
           text: "Please enter Email ID.",
           confirmButtonColor: "#1e3a8a",
         });
-
         setLoading(false);
         return;
       }
+
+      const normalizedEmail = values.emailId.trim().toLowerCase();
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(normalizedEmail)) {
+        Swal.fire({
+          text: "Please enter a valid Email ID.",
+          confirmButtonColor: "#1e3a8a",
+        });
+        setLoading(false);
+        return;
+      }
+
+      values.emailId = normalizedEmail;
 
       if (!values.objectionType) {
         Swal.fire({
@@ -842,7 +855,6 @@ const FrmPropertyAppel = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
                   <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
                     <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label className="text-sm sm:text-base" text="झोन" />

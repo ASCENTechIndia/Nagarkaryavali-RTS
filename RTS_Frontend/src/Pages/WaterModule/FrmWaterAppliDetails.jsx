@@ -436,6 +436,157 @@ const FrmWaterAppliDetails = () => {
 
   const handleSubmit = async (values, { resetForm }) => {
     try {
+      if (!values.zoneId?.trim()) {
+        await Swal.fire({
+          text: "Please select zone.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+      if (!values.firstName?.trim()) {
+        await Swal.fire({
+          text: "Please enter Applicant First Name.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      if (!values.middleName?.trim()) {
+        await Swal.fire({
+          text: "Please enter Applicant Middle Name.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      if (!values.lastName?.trim()) {
+        await Swal.fire({
+          text: "Please enter Applicant Last Name.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      if (!values.mobileNo?.trim()) {
+        await Swal.fire({
+          text: "Please enter Mobile Number.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      if (!/^[6-9]\d{9}$/.test(values.mobileNo.trim())) {
+        await Swal.fire({
+          icon: "error",
+          title: "Invalid Mobile Number",
+          text: "Please enter a valid 10-digit mobile number.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      if (!values.aadharNo?.trim()) {
+        await Swal.fire({
+          text: "Please enter Aadhaar Number.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+      // Email validation and normalization
+      if (!values.email?.trim()) {
+        await Swal.fire({
+          text: "Please enter Email.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+      const normalizedEmail = values.email.trim().toLowerCase();
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(normalizedEmail)) {
+        Swal.fire({
+          text: "Please enter a valid Email ID.",
+          confirmButtonColor: "#1e3a8a",
+        });
+        setLoading(false);
+        return;
+      }
+
+      values.email = normalizedEmail;
+
+      if (!/^\d{12}$/.test(values.aadharNo.trim())) {
+        await Swal.fire({
+          icon: "error",
+          title: "Invalid Aadhaar Number",
+          text: "Please enter a valid 12-digit Aadhaar number.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      if (!values.propNo?.trim()) {
+        await Swal.fire({
+          text: "Please enter Property Number.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      if (!values.resNo?.trim()) {
+        await Swal.fire({
+          text: "Please enter Residence Number / Address.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      if (!values.noFirstName?.trim()) {
+        await Swal.fire({
+          text: "Please enter New Owner First Name.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      if (!values.noMiddleName?.trim()) {
+        await Swal.fire({
+          text: "Please enter New Owner Middle Name.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      if (!values.noLastName?.trim()) {
+        await Swal.fire({
+          text: "Please enter New Owner Last Name.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+      if (!values.ncoFirstName?.trim()) {
+        await Swal.fire({
+          text: "Please enter New co Owner First Name.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      if (!values.ncoMiddleName?.trim()) {
+        await Swal.fire({
+          text: "Please enter New co Owner Middle Name.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      if (!values.ncoLastName?.trim()) {
+        await Swal.fire({
+          text: "Please enter New co Owner Last Name.",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
       setLoading(true);
 
       const documentString = buildDocumentString();

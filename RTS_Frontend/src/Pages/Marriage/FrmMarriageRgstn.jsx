@@ -276,6 +276,12 @@ function FrmMarriageRgstn() {
         return;
       }
 
+      const normalizedHusbandEmail = validationResult.data.husband?.email || "";
+      const normalizedWifeEmail = validationResult.data.wife?.email || "";
+
+      console.log("normalizedHusbandEmail: ", normalizedHusbandEmail);
+      console.log("normalizedWifeEmail: ", normalizedWifeEmail);
+
       const docs = values.application.documents || [];
       const docValidation = documentGridValidationSchema.safeParse(docs);
       if (!docValidation.success) {
@@ -301,7 +307,7 @@ function FrmMarriageRgstn() {
         didOpen: () => Swal.showLoading(),
       });
 
-      const payload = buildPayload(values);
+      const payload = buildPayload(values, normalizedHusbandEmail, normalizedWifeEmail);
       console.log("Submit Payload:", payload);
 
       const tokenValue = token || localStorage.getItem("token");
@@ -367,7 +373,7 @@ function FrmMarriageRgstn() {
     }
   };
 
-  const buildPayload = (values) => {
+  const buildPayload = (values, normalizedHusbandEmail, normalizedWifeEmail) => {
     const app = values.application;
     const h = values.husband;
     const w = values.wife;
@@ -414,7 +420,8 @@ function FrmMarriageRgstn() {
         : null,
       hbirthreligion: h.birthReligion,
       hadopreligion: h.adoptedReligion,
-      hemail: h.email,
+      // hemail: h.email,
+      hemail: normalizedHusbandEmail || h.email,
       hiddoc: h.idDocument,
       haddresdoc: h.addressDocument,
       hagedoc: h.ageDocument,
@@ -435,7 +442,8 @@ function FrmMarriageRgstn() {
         : null,
       wbirthreligion: w.birthReligion,
       wadopreligion: w.adoptedReligion,
-      wemail: w.email,
+      // wemail: w.email,
+      wemail: normalizedWifeEmail || w.email,
       widdoc: w.idDocument,
       waddresdoc: w.addressDocument,
       wagedoc: w.ageDocument,

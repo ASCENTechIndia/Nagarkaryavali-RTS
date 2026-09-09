@@ -3,8 +3,8 @@ const router = express.Router();
 const auth = require("../../../middlewares/auth.middleware");
 const controller = require("./FrmSecondAppealAutoRpt.controller");
 
-router.post("/second-appeal-report", controller.getSecondAppealReport);
+router.post("/second-appeal-report", auth(), controller.getSecondAppealReport);
 
-router.post("/second-appeal-report-pdf", controller.generateSecondAppealReportPDF);
+router.post("/second-appeal-report-pdf", auth(), controller.generateSecondAppealReportPDF);
 
 module.exports = router;
