@@ -776,11 +776,7 @@ export const waterApplicationValidationSchema = z
 
     mobileNumber: commonValidationSchema.mobile,
 
-    email: z
-      .string()
-      .trim()
-      .min(1, "Email ID is required")
-      .regex(emailRegex, "Invalid Email Address"),
+    email: emailValidationAlt,
 
     aadharCardNo: z
       .string()
