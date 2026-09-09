@@ -67,6 +67,7 @@ import FrmAppliReportEMst from "./Pages/Admin/FrmAppliReportEMst";
 import FrmHearingProccess from "./Pages/Admin/FrmHearingProccess";
 import FrmAppealHearing_New from "./Pages/Admin/FrmAppealHearing_New";
 import FrmHearingDateAssign from "./Pages/Admin/FrmHearingDateAssign";
+import FrmToursTravels from "./Pages/NOC/FrmToursTravels";
 
 function HomePage() {
   return <div>Welcome to Employee Portal</div>;
@@ -225,6 +226,10 @@ const router = createBrowserRouter([
       {
         path: "/app/FrmWaterAppliDetails",
         element: <FrmWaterAppliDetails />,
+      },
+      {
+        path: "/app/FrmToursTravels",
+        element: <FrmToursTravels />,
       },
     ],
   },
