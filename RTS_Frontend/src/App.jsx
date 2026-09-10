@@ -219,7 +219,7 @@ const router = createBrowserRouter([
         element: <FrmWaterAppliDetails />,
       },
       {
-        path: "/app/FrmToursTravels",
+        path: "/app/FrmToursTravel",
         element: <FrmToursTravels />,
       },
     ],

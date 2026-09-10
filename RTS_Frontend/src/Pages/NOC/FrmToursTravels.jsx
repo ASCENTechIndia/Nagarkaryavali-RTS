@@ -51,9 +51,11 @@ const FrmToursTravels = () => {
   const location = useLocation();
   const locationState = location.state || {};
 
+  console.log("locationState: ", locationState);
+
   const ulbId = locationState.ulbId || user?.ulbId;
   const userId = locationState.userId || user?.userId;
-  const serviceId = locationState.serviceId || "516";
+  const serviceId = locationState.serviceId;
   const serviceName = locationState.serviceName;
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -285,7 +287,7 @@ const FrmToursTravels = () => {
               <Card className="border shadow-sm">
                 <CardHeader className="border-b">
                   <CardTitle className="text-lg font-semibold">
-                    आवश्यक डेटा : NOC for Tours and Travels
+                    आवश्यक डेटा : NOC for {serviceName}
                   </CardTitle>
                 </CardHeader>
 
