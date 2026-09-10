@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { ChevronDown } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,41 +11,32 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import ShadCNTable from "@/components/ui/table";
-import { RefreshCWIcon } from "@/components/icons/refresh-cw";
+import ApplicantDetails from "@/components/ApplicantDetails";
 import config from "@/utils/config";
-import { cn } from "@/lib/utils";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 const initialValues = {
-  applicantName: "",
+  firstName: "",
+  middleName: "",
+  lastName: "",
+  countryCode: "+91",
   mobileNo: "",
   emailId: "",
   aadharNo: "",
   residentialAddress: "",
-  panCardNo: "",
+  panCard: "",
   organizationName: "",
   organizationAddress: "",
-  hospitalName: "",
   businessType: "",
   businessDescription: "",
+  hospitalName: "",
   zoneId: "",
   propertyNo: "",
   businessAddress: "",
   waterConnectionNo: "",
   constructionPermissionProposalNo: "",
   occupancyCertificateNo: "",
-  captcha: "",
-};
-
-const generateCaptcha = (length = 6) => {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-  let captcha = "";
-  for (let i = 0; i < length; i++) {
-    captcha += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return captcha;
 };
 
 const defaultHospitalDocuments = [
@@ -71,14 +61,14 @@ const defaultHospitalDocuments = [
   {
     id: 4,
     docId: "DOC_HOSP_04",
-    documentName: "महाराष्ट्र प्रदूषण नियंत्रण मंडळ (MPCB) संमती पत्र / अर्ज",
-    isCompulsory: false,
+    documentName: "महानगरपालिका नळ जोडणी ग्राहक पावती (Water Connection Receipt)",
+    isCompulsory: true,
   },
   {
     id: 5,
     docId: "DOC_HOSP_05",
-    documentName: "बायो-मेडिकल वेस्ट व्यवस्थापन नोंदणी प्रमाणपत्र",
-    isCompulsory: false,
+    documentName: "रुग्णालयातील मुख्य डॉक्टरांची वैद्यकीय कौन्सिल नोंदणी प्रमाणपत्रे",
+    isCompulsory: true,
   },
   {
     id: 6,
@@ -89,8 +79,8 @@ const defaultHospitalDocuments = [
   {
     id: 7,
     docId: "DOC_HOSP_07",
-    documentName: "रुग्णालयातील मुख्य डॉक्टरांची वैद्यकीय कौन्सिल नोंदणी प्रमाणपत्रे",
-    isCompulsory: true,
+    documentName: "महाराष्ट्र प्रदूषण नियंत्रण मंडळ (MPCB) संमती व बायो-मेडिकल वेस्ट व्यवस्थापन नोंदणी प्रमाणपत्र",
+    isCompulsory: false,
   },
 ];
 
@@ -99,21 +89,18 @@ const FrmhospitalParvana = () => {
   const location = useLocation();
   const { user, token } = useAuth();
   const formikRef = useRef(null);
+
   const locationState = location.state || {};
   const ulbId = locationState.ulbId || user?.ulbId || sessionStorage.getItem("ulbId") || "1";
   const userId = locationState.userId || user?.userId || sessionStorage.getItem("userId") || "";
   const serviceId = locationState.serviceId || sessionStorage.getItem("ServiceId") || "HOSPITAL_LICENSE";
   const serviceName = locationState.serviceName || sessionStorage.getItem("ServEngName") || "हॉस्पिटल परवाना (Hospital License)";
+
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [pageTitle, setPageTitle] = useState("हॉस्पिटल परवाना अर्ज (Hospital License)");
   const [zoneList, setZoneList] = useState([]);
-  const [captchaCode, setCaptchaCode] = useState(() => generateCaptcha(6));
-  const [isCaptchaOpen, setIsCaptchaOpen] = useState(true);
 
-  const refreshCaptcha = () => {
-    setCaptchaCode(generateCaptcha(6));
-  };
   const [documentList, setDocumentList] = useState(
     defaultHospitalDocuments.map((doc, index) => ({
       ...doc,
@@ -175,7 +162,7 @@ const FrmhospitalParvana = () => {
   const fetchDocuments = async () => {
     try {
       const response = await axios.post(
-        `${BASE_URL}/api/FrmServiceApplicationMst/documents`,
+        `${BASE_URL}/api/FrmServiceApplicationMst/documentlist`,
         {
           serviceId: String(serviceId),
           ulbId: Number(ulbId),
@@ -188,13 +175,14 @@ const FrmhospitalParvana = () => {
         }
       );
 
-      if (response?.data?.ok && Array.isArray(response?.data?.data) && response.data.data.length > 0) {
-        const mappedDocs = response.data.data.map((item, index) => ({
-          id: item.DOCID || item.num_doc_id || index + 1,
+      const docs = response?.data?.data?.data || response?.data?.data;
+      if (response?.data?.ok && Array.isArray(docs) && docs.length > 0) {
+        const mappedDocs = docs.map((item, index) => ({
+          id: item.docId || item.DOCID || item.num_doc_id || index + 1,
           srNo: index + 1,
-          docId: item.DOCID || item.num_doc_id || `DOC_${index + 1}`,
-          documentName: item.DOCNAME || item.var_doc_engname || item.var_doc_engdocdesc || "आवश्यक कागदपत्र",
-          isCompulsory: item.isCompulsory ?? true,
+          docId: item.docId || item.DOCID || item.num_doc_id || `DOC_${index + 1}`,
+          documentName: item.docName || item.DOCNAME || item.var_doc_engname || item.engdocdesc || "आवश्यक कागदपत्र",
+          isCompulsory: item.isCompulsory ?? (index < 4),
           file: null,
           fileName: "",
           fileBase64: null,
@@ -202,7 +190,7 @@ const FrmhospitalParvana = () => {
         setDocumentList(mappedDocs);
       }
     } catch (error) {
-      console.log("Using default hospital documents checklist");
+      console.log("Using default hospital documents checklist", error);
     }
   };
 
@@ -210,13 +198,13 @@ const FrmhospitalParvana = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const allowedExtensions = ["jpg", "jpeg", "png", "pdf"];
+    const allowedExtensions = ["jpg", "jpeg", "png", "pdf", "gif"];
     const fileExt = file.name.split(".").pop()?.toLowerCase();
     if (!allowedExtensions.includes(fileExt)) {
       Swal.fire({
         icon: "warning",
         title: "अवैध फाइल प्रकार",
-        text: "कृपया फक्त JPG, JPEG, PNG किंवा PDF फाइल अपलोड करा.",
+        text: "कृपया फक्त JPG, JPEG, GIF, PNG किंवा PDF फाइल अपलोड करा.",
         confirmButtonColor: "#1e3a8a",
       });
       event.target.value = "";
@@ -253,11 +241,11 @@ const FrmhospitalParvana = () => {
   };
 
   const validateForm = (values) => {
-    if (!values.applicantName?.trim()) {
+    if (!values.firstName?.trim() && !values.applicantName?.trim()) {
       Swal.fire({
         icon: "error",
         title: "आवश्यक माहिती अपूर्ण",
-        text: "कृपया अर्जदाराचे नाव प्रविष्ट करा.",
+        text: "कृपया अर्जदाराचे नाव (पहिले नाव) प्रविष्ट करा.",
         confirmButtonColor: "#1e3a8a",
       });
       return false;
@@ -323,7 +311,8 @@ const FrmhospitalParvana = () => {
       return false;
     }
 
-    if (values.panCardNo?.trim() && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(values.panCardNo.trim())) {
+    const pan = values.panCard?.trim() || values.panCardNo?.trim();
+    if (pan && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan)) {
       Swal.fire({
         icon: "error",
         title: "अवैध पॅन कार्ड क्रमांक",
@@ -338,26 +327,6 @@ const FrmhospitalParvana = () => {
         icon: "error",
         title: "आवश्यक माहिती अपूर्ण",
         text: "कृपया रुग्णालयाचे नाव प्रविष्ट करा.",
-        confirmButtonColor: "#1e3a8a",
-      });
-      return false;
-    }
-
-    if (!values.businessType?.trim()) {
-      Swal.fire({
-        icon: "error",
-        title: "आवश्यक माहिती अपूर्ण",
-        text: "कृपया व्यवसायाचा प्रकार निवडा.",
-        confirmButtonColor: "#1e3a8a",
-      });
-      return false;
-    }
-
-    if (!values.businessDescription?.trim()) {
-      Swal.fire({
-        icon: "error",
-        title: "आवश्यक माहिती अपूर्ण",
-        text: "कृपया व्यवसायाचे / रुग्णालयाचे वर्णन प्रविष्ट करा.",
         confirmButtonColor: "#1e3a8a",
       });
       return false;
@@ -433,28 +402,6 @@ const FrmhospitalParvana = () => {
       return false;
     }
 
-    // Captcha Validation
-    if (!values.captcha?.trim()) {
-      Swal.fire({
-        icon: "error",
-        title: "कॅप्चा आवश्यक आहे",
-        text: "कृपया खाली दर्शविलेले कॅप्चा अक्षरे (Type the characters below) प्रविष्ट करा.",
-        confirmButtonColor: "#1e3a8a",
-      });
-      return false;
-    }
-
-    if (values.captcha.trim() !== captchaCode.trim()) {
-      Swal.fire({
-        icon: "error",
-        title: "अवैध कॅप्चा",
-        text: "प्रविष्ट केलेला कॅप्चा जुळत नाही. कृपया अचूक कॅप्चा प्रविष्ट करा.",
-        confirmButtonColor: "#1e3a8a",
-      });
-      refreshCaptcha();
-      return false;
-    }
-
     return true;
   };
 
@@ -477,32 +424,43 @@ const FrmhospitalParvana = () => {
     });
 
     try {
+      const applicantFullName = [values.firstName, values.middleName, values.lastName]
+        .filter(Boolean)
+        .join(" ")
+        .trim() || values.applicantName || "";
+
       const payload = {
-        ulbId: Number(ulbId),
-        userId: String(userId),
-        serviceId: String(serviceId),
-        serviceName: "हॉस्पिटल परवाना",
-        applicationName: values.applicantName?.trim() || "",
-        mobile: values.mobileNo?.trim() || "",
-        email: values.emailId?.trim() || "",
-        aadharNo: values.aadharNo?.trim() || "0",
-        address: values.residentialAddress?.trim() || "",
-        panCardNo: values.panCardNo?.trim() || "",
-        organizationName: values.organizationName?.trim() || "",
-        organizationAddress: values.organizationAddress?.trim() || "",
-        hospitalName: values.hospitalName?.trim() || "",
-        businessType: values.businessType?.trim() || "",
+        userId: String(userId || user?.userId || "1"),
+        applicantName: applicantFullName,
+        mobileNo: values.mobileNo?.trim() || "",
+        emailId: values.emailId?.trim() || "",
+        aadhaarNo: values.aadharNo?.trim() || "",
+        residentialAddress: values.residentialAddress?.trim() || "",
+        panCardNo: values.panCard?.trim() || values.panCardNo?.trim() || "",
+        orgName: values.organizationName?.trim() || "",
+        orgAddress: values.organizationAddress?.trim() || "",
+        businessType: values.businessType ? Number(values.businessType) : 1,
         businessDescription: values.businessDescription?.trim() || "",
         propertyNo: values.propertyNo?.trim() || "",
         businessAddress: values.businessAddress?.trim() || "",
         waterConnectionNo: values.waterConnectionNo?.trim() || "",
-        constructionPermissionProposalNo: values.constructionPermissionProposalNo?.trim() || "",
+        constructionPermissionNo: values.constructionPermissionProposalNo?.trim() || "",
         occupancyCertificateNo: values.occupancyCertificateNo?.trim() || "",
-        zoneId: values.zoneId ? Number(values.zoneId) : null,
+        hospitalName: values.hospitalName?.trim() || "",
         source: config?.source || "WEB",
+        ulbId: Number(ulbId),
+        // Compatibility fields
+        firstName: values.firstName?.trim() || "",
+        middleName: values.middleName?.trim() || "",
+        lastName: values.lastName?.trim() || "",
+        countryCode: values.countryCode || "+91",
+        organizationName: values.organizationName?.trim() || "",
+        organizationAddress: values.organizationAddress?.trim() || "",
+        constructionPermissionProposalNo: values.constructionPermissionProposalNo?.trim() || "",
+        zoneId: values.zoneId ? Number(values.zoneId) : null,
       };
 
-      console.log("Submitting Hospital License application payload:", payload);
+      console.log("Submitting Hospital License application payload to /api/FrmHospitalParvana/save:", payload);
 
       let applicationNo = "";
       let submitSuccess = false;
@@ -510,7 +468,7 @@ const FrmhospitalParvana = () => {
 
       try {
         const response = await axios.post(
-          `${BASE_URL}/api/FrmServiceApplicationMst/save`,
+          `${BASE_URL}/api/FrmHospitalParvana/save`,
           payload,
           {
             headers: {
@@ -522,8 +480,9 @@ const FrmhospitalParvana = () => {
 
         if (response?.data?.success || response?.data?.ok) {
           submitSuccess = true;
-          applicationNo = response?.data?.applicationNo || response?.data?.data?.applicationNo || `HOSP${Date.now().toString().slice(-6)}`;
-          responseMessage = response?.data?.message || "हॉस्पिटल परवाना अर्ज यशस्वीरीत्या सादर केला आहे.";
+          const resData = response?.data?.data || response?.data;
+          applicationNo = resData?.applicationNo || (resData?.hospitalId ? `HOSP-${resData.hospitalId}` : `HOSP${Date.now().toString().slice(-6)}`);
+          responseMessage = resData?.message || response?.data?.message || "हॉस्पिटल परवाना अर्ज यशस्वीरीत्या सादर केला आहे.";
         } else {
           submitSuccess = false;
           responseMessage = response?.data?.message || "अर्ज सादर करताना त्रुटी आली.";
@@ -538,6 +497,34 @@ const FrmhospitalParvana = () => {
       loader.close();
 
       if (submitSuccess) {
+        const filesToUpload = documentList.filter((doc) => doc.file);
+        if (filesToUpload.length > 0) {
+          try {
+            const formData = new FormData();
+            formData.append("corpid", String(ulbId));
+            formData.append("serviceId", String(serviceId));
+            formData.append("appNo", String(applicationNo));
+
+            filesToUpload.forEach((doc) => {
+              formData.append("files", doc.file);
+              formData.append("documentIds", String(doc.docId || doc.id));
+            });
+
+            await axios.post(
+              `${BASE_URL}/api/FrmServiceApplicationMst/upload-document`,
+              formData,
+              {
+                headers: {
+                  Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+                  "Content-Type": "multipart/form-data",
+                },
+              }
+            );
+          } catch (uploadErr) {
+            console.warn("Document upload error (will proceed):", uploadErr);
+          }
+        }
+
         sessionStorage.setItem("Appno", applicationNo);
 
         await Swal.fire({
@@ -591,298 +578,62 @@ const FrmhospitalParvana = () => {
     }
   };
 
-  const transformedDocumentData = documentList.map((item) => ({
-    ...item,
-    documentName: (
-      <div className="flex items-center gap-1.5 text-sm">
-        <span>{item.documentName}</span>
-        {item.isCompulsory && (
-          <span className="text-red-500 font-bold" title="आवश्यक कागदपत्र">*</span>
-        )}
-      </div>
-    ),
-    fileUpload: (
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-        <Input
-          type="file"
-          accept=".jpg,.jpeg,.png,.pdf"
-          onChange={(e) => handleFileChange(item.id, e)}
-          className="h-9 text-xs cursor-pointer file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-        />
-        {item.fileName && (
-          <div className="flex items-center gap-1 text-xs text-green-600 font-medium whitespace-nowrap">
-            <span>✓ {item.fileName.slice(0, 18)}...</span>
-          </div>
-        )}
-      </div>
-    ),
-  }));
-
-  const documentHeaders = ["अ.क्र.", "कागदपत्राचे नाव", "फाइल अपलोड करा (JPG, PNG, PDF)"];
-  const documentKeyMapping = {
-    "अ.क्र.": "srNo",
-    "कागदपत्राचे नाव": "documentName",
-    "फाइल अपलोड करा (JPG, PNG, PDF)": "fileUpload",
-  };
-  const documentColumnStyles = {
-    "अ.क्र.": { width: "80px", textAlign: "center" },
-    "कागदपत्राचे नाव": { width: "55%" },
-    "फाइल अपलोड करा (JPG, PNG, PDF)": { width: "35%" },
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="container mx-auto p-3 sm:p-6 max-w-6xl"
+      className="container mx-auto p-3 sm:p-6 max-w-6xl space-y-6"
     >
       <Formik
         innerRef={formikRef}
         initialValues={initialValues}
         onSubmit={handleSubmit}
+        enableReinitialize={false}
       >
-        {({ values, handleChange, setFieldValue, resetForm }) => (
-          <Form className="space-y-6">
-            <Card className="border border-gray-200 shadow-md rounded-xl overflow-hidden bg-white">
-              <CardHeader className="bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-800 text-white px-5 py-4 border-b">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div>
-                    <CardTitle className="text-xl sm:text-2xl font-bold tracking-wide">
-                      {pageTitle}
+        {({ values, handleChange, handleBlur, setFieldValue }) => (
+          <Form>
+            <div className="space-y-6">
+              <ApplicantDetails />
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <Card className="border shadow-sm">
+                  <CardHeader className="border-b">
+                    <CardTitle className="text-lg font-semibold">
+                      रुग्णालय व मालमत्ता तपशील (Hospital & Property Details)
                     </CardTitle>
-                    <p className="text-xs sm:text-sm text-blue-100 mt-0.5">
-                      आरोग्य व स्वच्छता विभाग • महानगरपालिका नागरी सेवा
-                    </p>
-                  </div>
-                  <div className="self-start sm:self-auto bg-white/15 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm border border-white/20">
-                    नवीन परवाना अर्ज
-                  </div>
-                </div>
-              </CardHeader>
+                  </CardHeader>
 
-              <CardContent className="p-4 sm:p-6 space-y-7">
-                <div className="rounded-lg border border-slate-200 bg-slate-50/50 overflow-hidden shadow-sm">
-                  <div className="border-b bg-slate-100/90 px-4 py-2.5 flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-900 text-xs font-bold text-white">
-                        १
-                      </span>
-                      <span>अर्जदाराची वैयक्तिक माहिती (Applicant Details)</span>
-                    </h3>
-                    <span className="text-xs text-red-500 font-medium">* चिन्हांकित माहिती आवश्यक आहे</span>
-                  </div>
-
-                  <div className="p-4 sm:p-5 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start sm:items-center gap-1.5 sm:gap-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1">
-                          <Label text="अर्जदाराचे नाव" required className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
-                        </div>
-                        <Input
-                          name="applicantName"
-                          value={values.applicantName}
-                          onChange={handleChange}
-                          placeholder="अर्जदाराचे पूर्ण नाव प्रविष्ट करा"
-                          className="h-9 bg-white"
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start sm:items-center gap-1.5 sm:gap-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1">
-                          <Label text="मोबाइल क्रमांक" required className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
-                        </div>
-                        <Input
-                          name="mobileNo"
-                          value={values.mobileNo}
-                          maxLength={10}
-                          inputMode="numeric"
-                          onChange={(e) =>
-                            setFieldValue("mobileNo", e.target.value.replace(/\D/g, "").slice(0, 10))
-                          }
-                          placeholder="१० अंकी मोबाइल क्रमांक"
-                          className="h-9 bg-white"
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start sm:items-center gap-1.5 sm:gap-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1">
-                          <Label text="ई-मेल आयडी" required className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
-                        </div>
-                        <Input
-                          type="email"
-                          name="emailId"
-                          value={values.emailId}
-                          onChange={handleChange}
-                          placeholder="उदा. name@domain.com"
-                          className="h-9 bg-white"
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start sm:items-center gap-1.5 sm:gap-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1">
-                          <Label text="आधार क्रमांक" required className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
-                        </div>
-                        <Input
-                          name="aadharNo"
-                          value={values.aadharNo}
-                          maxLength={12}
-                          inputMode="numeric"
-                          onChange={(e) =>
-                            setFieldValue("aadharNo", e.target.value.replace(/\D/g, "").slice(0, 12))
-                          }
-                          placeholder="१२ अंकी आधार क्रमांक"
-                          className="h-9 bg-white"
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start sm:items-center gap-1.5 sm:gap-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1">
-                          <Label text="पॅन कार्ड" required className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
-                        </div>
-                        <Input
-                          name="panCardNo"
-                          value={values.panCardNo}
-                          maxLength={10}
-                          onChange={(e) =>
-                            setFieldValue("panCardNo", e.target.value.toUpperCase().slice(0, 10))
-                          }
-                          placeholder="१० अंकी पॅन क्रमांक (उदा. ABCDE1234F)"
-                          className="h-9 bg-white uppercase"
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start gap-1.5 sm:gap-2 md:col-span-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1 pt-1.5">
-                          <Label text="अर्जदाराचा निवासी पत्ता" required className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
-                        </div>
-                        <Textarea
-                          name="residentialAddress"
-                          value={values.residentialAddress}
-                          onChange={handleChange}
-                          placeholder="अर्जदाराचा संपूर्ण निवासी पत्ता प्रविष्ट करा"
-                          rows={2}
-                          className="bg-white"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-lg border border-slate-200 bg-slate-50/50 overflow-hidden shadow-sm">
-                  <div className="border-b bg-slate-100/90 px-4 py-2.5">
-                    <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-900 text-xs font-bold text-white">
-                        २
-                      </span>
-                      <span>संस्था व रुग्णालयाचा तपशील (Organization & Hospital Details)</span>
-                    </h3>
-                  </div>
-
-                  <div className="p-4 sm:p-5 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start sm:items-center gap-1.5 sm:gap-2 md:col-span-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1">
-                          <Label text="रुग्णालयाचे नाव" required className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
+                  <CardContent className="p-4 sm:p-6 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 md:col-span-2">
+                        <div className="sm:w-36 shrink-0 flex justify-between items-center">
+                          <Label required text="रुग्णालयाचे नाव" />
+                          <span>:</span>
                         </div>
                         <Input
                           name="hospitalName"
-                          value={values.hospitalName}
+                          value={values.hospitalName || ""}
                           onChange={handleChange}
+                          onBlur={handleBlur}
                           placeholder="रुग्णालयाचे अधिकृत नाव प्रविष्ट करा"
-                          className="h-9 bg-white"
+                          className="w-full h-9"
                         />
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start sm:items-center gap-1.5 sm:gap-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1">
-                          <Label text="संस्थेचे नाव (लागू असल्यास)" className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
-                        </div>
-                        <Input
-                          name="organizationName"
-                          value={values.organizationName}
-                          onChange={handleChange}
-                          placeholder="ट्रस्ट / संस्था / कंपनीचे नाव (लागू असल्यास)"
-                          className="h-9 bg-white"
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start sm:items-center gap-1.5 sm:gap-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1">
-                          <Label text="व्यवसायचा प्रकार" required className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
-                        </div>
-                        <Select
-                          value={values.businessType}
-                          onValueChange={(val) => setFieldValue("businessType", val)}
-                        >
-                          <SelectTrigger className="h-9 bg-white">
-                            <SelectValue placeholder="-- व्यवसायाचा प्रकार निवडा --" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Hospital">हॉस्पिटल (Hospital - General / Multispeciality)</SelectItem>
-                            <SelectItem value="NursingHome">नर्सिंग होम (Nursing Home)</SelectItem>
-                            <SelectItem value="MaternityHome">मॅटर्निटी होम (Maternity Home)</SelectItem>
-                            <SelectItem value="Clinic">क्लिनिक / ओपीडी (Clinic / OPD / Dispensary)</SelectItem>
-                            <SelectItem value="DiagnosticCenter">डायग्नोस्टिक सेंटर / पॅथॉलॉजी लॅब (Diagnostic / Lab)</SelectItem>
-                            <SelectItem value="DayCare">डे केअर सेंटर (Day Care Center)</SelectItem>
-                            <SelectItem value="OtherHealth">इतर आरोग्य सेवा (Other Health Facility)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start gap-1.5 sm:gap-2 md:col-span-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1 pt-1.5">
-                          <Label text="संस्थेचा पत्ता (लागू असल्यास)" className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
-                        </div>
-                        <Textarea
-                          name="organizationAddress"
-                          value={values.organizationAddress}
-                          onChange={handleChange}
-                          placeholder="संस्थेचा अधिकृत / नोंदणीकृत पत्ता (लागू असल्यास)"
-                          rows={2}
-                          className="bg-white"
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start gap-1.5 sm:gap-2 md:col-span-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1 pt-1.5">
-                          <Label text="व्यवसायचे वर्णन" required className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
-                        </div>
-                        <Textarea
-                          name="businessDescription"
-                          value={values.businessDescription}
-                          onChange={handleChange}
-                          placeholder="रुग्णालयाचे स्वरूप, खाटांची संख्या (Beds), उपलब्ध वैद्यकीय विभाग व सेवांचे थोडक्यात वर्णन प्रविष्ट करा"
-                          rows={2}
-                          className="bg-white"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-lg border border-slate-200 bg-slate-50/50 overflow-hidden shadow-sm">
-                  <div className="border-b bg-slate-100/90 px-4 py-2.5">
-                    <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-900 text-xs font-bold text-white">
-                        ३
-                      </span>
-                      <span>मालमत्ता, पाणी व बांधकाम परवानगी तपशील (Property & Permission Details)</span>
-                    </h3>
-                  </div>
 
-                  <div className="p-4 sm:p-5 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start sm:items-center gap-1.5 sm:gap-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1">
-                          <Label text="प्रभाग / झोन" required className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="sm:w-36 shrink-0 flex justify-between items-center">
+                          <Label required text="प्रभाग / झोन" />
+                          <span>:</span>
                         </div>
                         <Select
                           value={values.zoneId ? String(values.zoneId) : ""}
                           onValueChange={(val) => setFieldValue("zoneId", val)}
                         >
-                          <SelectTrigger className="h-9 bg-white">
+                          <SelectTrigger className="w-full h-9">
                             <SelectValue placeholder="-- प्रभाग निवडा --" />
                           </SelectTrigger>
                           <SelectContent>
@@ -894,196 +645,176 @@ const FrmhospitalParvana = () => {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start sm:items-center gap-1.5 sm:gap-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1">
-                          <Label text="मालमत्ता क्रमांक" required className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="sm:w-36 shrink-0 flex justify-between items-center">
+                          <Label required text="मालमत्ता क्रमांक" />
+                          <span>:</span>
                         </div>
                         <Input
                           name="propertyNo"
-                          value={values.propertyNo}
+                          value={values.propertyNo || ""}
                           onChange={handleChange}
+                          onBlur={handleBlur}
                           placeholder="मालमत्ता कर पावती / कर आकारणी क्र."
-                          className="h-9 bg-white"
+                          className="w-full h-9"
                         />
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start sm:items-center gap-1.5 sm:gap-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1">
-                          <Label text="नळ जोडणी क्र" required className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="sm:w-36 shrink-0 flex justify-between items-center">
+                          <Label required text="नळ जोडणी क्र" />
+                          <span>:</span>
                         </div>
                         <Input
                           name="waterConnectionNo"
-                          value={values.waterConnectionNo}
+                          value={values.waterConnectionNo || ""}
                           onChange={handleChange}
+                          onBlur={handleBlur}
                           placeholder="महानगरपालिका नळ जोडणी ग्राहक क्र."
-                          className="h-9 bg-white"
+                          className="w-full h-9"
                         />
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start sm:items-center gap-1.5 sm:gap-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1">
-                          <Label text="बांधकाम परवानगी प्रस्ताव क्रमांक" required className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="sm:w-36 shrink-0 flex justify-between items-center">
+                          <Label required text="बांधकाम परवानगी प्रस्ताव क्रमांक" />
+                          <span>:</span>
                         </div>
                         <Input
                           name="constructionPermissionProposalNo"
-                          value={values.constructionPermissionProposalNo}
+                          value={values.constructionPermissionProposalNo || ""}
                           onChange={handleChange}
+                          onBlur={handleBlur}
                           placeholder="बांधकाम परवानगी प्रस्ताव क्र. (CC No.)"
-                          className="h-9 bg-white"
+                          className="w-full h-9"
                         />
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start sm:items-center gap-1.5 sm:gap-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1">
-                          <Label text="भोगावटा प्रमाणपत्र क्रमांक" required className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="sm:w-36 shrink-0 flex justify-between items-center">
+                          <Label required text="भोगावटा प्रमाणपत्र क्रमांक" />
+                          <span>:</span>
                         </div>
                         <Input
                           name="occupancyCertificateNo"
-                          value={values.occupancyCertificateNo}
+                          value={values.occupancyCertificateNo || ""}
                           onChange={handleChange}
+                          onBlur={handleBlur}
                           placeholder="भोगावटा प्रमाणपत्र क्र. (OC No.)"
-                          className="h-9 bg-white"
+                          className="w-full h-9"
                         />
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-[170px_minmax(0,1fr)] items-start gap-1.5 sm:gap-2 md:col-span-2">
-                        <div className="flex items-center justify-between sm:justify-start gap-1 pt-1.5">
-                          <Label text="व्यवसायचा पत्ता" required className="text-sm font-medium text-gray-700" />
-                          <span className="hidden sm:inline text-gray-500">:</span>
+
+                      <div className="flex flex-col sm:flex-row sm:items-start gap-2 md:col-span-2">
+                        <div className="sm:w-36 shrink-0 flex justify-between items-start pt-1.5">
+                          <Label required text="व्यवसायचा पत्ता" />
+                          <span>:</span>
                         </div>
                         <Textarea
                           name="businessAddress"
-                          value={values.businessAddress}
+                          value={values.businessAddress || ""}
                           onChange={handleChange}
+                          onBlur={handleBlur}
                           placeholder="रुग्णालय / व्यवसाय ज्या जागेत सुरू आहे त्या जागेचा संपूर्ण पत्ता"
                           rows={2}
-                          className="bg-white"
+                          className="w-full"
                         />
                       </div>
                     </div>
-                  </div>
-                </div>
-                <div className="rounded-lg border border-slate-200 bg-slate-50/50 overflow-hidden shadow-sm">
-                  <div className="border-b bg-slate-100/90 px-4 py-2.5 flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-900 text-xs font-bold text-white">
-                        ४
-                      </span>
-                      <span>आवश्यक कागदपत्रे जोडणे (Upload Required Documents)</span>
-                    </h3>
-                    <span className="text-xs text-gray-500">मर्यादा: जास्तीत जास्त 5MB प्रति फाइल (PDF, JPG, PNG)</span>
-                  </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+             <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <Card className="border shadow-sm">
+                <CardHeader className="border-b">
+                  <CardTitle className="text-lg font-semibold">
+                    कागदपत्रे अपलोड करा
+                  </CardTitle>
+                </CardHeader>
 
-                  <div className="p-3 sm:p-4 overflow-x-auto">
-                    <ShadCNTable
-                      headers={documentHeaders}
-                      data={transformedDocumentData}
-                      keyMapping={documentKeyMapping}
-                      columnStyles={documentColumnStyles}
-                      pagination={false}
-                    />
-                  </div>
-                </div>
-
-                {/* SECTION 5: Captcha Verification & Action Buttons */}
-                <div className="pt-2 border-t border-gray-200">
-                  <div
-                    className="flex items-center justify-between cursor-pointer select-none py-1"
-                    onClick={() => setIsCaptchaOpen(!isCaptchaOpen)}
-                  >
-                    <h2 className="text-2xl sm:text-3xl font-medium text-gray-900 tracking-tight">
-                      Captcha Verification
-                    </h2>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-gray-800 p-0 focus:outline-none hover:bg-transparent"
-                    >
-                      <ChevronDown
-                        className={cn(
-                          "h-6 w-6 transform transition-transform duration-200 text-black",
-                          !isCaptchaOpen && "-rotate-90"
-                        )}
-                      />
-                    </Button>
+                <CardContent className="p-4 sm:p-6 space-y-6">
+                  <div className="flex justify-end">
+                    <span className="text-xs text-red-500">
+                      (अनुमान फाईल स्वरूप: jpg, jpeg, gif, png, pdf)
+                    </span>
                   </div>
 
-                  <Separator className="bg-gray-400 mt-2 mb-4" />
-
-                  {isCaptchaOpen && (
-                    <div className="space-y-3">
-                      <div className="space-y-1">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="sm:w-56 shrink-0 flex justify-start sm:justify-between items-center">
                         <Label
-                          text="Type the characters below :"
-                          className="text-sm font-normal text-black"
+                          required
+                          text="विहीत नमुन्यातील अर्ज आणि बॅनर होर्डिंग्ज फोटो"
                         />
-                        <Input
-                          type="text"
-                          name="captcha"
-                          value={values.captcha}
-                          onChange={handleChange}
-                          autoComplete="off"
-                          className="w-48 sm:w-56 h-8 sm:h-9 border border-gray-400 px-2 py-1 text-sm bg-white rounded-none outline-none focus-visible:ring-0 focus-visible:border-blue-600 shadow-none"
-                        />
+                        <span>:</span>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <div className="w-52 sm:w-60 h-16 sm:h-20 bg-[#63b3ed] flex items-center justify-center select-none shadow-xs rounded-none">
-                          <span className="text-3xl sm:text-4xl font-extrabold text-black tracking-wider font-sans">
-                            {captchaCode}
-                          </span>
-                        </div>
+                      <Input
+                        type="file"
+                        accept=".jpg,.jpeg,.gif,.png,.pdf"
+                        className="w-full h-9 p-1"
+                        onChange={(event) => {
+                          const file =
+                            event.target.files?.[0] ||
+                            null;
 
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={refreshCaptcha}
-                          title="Refresh Captcha"
-                          className="h-8 w-8 p-0 text-gray-800 hover:text-black hover:bg-gray-100 rounded-none transition-colors active:rotate-180"
-                        >
-                          <RefreshCWIcon size={20} />
-                        </Button>
-                      </div>
-
-                      {/* Right aligned action buttons: नोंद करा and पुनर्स्थित करा */}
-                      <div className="flex justify-end items-center gap-3 pt-4">
-                        <Button
-                          type="submit"
-                          disabled={submitting}
-                          className="border border-black bg-white hover:bg-gray-100 text-black px-6 py-1.5 text-sm font-normal shadow-xs transition-colors rounded-none disabled:opacity-50 cursor-pointer h-auto"
-                        >
-                          {submitting ? "सादर होत आहे..." : "नोंद करा"}
-                        </Button>
-
-                        <Button
-                          type="button"
-                          variant="outline"
-                          disabled={submitting}
-                          onClick={() => {
-                            resetForm();
-                            refreshCaptcha();
-                            setDocumentList(
-                              defaultHospitalDocuments.map((doc, index) => ({
-                                ...doc,
-                                srNo: index + 1,
-                                file: null,
-                                fileName: "",
-                                fileBase64: null,
-                              }))
-                            );
-                          }}
-                          className="border border-black bg-white hover:bg-gray-100 text-black px-6 py-1.5 text-sm font-normal shadow-xs transition-colors rounded-none cursor-pointer h-auto"
-                        >
-                          पुनर्स्थित करा
-                        </Button>
-                      </div>
+                          setFieldValue(
+                            "applicationDocument",
+                            file
+                          );
+                        }}
+                      />
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+
+                    <div className="flex items-center">
+                      {values.applicationDocument ? (
+                        <span className="text-sm text-gray-600">
+                          Selected file:{" "}
+                          <strong>
+                            {
+                              values
+                                .applicationDocument
+                                .name
+                            }
+                          </strong>
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-400">
+                          No file selected
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div> 
+              
+
+              <div className="flex justify-center items-center gap-3 pt-4 pb-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="bg-gray-100 hover:bg-gray-200"
+                  onClick={() => {
+                    window.history.back();
+                  }}
+                >
+                  मागे जा
+                </Button>
+
+                <Button
+                  type="submit"
+                  className="bg-blue-900 hover:bg-blue-800 text-white"
+                  disabled={submitting}
+                >
+                  {submitting ? "Submitting..." : "अर्ज सादर करा"}
+                </Button>
+              </div>
+            </div>
           </Form>
         )}
       </Formik>
