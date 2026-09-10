@@ -1043,3 +1043,61 @@ export const waterApplicationValidationSchema = z
       }
     }
   });
+
+
+export const toursAndTravelsValidationSchema = z.object({
+  firstName: z.string()
+    .min(1, "First Name is required")
+    .refine((val) => val && val.trim() !== "", "First Name is required"),
+  
+  middleName: z.string()
+    .optional()
+    .default(""),
+  
+  lastName: z.string()
+    .min(1, "Last Name is required")
+    .refine((val) => val && val.trim() !== "", "Last Name is required"),
+  
+  mobileNo: z.string()
+    .min(1, "Mobile Number is required")
+    .regex(mobileRegex, "Mobile Number must be 10 digits")
+    .refine((val) => val && val.trim() !== "", "Mobile Number is required"),
+  
+  emailId: emailValidationAlt,
+  
+  aadharNo: z.string()
+    .optional()
+    .default("")
+    .refine((val) => {
+      if (!val || val.trim() === "") return true;
+      return aadharRegex.test(val);
+    }, "Aadhar Number must be 12 digits"),
+  
+  residentialAddress: z.string()
+    .min(1, "Residential Address is required")
+    .refine((val) => val && val.trim() !== "", "Residential Address is required"),
+  
+  propertyNo: z.string()
+    .min(1, "Property Number is required")
+    .refine((val) => val && val.trim() !== "", "Property Number is required"),
+  
+  businessAddress: z.string()
+    .min(1, "Business Address is required")
+    .refine((val) => val && val.trim() !== "", "Business Address is required"),
+  
+  businessType: z.string()
+    .min(1, "Business Type is required")
+    .refine((val) => {
+      if (!val || val.trim() === "") return false;
+      const num = Number(val);
+      return !isNaN(num) && num > 0;
+    }, "Please select a valid Business Type"),
+  
+  businessDescription: z.string()
+    .min(1, "Business Description is required")
+    .refine((val) => val && val.trim() !== "", "Business Description is required"),
+  
+  applicationDocument: z.any()
+    .nullable()
+    .refine((val) => val !== null && val !== undefined, "Document is required"),
+});
