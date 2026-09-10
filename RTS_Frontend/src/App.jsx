@@ -66,6 +66,7 @@ import FrmAppliReportEMst from "./Pages/Admin/FrmAppliReportEMst";
 import FrmHearingProccess from "./Pages/Admin/FrmHearingProccess";
 import FrmAppealHearing_New from "./Pages/Admin/FrmAppealHearing_New";
 import FrmHearingDateAssign from "./Pages/Admin/FrmHearingDateAssign";
+import FrmMeatShopNOC from "./Pages/NOC/FrmMeatShopNOC";
 import FrmToursTravels from "./Pages/NOC/FrmToursTravels";
 import FrmNOMNoc from "./Pages/NOC/FrmNOMNoc";
 import FrmNORNoc from "./Pages/NOC/FrmNORNoc";
@@ -223,6 +224,10 @@ const router = createBrowserRouter([
       {
         path: "/app/FrmToursTravel",
         element: <FrmToursTravels />,
+      },
+      {
+        path: "/app/FrmMeatShopNOC",
+        element: <FrmMeatShopNOC />
       },
     ],
   },
