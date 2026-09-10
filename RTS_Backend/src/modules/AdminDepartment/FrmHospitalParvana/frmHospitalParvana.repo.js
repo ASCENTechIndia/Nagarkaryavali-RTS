@@ -2,11 +2,6 @@ const { executeQueryTMC } = require("../../../db/queryExecutor");
 const { executeProcedureTMC } = require("../../../db/procedureExecutor");
 const oracledb = require("oracledb");
 
-/**
- * Fetch hospital records from AORTS_HOSPITAL_MAS
- * @param {Object} filters
- * @returns {Promise<{success: boolean, rows?: Array, error?: string}>}
- */
 const getAllHospitalsRepo = async (filters = {}) => {
   try {
     let query = `
@@ -77,11 +72,7 @@ const getAllHospitalsRepo = async (filters = {}) => {
   }
 };
 
-/**
- * Fetch a single hospital record by ID
- * @param {number|string} hospitalId
- * @returns {Promise<{success: boolean, row?: Object, error?: string}>}
- */
+
 const getHospitalByIdRepo = async (hospitalId) => {
   try {
     const query = `
@@ -125,11 +116,6 @@ const getHospitalByIdRepo = async (hospitalId) => {
   }
 };
 
-/**
- * Call stored procedure AORTS_HOSPITAL_INS to insert hospital details
- * @param {Object} params
- * @returns {Promise<Object>} outBinds
- */
 const insertHospitalRepo = async (params) => {
   const sql = `
     BEGIN

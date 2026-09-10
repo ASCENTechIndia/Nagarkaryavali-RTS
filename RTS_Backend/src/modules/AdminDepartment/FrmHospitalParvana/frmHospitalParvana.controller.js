@@ -2,11 +2,6 @@ const asyncHandler = require("../../../libs/asyncHandler");
 const { ok } = require("../../../libs/response");
 const service = require("./frmHospitalParvana.service");
 
-// ============================================================
-// GET HOSPITAL LIST
-// GET /api/FrmHospitalParvana/list
-// Query: ?search=&mobileNo=&propertyNo=&hospitalId=
-// ============================================================
 const getHospitalList = asyncHandler(async (req, res) => {
   console.log("================================================");
   console.log("Request: Get Hospital List (AORTS_HOSPITAL_MAS)");
@@ -29,10 +24,6 @@ const getHospitalList = asyncHandler(async (req, res) => {
   });
 });
 
-// ============================================================
-// GET HOSPITAL BY ID
-// GET /api/FrmHospitalParvana/:id
-// ============================================================
 const getHospitalById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -48,10 +39,6 @@ const getHospitalById = asyncHandler(async (req, res) => {
   });
 });
 
-// ============================================================
-// SAVE HOSPITAL APPLICATION (PROCEDURE: AORTS_HOSPITAL_INS)
-// POST /api/FrmHospitalParvana/save
-// ============================================================
 const saveHospital = asyncHandler(async (req, res) => {
   console.log("================================================");
   console.log("Request: Save Hospital Application (AORTS_HOSPITAL_INS)");

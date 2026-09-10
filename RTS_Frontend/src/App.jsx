@@ -34,7 +34,7 @@ import FrmMarriageRgstn from "./Pages/Marriage/FrmMarriageRgstn";
 import FrmServiceApplicationMstNew from "./Pages/PWD/FrmServiceApplicationMstNew";
 import FrmAppoints from "./Pages/Marriage/FrmAppoints";
 import FrmRoadCutting from "./Pages/PWD/FrmRoadCutting";
-import FrmhospitalParvana from "./Pages/FrmhospitalParvana";
+import FrmhospitalParvana from "./Pages/NOC/FrmhospitalParvana";
 import Step0 from "./Pages/TownPlanning/Step0";
 import FrmWaterAppliEntry from "./Pages/WaterModule/FrmWaterAppliEntry";
 import FrmWaterAppliDetails from "./Pages/WaterModule/FrmWaterAppliDetails";
@@ -209,12 +209,9 @@ const router = createBrowserRouter([
         path: "/app/FrmRoadCutting",
         element: <FrmRoadCutting />,
       },
+
       {
-        path: "/app/FrmhospitalParvana",
-        element: <FrmhospitalParvana />,
-      },
-      {
-        path: "/app/FrmHospitalParvana",
+        path: "/app/FrmHospitalLicience",
         element: <FrmhospitalParvana />,
       },
       {
@@ -352,14 +349,14 @@ const router = createBrowserRouter([
         path: "/App/FrmHearingDateAssign",
         element: <FrmHearingDateAssign />
       },
-         {
-        path:"/App/FrmNOMNoc",
-        element:<FrmNOMNoc />
+      {
+        path: "/App/FrmNOMNoc",
+        element: <FrmNOMNoc />
       },
 
       {
-        path:"/App/FrmNORNoc",
-        element:<FrmNORNoc />
+        path: "/App/FrmNORNoc",
+        element: <FrmNORNoc />
       }
     ]
   },

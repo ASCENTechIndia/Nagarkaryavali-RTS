@@ -1,9 +1,6 @@
 const repo = require("./frmHospitalParvana.repo");
 const { AppError } = require("../../../libs/errors");
 
-/**
- * Format a raw database row into clean camelCase
- */
 const formatHospitalRow = (r) => {
   if (!r) return null;
   return {
@@ -31,9 +28,6 @@ const formatHospitalRow = (r) => {
   };
 };
 
-/**
- * Service to fetch all hospital records
- */
 const getHospitalListService = async (filters = {}) => {
   const result = await repo.getAllHospitalsRepo(filters);
 
@@ -50,9 +44,6 @@ const getHospitalListService = async (filters = {}) => {
   };
 };
 
-/**
- * Service to fetch a single hospital record by ID
- */
 const getHospitalByIdService = async (hospitalId) => {
   if (!hospitalId) {
     throw new AppError("hospitalId is required.", 400);
@@ -74,9 +65,6 @@ const getHospitalByIdService = async (hospitalId) => {
   };
 };
 
-/**
- * Service to save hospital details via AORTS_HOSPITAL_INS procedure
- */
 const saveHospitalService = async (payload, loggedInUser = null) => {
   const applicantName =
     (payload.applicantName && String(payload.applicantName).trim()) ||
@@ -84,8 +72,7 @@ const saveHospitalService = async (payload, loggedInUser = null) => {
       .filter(Boolean)
       .join(" ")
       .trim() ||
-    (payload.applicationName && String(payload.applicationName).trim()) ||
-    "";
+    (payload.applicationName && String(payload.applicationName).trim()) || "";
 
   const mobileNo = String(payload.mobileNo || payload.mobile || "").trim();
   const emailId = String(payload.emailId || payload.email || "").trim();
@@ -93,7 +80,7 @@ const saveHospitalService = async (payload, loggedInUser = null) => {
   const businessAddress = String(payload.businessAddress || "").trim();
   const hospitalName = String(payload.hospitalName || "").trim();
 
-  // Basic validation aligned with procedure's checks
+  
   if (!applicantName) {
     throw new AppError("Applicant Name can not be blank", 400);
   }
@@ -152,7 +139,6 @@ const saveHospitalService = async (payload, loggedInUser = null) => {
   const errMsg = outBinds.out_errmsg ?? outBinds.OUT_ERRMSG;
   const hospitalId = outBinds.out_hospital_id ?? outBinds.OUT_HOSPITAL_ID;
 
-  // OUT_ERRCODE = 9999 indicates successful execution in AORTS_HOSPITAL_INS
   const isSuccess = Number(errCode) === 9999;
 
   if (!isSuccess) {
