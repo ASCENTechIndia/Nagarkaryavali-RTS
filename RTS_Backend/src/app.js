@@ -138,6 +138,9 @@ app.use("/api/FrmHospitalParvana", require("./modules/AdminDepartment/FrmHospita
 
 // NOC
 app.use("/api/FrmToursTravels", require("./modules/NOC/FrmToursTravels/FrmToursTravels.routes"));
+app.use("/api/FrmMandapStall", require("./modules/NOC/FrmNOMNoc/FrmMandapStall.route"));
+app.use("/api/FrmElectrical", require("./modules/NOC/FrmElectrical/FrmElectrical.route"));
+app.use("/api/FrmMeatShopNOC", require("./modules/NOC/FrmMeatShopNOC/FrmMeatShopNOC.route"));
 
 app.use(errorMiddleware);
 
