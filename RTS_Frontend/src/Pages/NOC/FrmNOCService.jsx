@@ -381,6 +381,10 @@ const FrmNOCService = () => {
         waterConnectionNo: values.waterConnectionNo,
         permitFromDate: toDateStr(values.permitFromDate),
         permitToDate: toDateStr(values.permitToDate),
+        businessLicenseNo: values.businessLicenseNo,
+        buildingPermissionProposalNo: values.buildingPermissionProposalNo,
+        licenseType: values.licenseType,
+
         occupancyCertificateNo: values.occupancyCertificateNo,
         roadType: values.roadType,
         roadLength: values.roadLength,

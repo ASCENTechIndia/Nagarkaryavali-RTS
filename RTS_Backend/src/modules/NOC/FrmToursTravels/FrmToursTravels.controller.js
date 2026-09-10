@@ -18,6 +18,9 @@ exports.submitApplication = asyncHandler(async (req, res) => {
     fixedArea, newHoarding, hoardingNumber,
     advertisingArea, numberOfDays,
     hoardingType, hoardingSubType,
+    businessLicenseNo,
+    buildingPermissionProposalNo,
+    licenseType,
   } = req.body;
 
   if (!userId) return fail(res, "User ID is required");
@@ -40,6 +43,9 @@ exports.submitApplication = asyncHandler(async (req, res) => {
     fixedArea, newHoarding, hoardingNumber,
     advertisingArea, numberOfDays,
     hoardingType, hoardingSubType,
+    businessLicenseNo,
+    buildingPermissionProposalNo,
+    licenseType,
   });
 
   if (!result.success) {

@@ -16,7 +16,7 @@ async function submitNOCApplicationService(payload) {
     latitude, longitude, hospitalName, healthAgencyNo,
     fixedArea, newHoarding, hoardingNumber,
     advertisingArea, numberOfDays,
-    hoardingType, hoardingSubType,
+    hoardingType, hoardingSubType, businessLicenseNo, buildingPermissionProposalNo, licenseType
   } = payload;
 
   if (!userId) throw new AppError("User ID is required", 400);
@@ -40,7 +40,7 @@ async function submitNOCApplicationService(payload) {
     latitude, longitude, hospitalName, healthAgencyNo,
     fixedArea, newHoarding, hoardingNumber,
     advertisingArea, numberOfDays,
-    hoardingType, hoardingSubType,
+    hoardingType, hoardingSubType, businessLicenseNo, buildingPermissionProposalNo, licenseType
   });
 
   if (Number(appResult.out_errcode) !== 9999) {

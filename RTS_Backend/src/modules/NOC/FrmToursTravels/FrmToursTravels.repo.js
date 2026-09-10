@@ -45,6 +45,9 @@ async function insertNOCApplication(params) {
     hoardingType,
     hoardingSubType,
     zoneId,
+    businessLicenseNo,
+    buildingPermissionProposalNo,
+    licenseType,
   } = params;
 
   const toNum = (v) => {
@@ -124,8 +127,8 @@ async function insertNOCApplication(params) {
     in_propno: propertyNo || "",
     in_nocaddress: businessAddress || "",
     in_wtconnno: waterConnectionNo || "",
-    in_nocpermino: permitFromDate || "",
-    in_buildpermino: permitToDate || "",
+    in_nocpermino: businessLicenseNo || "",
+    in_buildpermino: buildingPermissionProposalNo || "",
     in_occupcerno: occupancyCertificateNo || "",
     in_roadtype: roadType || "",
     in_roadlength: toNum(roadLength),
@@ -134,8 +137,8 @@ async function insertNOCApplication(params) {
     in_excavationshape: toNum(excavationArea),
     in_exctionstrtpoint: toNum(excavationStartPoint),
     in_exctionendpoint: toNum(excavationEndPoint),
-    in_Latitude: toNum(latitude),
-    in_Longitude: toNum(longitude),
+    in_Latitude: latitude ? String(latitude) : "",   
+    in_Longitude: longitude ? String(longitude) : "",
     in_clinicnm: hospitalName || "",
     in_healthnocno: healthAgencyNo || "",
     in_mandpreq_area: fixedArea || "",
@@ -158,6 +161,7 @@ async function insertNOCApplication(params) {
     throw new Error(result.error);
   }
 
+  console.log("binds", binds);
   console.log("NOC Application Insert Result:", result.outBinds);
   return result.outBinds;
 }
