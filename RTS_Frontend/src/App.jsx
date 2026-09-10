@@ -344,12 +344,12 @@ const router = createBrowserRouter([
         element: <FrmHearingDateAssign />
       },
          {
-        path:"/App/FrmNOMNoc",
+        path:"/app/FrmMandapStallLicense",
         element:<FrmNOMNoc />
       },
 
       {
-        path:"/App/FrmNORNoc",
+        path:"/app/FrmClinicalMed",
         element:<FrmNORNoc />
       }
     ]

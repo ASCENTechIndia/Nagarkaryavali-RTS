@@ -2,12 +2,7 @@ import React, { useState } from "react";
 import { Formik, Form } from "formik";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -19,11 +14,14 @@ import {
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/calendar";
 import Swal from "sweetalert2";
+import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import ApplicantDetails from "@/components/ApplicantDetails";
+import { useAuth } from "@/context/AuthContext";
 
 const initialValues = {
-  // Applicant Details
+  
   firstName: "",
   middleName: "",
   lastName: "",
@@ -36,26 +34,29 @@ const initialValues = {
   organizationName: "",
   organizationAddress: "",
 
-  // Business Details
   businessType: "",
   businessDescription: "",
 
-  // Road Digging Details
   permissionFromDate: null,
   permissionToDate: null,
+
   propertyNo: "",
   businessAddress: "",
+
   roadType: "",
   roadLength: "",
   roadWidth: "",
-  roadArea: "",
+  roadLengthWidth: "",
+
   excavationSize: "",
   excavationStartPoint: "",
   excavationEndPoint: "",
+
   latitude: "",
   longitude: "",
 
-  // Document
+
+
   applicationDocument: null,
 };
 
@@ -81,141 +82,428 @@ const ROAD_TYPES = [
 const FrmNORNoc = () => {
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (values) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const { user, token } = useAuth();
+
+  const locationState = location.state || {};
+
+  const ulbId = locationState.ulbId || user?.ulbId;
+
+  const userId = locationState.userId || user?.userId;
+
+  const serviceId = locationState.serviceId;
+
+  const serviceName = locationState.serviceName;
+
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+
+
+  const formatDateForApi = (date) => {
+    if (!date) {
+      return null;
+    }
+
+    if (!(date instanceof Date) || isNaN(date)) {
+      return null;
+    }
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+const uploadDocument = async (
+  applicationNo,
+  doc
+) => {
+  if (!applicationNo || !doc?.file) {
+    return false;
+  }
+
+  try {
+    const formData = new FormData();
+
+    if (user?.corpId) {
+      formData.append(
+        "corpId",
+        String(user.corpId)
+      );
+    }
+
+    if (serviceId) {
+      formData.append(
+        "serviceId",
+        String(serviceId)
+      );
+    }
+
+    formData.append(
+      "appNo",
+      String(applicationNo)
+    );
+
+    // DB column VAR_APPDOC_DOCTYPE supports max 4 chars
+    formData.append(
+      "docType",
+      "PDF"
+    );
+
+    formData.append(
+      "documentId",
+      String(doc.docId || "1")
+    );
+
+    formData.append(
+      "document",
+      doc.file
+    );
+
+    const response = await axios.post(
+      `${BASE_URL}/api/FrmAssessmentCerti/upload-document`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${
+            token ||
+            user?.token ||
+            localStorage.getItem("token")
+          }`,
+          "Content-Type":
+            "multipart/form-data",
+        },
+      }
+    );
+
+    console.log(
+      "Document Upload Response:",
+      response.data
+    );
+
+    return (
+      response.data?.ok === true ||
+      response.data?.success === true
+    );
+  } catch (error) {
+    console.error(
+      "Electrical document upload error:",
+      error
+    );
+
+    return false;
+  }
+};
+
+  const handleSubmit = async (values, { resetForm }) => {
     setLoading(true);
 
+    let loader;
+
     try {
-      console.log(
-        "================================================"
-      );
 
-      console.log("ROAD DIGGING FORM VALUES");
+      if (!userId) {
+        await Swal.fire({
+          icon: "warning",
+          text: "User ID is not available.",
+          confirmButtonColor: "#1e3a8a",
+        });
 
-      console.log(
-        "================================================"
-      );
+        return;
+      }
 
-      console.log(values);
+      if (!values.permissionFromDate) {
+        await Swal.fire({
+          icon: "warning",
+          text: "परवानगी या दिनांकापासून निवडा.",
+          confirmButtonColor: "#1e3a8a",
+        });
 
+        return;
+      }
+
+      if (!values.permissionToDate) {
+        await Swal.fire({
+          icon: "warning",
+          text: "परवानगी या दिनांकापर्यंत निवडा.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        return;
+      }
+
+      const permissionFrom = formatDateForApi(values.permissionFromDate);
+
+      const permissionTo = formatDateForApi(values.permissionToDate);
+
+      if (!permissionFrom || !permissionTo) {
+        await Swal.fire({
+          icon: "warning",
+          text: "Please select valid permission dates.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        return;
+      }
+
+      if (new Date(permissionFrom) > new Date(permissionTo)) {
+        await Swal.fire({
+          icon: "warning",
+          text: "Permission From Date cannot be greater than Permission To Date.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        return;
+      }
+
+      if (!values.propertyNo?.trim()) {
+        await Swal.fire({
+          icon: "warning",
+          text: "मालमत्ता क्रमांक आवश्यक आहे.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        return;
+      }
+
+      if (!values.businessAddress?.trim()) {
+        await Swal.fire({
+          icon: "warning",
+          text: "व्यवसायचा पत्ता आवश्यक आहे.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        return;
+      }
+
+      if (!values.applicationDocument) {
+        await Swal.fire({
+          icon: "warning",
+          text: "Please upload the required application document.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        return;
+      }
+
+
+      const fullName = [values.firstName, values.middleName, values.lastName]
+        .filter((name) => name && name.trim() !== "")
+        .join(" ");
+
+    
+      let businessTypeValue = null;
+
+      if (values.businessType && values.businessType !== "") {
+        businessTypeValue = Number(values.businessType);
+
+        if (Number.isNaN(businessTypeValue)) {
+          businessTypeValue = null;
+        }
+      }
+
+    
       const payload = {
-        service: {
-          serviceId: "1",
-          serviceName: "NOC for Road Digging",
-        },
+        userId: userId,
 
-        applicantDetails: {
-          firstName: values.firstName,
-          middleName: values.middleName,
-          lastName: values.lastName,
+        applicantName: fullName,
 
-          mobileCountryCode: values.countryCode,
-          mobileNo: values.mobileNo,
+        mobileNo: values.mobileNo || "",
 
-          emailId: values.emailId,
-          aadharNo: values.aadharNo,
+        emailId: values.emailId || "",
 
-          residentialAddress:
-            values.residentialAddress,
+        aadhaarNo: values.aadharNo || "",
 
-          panCard: values.panCard,
+        residentialAddress: values.residentialAddress || "",
 
-          organizationName:
-            values.organizationName,
+        panCardNo: values.panCard || "",
 
-          organizationAddress:
-            values.organizationAddress,
+        orgName: values.organizationName || "",
 
-          businessType:
-            values.businessType,
+        orgAddress: values.organizationAddress || "",
 
-          businessDescription:
-            values.businessDescription,
-        },
+        businessType: businessTypeValue,
 
-        roadDigging: {
-          permissionFromDate:
-            values.permissionFromDate,
+        businessDescription: values.businessDescription || "",
 
-          permissionToDate:
-            values.permissionToDate,
+        permissionFrom: permissionFrom,
 
-          propertyNo:
-            values.propertyNo,
+        permissionTo: permissionTo,
 
-          businessAddress:
-            values.businessAddress,
+        propertyNo: values.propertyNo || "",
 
-          roadType:
-            values.roadType,
+        businessAddress: values.businessAddress || "",
 
-          roadLength:
-            values.roadLength,
+        roadType: values.roadType || "",
 
-          roadWidth:
-            values.roadWidth,
+        roadLength: values.roadLength || "",
 
-          roadArea:
-            values.roadArea,
+        roadWidth: values.roadWidth || "",
 
-          excavationSize:
-            values.excavationSize,
+        // IMPORTANT:
+        // Backend expects roadLengthWidth
+        roadLengthWidth: values.roadLengthWidth || "",
 
-          excavationStartPoint:
-            values.excavationStartPoint,
+        excavationSize: values.excavationSize || "",
 
-          excavationEndPoint:
-            values.excavationEndPoint,
+        excavationStartPoint: values.excavationStartPoint || "",
 
-          latitude:
-            values.latitude,
+        excavationEndPoint: values.excavationEndPoint || "",
 
-          longitude:
-            values.longitude,
-        },
+        latitude: values.latitude || "",
 
-        documents: {
-          applicationDocument:
-            values.applicationDocument
-              ? {
-                  name:
-                    values.applicationDocument.name,
-
-                  type:
-                    values.applicationDocument.type,
-
-                  size:
-                    values.applicationDocument.size,
-                }
-              : null,
-        },
+        longitude: values.longitude || "",
       };
 
-      console.log("FINAL PAYLOAD");
-      console.log(payload);
 
-      await new Promise((resolve) =>
-        setTimeout(resolve, 800)
+      loader = Swal.fire({
+        title: "Submitting Application...",
+        text: "Please wait while we process your application.",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const submitResponse = await axios.post(
+        `${BASE_URL}/api/FrmElectrical/submit-electrical`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${
+              token || user?.token || localStorage.getItem("token")
+            }`,
+          },
+        },
       );
 
-      Swal.fire({
+      console.log("Electrical Submit Response:", submitResponse.data);
+
+      if (!submitResponse.data?.ok) {
+        if (loader) {
+          loader.close();
+        }
+
+        await Swal.fire({
+          icon: "error",
+          title: "Submission Failed",
+          text:
+            submitResponse.data?.message ||
+            "Electrical application submission failed.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        return;
+      }
+
+ 
+      const electricalId = submitResponse.data?.data?.electricalId;
+
+      const successMessage =
+        submitResponse.data?.message ||
+        submitResponse.data?.data?.message ||
+        "Electrical details successfully inserted";
+
+      console.log("Electrical ID:", electricalId);
+
+      if (!electricalId) {
+        if (loader) {
+          loader.close();
+        }
+
+        await Swal.fire({
+          icon: "error",
+          title: "Submission Failed",
+          text: "Application was submitted but Electrical ID was not returned.",
+          confirmButtonColor: "#1e3a8a",
+        });
+
+        return;
+      }
+
+
+      if (values.applicationDocument) {
+      const uploadSuccess =
+  await uploadDocument(
+    electricalId,
+    {
+      docId: 1,
+      docName: "Application Document",
+      docType: "PDF",
+      file: values.applicationDocument,
+    }
+  );
+
+        if (!uploadSuccess) {
+          if (loader) {
+            loader.close();
+          }
+
+          await Swal.fire({
+            icon: "error",
+            title: "Document Upload Failed",
+            text: "Electrical application was submitted, but the document could not be uploaded.",
+            confirmButtonColor: "#1e3a8a",
+          });
+
+          return;
+        }
+      }
+
+      if (loader) {
+        loader.close();
+      }
+
+
+      await Swal.fire({
         icon: "success",
-        title: "UI Submission Successful",
-        text:
-          "All form values have been collected successfully.",
+        title: "Application Submitted",
+        text: `${successMessage}. Application No: ${electricalId}`,
         confirmButtonColor: "#1e3a8a",
+        confirmButtonText: "OK",
+        allowOutsideClick: false,
+      });
+
+
+      resetForm();
+
+      const fileInput = document.querySelector('input[type="file"]');
+
+      if (fileInput) {
+        fileInput.value = "";
+      }
+
+
+      navigate("/app/FrmTrackApplication", {
+        state: {
+          applicationNo: electricalId,
+        },
       });
     } catch (error) {
-      console.error(
-        "Submission error:",
-        error
-      );
+      console.error("Electrical Application Submit Error:", error);
 
-      Swal.fire({
+      if (loader) {
+        loader.close();
+      }
+
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Error submitting Electrical application. Please try again.";
+
+      await Swal.fire({
         icon: "error",
-        title: "Error",
-        text:
-          "Something went wrong while collecting form values.",
+        title: "Submission Error",
+        text: errorMessage,
         confirmButtonColor: "#1e3a8a",
+        confirmButtonText: "OK",
       });
     } finally {
       setLoading(false);
@@ -228,31 +516,25 @@ const FrmNORNoc = () => {
       onSubmit={handleSubmit}
       enableReinitialize={false}
     >
-      {({
-        values,
-        handleChange,
-        handleBlur,
-        setFieldValue,
-      }) => (
+      {({ values, handleChange, handleBlur, setFieldValue }) => (
         <Form>
+          {" "}
           <div className="space-y-6">
-
-            {/* =====================================================
-                APPLICANT DETAILS
-            ====================================================== */}
+           
 
             <ApplicantDetails />
 
-            {/* =====================================================
-                ROAD DIGGING DETAILS
-            ====================================================== */}
+            
 
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{
+                opacity: 0,
+              }}
+              animate={{
+                opacity: 1,
+              }}
             >
               <Card className="border shadow-sm">
-
                 <CardHeader className="border-b">
                   <CardTitle className="text-lg font-semibold">
                     आवश्यक डेटा : NOC for Road Digging
@@ -260,467 +542,301 @@ const FrmNORNoc = () => {
                 </CardHeader>
 
                 <CardContent className="p-4 sm:p-6 space-y-6">
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    {/* =================================================
-                        परवानगी या दिनांकापासून
-                    ================================================= */}
+                    {/* PERMISSION FROM */}
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-
                       <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-
-                        <Label
-                          required
-                          text="परवानगी या दिनांकापासून"
-                        />
+                        <Label required text="परवानगी या दिनांकापासून" />
 
                         <span>:</span>
-
                       </div>
 
                       <DatePicker
-                        value={
-                          values.permissionFromDate
-                        }
+                        value={values.permissionFromDate}
                         onChange={(date) =>
-                          setFieldValue(
-                            "permissionFromDate",
-                            date
-                          )
+                          setFieldValue("permissionFromDate", date)
                         }
                         className="w-full"
                       />
-
                     </div>
 
-                    {/* =================================================
-                        परवानगी या दिनांकापर्यंत
-                    ================================================= */}
+                    {/* PERMISSION TO */}
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-
                       <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-
-                        <Label
-                          required
-                          text="परवानगी या दिनांकापर्यंत"
-                        />
+                        <Label required text="परवानगी या दिनांकापर्यंत" />
 
                         <span>:</span>
-
                       </div>
 
                       <DatePicker
-                        value={
-                          values.permissionToDate
-                        }
+                        value={values.permissionToDate}
                         onChange={(date) =>
-                          setFieldValue(
-                            "permissionToDate",
-                            date
-                          )
+                          setFieldValue("permissionToDate", date)
                         }
                         className="w-full"
                       />
-
                     </div>
 
-                    {/* =================================================
-                        मालमत्ता क्रमांक
-                    ================================================= */}
+                    {/* PROPERTY NO */}
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-
                       <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-
-                        <Label
-                          required
-                          text="मालमत्ता क्रमांक"
-                        />
+                        <Label required text="मालमत्ता क्रमांक" />
 
                         <span>:</span>
-
                       </div>
 
                       <Input
                         name="propertyNo"
-                        value={
-                          values.propertyNo || ""
-                        }
+                        value={values.propertyNo || ""}
                         onChange={handleChange}
                         onBlur={handleBlur}
                         className="w-full h-9"
                       />
-
                     </div>
 
-                    {/* =================================================
-                        व्यवसायचा पत्ता
-                    ================================================= */}
+                    {/* BUSINESS ADDRESS */}
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-
                       <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-
-                        <Label
-                          required
-                          text="व्यवसायचा पत्ता"
-                        />
+                        <Label required text="व्यवसायचा पत्ता" />
 
                         <span>:</span>
-
                       </div>
 
                       <Input
                         name="businessAddress"
-                        value={
-                          values.businessAddress ||
-                          ""
-                        }
+                        value={values.businessAddress || ""}
                         onChange={handleChange}
                         onBlur={handleBlur}
                         className="w-full h-9"
                       />
-
                     </div>
 
-                    {/* =================================================
-                        रस्त्याचे प्रकार
-                    ================================================= */}
+                    {/* ROAD TYPE */}
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-
                       <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-
-                        <Label
-                          text="रस्त्याचे प्रकार"
-                        />
+                        <Label text="रस्त्याचे प्रकार" />
 
                         <span>:</span>
-
                       </div>
 
                       <Select
-                        value={
-                          values.roadType || ""
-                        }
+                        value={values.roadType || ""}
                         onValueChange={(value) =>
-                          setFieldValue(
-                            "roadType",
-                            value
-                          )
+                          setFieldValue("roadType", value)
                         }
                       >
-
                         <SelectTrigger className="w-full h-9">
-
                           <SelectValue placeholder="कृपया निवडा" />
-
                         </SelectTrigger>
 
-                        <SelectContent
-                          showDefaultOption={false}
-                        >
-
-                          {ROAD_TYPES.map(
-                            (item) => (
-                              <SelectItem
-                                key={item.id}
-                                value={item.id}
-                              >
-                                {item.name}
-                              </SelectItem>
-                            )
-                          )}
-
+                        <SelectContent showDefaultOption={false}>
+                          {ROAD_TYPES.map((item) => (
+                            <SelectItem key={item.id} value={item.id}>
+                              {item.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
-
                       </Select>
-
                     </div>
 
-                    {/* =================================================
-                        रस्त्याची लांबी
-                    ================================================= */}
+                    {/* ROAD LENGTH */}
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-
                       <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-
-                        <Label
-                          text="रस्त्याची लांबी"
-                        />
+                        <Label text="रस्त्याची लांबी" />
 
                         <span>:</span>
-
                       </div>
 
                       <Input
                         type="number"
                         name="roadLength"
-                        value={
-                          values.roadLength || ""
-                        }
+                        value={values.roadLength || ""}
                         onChange={handleChange}
                         onBlur={handleBlur}
+                        min="0"
+                        step="any"
                         className="w-full h-9"
                       />
-
                     </div>
 
-                    {/* =================================================
-                        रस्त्याची रुंदी
-                    ================================================= */}
+                    {/* ROAD WIDTH */}
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-
                       <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-
-                        <Label
-                          text="रस्त्याची रुंदी"
-                        />
+                        <Label text="रस्त्याची रुंदी" />
 
                         <span>:</span>
-
                       </div>
 
                       <Input
                         type="number"
                         name="roadWidth"
-                        value={
-                          values.roadWidth || ""
-                        }
+                        value={values.roadWidth || ""}
                         onChange={handleChange}
                         onBlur={handleBlur}
+                        min="0"
+                        step="any"
                         className="w-full h-9"
                       />
-
                     </div>
 
-                    {/* =================================================
-                        रस्त्याची लांबीरुंदी
-                    ================================================= */}
+                    {/* ROAD LENGTH WIDTH */}
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-
                       <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-
-                        <Label
-                          text="रस्त्याची लांबीरुंदी"
-                        />
+                        <Label text="रस्त्याची लांबी रुंदी" />
 
                         <span>:</span>
-
                       </div>
 
                       <Input
                         type="number"
-                        name="roadArea"
-                        value={
-                          values.roadArea || ""
-                        }
+                        name="roadLengthWidth"
+                        value={values.roadLengthWidth || ""}
                         onChange={handleChange}
                         onBlur={handleBlur}
+                        min="0"
+                        step="any"
                         className="w-full h-9"
                       />
-
                     </div>
 
-                    {/* =================================================
-                        खोदण्याचे आकार
-                    ================================================= */}
+                    {/* EXCAVATION SIZE */}
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-
                       <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-
-                        <Label
-                          text="खोदण्याचे आकार"
-                        />
+                        <Label text="खोदण्याचे आकार" />
 
                         <span>:</span>
-
                       </div>
 
                       <Input
                         type="number"
                         name="excavationSize"
-                        value={
-                          values.excavationSize ||
-                          ""
-                        }
+                        value={values.excavationSize || ""}
                         onChange={handleChange}
                         onBlur={handleBlur}
+                        min="0"
+                        step="any"
                         className="w-full h-9"
                       />
-
                     </div>
 
-                    {/* =================================================
-                        खोदाईचे प्रारंभिक बिंदू
-                    ================================================= */}
+                    {/* START POINT */}
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-
                       <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-
-                        <Label
-                          text="खोदाईचे प्रारंभिक बिंदू"
-                        />
+                        <Label text="खोदाईचे प्रारंभिक बिंदू" />
 
                         <span>:</span>
-
                       </div>
 
                       <Input
                         name="excavationStartPoint"
-                        value={
-                          values.excavationStartPoint ||
-                          ""
-                        }
+                        value={values.excavationStartPoint || ""}
                         onChange={handleChange}
                         onBlur={handleBlur}
                         className="w-full h-9"
                       />
-
                     </div>
 
-                    {/* =================================================
-                        खोदाईचे शेवटी बिंदू
-                    ================================================= */}
+                    {/* END POINT */}
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-
                       <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-
-                        <Label
-                          text="खोदाईचे शेवटी बिंदू"
-                        />
+                        <Label text="खोदाईचे शेवटी बिंदू" />
 
                         <span>:</span>
-
                       </div>
 
                       <Input
                         name="excavationEndPoint"
-                        value={
-                          values.excavationEndPoint ||
-                          ""
-                        }
+                        value={values.excavationEndPoint || ""}
                         onChange={handleChange}
                         onBlur={handleBlur}
                         className="w-full h-9"
                       />
-
                     </div>
 
-                    {/* =================================================
-                        अक्षांश
-                    ================================================= */}
+                    {/* LATITUDE */}
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-
                       <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-
-                        <Label
-                          text="अक्षांश"
-                        />
+                        <Label text="अक्षांश" />
 
                         <span>:</span>
-
                       </div>
 
                       <Input
                         type="number"
                         name="latitude"
-                        value={
-                          values.latitude || ""
-                        }
+                        value={values.latitude || ""}
                         onChange={handleChange}
                         onBlur={handleBlur}
+                        step="any"
                         className="w-full h-9"
                       />
-
                     </div>
 
-                    {/* =================================================
-                        रेखांश
-                    ================================================= */}
+                    {/* LONGITUDE */}
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-
                       <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-
-                        <Label
-                          text="रेखांश"
-                        />
+                        <Label text="रेखांश" />
 
                         <span>:</span>
-
                       </div>
 
                       <Input
                         type="number"
                         name="longitude"
-                        value={
-                          values.longitude || ""
-                        }
+                        value={values.longitude || ""}
                         onChange={handleChange}
                         onBlur={handleBlur}
+                        step="any"
                         className="w-full h-9"
                       />
-
                     </div>
-
                   </div>
-
                 </CardContent>
               </Card>
             </motion.div>
 
-            {/* =====================================================
-                DOCUMENT UPLOAD
-            ====================================================== */}
-
+          
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{
+                opacity: 0,
+              }}
+              animate={{
+                opacity: 1,
+              }}
             >
               <Card className="border shadow-sm">
-
                 <CardHeader className="border-b">
-
                   <CardTitle className="text-lg font-semibold">
                     कागदपत्रे अपलोड करा
                   </CardTitle>
-
                 </CardHeader>
 
                 <CardContent className="p-4 sm:p-6 space-y-6">
-
                   <div className="flex justify-end">
-
                     <span className="text-xs text-red-500">
                       (अनुमान फाईल स्वरूप: jpg, jpeg, gif, png, pdf)
                     </span>
-
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-
                       <div className="sm:w-56 shrink-0 flex justify-start sm:justify-between items-center">
-
-                        <Label
-                          required
-                          text="विहीत नमुन्यातील अर्ज"
-                        />
+                        <Label required text="विहीत नमुन्यातील अर्ज" />
 
                         <span>:</span>
-
                       </div>
 
                       <Input
@@ -728,68 +844,37 @@ const FrmNORNoc = () => {
                         accept=".jpg,.jpeg,.gif,.png,.pdf"
                         className="w-full h-9 p-1"
                         onChange={(event) => {
+                          const file = event.target.files?.[0] || null;
 
-                          const file =
-                            event.target.files?.[0] ||
-                            null;
-
-                          setFieldValue(
-                            "applicationDocument",
-                            file
-                          );
-
+                          setFieldValue("applicationDocument", file);
                         }}
                       />
-
                     </div>
 
                     <div className="flex items-center">
-
                       {values.applicationDocument ? (
-
                         <span className="text-sm text-gray-600">
-
                           Selected file:{" "}
-
-                          <strong>
-                            {
-                              values
-                                .applicationDocument
-                                .name
-                            }
-                          </strong>
-
+                          <strong>{values.applicationDocument.name}</strong>
                         </span>
-
                       ) : (
-
                         <span className="text-sm text-gray-400">
                           No file selected
                         </span>
-
                       )}
-
                     </div>
-
                   </div>
-
                 </CardContent>
               </Card>
             </motion.div>
 
-            {/* =====================================================
-                BUTTONS
-            ====================================================== */}
 
             <div className="flex justify-center items-center gap-3 pt-4 pb-6">
-
               <Button
                 type="button"
                 variant="outline"
                 className="bg-gray-100 hover:bg-gray-200"
-                onClick={() => {
-                  window.history.back();
-                }}
+               path="/"
               >
                 मागे जा
               </Button>
@@ -799,13 +884,9 @@ const FrmNORNoc = () => {
                 className="bg-blue-900 hover:bg-blue-800 text-white"
                 disabled={loading}
               >
-                {loading
-                  ? "Submitting..."
-                  : "अर्ज सादर करा"}
+                {loading ? "Submitting..." : "अर्ज सादर करा"}
               </Button>
-
             </div>
-
           </div>
         </Form>
       )}
