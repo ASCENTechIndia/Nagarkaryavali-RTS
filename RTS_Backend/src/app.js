@@ -137,6 +137,7 @@ app.use("/api/FrmHearingDateAssign", require("./modules/AdminDepartment/FrmHeari
 
 // NOC
 app.use("/api/FrmToursTravels", require("./modules/NOC/FrmToursTravels/FrmToursTravels.routes"));
+app.use("/api/FrmMeatShopNOC", require("./modules/NOC/FrmMeatShopNOC/FrmMeatShopNOC.route"));
 
 app.use(errorMiddleware);
 
