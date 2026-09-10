@@ -42,7 +42,7 @@ function FrmWaterAppliEntry() {
   const serviceId =
     location?.state?.serviceId ||
     location?.state?.serviceid ||
-    location?.state?.service?.serviceId ;
+    location?.state?.service?.serviceId;
 
   const corpId =
     user?.corpId ||
@@ -427,285 +427,266 @@ function FrmWaterAppliEntry() {
       reader.readAsDataURL(file);
     });
 
-const handleSubmit = async (values, { resetForm }) => {
-  try {
-    const validationResult =
-      waterApplicationValidationSchema.safeParse(values);
+  const handleSubmit = async (values, { resetForm }) => {
+    try {
+      // Validate and get transformed values
+      const validationResult =
+        waterApplicationValidationSchema.safeParse(values);
 
-    if (!validationResult.success) {
-      const firstError =
-        validationResult.error.issues?.[0];
+      if (!validationResult.success) {
+        const firstError = validationResult.error.issues?.[0];
 
-      await Swal.fire({
-        icon: "warning",
-        text:
-          firstError?.message ||
-          "Please fill all required fields correctly.",
+        await Swal.fire({
+          icon: "warning",
+          text:
+            firstError?.message || "Please fill all required fields correctly.",
+        });
+
+        return;
+      }
+
+      const validatedValues = validationResult.data;
+
+      const selectedDocumentIds = Object.keys(selectedFiles);
+
+      if (selectedDocumentIds.length === 0) {
+        await Swal.fire({
+          icon: "warning",
+          text: "Please upload at least one document.",
+        });
+
+        return;
+      }
+
+      Swal.fire({
+        title: "Submitting...",
+        text: "Please wait while your application is being submitted.",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => Swal.showLoading(),
       });
 
-      return;
-    }
+      const documentsPayload = await Promise.all(
+        selectedDocumentIds.map(async (documentId) => {
+          const file = selectedFiles[documentId];
 
-    const selectedDocumentIds = Object.keys(selectedFiles);
+          const document = documents.find(
+            (item) =>
+              String(item.NUM_DOCUMENT_ID || item.id) === String(documentId),
+          );
 
-    if (selectedDocumentIds.length === 0) {
-      await Swal.fire({
-        icon: "warning",
-        text: "Please upload at least one document.",
-      });
+          const fileExtension =
+            file?.name?.split(".").pop()?.toUpperCase() || "";
 
-      return;
-    }
+          const fileBuffer = await fileToBase64(file);
 
-    Swal.fire({
-      title: "Submitting...",
-      text: "Please wait while your application is being submitted.",
-      allowOutsideClick: false,
-      allowEscapeKey: false,
-      didOpen: () => Swal.showLoading(),
-    });
+          return {
+            docId: String(documentId),
 
-    const documentsPayload = await Promise.all(
-      selectedDocumentIds.map(async (documentId) => {
-        const file = selectedFiles[documentId];
+            docName:
+              document?.VAR_DOCUMENT_NAME ||
+              document?.documentName ||
+              file?.name ||
+              "",
 
-        const document = documents.find(
-          (item) =>
-            String(
-              item.NUM_DOCUMENT_ID || item.id,
-            ) === String(documentId),
+            fileExtension,
+
+            checked: true,
+
+            fileBuffer,
+          };
+        }),
+      );
+
+      const payload = {
+        ulbId: String(ulbId),
+
+        corpId: String(corpId),
+
+        userId: String(
+          user?.userId || user?.userid || user?.USERID || user?.id || "",
+        ),
+
+        serviceId: String(serviceId),
+
+        zoneId: String(validatedValues.zoneId),
+
+        appSource: "WEB",
+
+        afName: validatedValues.applicantFirstName || "",
+
+        amName: validatedValues.applicantMiddleName || "",
+
+        alName: validatedValues.applicantLastName || "",
+
+        mobileNo: validatedValues.mobileNumber || "",
+
+        // Uses normalized email from Zod
+        email: validatedValues.email || "",
+
+        aadharNo: validatedValues.aadharCardNo || "",
+
+        propNo: validatedValues.propertyNumber || "",
+
+        resNo: validatedValues.residentialNumber || "",
+
+        address: validatedValues.address || "",
+
+        afNameMr: validatedValues.applicantFirstNameMarathi || "",
+
+        amNameMr: validatedValues.applicantMiddleNameMarathi || "",
+
+        alNameMr: validatedValues.applicantLastNameMarathi || "",
+
+        addressMr: validatedValues.addressMarathi || "",
+
+        conFName: validatedValues.consumerFirstName || "",
+
+        conMName: validatedValues.consumerMiddleName || "",
+
+        conLName: validatedValues.consumerLastName || "",
+
+        conMobNo: validatedValues.consumerMobileNumber || "",
+
+        // Uses normalized consumer email from Zod
+        conEmail: validatedValues.consumerEmail || "",
+
+        conAadharNo: validatedValues.consumerAadharCardNo || "",
+
+        conPropNo: validatedValues.consumerPropertyNumber || "",
+
+        conResNo: validatedValues.consumerResidentialNumber || "",
+
+        conFNameMr: validatedValues.consumerFirstNameMarathi || "",
+
+        conMNameMr: validatedValues.consumerMiddleNameMarathi || "",
+
+        conLNameMr: validatedValues.consumerLastNameMarathi || "",
+
+        cooFlag: validatedValues.includeCoOwner === "Yes" ? "Y" : "N",
+
+        cooFName1:
+          validatedValues.includeCoOwner === "Yes"
+            ? validatedValues.coOwnerFirstName || ""
+            : "",
+
+        cooMName1:
+          validatedValues.includeCoOwner === "Yes"
+            ? validatedValues.coOwnerMiddleName || ""
+            : "",
+
+        cooLName1:
+          validatedValues.includeCoOwner === "Yes"
+            ? validatedValues.coOwnerLastName || ""
+            : "",
+
+        cooFName2:
+          validatedValues.includeCoOwner === "Yes"
+            ? validatedValues.coOwnerFirstNameMarathi || ""
+            : "",
+
+        cooMName2:
+          validatedValues.includeCoOwner === "Yes"
+            ? validatedValues.coOwnerMiddleNameMarathi || ""
+            : "",
+
+        cooLName2:
+          validatedValues.includeCoOwner === "Yes"
+            ? validatedValues.coOwnerLastNameMarathi || ""
+            : "",
+
+        cooAddress:
+          validatedValues.includeCoOwner === "Yes"
+            ? validatedValues.coOwnerAddress || ""
+            : "",
+
+        cooAddressMr:
+          validatedValues.includeCoOwner === "Yes"
+            ? validatedValues.coOwnerAddressMarathi || ""
+            : "",
+
+        connType: String(validatedValues.connectionType),
+
+        connSize: String(validatedValues.connectionSize),
+
+        usageType: String(validatedValues.usageType),
+
+        usageSubType: String(validatedValues.usageSubType),
+
+        noOfPerson: String(validatedValues.noOfPerson),
+
+        noOfFamily: String(validatedValues.noOfFamily),
+
+        noOfConn: String(validatedValues.noOfConnection),
+
+        connStatus: String(validatedValues.connectionStatus),
+
+        busiCert: String(validatedValues.businessCertificate),
+
+        billingType: validatedValues.billingType,
+
+        govPropFlag: validatedValues.isGovtProperty === "Yes" ? "Y" : "N",
+
+        remark: validatedValues.remark,
+
+        reason: validatedValues.reason,
+
+        documents: documentsPayload,
+      };
+
+      console.log("Water Application Submit Payload:", payload);
+
+      const response = await axios.post(
+        `${baseUrl}/api/FrmWaterAppliEntry/submit`,
+        payload,
+        axiosConfig,
+      );
+
+      Swal.close();
+
+      const responseData = response?.data;
+
+      if (!responseData?.ok) {
+        throw new Error(
+          responseData?.message || "Unable to submit water application.",
         );
+      }
 
-        const fileExtension =
-          file?.name?.split(".").pop()?.toUpperCase() || "";
+      const submitData = responseData?.data || {};
 
-        const fileBuffer = await fileToBase64(file);
+      if (!submitData?.success) {
+        throw new Error(
+          submitData?.message || "Unable to submit water application.",
+        );
+      }
 
-        return {
-          docId: String(documentId),
+      await Swal.fire({
+        icon: "success",
+        title: "Success",
+        text:
+          submitData?.message ||
+          responseData?.message ||
+          "Application submitted successfully.",
+      });
 
-          docName:
-            document?.VAR_DOCUMENT_NAME ||
-            document?.documentName ||
-            file?.name ||
-            "",
+      resetForm();
 
-          fileExtension,
+      setSelectedFiles({});
 
-          checked: true,
+      setUsageSubTypes([]);
+    } catch (error) {
+      Swal.close();
 
-          fileBuffer,
-        };
-      }),
-    );
-
-    const payload = {
-      ulbId: String(ulbId),
-
-      corpId: String(corpId),
-
-      userId: String(
-        user?.userId ||
-          user?.userid ||
-          user?.USERID ||
-          user?.id ||
-          "",
-      ),
-
-      serviceId: String(serviceId),
-
-      zoneId: String(values.zoneId),
-
-      appSource: "WEB",
-
-      afName: values.applicantFirstName || "",
-      amName: values.applicantMiddleName || "",
-      alName: values.applicantLastName || "",
-
-      mobileNo: values.mobileNumber || "",
-      email: values.email || "",
-      aadharNo: values.aadharCardNo || "",
-
-      propNo: values.propertyNumber || "",
-      resNo: values.residentialNumber || "",
-
-      address: values.address || "",
-
-      afNameMr:
-        values.applicantFirstNameMarathi || "",
-
-      amNameMr:
-        values.applicantMiddleNameMarathi || "",
-
-      alNameMr:
-        values.applicantLastNameMarathi || "",
-
-      addressMr: values.addressMarathi || "",
-
-      conFName: values.consumerFirstName || "",
-      conMName: values.consumerMiddleName || "",
-      conLName: values.consumerLastName || "",
-
-      conMobNo:
-        values.consumerMobileNumber || "",
-
-      conEmail:
-        values.consumerEmail || "",
-
-      conAadharNo:
-        values.consumerAadharCardNo || "",
-
-      conPropNo:
-        values.consumerPropertyNumber || "",
-
-      conResNo:
-        values.consumerResidentialNumber || "",
-
-      conFNameMr:
-        values.consumerFirstNameMarathi || "",
-
-      conMNameMr:
-        values.consumerMiddleNameMarathi || "",
-
-      conLNameMr:
-        values.consumerLastNameMarathi || "",
-
-      cooFlag:
-        values.includeCoOwner === "Yes"
-          ? "Y"
-          : "N",
-
-      cooFName1:
-        values.includeCoOwner === "Yes"
-          ? values.coOwnerFirstName || ""
-          : "",
-
-      cooMName1:
-        values.includeCoOwner === "Yes"
-          ? values.coOwnerMiddleName || ""
-          : "",
-
-      cooLName1:
-        values.includeCoOwner === "Yes"
-          ? values.coOwnerLastName || ""
-          : "",
-
-      cooFName2:
-        values.includeCoOwner === "Yes"
-          ? values.coOwnerFirstNameMarathi || ""
-          : "",
-
-      cooMName2:
-        values.includeCoOwner === "Yes"
-          ? values.coOwnerMiddleNameMarathi || ""
-          : "",
-
-      cooLName2:
-        values.includeCoOwner === "Yes"
-          ? values.coOwnerLastNameMarathi || ""
-          : "",
-
-      cooAddress:
-        values.includeCoOwner === "Yes"
-          ? values.coOwnerAddress || ""
-          : "",
-
-      cooAddressMr:
-        values.includeCoOwner === "Yes"
-          ? values.coOwnerAddressMarathi || ""
-          : "",
-
-      connType: String(values.connectionType),
-
-      connSize: String(values.connectionSize),
-
-      usageType: String(values.usageType),
-
-      usageSubType: String(values.usageSubType),
-
-      noOfPerson: String(values.noOfPerson),
-
-      noOfFamily: String(values.noOfFamily),
-
-      noOfConn: String(values.noOfConnection),
-
-      connStatus: String(values.connectionStatus),
-
-      busiCert: String(values.businessCertificate),
-
-      billingType: values.billingType,
-
-      govPropFlag:
-        values.isGovtProperty === "Yes"
-          ? "Y"
-          : "N",
-
-      remark: values.remark,
-
-      reason: values.reason,
-
-      documents: documentsPayload,
-    };
-
-    console.log(
-      "Water Application Submit Payload:",
-      payload,
-    );
-
-    const response = await axios.post(
-      `${baseUrl}/api/FrmWaterAppliEntry/submit`,
-      payload,
-      axiosConfig,
-    );
-
-    Swal.close();
-
-    const responseData = response?.data;
-
-    if (!responseData?.ok) {
-      throw new Error(
-        responseData?.message ||
+      await Swal.fire({
+        icon: "error",
+        text:
+          error?.response?.data?.data?.message ||
+          error?.response?.data?.message ||
+          error?.message ||
           "Unable to submit water application.",
-      );
+      });
     }
-
-    const submitData =
-      responseData?.data || {};
-
-    if (!submitData?.success) {
-      throw new Error(
-        submitData?.message ||
-          "Unable to submit water application.",
-      );
-    }
-
-    await Swal.fire({
-      icon: "success",
-      title: "Success",
-      text:
-        submitData?.message ||
-        responseData?.message ||
-        "Application submitted successfully.",
-    });
-
-    resetForm();
-
-    setSelectedFiles({});
-
-    setUsageSubTypes([]);
-  } catch (error) {
-    Swal.close();
-
-    await Swal.fire({
-      icon: "error",
-      text:
-        error?.response?.data?.data?.message ||
-        error?.response?.data?.message ||
-        error?.message ||
-        "Unable to submit water application.",
-    });
-  }
-};
+  };
 
   return (
     <div className="w-full p-4">

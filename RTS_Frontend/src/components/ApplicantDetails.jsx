@@ -18,20 +18,24 @@ import {
 
 const BUSINESS_TYPES = [
   {
-    id: "tour-operator",
-    name: "Tour Operator",
+    id: "3206",
+    name: "Store-स्टोअर",
   },
   {
-    id: "travel-agency",
-    name: "Travel Agency",
+    id: "3207",
+    name: "Trade-व्यापार  ",
   },
   {
-    id: "ticketing-agency",
-    name: "Ticketing Agency",
+    id: "3208",
+    name: "Process-प्रक्रिया",
   },
   {
-    id: "other",
-    name: "इतर",
+    id: "3209",
+    name: "Service-सेवा",
+  },
+  {
+    id: "3210",
+    name: "Others-इतर",
   },
 ];
 
@@ -259,7 +263,7 @@ const ApplicantDetails = () => {
               <SelectTrigger
                 className={`w-full h-9`}
               >
-                <SelectValue placeholder="कृपया निवडा" />
+                <SelectValue placeholder="--Select Option--" />
               </SelectTrigger>
 
               <SelectContent>

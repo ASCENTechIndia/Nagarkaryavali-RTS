@@ -136,6 +136,9 @@ app.use("/api/FrmHearingProccess", require("./modules/AdminDepartment/FrmHearing
 app.use("/api/FrmHearingDateAssign", require("./modules/AdminDepartment/FrmHearingDateAssign/FrmHearingDateAssign.routes"));
 app.use("/api/FrmHospitalParvana", require("./modules/AdminDepartment/FrmHospitalParvana/frmHospitalParvana.routes"));
 
+// NOC
+app.use("/api/FrmToursTravels", require("./modules/NOC/FrmToursTravels/FrmToursTravels.routes"));
+
 app.use(errorMiddleware);
 
 module.exports = app;

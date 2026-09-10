@@ -31,7 +31,15 @@ import getIPAddress from "@/utils/ipHelper";
 import config from "@/utils/config";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+const validateEmail = (email) => {
+  const value = email?.trim() || "";
 
+  if (!value) return true;
+
+  return /^[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?(?:\.[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?)+$/i.test(
+    value,
+  );
+};
 const initialValues = {
   oldLicenseNo: "",
   tradeBusinessType: "T",
@@ -857,6 +865,16 @@ const FrmMarketEntry = () => {
 
   const submitApplication = async (values, { setSubmitting, resetForm }) => {
     try {
+      if (values.email && !validateEmail(values.email)) {
+        Swal.fire({
+          icon: "warning",
+          text: "Please enter a valid email address.",
+        });
+
+        setActiveTab("primary");
+        return;
+      }
+
       if (!values.shopNameEnglish?.trim()) {
         Swal.fire({ text: "Please Enter Shop Name English" });
         setActiveTab("primary");
@@ -965,8 +983,10 @@ const FrmMarketEntry = () => {
       const tradeTypeString = buildTradeTypeString();
 
       const buildTradeString = () => {
-        const tradeIds = [...new Set(tradeTypeRateRows.map(item => item.tradeCategoryId))];
-        return tradeIds.filter(id => id).join("#");
+        const tradeIds = [
+          ...new Set(tradeTypeRateRows.map((item) => item.tradeCategoryId)),
+        ];
+        return tradeIds.filter((id) => id).join("#");
       };
 
       const totalAmount = tradeTypeRateRows.reduce(
@@ -986,7 +1006,7 @@ const FrmMarketEntry = () => {
         appliNo: applicationNo || "0",
         mode: Number(mode),
 
-        oldLicencNo: mode === 2 ? (values.oldLicenseNo?.trim() || null) : null,
+        oldLicencNo: mode === 2 ? values.oldLicenseNo?.trim() || null : null,
 
         shopName: values.shopNameEnglish?.trim() || "",
         shopNameMar: values.shopNameMarathi?.trim() || "",
@@ -1003,7 +1023,9 @@ const FrmMarketEntry = () => {
         agrmentWith: values.rentAgreementWithWhom || "",
         area: values.usedArea ? Number(values.usedArea) : 0,
         isCorpNOC: values.corporationNoc === "Y" ? "Y" : "N",
-        busStartYr: values.businessStartYear ? Number(values.businessStartYear) : 0,
+        busStartYr: values.businessStartYear
+          ? Number(values.businessStartYear)
+          : 0,
         shopActNo: values.shopActRegistrationNo || "",
         foodlicno: values.otherAdministrationRegistrationNo || "",
         licDays: null,
@@ -1015,19 +1037,19 @@ const FrmMarketEntry = () => {
         toDate: values.toDate || null,
 
         amount: Number(totalAmount || 0),
-        applitradeStr: buildTradeString(), 
+        applitradeStr: buildTradeString(),
         applitradetypeStr: tradeTypeString,
         applidirectorStr: directorString,
 
         licType: String(mode === 2 ? "R" : "N"),
         licenseTypeId: values.licenseType ? Number(values.licenseType) : 0,
-        propNo: values.propNo || "",           
-        marketPropNo: "",                      
+        propNo: values.propNo || "",
+        marketPropNo: "",
 
         source: config.source || "WEB",
         ipAddress: ipAddress || "127.0.0.1",
         cfcRecno: "",
-        
+
         jwalan: values.jalanShil || (mode === 1 ? "N" : ""),
         illegal: values.illegalType ? Number(values.illegalType) : 0,
         category: values.tradeBusinessType || "T",
@@ -1487,6 +1509,14 @@ const FrmMarketEntry = () => {
                             onChange={(e) =>
                               setFieldValue("email", e.target.value)
                             }
+                            onBlur={(e) => {
+                              if (!validateEmail(e.target.value)) {
+                                Swal.fire({
+                                  icon: "warning",
+                                  text: "Please enter a valid email address.",
+                                });
+                              }
+                            }}
                             className="h-10 w-full"
                             maxLength={50}
                           />

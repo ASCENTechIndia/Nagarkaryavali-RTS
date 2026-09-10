@@ -18,7 +18,7 @@ const ULB3_DEPARTMENTS = [
     // { id: 18, key: "Market", name: "Market", icon: Store },
     { id: 25, key: "Marraige", name: "Marriage", icon: Heart },
     { id: 10, key: "FireBrigade", name: "Fire Brigade", icon: Flame },
-    // { id: 290, key: "NOC", name: "NOC", icon: FileCheck },
+    { id: 290, key: "NOC", name: "NOC", icon: FileCheck },
     // { id: 1901, key: "Bombay Nursing", name: "Bombay Nursing", icon: Stethoscope },
     { id: 24, key: "Water", name: "Water", icon: Droplets },
     { id: 841, key: "TradeLicense", name: "Market / Trade License", icon: BriefcaseBusiness },

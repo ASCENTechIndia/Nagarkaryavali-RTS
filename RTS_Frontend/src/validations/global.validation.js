@@ -1043,3 +1043,494 @@ export const waterApplicationValidationSchema = z
       }
     }
   });
+
+
+export const toursAndTravelsValidationSchema = z.object({
+  firstName: z.string()
+    .min(1, "First Name is required")
+    .refine((val) => val && val.trim() !== "", "First Name is required"),
+  
+  middleName: z.string()
+    .optional()
+    .default(""),
+  
+  lastName: z.string()
+    .min(1, "Last Name is required")
+    .refine((val) => val && val.trim() !== "", "Last Name is required"),
+  
+  mobileNo: z.string()
+    .min(1, "Mobile Number is required")
+    .regex(mobileRegex, "Mobile Number must be 10 digits")
+    .refine((val) => val && val.trim() !== "", "Mobile Number is required"),
+  
+  emailId: emailValidationAlt,
+  
+  aadharNo: z.string()
+    .optional()
+    .default("")
+    .refine((val) => {
+      if (!val || val.trim() === "") return true;
+      return aadharRegex.test(val);
+    }, "Aadhar Number must be 12 digits"),
+  
+  residentialAddress: z.string()
+    .min(1, "Residential Address is required")
+    .refine((val) => val && val.trim() !== "", "Residential Address is required"),
+  
+  propertyNo: z.string()
+    .min(1, "Property Number is required")
+    .refine((val) => val && val.trim() !== "", "Property Number is required"),
+  
+  businessAddress: z.string()
+    .min(1, "Business Address is required")
+    .refine((val) => val && val.trim() !== "", "Business Address is required"),
+  
+  businessType: z.string()
+    .min(1, "Business Type is required")
+    .refine((val) => {
+      if (!val || val.trim() === "") return false;
+      const num = Number(val);
+      return !isNaN(num) && num > 0;
+    }, "Please select a valid Business Type"),
+  
+  businessDescription: z.string()
+    .min(1, "Business Description is required")
+    .refine((val) => val && val.trim() !== "", "Business Description is required"),
+  
+  applicationDocument: z.any()
+    .nullable()
+    .refine((val) => val !== null && val !== undefined, "Document is required"),
+});
+
+
+export const nocForMandapStallValidationSchema = z
+  .object({
+    /* =====================================================
+       APPLICANT DETAILS
+    ===================================================== */
+
+    ulbId: commonValidationSchema.selectOption,
+
+    serviceName: z
+      .string()
+      .trim()
+      .min(1, "Service Name is required"),
+
+    applicantFirstName: z
+      .string()
+      .trim()
+      .min(1, "Applicant First Name is required")
+      .max(100, "Applicant First Name cannot exceed 100 characters"),
+
+    applicantMiddleName: z
+      .string()
+      .trim()
+      .min(1, "Applicant Middle Name is required")
+      .max(100, "Applicant Middle Name cannot exceed 100 characters"),
+
+    applicantLastName: z
+      .string()
+      .trim()
+      .min(1, "Applicant Last Name is required")
+      .max(100, "Applicant Last Name cannot exceed 100 characters"),
+
+    mobileNumber: commonValidationSchema.mobile,
+
+    // GLOBAL ZOD EMAIL VALIDATION
+    email: emailValidationWithMaxLength,
+
+    aadharCardNo: z
+      .string()
+      .trim()
+      .min(1, "Aadhar Card Number is required")
+      .regex(
+        aadharRegex,
+        "Aadhar Card Number must be 12 digits",
+      ),
+
+    applicantAddress: z
+      .string()
+      .trim()
+      .min(1, "Applicant Residential Address is required")
+      .max(
+        500,
+        "Applicant Residential Address cannot exceed 500 characters",
+      ),
+
+    panCardNo: z
+      .string()
+      .trim()
+      .optional()
+      .default("")
+      .refine(
+        (value) => {
+          if (!value) return true;
+
+          return /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(
+            value.toUpperCase(),
+          );
+        },
+        "Invalid PAN Card Number",
+      ),
+
+    organizationName: z
+      .string()
+      .trim()
+      .optional()
+      .default("")
+      .refine(
+        (value) => value.length <= 200,
+        "Organization Name cannot exceed 200 characters",
+      ),
+
+    organizationAddress: z
+      .string()
+      .trim()
+      .optional()
+      .default("")
+      .refine(
+        (value) => value.length <= 500,
+        "Organization Address cannot exceed 500 characters",
+      ),
+
+    /* =====================================================
+       NOC DETAILS
+    ===================================================== */
+
+    businessType: commonValidationSchema.selectOption,
+
+    businessDescription: z
+      .string()
+      .trim()
+      .min(1, "Business Description is required")
+      .max(
+        500,
+        "Business Description cannot exceed 500 characters",
+      ),
+
+    permissionFromDate: z
+      .union([
+        z.date(),
+        z.null(),
+        z.undefined(),
+      ])
+      .refine(
+        (value) => value instanceof Date && !isNaN(value.getTime()),
+        "Permission From Date is required",
+      ),
+
+    permissionToDate: z
+      .union([
+        z.date(),
+        z.null(),
+        z.undefined(),
+      ])
+      .refine(
+        (value) => value instanceof Date && !isNaN(value.getTime()),
+        "Permission To Date is required",
+      ),
+
+    propertyNumber: z
+      .string()
+      .trim()
+      .optional()
+      .default(""),
+
+    businessAddress: z
+      .string()
+      .trim()
+      .min(1, "Business Address is required")
+      .max(
+        500,
+        "Business Address cannot exceed 500 characters",
+      ),
+
+    waterConnectionNo: z
+      .string()
+      .trim()
+      .optional()
+      .default(""),
+
+    businessLicenseNo: z
+      .string()
+      .trim()
+      .optional()
+      .default(""),
+
+    licenseType: z
+      .string()
+      .optional()
+      .default(""),
+
+    constructionPermissionProposalNo: z
+      .string()
+      .trim()
+      .optional()
+      .default(""),
+
+    occupancyCertificateNo: z
+      .string()
+      .trim()
+      .optional()
+      .default(""),
+
+    roadType: z
+      .string()
+      .optional()
+      .default(""),
+
+    roadLength: z
+      .string()
+      .optional()
+      .default("")
+      .refine(
+        (value) => {
+          if (!value) return true;
+          return Number(value) > 0;
+        },
+        "Road Length must be greater than 0",
+      ),
+
+    roadWidth: z
+      .string()
+      .optional()
+      .default("")
+      .refine(
+        (value) => {
+          if (!value) return true;
+          return Number(value) > 0;
+        },
+        "Road Width must be greater than 0",
+      ),
+
+    roadArea: z
+      .string()
+      .optional()
+      .default("")
+      .refine(
+        (value) => {
+          if (!value) return true;
+          return Number(value) > 0;
+        },
+        "Road Area must be greater than 0",
+      ),
+
+    excavationSize: z
+      .string()
+      .optional()
+      .default("")
+      .refine(
+        (value) => {
+          if (!value) return true;
+          return Number(value) > 0;
+        },
+        "Excavation Size must be greater than 0",
+      ),
+
+    excavationStartPoint: z
+      .string()
+      .trim()
+      .optional()
+      .default(""),
+
+    excavationEndPoint: z
+      .string()
+      .trim()
+      .optional()
+      .default(""),
+
+    latitude: z
+      .string()
+      .trim()
+      .optional()
+      .default("")
+      .refine(
+        (value) => {
+          if (!value) return true;
+
+          const number = Number(value);
+
+          return (
+            !isNaN(number) &&
+            number >= -90 &&
+            number <= 90
+          );
+        },
+        "Invalid Latitude",
+      ),
+
+    longitude: z
+      .string()
+      .trim()
+      .optional()
+      .default("")
+      .refine(
+        (value) => {
+          if (!value) return true;
+
+          const number = Number(value);
+
+          return (
+            !isNaN(number) &&
+            number >= -180 &&
+            number <= 180
+          );
+        },
+        "Invalid Longitude",
+      ),
+
+    hospitalName: z
+      .string()
+      .trim()
+      .optional()
+      .default(""),
+
+    healthNocNo: z
+      .string()
+      .trim()
+      .optional()
+      .default(""),
+
+    mandapRequestedArea: z
+      .string()
+      .trim()
+      .min(1, "Area requested for Mandap is required")
+      .refine(
+        (value) => Number(value) > 0,
+        "Mandap Requested Area must be greater than 0",
+      ),
+
+    newHoarding: z
+      .string()
+      .optional()
+      .default("")
+      .refine(
+        (value) => {
+          if (!value) return true;
+          return ["Yes", "No"].includes(value);
+        },
+        "Please select a valid Hoarding option",
+      ),
+
+    hoardingCount: z
+      .string()
+      .optional()
+      .default("")
+      .refine(
+        (value) => {
+          if (!value) return true;
+          return /^\d+$/.test(value) && Number(value) > 0;
+        },
+        "Hoarding Count must be greater than 0",
+      ),
+
+    advertisementRequestedArea: z
+      .string()
+      .trim()
+      .min(
+        1,
+        "Advertisement Requested Area is required",
+      )
+      .refine(
+        (value) => Number(value) > 0,
+        "Advertisement Requested Area must be greater than 0",
+      ),
+
+    numberOfDays: z
+      .string()
+      .trim()
+      .min(1, "Number of Days is required")
+      .refine(
+        (value) => /^\d+$/.test(value) && Number(value) > 0,
+        "Number of Days must be greater than 0",
+      ),
+
+    hoardingType: z
+      .string()
+      .optional()
+      .default(""),
+
+    hoardingSubType: z
+      .string()
+      .optional()
+      .default(""),
+
+    /* =====================================================
+       CAPTCHA
+    ===================================================== */
+
+    captcha: z
+      .string()
+      .trim()
+      .min(1, "Please enter captcha"),
+  })
+  .superRefine((values, ctx) => {
+    /* =====================================================
+       FROM DATE / TO DATE VALIDATION
+    ===================================================== */
+
+    if (
+      values.permissionFromDate instanceof Date &&
+      values.permissionToDate instanceof Date
+    ) {
+      const fromDate = new Date(
+        values.permissionFromDate,
+      );
+
+      const toDate = new Date(
+        values.permissionToDate,
+      );
+
+      fromDate.setHours(0, 0, 0, 0);
+      toDate.setHours(0, 0, 0, 0);
+
+      if (toDate < fromDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["permissionToDate"],
+          message:
+            "Permission To Date cannot be earlier than Permission From Date",
+        });
+      }
+    }
+
+    /* =====================================================
+       HOARDING COUNT
+       ===================================================== */
+
+    if (
+      values.newHoarding === "Yes" &&
+      !values.hoardingCount?.trim()
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["hoardingCount"],
+        message:
+          "Hoarding Count is required when New Hoarding is Yes",
+      });
+    }
+
+    /* =====================================================
+       HOARDING TYPE
+       ===================================================== */
+
+    if (values.newHoarding === "Yes") {
+      if (!values.hoardingType?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["hoardingType"],
+          message:
+            "Please select Hoarding Type",
+        });
+      }
+
+      if (!values.hoardingSubType?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["hoardingSubType"],
+          message:
+            "Please select Hoarding Sub Type",
+        });
+      }
+    }
+  });
