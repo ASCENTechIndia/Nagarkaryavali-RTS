@@ -15,6 +15,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
 
 const BUSINESS_TYPES = [
   {
@@ -48,6 +51,35 @@ const ApplicantDetails = () => {
     handleChange,
     handleBlur,
   } = useFormikContext();
+
+  const { user, token } = useAuth();
+  const [zoneList, setZoneList] = useState([]);
+
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const ulbId = user?.ulbId; 
+
+  useEffect(() => {
+    const fetchZones = async () => {
+      try {
+        const response = await axios.get(
+          `${BASE_URL}/api/FrmWaterRegister/ward-dropdown?ulbid=${ulbId || ""}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+            },
+          },
+        );
+
+        if (response?.data?.ok && response?.data?.data?.data) {
+          setZoneList(response.data.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching zones:", error);
+      }
+    };
+
+    fetchZones();
+  }, []);
 
   return (
     <Card className="border shadow-sm">
@@ -292,6 +324,28 @@ const ApplicantDetails = () => {
               onBlur={handleBlur}
               className="w-full h-9"
             />
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="sm:w-32 shrink-0 flex justify-between items-center">
+              <Label required text="Zone" />
+              <span>:</span>
+            </div>
+            <Select
+              value={values.zoneId || ""}
+              onValueChange={(value) => setFieldValue("zoneId", value)}
+            >
+              <SelectTrigger className="w-full h-9">
+                <SelectValue placeholder="-- Select Zone --" />
+              </SelectTrigger>
+              <SelectContent>
+                {zoneList.map((zone) => (
+                  <SelectItem key={zone.WARDID} value={String(zone.WARDID)}>
+                    {zone.WARDNAME}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </CardContent>

@@ -1045,63 +1045,146 @@ export const waterApplicationValidationSchema = z
   });
 
 
-export const toursAndTravelsValidationSchema = z.object({
-  firstName: z.string()
-    .min(1, "First Name is required")
-    .refine((val) => val && val.trim() !== "", "First Name is required"),
+// export const toursAndTravelsValidationSchema = z.object({
+//   firstName: z.string()
+//     .min(1, "First Name is required")
+//     .refine((val) => val && val.trim() !== "", "First Name is required"),
   
-  middleName: z.string()
-    .optional()
-    .default(""),
+//   middleName: z.string()
+//     .optional()
+//     .default(""),
   
-  lastName: z.string()
-    .min(1, "Last Name is required")
-    .refine((val) => val && val.trim() !== "", "Last Name is required"),
+//   lastName: z.string()
+//     .min(1, "Last Name is required")
+//     .refine((val) => val && val.trim() !== "", "Last Name is required"),
   
-  mobileNo: z.string()
-    .min(1, "Mobile Number is required")
-    .regex(mobileRegex, "Mobile Number must be 10 digits")
-    .refine((val) => val && val.trim() !== "", "Mobile Number is required"),
+//   mobileNo: z.string()
+//     .min(1, "Mobile Number is required")
+//     .regex(mobileRegex, "Mobile Number must be 10 digits")
+//     .refine((val) => val && val.trim() !== "", "Mobile Number is required"),
   
-  emailId: emailValidationAlt,
+//   emailId: emailValidationAlt,
   
-  aadharNo: z.string()
-    .optional()
-    .default("")
-    .refine((val) => {
-      if (!val || val.trim() === "") return true;
-      return aadharRegex.test(val);
-    }, "Aadhar Number must be 12 digits"),
+//   aadharNo: z.string()
+//     .optional()
+//     .default("")
+//     .refine((val) => {
+//       if (!val || val.trim() === "") return true;
+//       return aadharRegex.test(val);
+//     }, "Aadhar Number must be 12 digits"),
   
-  residentialAddress: z.string()
-    .min(1, "Residential Address is required")
-    .refine((val) => val && val.trim() !== "", "Residential Address is required"),
+//   residentialAddress: z.string()
+//     .min(1, "Residential Address is required")
+//     .refine((val) => val && val.trim() !== "", "Residential Address is required"),
   
-  propertyNo: z.string()
-    .min(1, "Property Number is required")
-    .refine((val) => val && val.trim() !== "", "Property Number is required"),
+//   propertyNo: z.string()
+//     .min(1, "Property Number is required")
+//     .refine((val) => val && val.trim() !== "", "Property Number is required"),
   
-  businessAddress: z.string()
-    .min(1, "Business Address is required")
-    .refine((val) => val && val.trim() !== "", "Business Address is required"),
+//   businessAddress: z.string()
+//     .min(1, "Business Address is required")
+//     .refine((val) => val && val.trim() !== "", "Business Address is required"),
   
-  businessType: z.string()
-    .min(1, "Business Type is required")
-    .refine((val) => {
-      if (!val || val.trim() === "") return false;
-      const num = Number(val);
-      return !isNaN(num) && num > 0;
-    }, "Please select a valid Business Type"),
+//   businessType: z.string()
+//     .min(1, "Business Type is required")
+//     .refine((val) => {
+//       if (!val || val.trim() === "") return false;
+//       const num = Number(val);
+//       return !isNaN(num) && num > 0;
+//     }, "Please select a valid Business Type"),
   
-  businessDescription: z.string()
-    .min(1, "Business Description is required")
-    .refine((val) => val && val.trim() !== "", "Business Description is required"),
+//   businessDescription: z.string()
+//     .min(1, "Business Description is required")
+//     .refine((val) => val && val.trim() !== "", "Business Description is required"),
   
-  applicationDocument: z.any()
-    .nullable()
-    .refine((val) => val !== null && val !== undefined, "Document is required"),
-});
+//   applicationDocument: z.any()
+//     .nullable()
+//     .refine((val) => val !== null && val !== undefined, "Document is required"),
+// });
 
+export const toursAndTravelsValidationSchema = z
+  .object({
+    firstName: z.string().min(1, "First Name is required")
+      .refine((v) => v?.trim() !== "", "First Name is required"),
+    middleName: z.string().optional().default(""),
+    lastName: z.string().min(1, "Last Name is required")
+      .refine((v) => v?.trim() !== "", "Last Name is required"),
+    mobileNo: z.string().min(1, "Mobile Number is required")
+      .regex(mobileRegex, "Mobile Number must be 10 digits"),
+    emailId: emailValidationAlt,
+    aadharNo: z.string().optional().default("")
+      .refine((v) => {
+        if (!v?.trim()) return true;
+        return aadharRegex.test(v);
+      }, "Aadhar Number must be 12 digits"),
+    residentialAddress: z.string().min(1, "Residential Address is required")
+      .refine((v) => v?.trim() !== "", "Residential Address is required"),
+    panCard: z.string().optional().default(""),
+    organizationName: z.string().optional().default(""),
+    organizationAddress: z.string().optional().default(""),
+    businessType: z.string().min(1, "Business Type is required")
+      .refine((v) => v?.trim() !== "", "Business Type is required"),
+    businessDescription: z.string().min(1, "Business Description is required")
+      .refine((v) => v?.trim() !== "", "Business Description is required"),
+    zoneId: z
+    .string()
+    .min(1, "Please select a Zone")
+    .refine(
+      (val) =>
+        val !== undefined &&
+        val !== null &&
+        val !== "" &&
+        val !== "0" &&
+        val !== "-1",
+      { message: "Please select a Zone" }
+  ),
+  })
+  .passthrough();
+
+export const validateDynamicFields = (values, visibleFieldIds) => {
+  const errors = {};
+
+  const FIELD_LABELS = {
+    11: { key: "permitFromDate", label: "परवानगी या दिनांकापासून" },
+    12: { key: "permitToDate", label: "परवानगी या दिनांकापर्यंत" },
+    13: { key: "propertyNo", label: "मालमत्ता क्रमांक" },
+    14: { key: "businessAddress", label: "व्यवसायाचा पत्ता" },
+    15: { key: "waterConnectionNo", label: "नळ जोडणी क्र." },
+    16: { key: "businessLicenseNo", label: "व्यवसाय परवाना क्रमांक" },
+    17: { key: "licenseType", label: "परवाना प्रकार" },
+    18: { key: "buildingPermissionProposalNo", label: "बांधकाम परवानगी प्रस्ताव क्रमांक" },
+    19: { key: "occupancyCertificateNo", label: "भोगावटा प्रमाणपत्र क्रमांक" },
+    20: { key: "roadType", label: "रस्त्याचे प्रकार" },
+    21: { key: "roadLength", label: "रस्त्याची लांबी" },
+    22: { key: "roadWidth", label: "रस्त्याची रुंदी" },
+    23: { key: "roadLengthWidth", label: "रस्त्याची लांबीरुंदी" },
+    24: { key: "excavationArea", label: "खोदण्याचे आकार" },
+    25: { key: "excavationStartPoint", label: "खोदाईचे प्रारंभिक बिंदू" },
+    26: { key: "excavationEndPoint", label: "खोदाईचे शेवटी बिंदू" },
+    27: { key: "latitude", label: "अक्षांश" },
+    28: { key: "longitude", label: "रेखांश" },
+    29: { key: "hospitalName", label: "रुग्णालयाचे नाव" },
+    30: { key: "healthAgencyNo", label: "आरोग्य एनओसी क्रमांक" },
+    31: { key: "fixedArea", label: "मंडपसाठी विनंती केलेले क्षेत्र" },
+    32: { key: "newHoarding", label: "नवीन होर्डिंग" },
+    33: { key: "hoardingNumber", label: "होर्डिंगची संख्या" },
+    34: { key: "advertisingArea", label: "जाहिरातीसाठी विनंती केलेले क्षेत्र" },
+    35: { key: "numberOfLights", label: "दिवसांची संख्या" },
+    36: { key: "hoardingType", label: "होर्डिंगचे प्रकार" },
+    37: { key: "hoardingSubType", label: "होर्डिंगचे उप प्रकार" },
+  };
+
+  visibleFieldIds.forEach((id) => {
+    const meta = FIELD_LABELS[id];
+    if (!meta) return;
+    const v = values[meta.key];
+    if (v === undefined || v === null || String(v).trim() === "") {
+      errors[meta.key] = `${meta.label} is required`;
+    }
+  });
+
+  return errors;
+};
 
 export const nocForMandapStallValidationSchema = z
   .object({

@@ -67,7 +67,7 @@ import FrmHearingProccess from "./Pages/Admin/FrmHearingProccess";
 import FrmAppealHearing_New from "./Pages/Admin/FrmAppealHearing_New";
 import FrmHearingDateAssign from "./Pages/Admin/FrmHearingDateAssign";
 import FrmMeatShopNOC from "./Pages/NOC/FrmMeatShopNOC";
-import FrmToursTravels from "./Pages/NOC/FrmToursTravels";
+import FrmNOCService from "././Pages/NOC/FrmNOCService";
 import FrmNOMNoc from "./Pages/NOC/FrmNOMNoc";
 import FrmNORNoc from "./Pages/NOC/FrmNORNoc";
 
@@ -221,14 +221,18 @@ const router = createBrowserRouter([
         path: "/app/FrmWaterAppliDetails",
         element: <FrmWaterAppliDetails />,
       },
-      {
-        path: "/app/FrmToursTravel",
-        element: <FrmToursTravels />,
-      },
+      // {
+      //   path: "/app/FrmToursTravel",
+      //   element: <FrmToursTravels />,
+      // },
       {
         path: "/app/FrmMeatShopNOC",
         element: <FrmMeatShopNOC />
       },
+      {
+        path:"/app/FrmNOCService",
+        element:<FrmNOCService />
+      }
     ],
   },
   {
@@ -352,11 +356,6 @@ const router = createBrowserRouter([
         path:"/app/FrmMandapStallLicense",
         element:<FrmNOMNoc />
       },
-
-      {
-        path:"/app/FrmClinicalMed",
-        element:<FrmNORNoc />
-      }
     ]
   },
 ]);

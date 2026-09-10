@@ -4,79 +4,67 @@ const service = require("./FrmToursTravels.service");
 
 exports.submitApplication = asyncHandler(async (req, res) => {
   const {
-    userId,
-    applicantName,
-    mobileNo,
-    emailId,
-    aadhaarNo,
-    residentialAddress,
-    panCardNo,
-    orgName,
-    orgAddress,
-    businessType,
-    businessDescription,
-    propertyNo,
-    businessAddress,
-    appSource,
+    userId, ulbId, serviceId, deptId, zoneId,
+    firstName, middleName, lastName, address,
+    mobileNo, aadhaarNo, panCardNo, emailId,
+    orgName, orgAddress,
+    businessType, businessDescription,
+    propertyNo, businessAddress,
+    waterConnectionNo, permitFromDate, permitToDate,
+    occupancyCertificateNo, roadType,
+    roadLength, roadWidth, roadLengthWidth,
+    excavationArea, excavationStartPoint, excavationEndPoint,
+    latitude, longitude, hospitalName, healthAgencyNo,
+    fixedArea, newHoarding, hoardingNumber,
+    advertisingArea, numberOfDays,
+    hoardingType, hoardingSubType,
   } = req.body;
 
-  if (!userId) {
-    return fail(res, "User ID is required");
-  }
+  if (!userId) return fail(res, "User ID is required");
+  if (!ulbId) return fail(res, "ULB ID is required");
+  if (!serviceId) return fail(res, "Service ID is required");
+  if (!deptId) return fail(res, "Department ID is required");
 
-  if (!applicantName) {
-    return fail(res, "Applicant Name is required");
-  }
-
-  if (!mobileNo) {
-    return fail(res, "Mobile Number is required");
-  }
-
-  if (String(mobileNo).length !== 10) {
-    return fail(res, "Mobile Number must be 10 digits");
-  }
-
-  if (!emailId) {
-    return fail(res, "Email ID is required");
-  }
-
-  const emailRegex = /^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$/;
-  if (!emailRegex.test(emailId)) {
-    return fail(res, "Invalid Email Address");
-  }
-
-  if (!propertyNo) {
-    return fail(res, "Property Number is required");
-  }
-
-  if (!businessAddress) {
-    return fail(res, "Business Address is required");
-  }
-
-  if (aadhaarNo && String(aadhaarNo).length !== 12) {
-    return fail(res, "Aadhar Number must be 12 digits");
-  }
-
-  const result = await service.submitToursAndTravelsApplicationService({
-    userId,
-    applicantName,
-    mobileNo,
-    emailId,
-    aadhaarNo,
-    residentialAddress,
-    panCardNo,
-    orgName,
-    orgAddress,
-    businessType,
-    businessDescription,
-    propertyNo,
-    businessAddress,
-    appSource,
+  const result = await service.submitNOCApplicationService({
+    userId, ulbId, serviceId, deptId, zoneId,
+    firstName, middleName, lastName, address,
+    mobileNo, aadhaarNo, panCardNo, emailId,
+    orgName, orgAddress,
+    businessType, businessDescription,
+    propertyNo, businessAddress,
+    waterConnectionNo, permitFromDate, permitToDate,
+    occupancyCertificateNo, roadType,
+    roadLength, roadWidth, roadLengthWidth,
+    excavationArea, excavationStartPoint, excavationEndPoint,
+    latitude, longitude, hospitalName, healthAgencyNo,
+    fixedArea, newHoarding, hoardingNumber,
+    advertisingArea, numberOfDays,
+    hoardingType, hoardingSubType,
   });
 
   if (!result.success) {
     return fail(res, result.message || "Application submission failed");
   }
 
-  return ok(res, result, result.message || "Tours and Travels application submitted successfully");
+  return ok(res, result, result.message || "NOC application submitted successfully");
+});
+
+exports.getServiceFields = asyncHandler(async (req, res) => {
+  const { serviceId, deptId, ulbId } = req.body;
+
+  if (!serviceId) return fail(res, "Service ID is required");
+  if (!deptId) return fail(res, "Department ID is required");
+  if (!ulbId) return fail(res, "ULB ID is required");
+
+  const result = await service.getServiceFieldsService({
+    serviceId,
+    deptId,
+    ulbId,
+  });
+
+  if (!result.success) {
+    return fail(res, result.message || "Failed to fetch fields");
+  }
+
+  return ok(res, result, "Service fields fetched successfully");
 });

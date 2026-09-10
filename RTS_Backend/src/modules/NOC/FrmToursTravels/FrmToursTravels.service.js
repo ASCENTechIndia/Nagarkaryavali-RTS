@@ -1,62 +1,46 @@
 const repo = require("./FrmToursTravels.repo");
 const { AppError } = require("../../../libs/errors");
 
-async function submitToursAndTravelsApplicationService(payload) {
+async function submitNOCApplicationService(payload) {
   const {
-    userId,
-    applicantName,
-    mobileNo,
-    emailId,
-    aadhaarNo,
-    residentialAddress,
-    panCardNo,
-    orgName,
-    orgAddress,
-    businessType,
-    businessDescription,
-    propertyNo,
-    businessAddress,
-    appSource,
+    userId, ulbId, serviceId, deptId, zoneId,
+    firstName, middleName, lastName, address,
+    mobileNo, aadhaarNo, panCardNo, emailId,
+    orgName, orgAddress,
+    businessType, businessDescription,
+    propertyNo, businessAddress,
+    waterConnectionNo, permitFromDate, permitToDate,
+    occupancyCertificateNo, roadType,
+    roadLength, roadWidth, roadLengthWidth,
+    excavationArea, excavationStartPoint, excavationEndPoint,
+    latitude, longitude, hospitalName, healthAgencyNo,
+    fixedArea, newHoarding, hoardingNumber,
+    advertisingArea, numberOfDays,
+    hoardingType, hoardingSubType,
   } = payload;
 
   if (!userId) throw new AppError("User ID is required", 400);
-  if (!applicantName) throw new AppError("Applicant Name is required", 400);
+  if (!ulbId) throw new AppError("ULB ID is required", 400);
+  if (!serviceId) throw new AppError("Service ID is required", 400);
+  if (!deptId) throw new AppError("Department ID is required", 400);
   if (!mobileNo) throw new AppError("Mobile Number is required", 400);
   if (String(mobileNo).length !== 10) throw new AppError("Mobile Number must be 10 digits", 400);
-  if (!emailId) throw new AppError("Email ID is required", 400);
 
-  const emailRegex = /^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$/;
-  if (!emailRegex.test(emailId)) throw new AppError("Invalid Email Address", 400);
-
-  if (!propertyNo) throw new AppError("Property Number is required", 400);
-  if (!businessAddress) throw new AppError("Business Address is required", 400);
-
-  if (aadhaarNo && String(aadhaarNo).length !== 12) {
-    throw new AppError("Aadhar Number must be 12 digits", 400);
-  }
-
-  if (businessType) {
-    const businessTypeNumber = Number(businessType);
-    if (isNaN(businessTypeNumber)) {
-      throw new AppError("Invalid Business Type", 400);
-    }
-  }
-
-  const appResult = await repo.insertToursAndTravelsApplication({
-    userId,
-    applicantName,
-    mobileNo,
-    emailId,
-    aadhaarNo: aadhaarNo,
-    residentialAddress: residentialAddress,
-    panCardNo: panCardNo,
-    orgName: orgName,
-    orgAddress: orgAddress,
-    businessType: businessType,
-    businessDescription: businessDescription,
-    propertyNo,
-    businessAddress,
-    appSource: appSource,
+  const appResult = await repo.insertNOCApplication({
+    userId, ulbId, serviceId, deptId, zoneId,
+    firstName, middleName, lastName, address,
+    mobileNo, aadhaarNo, panCardNo, emailId,
+    orgName, orgAddress,
+    businessType, businessDescription,
+    propertyNo, businessAddress,
+    waterConnectionNo, permitFromDate, permitToDate,
+    occupancyCertificateNo, roadType,
+    roadLength, roadWidth, roadLengthWidth,
+    excavationArea, excavationStartPoint, excavationEndPoint,
+    latitude, longitude, hospitalName, healthAgencyNo,
+    fixedArea, newHoarding, hoardingNumber,
+    advertisingArea, numberOfDays,
+    hoardingType, hoardingSubType,
   });
 
   if (Number(appResult.out_errcode) !== 9999) {
@@ -67,18 +51,29 @@ async function submitToursAndTravelsApplicationService(payload) {
     };
   }
 
-  const toursAndTravelsId = appResult.out_toursandtravelsid;
-  const parts = appResult.out_ErrMsg.split("$");
-  const message = parts[0] || "Tours and Travels application submitted successfully";
-
   return {
     success: true,
     errorCode: appResult.out_errcode,
-    message: message,
-    toursAndTravelsId: toursAndTravelsId,
+    message: appResult.out_ErrMsg || "NOC application submitted successfully",
+    applicationNo: appResult.out_applino,
+  };
+}
+
+async function getServiceFieldsService({ serviceId, deptId, ulbId }) {
+  if (!serviceId) throw new AppError("Service ID is required", 400);
+  if (!deptId) throw new AppError("Department ID is required", 400);
+  if (!ulbId) throw new AppError("ULB ID is required", 400);
+
+  const fields = await repo.getServiceFields({ serviceId, deptId, ulbId });
+
+  return {
+    success: true,
+    totalFields: fields.length,
+    fields: fields,
   };
 }
 
 module.exports = {
-  submitToursAndTravelsApplicationService,
+  submitNOCApplicationService,
+  getServiceFieldsService
 };
