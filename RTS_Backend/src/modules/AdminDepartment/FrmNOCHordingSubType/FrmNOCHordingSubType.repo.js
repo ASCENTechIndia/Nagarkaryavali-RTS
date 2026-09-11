@@ -2,15 +2,17 @@ const { executeQueryTMC } = require("../../../db/queryExecutor");
 const { withTxTMC } = require("../../../db/tx");
 const oracledb = require("oracledb");
 
-const getNOCHordingTypeListRepo = async ({ ulbId }) => {
+const getNOCHordingSubTypeListRepo = async ({ ulbId }) => {
   try {
     const query = `
       SELECT
-        NUM_HORDINGTYPE_ID       AS HORDINGTYPEID,
-        VAR_HORDINGTYPE_NAME     AS HORDINGTYPENAME
-      FROM AORTS_NOCHORDINGTYPE_MAS
-      WHERE NUM_HORDINGTYPE_ULBID = :ulbId
-      ORDER BY NUM_HORDINGTYPE_ID
+        NUM_HORDSUBTYPE_ID     AS HORDSUBTYPEID,
+        NUM_HORDSUBTYPE_HORDID AS HORDID,
+        VAR_HORDSUBTYPE_NAME   AS HORDSUBTYPENAME,
+        NUM_HORDSUBTYPE_ULBID  AS ULBID
+      FROM AORTS_NOCCHORDSUBTYPE_MAS
+      WHERE NUM_HORDSUBTYPE_ULBID = :ulbId
+      ORDER BY NUM_HORDSUBTYPE_ID
     `;
 
     const result = await executeQueryTMC(query, {
@@ -23,7 +25,7 @@ const getNOCHordingTypeListRepo = async ({ ulbId }) => {
       rowCount: result.rows?.length || 0,
     };
   } catch (error) {
-    console.error("Get NOC Hording Type List Repo ERROR:", error);
+    console.error("Get NOC Hording Sub Type List Repo ERROR:", error);
 
     return {
       success: false,
@@ -32,19 +34,20 @@ const getNOCHordingTypeListRepo = async ({ ulbId }) => {
   }
 };
 
-const getNOCHordingTypeByIdRepo = async (hordId) => {
+const getNOCHordingSubTypeByIdRepo = async (subTypeId) => {
   try {
     const query = `
       SELECT
-        NUM_HORDINGTYPE_ID       AS HORDINGTYPEID,
-        VAR_HORDINGTYPE_NAME     AS HORDINGTYPENAME,
-        NUM_HORDINGTYPE_ULBID    AS ULBID
-      FROM AORTS_NOCHORDINGTYPE_MAS
-      WHERE NUM_HORDINGTYPE_ID = :hordId
+        NUM_HORDSUBTYPE_ID     AS HORDSUBTYPEID,
+        NUM_HORDSUBTYPE_HORDID AS HORDID,
+        VAR_HORDSUBTYPE_NAME   AS HORDSUBTYPENAME,
+        NUM_HORDSUBTYPE_ULBID  AS ULBID
+      FROM AORTS_NOCCHORDSUBTYPE_MAS
+      WHERE NUM_HORDSUBTYPE_ID = :subTypeId
     `;
 
     const result = await executeQueryTMC(query, {
-      hordId: Number(hordId),
+      subTypeId: Number(subTypeId),
     });
 
     return {
@@ -53,7 +56,7 @@ const getNOCHordingTypeByIdRepo = async (hordId) => {
       rowCount: result.rows?.length || 0,
     };
   } catch (error) {
-    console.error("Get NOC Hording Type By Id Repo:", error);
+    console.error("Get NOC Hording Sub Type By Id Repo:", error);
 
     return {
       success: false,
@@ -62,9 +65,10 @@ const getNOCHordingTypeByIdRepo = async (hordId) => {
   }
 };
 
-const saveNOCHordingTypeRepo = async ({
+const saveNOCHordingSubTypeRepo = async ({
   userId,
-  hordingTypeId,
+  subTypeId,
+  hordId,
   name,
   ulbId,
   mode,
@@ -75,9 +79,10 @@ const saveNOCHordingTypeRepo = async ({
     const result = await withTxTMC(async (connection) => {
       const query = `
         BEGIN
-          AORTS_NOCHORDINGTYPE_INS(
+          AORTS_NOCCHORDSUBTYPE_INS(
             :in_userid,
-            :in_hordingtypeid,
+            :in_subtypeid,
+            :in_hordid,
             :in_name,
             :in_ulbid,
             :in_mode,
@@ -91,10 +96,11 @@ const saveNOCHordingTypeRepo = async ({
 
       const binds = {
         in_userid: String(userId),
-        in_hordingtypeid:
-          hordingTypeId !== undefined && hordingTypeId !== null
-            ? Number(hordingTypeId)
+        in_subtypeid:
+          subTypeId !== undefined && subTypeId !== null
+            ? Number(subTypeId)
             : null,
+        in_hordid: Number(hordId),
         in_name: String(name || ""),
         in_ulbid: Number(ulbId),
         in_mode: Number(mode),
@@ -126,7 +132,7 @@ const saveNOCHordingTypeRepo = async ({
       errorMsg: result?.out_errmsg,
     };
   } catch (error) {
-    console.error("SAVE NOC HORDING TYPE REPO ERROR:", error);
+    console.error("SAVE NOC HORDING SUB TYPE REPO ERROR:", error);
 
     return {
       success: false,
@@ -137,7 +143,7 @@ const saveNOCHordingTypeRepo = async ({
 };
 
 module.exports = {
-  getNOCHordingTypeListRepo,
-  getNOCHordingTypeByIdRepo,
-  saveNOCHordingTypeRepo,
+  getNOCHordingSubTypeListRepo,
+  getNOCHordingSubTypeByIdRepo,
+  saveNOCHordingSubTypeRepo,
 };

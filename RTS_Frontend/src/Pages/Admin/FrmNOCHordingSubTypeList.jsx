@@ -17,7 +17,7 @@ import { useAuth } from "@/context/AuthContext";
 
 const initialValues = {};
 
-const FrmNOCHordingTypeList = () => {
+const FrmNOCHordingSubTypeList = () => {
   const navigate = useNavigate();
   const { token, user } = useAuth();
 
@@ -27,21 +27,21 @@ const FrmNOCHordingTypeList = () => {
   const [tableData, setTableData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const headers = ["Hoarding Type Name", "Select"];
+  const headers = ["Hoarding Sub Type Name", "Select"];
 
   const keyMapping = {
-    "Hoarding Type Name": "hordingTypeName",
+    "Hoarding Sub Type Name": "hordSubTypeName",
     Select: "select",
   };
 
-  const fetchHordingTypes = async () => {
+  const fetchSubTypes = async () => {
     try {
       setIsSearching(true);
 
       const ulbId = user?.ulbId;
 
       const response = await axios.post(
-        `${BASE_URL}/api/FrmNOCHordingType/list`,
+        `${BASE_URL}/api/FrmNOCHordingSubType/list`,
         { ulbId },
         {
           headers: {
@@ -51,20 +51,49 @@ const FrmNOCHordingTypeList = () => {
         }
       );
 
-      console.log("Hoarding Types Response:", response.data);
+      console.log("Hoarding Sub Types Response:", response.data);
 
       if (response.data?.ok && response.data?.data?.success) {
         const list = response.data?.data?.rows || [];
 
+        let hordMap = {};
+        try {
+          const hordResp = await axios.post(
+            `${BASE_URL}/api/FrmNOCHordingType/list`,
+            { ulbId },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (hordResp.data?.ok && hordResp.data?.data?.success) {
+            const hordList = hordResp.data?.data?.rows || [];
+            hordList.forEach((h) => {
+              hordMap[h.HORDINGTYPEID] = h.HORDINGTYPENAME || "";
+            });
+          }
+        } catch (e) {
+          console.error("Hoarding Type Map Fetch Error:", e);
+        }
+
         const formattedData = list.map((row) => ({
-          hordingTypeId: row.HORDINGTYPEID,
-          hordingTypeName: row.HORDINGTYPENAME || "",
+          hordSubTypeId: row.HORDSUBTYPEID,
+          hordId: row.HORDID,
+          hordSubTypeName: row.HORDSUBTYPENAME || "",
+        //   hordTypeName: hordMap[row.HORDID] || "",
           select: (
             <Button
               variant="link"
               className="text-blue-700 hover:text-blue-900 px-0"
               onClick={() =>
-                handleSelect(row.HORDINGTYPEID, row.HORDINGTYPENAME)
+                handleSelect(
+                  row.HORDSUBTYPEID,
+                  row.HORDSUBTYPENAME,
+                  row.HORDID
+                )
               }
             >
               Select
@@ -76,25 +105,27 @@ const FrmNOCHordingTypeList = () => {
 
         if (formattedData.length === 0) {
           Swal.fire({
-            text: "No hoarding types found."
+            text: "No hoarding sub types found.",
           });
         }
       } else {
         setTableData([]);
 
         Swal.fire({
-          text: response.data?.message || "Failed to fetch hoarding types.",
+          text:
+            response.data?.message ||
+            "Failed to fetch hoarding sub types.",
         });
       }
     } catch (error) {
-      console.error("Hoarding Types API Error:", error);
+      console.error("Hoarding Sub Types API Error:", error);
 
       setTableData([]);
 
       Swal.fire({
         text:
           error.response?.data?.message ||
-          "Failed to fetch hoarding types."
+          "Failed to fetch hoarding sub types.",
       });
     } finally {
       setIsSearching(false);
@@ -102,23 +133,24 @@ const FrmNOCHordingTypeList = () => {
   };
 
   const handleAddNew = () => {
-    navigate("/App/FrmNOCHordingTypeMst", {
+    navigate("/App/FrmNOCHordingSubTypeMst", {
       state: { mode: 1 },
     });
   };
 
-  const handleSelect = (hordingTypeId, hordingTypeName) => {
-    navigate("/App/FrmNOCHordingTypeMst", {
+  const handleSelect = (hordSubTypeId, hordSubTypeName, hordId) => {
+    navigate("/App/FrmNOCHordingSubTypeMst", {
       state: {
         mode: 2,
-        hordingTypeId,
-        hordingTypeName,
+        hordSubTypeId,
+        hordSubTypeName,
+        hordId,
       },
     });
   };
 
   useEffect(() => {
-    fetchHordingTypes();
+    fetchSubTypes();
   }, []);
 
   const filteredTableData = tableData.filter((row) =>
@@ -143,7 +175,7 @@ const FrmNOCHordingTypeList = () => {
             <Card className="border shadow-sm">
               <CardHeader className="border-b">
                 <CardTitle className="text-lg font-semibold">
-                  NOC Hoarding Type List
+                  NOC Hoarding Sub Type List
                 </CardTitle>
               </CardHeader>
 
@@ -190,4 +222,4 @@ const FrmNOCHordingTypeList = () => {
   );
 };
 
-export default FrmNOCHordingTypeList;
+export default FrmNOCHordingSubTypeList;

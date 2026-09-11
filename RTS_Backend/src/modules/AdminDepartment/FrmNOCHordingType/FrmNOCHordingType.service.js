@@ -1,18 +1,14 @@
 const repo = require("./FrmNOCHordingType.repo");
 
-const getNOCHordingTypeListService = async ({
-  ulbId
-}) => {
+const getNOCHordingTypeListService = async ({ ulbId }) => {
   if (!ulbId) {
     throw new Error("ULB ID is required.");
   }
 
-  return await repo.getNOCHordingTypeListRepo({
-    ulbId
-  });
+  return await repo.getNOCHordingTypeListRepo({ ulbId });
 };
 
-const getNOCHordingTypeByIdService = async (categoryId) => {
+const getNOCHordingTypeByIdService = async (hordId) => {
   if (!hordId) {
     throw new Error("Hording ID is required.");
   }
@@ -22,54 +18,54 @@ const getNOCHordingTypeByIdService = async (categoryId) => {
 
 const saveNOCHordingTypeService = async ({
   userId,
-  categoryTradeId,
-  tradeTypeId,
-  type,
-  jwalan,
-  status,
+  hordingTypeId,
+  name,
+  ulbId,
   mode,
+  ipAddress,
+  ipSource,
 }) => {
   if (!userId) {
     throw new Error("User ID is required.");
   }
 
-  if (!categoryTradeId) {
-    throw new Error("Category Trade ID is required.");
+  if (!name) {
+    throw new Error("Hoarding Type Name is required.");
   }
 
-  if (!tradeTypeId) {
-    throw new Error("Trade Type ID is required.");
+  if (!ulbId) {
+    throw new Error("ULB ID is required.");
   }
 
   if (mode === undefined || mode === null) {
     throw new Error("Mode is required.");
   }
 
-  if (![1, 2].includes(Number(mode))) {
-    throw new Error("Mode must be 1 or 2.");
+  if (![1, 2, 3].includes(Number(mode))) {
+    throw new Error("Mode must be 1, 2 or 3.");
   }
 
-  if (!type) {
-    throw new Error("Type is required.");
+  if (Number(mode) === 2 && !hordingTypeId) {
+    throw new Error("Hording Type ID is required for update.");
   }
 
-  if (!status) {
-    throw new Error("Status is required.");
+  if (Number(mode) === 3 && !hordingTypeId) {
+    throw new Error("Hording Type ID is required for delete.");
   }
 
   return await repo.saveNOCHordingTypeRepo({
     userId,
-    categoryTradeId,
-    tradeTypeId,
-    type,
-    jwalan,
-    status,
+    hordingTypeId,
+    name,
+    ulbId,
     mode,
+    ipAddress: ipAddress || "",
+    ipSource: ipSource || "",
   });
 };
 
 module.exports = {
-    getNOCHordingTypeListService,
-    getNOCHordingTypeByIdService,
-    saveNOCHordingTypeService
+  getNOCHordingTypeListService,
+  getNOCHordingTypeByIdService,
+  saveNOCHordingTypeService,
 };
