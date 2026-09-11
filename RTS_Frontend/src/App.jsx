@@ -78,8 +78,8 @@ import FrmNOCHordingSubTypeList from "./Pages/Admin/FrmNOCHordingSubTypeList";
 import FrmNOCHordingSubTypeMst from "./Pages/Admin/FrmNOCHordingSubTypeMst";
 import FrmLicenseTypeList from "./Pages/Admin/FrmLicenseTypeList";
 import FrmLicenseTypeMst from "./Pages/Admin/FrmLicenseTypeMst";      
-// import FrmNocRoadType from "./Pages/Admin/FrmNocRoadType";
-// import FrmNocRoadTypeMst from "./Pages/Admin/FrmNocRoadTypeMst";
+import FrmNocRoadType from "./Pages/Admin/FrmNocRoadType";
+import FrmNocRoadTypeMst from "./Pages/Admin/FrmNocRoadTypeMst";
 
 
 function HomePage() {
@@ -411,14 +411,14 @@ const router = createBrowserRouter([
         path: "/app/FrmLicenseTypeMst",
         element: <FrmLicenseTypeMst />
       },
-      // {
-      //   path: "/app/FrmNocRoadType",
-      //   element: <FrmNocRoadType />,
-      // },
-      // {
-      //   path: "/app/FrmNocRoadTypeMst",
-      //   element: <FrmNocRoadTypeMst />,
-      // },
+      {
+        path: "/app/FrmNocRoadType",
+        element: <FrmNocRoadType />,
+      },
+      {
+        path: "/app/FrmNocRoadTypeMst",
+        element: <FrmNocRoadTypeMst />,
+      },
     ]
   },
 ]);
