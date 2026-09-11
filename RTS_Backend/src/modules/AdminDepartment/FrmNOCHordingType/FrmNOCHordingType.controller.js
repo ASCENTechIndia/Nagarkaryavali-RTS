@@ -4,18 +4,13 @@ const { AppError } = require("../../../libs/errors");
 const service = require("./FrmNOCHordingType.service");
 
 const getNOCHordingTypeList = asyncHandler(async (req, res) => {
-
-  const {
-    ulbId
-  } = req.body;
+  const { ulbId } = req.body;
 
   if (!ulbId) {
-    throw new AppError("categoryId is required", 400);
+    throw new AppError("ulbId is required", 400);
   }
 
-  const result = await service.getNOCHordingTypeListService({
-    ulbId
-  });
+  const result = await service.getNOCHordingTypeListService({ ulbId });
 
   if (!result.success) {
     throw new AppError(
@@ -28,10 +23,7 @@ const getNOCHordingTypeList = asyncHandler(async (req, res) => {
 });
 
 const getNOCHordingTypeById = asyncHandler(async (req, res) => {
-
-  const {
-    hordId,
-  } = req.body;
+  const { hordId } = req.body;
 
   if (!hordId) {
     throw new AppError("hordId is required", 400);
@@ -41,81 +33,83 @@ const getNOCHordingTypeById = asyncHandler(async (req, res) => {
 
   if (!result.success) {
     throw new AppError(
-      result.error || "Failed to get noc hording type by id.",
+      result.error || "Failed to get NOC hording type by id.",
       500
     );
   }
 
-   return ok(res, result, "NOC hording type by id fetched successfully");
+  return ok(res, result, "NOC hording type by id fetched successfully");
 });
 
 const saveNOCHordingType = asyncHandler(async (req, res) => {
-
   const {
     userId,
-    categoryTradeId,
-    tradeTypeId,
-    type,
-    jwalan,
-    status,
+    hordingTypeId,
+    name,
+    ulbId,
     mode,
+    ipAddress,
+    ipSource,
   } = req.body;
 
   if (!userId) {
     throw new AppError("userId is required", 400);
   }
 
-  if (!categoryTradeId) {
-    throw new AppError("categoryTradeId is required", 400);
+  if (!name) {
+    throw new AppError("name is required", 400);
   }
 
-  if (!tradeTypeId) {
-    throw new AppError("tradeTypeId is required", 400);
+  if (!ulbId) {
+    throw new AppError("ulbId is required", 400);
   }
 
   if (mode === undefined || mode === null) {
     throw new AppError("mode is required", 400);
   }
 
-  if (![1, 2].includes(Number(mode))) {
-    throw new AppError("mode must be 1 or 2", 400);
+  if (![1, 2, 3].includes(Number(mode))) {
+    throw new AppError("mode must be 1, 2 or 3", 400);
   }
 
-  if (!type) {
-    throw new AppError("type is required", 400);
-  }
-
-  if (!status) {
-    throw new AppError("status is required", 400);
+  if (Number(mode) !== 1 && !hordingTypeId) {
+    throw new AppError(
+      "hordingTypeId is required for update / delete",
+      400
+    );
   }
 
   const result = await service.saveNOCHordingTypeService({
     userId,
-    categoryTradeId,
-    tradeTypeId,
-    type,
-    jwalan: jwalan || "",
-    status,
+    hordingTypeId,
+    name,
+    ulbId,
     mode: Number(mode),
+    ipAddress: ipAddress || "",
+    ipSource: ipSource || "",
   });
 
   if (!result.success) {
     throw new AppError(
-      result.errorMsg || "Failed to save trade type configuration.",
+      result.errorMsg || "Failed to save NOC hording type.",
       500
     );
   }
 
-  return ok(res, {
-    status: "SUCCESS",
-    message: result.errorMsg || "Trade type configuration saved successfully.",
-    errorCode: result.errorCode,
-    data: result,
-  });
+  return ok(
+    res,
+    {
+      status: "SUCCESS",
+      errorCode: result.errorCode,
+      message: result.errorMsg || "NOC hording type saved successfully.",
+      data: result,
+    },
+    result.errorMsg || "NOC hording type saved successfully."
+  );
 });
 
 module.exports = {
-    getNOCHordingTypeList,
-    getNOCHordingTypeById,
-    saveNOCHordingType
+  getNOCHordingTypeList,
+  getNOCHordingTypeById,
+  saveNOCHordingType,
 };
