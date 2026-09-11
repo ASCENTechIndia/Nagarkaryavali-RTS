@@ -134,6 +134,7 @@ app.use("/api/FrmTownPlanningSectorMapping", require("./modules/AdminDepartment/
 app.use("/api/FrmAppliReportEMst", require("./modules/AdminDepartment/FrmAppliReportEMst/frmAppliReportEMst.routes"));
 app.use("/api/FrmHearingProccess", require("./modules/AdminDepartment/FrmHearingProccess/FrmHearingProccess.routes"));
 app.use("/api/FrmHearingDateAssign", require("./modules/AdminDepartment/FrmHearingDateAssign/FrmHearingDateAssign.routes"))
+app.use("/api/FrmNOCHordingType", require("./modules/AdminDepartment/FrmNOCHordingType/FrmNOCHordingType.routes"))
 
 // NOC
 app.use("/api/FrmToursTravels", require("./modules/NOC/FrmToursTravels/FrmToursTravels.routes"));

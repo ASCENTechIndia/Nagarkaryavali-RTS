@@ -70,6 +70,7 @@ import FrmMeatShopNOC from "./Pages/NOC/FrmMeatShopNOC";
 import FrmNOCService from "././Pages/NOC/FrmNOCService";
 import FrmNOMNoc from "./Pages/NOC/FrmNOMNoc";
 import FrmNORNoc from "./Pages/NOC/FrmNORNoc";
+import FrmNOCHordingType from "./Pages/Admin/FrmNOCHordingTypeList";
 
 function HomePage() {
   return <div>Welcome to Employee Portal</div>;
@@ -352,9 +353,13 @@ const router = createBrowserRouter([
         path: "/App/FrmHearingDateAssign",
         element: <FrmHearingDateAssign />
       },
-         {
+      {
         path:"/app/FrmNOCService",
         element:<FrmNOMNoc />
+      },
+      {
+        path:"/App/FrmNOCHordingType",
+        element:<FrmNOCHordingType />
       },
     ]
   },

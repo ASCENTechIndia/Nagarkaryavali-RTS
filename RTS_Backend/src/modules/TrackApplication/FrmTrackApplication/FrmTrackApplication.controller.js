@@ -584,8 +584,7 @@ const generateCertificateReport = asyncHandler(async (req, res) => {
   }
 
   const reportData = serviceResult.data;
-
-  console.log("reportData", reportData);
+  console.log("reportData: ", reportData);
 
   // ------------------------------------------------------
   // 2. Get Corporation Information
@@ -613,12 +612,11 @@ const generateCertificateReport = asyncHandler(async (req, res) => {
 
   let pdf;
 
-  if(filters.serviceId === "515") {
+  if (["515", "516", "517", "518", "519", "520", "521"].includes(filters.serviceId)) {
     pdf = await FrmServiceCertificatePdfHelper({
       rows: reportData,
       corporationName: corporationName || "",
       ulbLogo: ulbLogo || "",
-      reportName: "मालमत्ता कर उतारा",
       serviceId: filters.serviceId,
       appNo: filters.appNo,
       ulbId: filters.ulbId,
@@ -628,12 +626,13 @@ const generateCertificateReport = asyncHandler(async (req, res) => {
       rows: reportData,
       corporationName: corporationName || "",
       ulbLogo: ulbLogo || "",
+      reportName: "मालमत्ता कर उतारा",
       serviceId: filters.serviceId,
       appNo: filters.appNo,
       ulbId: filters.ulbId,
     });
   }
-
+  
   // ------------------------------------------------------
   // 4. Validate PDF
   // ------------------------------------------------------
