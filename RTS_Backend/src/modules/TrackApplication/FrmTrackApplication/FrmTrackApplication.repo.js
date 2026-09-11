@@ -724,6 +724,23 @@ const getCertificateDataRepo = async (serviceId, appNo, ulbId) => {
     query += " where APPNO = '" + appNo + "' and ULBID = '" + ulbId + "' ";
   }
 
+  else if (["515", "516", "517", "518", "519", "520", "521"].includes(serviceId)) {
+    query = " SELECT var_nocappli_applno AS APPLNO, dat_application_recieptdate AS RECEIPTDATE, ";
+    query += " var_appliaction_recieptno AS RECEIPTNO, var_nocappli_certno AS CERTIFICATENO, ";
+    query += " var_nocappli_fname || ' ' || var_nocappli_mname || ' ' || var_nocappli_lname AS APPLINAME, ";
+    query += " var_nocappli_address AS APPLIADDRESS, num_nocappli_mobileno AS APPLIMOBILE, ";
+    query += " num_nocappli_serviceid AS SERVICEID, var_service_eng_name AS SERVICEENGNAME, ";
+    query += " var_service_mar_name AS SERVICEMARNAME, var_service_shrt_name AS SERVICESHORTNAME, ";
+    query += " var_nocappli_nocdetails AS NOCDETAILS, var_nocappli_nocaddress AS NOCADDRESS, ";
+    query += " dt_nocappli_insdt AS NOCINSDATE, dat_application_recieptdate AS APPLICATIONDATE ";
+    query += " FROM aorts_nocapplication_def ";
+    query += " INNER JOIN aorts_application_det ON var_application_appno = var_nocappli_applno ";
+    query += " INNER JOIN aorts_tmcservice_def ON num_service_serviceid = num_nocappli_serviceid ";
+    query += " WHERE var_application_appno = '" + appNo + "' ";
+    query += " AND num_service_serviceid = '" + serviceId + "' ";
+    query += " AND num_nocappli_ulbid = '" + ulbId + "' ";
+  }
+
   // ============================================================
   // NO QUERY FOR SERVICE
   // ============================================================
