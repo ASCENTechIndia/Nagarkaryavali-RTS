@@ -141,6 +141,8 @@ app.use("/api/FrmMandapStall", require("./modules/NOC/FrmNOMNoc/FrmMandapStall.r
 app.use("/api/FrmElectrical", require("./modules/NOC/FrmElectrical/FrmElectrical.route"));
 app.use("/api/FrmMeatShopNOC", require("./modules/NOC/FrmMeatShopNOC/FrmMeatShopNOC.route"));
 
+app.use("/api/FrmHospitalNOC", require("./modules/NOC/NOCPdf/frmHospitalNOC.route"));
+
 app.use(errorMiddleware);
 
 module.exports = app;

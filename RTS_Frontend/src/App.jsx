@@ -353,7 +353,7 @@ const router = createBrowserRouter([
         element: <FrmHearingDateAssign />
       },
          {
-        path:"/app/FrmMandapStallLicense",
+        path:"/app/FrmNOCService",
         element:<FrmNOMNoc />
       },
     ]
