@@ -69,8 +69,10 @@ import FrmHearingDateAssign from "./Pages/Admin/FrmHearingDateAssign";
 import FrmMeatShopNOC from "./Pages/NOC/FrmMeatShopNOC";
 import FrmNOCService from "././Pages/NOC/FrmNOCService";
 import FrmNOMNoc from "./Pages/NOC/FrmNOMNoc";
-import FrmNORNoc from "./Pages/NOC/FrmNORNoc";
 import FrmNOCHordingType from "./Pages/Admin/FrmNOCHordingTypeList";
+import FrmNocRoadType from "./Pages/Admin/FrmNocRoadType";
+import FrmNocRoadTypeMst from "./Pages/Admin/FrmNocRoadTypeMst";
+ 
 
 function HomePage() {
   return <div>Welcome to Employee Portal</div>;
@@ -231,8 +233,8 @@ const router = createBrowserRouter([
         element: <FrmMeatShopNOC />
       },
       {
-        path:"/app/FrmNOCService",
-        element:<FrmNOCService />
+        path: "/app/FrmNOCService",
+        element: <FrmNOCService />
       }
     ],
   },
@@ -354,12 +356,20 @@ const router = createBrowserRouter([
         element: <FrmHearingDateAssign />
       },
       {
-        path:"/app/FrmNOCService",
-        element:<FrmNOMNoc />
+        path: "/app/FrmNOCService",
+        element: <FrmNOMNoc />
       },
       {
-        path:"/App/FrmNOCHordingType",
-        element:<FrmNOCHordingType />
+        path: "/App/FrmNOCHordingType",
+        element: <FrmNOCHordingType />
+      },
+      {
+        path: "/app/FrmNocRoadType",
+        element: <FrmNocRoadType />,
+      },
+      {
+        path: "/app/FrmNocRoadTypeMst",
+        element: <FrmNocRoadTypeMst />,
       },
     ]
   },

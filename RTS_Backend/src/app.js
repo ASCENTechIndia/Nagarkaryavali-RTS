@@ -141,7 +141,7 @@ app.use("/api/FrmToursTravels", require("./modules/NOC/FrmToursTravels/FrmToursT
 app.use("/api/FrmMandapStall", require("./modules/NOC/FrmNOMNoc/FrmMandapStall.route"));
 app.use("/api/FrmElectrical", require("./modules/NOC/FrmElectrical/FrmElectrical.route"));
 app.use("/api/FrmMeatShopNOC", require("./modules/NOC/FrmMeatShopNOC/FrmMeatShopNOC.route"));
-
+app.use("/api/FrmHospitalParvana", require("./modules/AdminDepartment/FrmHospitalParvana/frmHospitalParvana.routes"));
 app.use("/api/FrmHospitalNOC", require("./modules/NOC/NOCPdf/frmHospitalNOC.route"));
 
 app.use(errorMiddleware);
