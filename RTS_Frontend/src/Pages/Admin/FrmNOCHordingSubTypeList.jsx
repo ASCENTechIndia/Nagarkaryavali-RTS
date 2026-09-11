@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
+import { Input } from "@/components/ui/input";
 import ShadCNTable from "@/components/ui/table";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
@@ -182,12 +182,12 @@ const FrmNOCHordingSubTypeList = () => {
               <CardContent className="p-4 sm:p-6 space-y-6">
                 <div className="flex items-center justify-between gap-3 px-3">
                   <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <input
-                      type="text"
+                    <Input
+                      name="search"
                       placeholder="Search..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="h-10 w-full sm:w-[300px] rounded-md border border-gray-300 px-3 text-sm outline-none focus:ring-2 focus:ring-[#184aa6]"
+                      className="w-full h-9"
                     />
                   </div>
 
