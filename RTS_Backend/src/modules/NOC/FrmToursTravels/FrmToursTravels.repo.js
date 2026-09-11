@@ -203,7 +203,60 @@ async function getServiceFields({ serviceId, deptId, ulbId }) {
   return result;
 }
 
+
+const getBusinessTypeDropdownRepo = async ({ ulbid }) => {
+    console.log("Repo: Fetch Business Type Dropdown", { ulbid });
+
+    const binds = { ulbid };
+
+    const sql = `
+        SELECT
+            num_bustyp_id AS BUSTYPID,
+            var_bustyp_name AS BUSTYPNAME
+        FROM AORTS_NOCBUSINESSTYP_MAS
+        WHERE num_bustyp_ulbid = :ulbid
+        ORDER BY var_bustyp_name
+    `;
+
+    const result = await executeQueryTMC(sql, binds);
+
+    if (!result || !result.success) {
+        throw new Error(
+            result?.error || "Failed to fetch business type dropdown"
+        );
+    }
+
+    return result.rows;
+};
+
+const getRoadTypeDropdownRepo = async ({ ulbid }) => {
+    console.log("Repo: Fetch Road Type Dropdown", { ulbid });
+
+    const binds = { ulbid };
+
+    const sql = `
+        SELECT
+            num_roadtype_id AS ROADTYPEID,
+            var_roadtype_name AS ROADTYPENAME
+        FROM AORTS_NOCROADTYPE_MAS
+        WHERE num_roadtype_ulbid = :ulbid
+        ORDER BY var_roadtype_name
+    `;
+
+    const result = await executeQueryTMC(sql, binds);
+
+    if (!result || !result.success) {
+        throw new Error(
+            result?.error || "Failed to fetch road type dropdown"
+        );
+    }
+
+    return result.rows;
+};
+
 module.exports = {
   insertNOCApplication,
-  getServiceFields
+  getServiceFields,
+  getBusinessTypeDropdownRepo,
+  getRoadTypeDropdownRepo,
 };
