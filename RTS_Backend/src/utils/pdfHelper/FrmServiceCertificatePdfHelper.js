@@ -97,74 +97,72 @@ Handlebars.registerHelper("inc", function (value) {
   return Number(value || 0) + 1;
 });
 
+const getValidityDate = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  const fyEndYear = month < 3 ? year : year + 1;
+
+  return `31/03/${fyEndYear}`;
+};
+
 let templateFile = "";
 
-switch (String(serviceId)) {
-  // 515 - Clinical / Medical
-
-  case "515":
-    templateFile = "FrmClinicalMedical.html";
-    break;
-
-  // 516 - Tours and Travels
-
-  case "516":
-    templateFile = "FrmTourAndTravels.html";
-    break;
-
-  // 517 - Electricity Meter / Cable Installation
-  //      and Excavation
-
-  case "517":
-    templateFile = "FrmElectricalMeterDigging.html";
-    break;
-
-  // 518 - Meat Shop
-
-  case "518":
-    templateFile = "FrmMeatShopLicense.html";
-    break;
-
-  // 519 - Hospital License
-
-  case "519":
-    templateFile = "FrmHospitalLicense.html";
-    break;
-
-  // 520 - Fast Food License
-
-  case "520":
-    templateFile = "FrmFastFoodLicense.html";
-    break;
-
-  // 521 - Mandap / Stall License
-
-  case "521":
-    templateFile = "FrmMandapStallLicense.html";
-    break;
-
-  default:
-    throw new Error(`PDF template not configured for Service ID ${serviceId}`);
-}
-
-// =========================================================
-// PDF Helper
-// =========================================================
 const FrmServiceCertificatePdfHelper = async ({ rows, corporationName, ulbLogo, serviceId, appNo, ulbId }) => {
+
+  switch (String(serviceId)) {
+
+    case "515":
+      templateFile = "FrmClinicalMedical.html";
+      break;
+
+    // 516 - Tours and Travels
+
+    case "516":
+      templateFile = "FrmTourAndTravels.html";
+      break;
+
+    // 517 - Electricity Meter / Cable Installation
+    //      and Excavation
+
+    case "517":
+      templateFile = "FrmElectricalMeterDigging.html";
+      break;
+
+    // 518 - Meat Shop
+
+    case "518":
+      templateFile = "FrmMeatShopLicense.html";
+      break;
+
+    // 519 - Hospital License
+
+    case "519":
+      templateFile = "FrmHospitalLicense.html";
+      break;
+
+    // 520 - Fast Food License
+
+    case "520":
+      templateFile = "FrmFastFoodLicense.html";
+      break;
+
+    // 521 - Mandap / Stall License
+
+    case "521":
+      templateFile = "FrmMandapStallLicense.html";
+      break;
+
+    default:
+      throw new Error(`PDF template not configured for Service ID ${serviceId}`);
+  }
+
+  
   try {
-    // =======================================================
-    // 1. VALIDATE DATA
-    // =======================================================
     if (!Array.isArray(rows) || rows.length === 0) {
       throw new Error("No certificate data available for PDF generation.");
     }
-
-    // =======================================================
-    // 2. VALIDATE SERVICE ID
-    // =======================================================
-    const serviceKey = String(serviceId);
-
-    const templateFile = SERVICE_TEMPLATE_MAP[serviceKey];
 
     if (!templateFile) {
       throw new Error(`PDF template not configured for Service ID ${serviceId}`);
@@ -174,19 +172,10 @@ const FrmServiceCertificatePdfHelper = async ({ rows, corporationName, ulbLogo, 
 
     console.log(`FrmServiceCertificate PDF - Template: ${templateFile}`);
 
-    // =======================================================
-    // 3. CURRENT ROW
-    // =======================================================
     const row = rows[0];
 
-    // =======================================================
-    // 4. LOGOS
-    // =======================================================
-
-    // Use logo received from controller first
     let tmclogoPath = ulbLogo;
 
-    // Fallback logo
     if (!tmclogoPath) {
       tmclogoPath = path.resolve(__dirname, "../../../public/tmclogo.jpg");
     }
@@ -196,125 +185,38 @@ const FrmServiceCertificatePdfHelper = async ({ rows, corporationName, ulbLogo, 
     const leftLogo = toDataUrl(tmclogoPath);
     const rightLogo = toDataUrl(aplesewaLogoPath);
 
-    // =======================================================
-    // 5. COMMON DATA
-    // =======================================================
-    //
-    // We are intentionally keeping this generic because
-    // service procedures are not created yet.
-    //
-    // Once procedures are ready, their returned columns
-    // can be mapped here.
-    // =======================================================
-
     const certificate = {
       serviceId: serviceId,
-
-      appNo: row.RTSNO || row.APPNO || row.APPLICATIONNO || appNo || "",
-
-      applicantName: row.APPLINAME || row.APLINAME || row.APPLILNAME || row.APPLICANTNAME || "",
-
-      mobileNo: row.APPLIMOBILE || row.MOBILENO || row.MOBNO || row.MOBILE || "",
-
-      email: row.APPLIEMAIL || row.EMAIL || row.EMAILID || "",
-
-      aadharNo: row.APPLIADDHAR || row.AADHARNO || row.ADHARNO || "",
-
-      address: row.APPLIADDRESS || row.CUSTMADDRES || row.ADDRESS || row.APPLICANTADDRESS || "",
-
-      propertyNo: row.PROPNO || row.PROPERTYNO || "",
-
-      businessName: row.BUSINESSNAME || row.INSTITUTENAME || row.ORGANIZATIONNAME || "",
-
-      businessAddress: row.BUSINESSADDRESS || row.INSTITUTEADDRESS || row.ORGANIZATIONADDRESS || "",
-
-      businessType: row.BUSINESSTYPE || row.BUSINESSTYPENAME || "",
-
-      businessDescription: row.BUSINESSDESCRIPTION || row.BUSINESSDESC || "",
-
-      corporationName: corporationName || "ठाणे महानगरपालिका, ठाणे",
-
-      applicationDate: formatDate(row.APPLDATE || row.APPLICATIONDATE || row.APPLIEDDT),
-
-      authDate: formatDate(row.AUTHDT || row.AUTHDATE),
+      APPLNO: row.APPLNO || "",
+      APPLINAME: row.APPLINAME || "",
+      APPLIMOBILE: row.APPLIMOBILE || "",
+      APPLIADDRESS: row.APPLIADDRESS || "",
+      RECEIPTNO: row.RECEIPTNO || "",
+      CERTIFICATENO:  row.CERTIFICATENO || "",
+      SERVICEENGNAME: row.SERVICEENGNAME || "",
+      SERVICEMARNAME: row.SERVICEMARNAME || "",
+      SERVICESHORTNAME: row.SERVICESHORTNAME || "",
+      NOCDETAILS: row.NOCDETAILS || "",
+      NOCADDRESS: row.NOCADDRESS || "",
+      RECEIPTDATE: formatDate(row.RECEIPTDATE),
+      NOCINSDATE: formatDate(row.NOCINSDATE),
+      APPLICATIONDATE: formatDate(row.APPLICATIONDATE),
     };
 
-    // =======================================================
-    // 6. GENERIC SERVICE DATA
-    // =======================================================
-    //
-    // At this stage, don't hardcode procedure columns for
-    // each service.
-    //
-    // The complete row is also passed to the template.
-    // Therefore, when procedures are ready, any returned
-    // column can directly be used in HTML.
-    // =======================================================
-
     const reportData = {
-      ...row,
-
-      // -----------------------------------------------------
-      // Common service information
-      // -----------------------------------------------------
       SERVICEID: serviceId,
       APPNO: appNo,
       ULBID: ulbId,
-
-      // -----------------------------------------------------
-      // Corporation
-      // -----------------------------------------------------
-      CORPORATION: corporationName || "ठाणे महानगरपालिका, ठाणे",
-
-      CORPORATIONNAME: corporationName || "ठाणे महानगरपालिका, ठाणे",
-
-      // -----------------------------------------------------
-      // Logos
-      // -----------------------------------------------------
+      CORPORATIONNAME: corporationName,
       ULBLOGO: leftLogo,
       ULB_LOGO: leftLogo,
 
       APLESEVA_LOGO: rightLogo,
-
-      // -----------------------------------------------------
-      // Certificate object
-      // -----------------------------------------------------
-      CERTIFICATE: certificate,
       certificate,
+      VALIDITYDATE: getValidityDate(),
 
-      // -----------------------------------------------------
-      // Common aliases
-      // -----------------------------------------------------
-      APPLINO: row.RTSNO || row.APPNO || row.APPLICATIONNO || appNo || "",
-
-      APPLINAME: row.APPLINAME || row.APLINAME || row.APPLILNAME || row.APPLICANTNAME || "",
-
-      APPLIMOBILE: row.APPLIMOBILE || row.MOBILENO || row.MOBNO || row.MOBILE || "",
-
-      APPLIEMAIL: row.APPLIEMAIL || row.EMAIL || row.EMAILID || "",
-
-      APPLIADDHAR: row.APPLIADDHAR || row.AADHARNO || row.ADHARNO || "",
-
-      APPLIADDRESS: row.APPLIADDRESS || row.CUSTMADDRES || row.ADDRESS || row.APPLICANTADDRESS || "",
-
-      PROPERTYNO: row.PROPNO || row.PROPERTYNO || "",
-
-      BUSINESSNAME: row.BUSINESSNAME || row.INSTITUTENAME || row.ORGANIZATIONNAME || "",
-
-      BUSINESSADDRESS: row.BUSINESSADDRESS || row.INSTITUTEADDRESS || row.ORGANIZATIONADDRESS || "",
-
-      BUSINESSTYPE: row.BUSINESSTYPE || row.BUSINESSTYPENAME || "",
-
-      BUSINESSDESCRIPTION: row.BUSINESSDESCRIPTION || row.BUSINESSDESC || "",
-
-      APPLICATIONDATE: formatDate(row.APPLDATE || row.APPLICATIONDATE || row.APPLIEDDT),
-
-      AUTHDATE: formatDate(row.AUTHDT || row.AUTHDATE),
     };
 
-    // =======================================================
-    // 7. HTML TEMPLATE PATH
-    // =======================================================
     const templatePath = path.resolve(__dirname, "../../templates", templateFile);
 
     if (!fs.existsSync(templatePath)) {
@@ -323,21 +225,23 @@ const FrmServiceCertificatePdfHelper = async ({ rows, corporationName, ulbLogo, 
 
     console.log(`FrmServiceCertificate PDF Template: ${templateFile}`);
 
-    // =======================================================
-    // 8. READ HTML TEMPLATE
-    // =======================================================
     const htmlTemplate = fs.readFileSync(templatePath, "utf8");
 
-    // =======================================================
-    // 9. COMPILE HANDLEBARS
-    // =======================================================
     const template = Handlebars.compile(htmlTemplate);
 
     const html = template(reportData);
 
-    // =======================================================
-    // 10. PDF DIRECTORY
-    // =======================================================
+    const chromePath = path.resolve(__dirname, "../../../node_modules/puppeteer/.cache/puppeteer/chrome/win64-135.0.7049.84/chrome-win64/chrome.exe");
+    
+    const launchOptions = {
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    };
+
+    if (fs.existsSync(chromePath)) {
+      launchOptions.executablePath = chromePath;
+    }
+
     const pdfDirectory = path.resolve(__dirname, "../../../public/pdf");
 
     if (!fs.existsSync(pdfDirectory)) {
@@ -346,9 +250,6 @@ const FrmServiceCertificatePdfHelper = async ({ rows, corporationName, ulbLogo, 
       });
     }
 
-    // =======================================================
-    // 11. PDF FILE NAME
-    // =======================================================
     const safeServiceId = String(serviceId).replace(/[^a-zA-Z0-9_-]/g, "");
 
     const safeAppNo = String(appNo || row.APPNO || row.RTSNO || "Application").replace(/[^a-zA-Z0-9_-]/g, "_");
@@ -357,39 +258,17 @@ const FrmServiceCertificatePdfHelper = async ({ rows, corporationName, ulbLogo, 
 
     const pdfPath = path.join(pdfDirectory, pdfName);
 
-    // =======================================================
-    // 12. PUPPETEER
-    // =======================================================
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
+    const browser = await puppeteer.launch(launchOptions);
 
     try {
-      // -----------------------------------------------------
-      // Create page
-      // -----------------------------------------------------
       const page = await browser.newPage();
-
-      // -----------------------------------------------------
-      // A4 page
-      // -----------------------------------------------------
       await page.setViewport({
         width: 794,
         height: 1123,
         deviceScaleFactor: 1,
       });
+      await page.setContent(html, { waitUntil: "networkidle0", timeout: 0 });
 
-      // -----------------------------------------------------
-      // Set HTML
-      // -----------------------------------------------------
-      await page.setContent(html, {
-        waitUntil: ["domcontentloaded", "networkidle0"],
-      });
-
-      // -----------------------------------------------------
-      // Generate PDF
-      // -----------------------------------------------------
       await page.pdf({
         path: pdfPath,
 
@@ -410,16 +289,10 @@ const FrmServiceCertificatePdfHelper = async ({ rows, corporationName, ulbLogo, 
       await browser.close();
     }
 
-    // =======================================================
-    // 13. VERIFY PDF
-    // =======================================================
     if (!fs.existsSync(pdfPath)) {
       throw new Error("PDF file was not created.");
     }
 
-    // =======================================================
-    // 14. RETURN PDF DETAILS
-    // =======================================================
     return {
       fileName: pdfName,
       filePath: pdfPath,
@@ -429,16 +302,10 @@ const FrmServiceCertificatePdfHelper = async ({ rows, corporationName, ulbLogo, 
       ulbId,
     };
   } catch (error) {
-    // =======================================================
-    // ERROR
-    // =======================================================
     console.error("FrmServiceCertificate PDF Helper Error:", error);
 
     throw error;
   }
 };
 
-// =========================================================
-// EXPORT
-// =========================================================
 module.exports = FrmServiceCertificatePdfHelper;
