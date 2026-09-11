@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
 
-    <title>रुग्णालयासाठी ना हरकत प्रमाणपत्र</title>
+    <title>टूर आणि ट्रॅव्हल्स ना हरकत प्रमाणपत्र</title>
 
     <style>
       @page {
@@ -618,7 +618,7 @@
           <div class="corporation-name">{{CORPORATIONNAME}}</div>
 
           <div class="certificate-title">
-            टूर आणि ट्रॅव्हल्स ना हरकत प्रमाणपत्र
+            {{certificate.SERVICEENGNAME}}
           </div>
 
           <div class="header-line"></div>
@@ -630,10 +630,10 @@
 
         <div class="certificate-meta">
           <div class="certificate-number">
-            ना हरकत प्रमाणपत्र क्रमांक : {{CERTIFICATENO}}
+            ना हरकत प्रमाणपत्र क्रमांक : {{certificate.CERTIFICATENO}}
           </div>
 
-          <div class="certificate-date">दिनांक : {{APPLICATIONDATE}}</div>
+          <div class="certificate-date">दिनांक : {{certificate.NOCINSDATE}}</div>
         </div>
 
         <!-- =================================================
@@ -643,10 +643,10 @@
         <div class="recipient">
           <div class="recipient-line">प्रति,</div>
 
-          <div class="recipient-line">श्री./श्रीमती. {{APPLINAME}}</div>
+          <div class="recipient-line">श्री./श्रीमती. {{certificate.APPLINAME}}</div>
 
-          {{#if APPLIADDRESS}}
-          <div class="recipient-line">{{APPLIADDRESS}}</div>
+          {{#if certificate.APPLIADDRESS}}
+          <div class="recipient-line">{{certificate.APPLIADDRESS}}</div>
           {{/if}}
         </div>
 
@@ -659,7 +659,7 @@
             <div class="subject-label">विषय :</div>
 
             <div class="subject-value">
-              टूर आणि ट्रॅव्हल्स व्यवसायासाठी ना हरकत प्रमाणपत्र
+              {{certificate.SERVICEMARNAME}}
             </div>
           </div>
 
@@ -668,13 +668,13 @@
 
             <span class="reference-content">
               <div class="reference-item">
-                १) अर्ज क्रमांक : {{APPLINO}} {{#if APPLDATE}}
-                &nbsp;&nbsp;दिनांक : {{APPLDATE}} {{/if}}
+                १) अर्ज क्रमांक : {{certificate.APPLNO}} {{#if certificate.NOCINSDATE}}
+                &nbsp;&nbsp;दिनांक : {{certificate.NOCINSDATE}} {{/if}}
               </div>
 
               <div class="reference-item">
-                २) पावती क्रमांक : {{RECEIPTNO}} {{#if RECEIPTDATE}}
-                &nbsp;&nbsp;दिनांक : {{RECEIPTDATE}} {{/if}}
+                २) पावती क्रमांक : {{certificate.RECEIPTNO}} {{#if certificate.RECEIPTDATE}}
+                &nbsp;&nbsp;दिनांक : {{certificate.RECEIPTDATE}} {{/if}}
               </div>
             </span>
           </div>
@@ -695,14 +695,14 @@
             ================================================== -->
 
         <div class="business-details">
-          {{#if BUSINESSADDRESS}}
+          {{#if certificate.NOCADDRESS}}
 
           <div class="business-row">
             <div class="business-label">व्यवसायाचे ठिकाण</div>
 
             <div class="business-colon">:</div>
 
-            <div class="business-value">{{BUSINESSADDRESS}}</div>
+            <div class="business-value">{{certificate.NOCADDRESS}}</div>
           </div>
 
           <div class="business-row">
@@ -710,7 +710,7 @@
 
             <div class="business-colon">:</div>
 
-            <div class="business-value">{{BUSINESSTYPE}}</div>
+            <div class="business-value">{{certificate.NOCDETAILS}}</div>
           </div>
 
           {{/if}}
@@ -735,7 +735,7 @@
             स्वतः परस्पर प्राप्त करुन घेण्यात यावी.
           </li>
 
-          <li>सदरचा ना हरकत दाखला 31/03/2027 पर्यंतच वैध राहील.</li>
+          <li>सदरचा ना हरकत दाखला {{VALIDITYDATE}} पर्यंतच वैध राहील.</li>
 
           <li>
             सदरचा ना हरकत दाखला न्यायालयीन कामकाज करिता ग्राह्य धरण्यात येवू
