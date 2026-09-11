@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="mr">
+  <head>
+    <meta charset="UTF-8" />
+
+    <title>रुग्णालयासाठी ना हरकत प्रमाणपत्र</title>
+
+    <style>
+      @page {
+        size: A4;
+        margin: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        padding: 0;
+        background: #ffffff;
+      }
+
+      body {
+        color: #000000;
+
+        font-family:
+          "Noto Sans Devanagari", "Nirmala UI", "Mangal", "Arial Unicode MS",
+          sans-serif;
+
+        font-size: 11.8px;
+        font-weight: 400;
+        line-height: 1.38;
+      }
+
+      /* =====================================================
+           A4 PAGE
+        ===================================================== */
+
+      .page {
+        position: relative;
+
+        width: 210mm;
+        height: 297mm;
+
+        margin: 0;
+        padding: 0;
+
+        overflow: hidden;
+
+        background: #ffffff;
+
+        page-break-after: always;
+      }
+
+      .page:last-child {
+        page-break-after: auto;
+      }
+
+      /* =====================================================
+           CERTIFICATE BORDER
+        ===================================================== */
+
+      .certificate-border {
+        position: absolute;
+
+        top: 9mm;
+        left: 10mm;
+
+        width: 190mm;
+        height: 279mm;
+
+        border: 1px solid #222222;
+
+        z-index: 1;
+
+        pointer-events: none;
+      }
+
+      /* =====================================================
+           CERTIFICATE CONTENT
+        ===================================================== */
+
+      .certificate {
+        position: absolute;
+
+        top: 11.5mm;
+        left: 16mm;
+        right: 16mm;
+        bottom: 10mm;
+
+        z-index: 2;
+
+        min-height: 0;
+      }
+
+      /* =====================================================
+           HEADER
+        ===================================================== */
+
+      .header {
+        position: relative;
+
+        width: 100%;
+        height: 27mm;
+
+        text-align: center;
+      }
+
+      /* =====================================================
+           LEFT LOGO
+        ===================================================== */
+
+      .left-logo {
+        position: absolute;
+
+        top: 0;
+        left: 1mm;
+
+        width: 23mm;
+        height: 22mm;
+
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+      }
+
+      .left-logo img {
+        display: block;
+
+        max-width: 20mm;
+        max-height: 20mm;
+
+        width: auto;
+        height: auto;
+
+        object-fit: contain;
+      }
+
+      /* =====================================================
+           RIGHT LOGO
+        ===================================================== */
+
+      .right-logo {
+        position: absolute;
+
+        top: 0;
+        right: 1mm;
+
+        width: 23mm;
+        height: 22mm;
+
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+      }
+
+      .right-logo img {
+        display: block;
+
+        max-width: 20mm;
+        max-height: 20mm;
+
+        width: auto;
+        height: auto;
+
+        object-fit: contain;
+      }
+
+      /* =====================================================
+           CORPORATION NAME
+        ===================================================== */
+
+      .corporation-name {
+        margin: 0;
+        padding: 0;
+
+        font-size: 16px;
+        font-weight: 400;
+
+        line-height: 1.45;
+      }
+
+      /* =====================================================
+           CERTIFICATE TITLE
+        ===================================================== */
+
+      .certificate-title {
+        margin-top: 1.5mm;
+
+        font-size: 14px;
+        font-weight: 400;
+
+        line-height: 1.4;
+      }
+
+      /* =====================================================
+           HEADER LINE
+        ===================================================== */
+
+      .header-line {
+        position: absolute;
+
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        height: 1px;
+
+        border-top: 1px solid #222222;
+      }
+
+      /* =====================================================
+           CERTIFICATE META
+        ===================================================== */
+
+      .certificate-meta {
+        width: 100%;
+
+        padding-top: 2.5mm;
+
+        text-align: right;
+
+        font-size: 11.5px;
+
+        line-height: 1.45;
+      }
+
+      .certificate-number {
+        margin-bottom: 3mm;
+      }
+
+      .certificate-date {
+        margin-bottom: 5mm;
+      }
+
+      /* =====================================================
+           RECIPIENT
+        ===================================================== */
+
+      .recipient {
+        width: 100%;
+
+        margin-bottom: 4.5mm;
+
+        line-height: 1.55;
+      }
+
+      .recipient-line {
+        margin: 0;
+        padding: 0;
+      }
+
+      /* =====================================================
+           SUBJECT / REFERENCE
+        ===================================================== */
+
+      .subject-reference {
+        width: 72%;
+
+        margin-left: 28%;
+        margin-bottom: 5mm;
+
+        font-size: 11.5px;
+
+        line-height: 1.5;
+      }
+
+      /* =====================================================
+           SUBJECT
+        ===================================================== */
+
+      .subject-row {
+        display: flex;
+
+        width: 100%;
+
+        align-items: flex-start;
+
+        margin-bottom: 1mm;
+      }
+
+      .subject-label {
+        width: 19mm;
+
+        flex-shrink: 0;
+      }
+
+      .subject-value {
+        flex: 1;
+
+        min-width: 0;
+      }
+
+      /* =====================================================
+           REFERENCE
+        ===================================================== */
+
+      .reference-wrapper {
+        width: 100%;
+      }
+
+      .reference-heading {
+        display: inline-block;
+
+        width: 19mm;
+
+        vertical-align: top;
+      }
+
+      .reference-content {
+        display: inline-block;
+
+        width: calc(100% - 19mm);
+
+        vertical-align: top;
+      }
+
+      .reference-item {
+        margin: 0 0 1px 0;
+
+        line-height: 1.5;
+      }
+
+      /* =====================================================
+           INTRODUCTION
+        ===================================================== */
+
+      .intro {
+        width: 100%;
+
+        margin: 0 0 6mm 0;
+
+        text-align: justify;
+
+        font-size: 11.5px;
+
+        line-height: 1.52;
+      }
+
+      /* =====================================================
+           BUSINESS DETAILS
+        ===================================================== */
+
+      .business-details {
+        width: 100%;
+
+        margin-bottom: 3.5mm;
+
+        font-size: 11.5px;
+      }
+
+      .business-row {
+        display: flex;
+
+        width: 100%;
+
+        align-items: flex-start;
+
+        margin-bottom: 2.5mm;
+
+        line-height: 1.48;
+      }
+
+      .business-label {
+        width: 38mm;
+
+        flex-shrink: 0;
+      }
+
+      .business-colon {
+        width: 5mm;
+
+        flex-shrink: 0;
+
+        text-align: center;
+      }
+
+      .business-value {
+        flex: 1;
+
+        min-width: 0;
+
+        overflow-wrap: break-word;
+      }
+
+      /* =====================================================
+           APPLICANT
+        ===================================================== */
+
+      .applicant {
+        margin-bottom: 2mm;
+
+        font-size: 11.5px;
+
+        line-height: 1.45;
+      }
+
+      /* =====================================================
+           CONDITIONS HEADING
+        ===================================================== */
+
+      .conditions-heading {
+        margin-bottom: 2mm;
+
+        font-size: 11.5px;
+
+        line-height: 1.45;
+      }
+
+      /* =====================================================
+           CONDITIONS
+        ===================================================== */
+
+      .conditions {
+        margin: 0;
+
+        padding-left: 7mm;
+
+        font-size: 10.8px;
+
+        line-height: 1.36;
+      }
+
+      .conditions li {
+        margin: 0 0 1.4mm 0;
+
+        padding-left: 1.5mm;
+
+        text-align: justify;
+
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      .conditions li:last-child {
+        margin-bottom: 0;
+      }
+
+      /* =====================================================
+           FEE
+        ===================================================== */
+
+      .fee {
+        margin-top: 3mm;
+
+        font-size: 11.5px;
+
+        line-height: 1.45;
+      }
+
+      /* =====================================================
+           FOOTER
+        ===================================================== */
+
+      .footer {
+        position: absolute;
+
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        height: 29mm;
+      }
+
+      /* =====================================================
+           QR CODE
+        ===================================================== */
+
+      .qr-code {
+        position: absolute;
+
+        left: 3mm;
+        bottom: 1mm;
+
+        width: 23mm;
+        height: 23mm;
+      }
+
+      .qr-code img {
+        display: block;
+
+        width: 23mm;
+        height: 23mm;
+
+        object-fit: contain;
+      }
+
+      /* =====================================================
+           STAMP
+        ===================================================== */
+
+      .stamp {
+        position: absolute;
+
+        left: 92mm;
+        bottom: 0;
+
+        width: 32mm;
+        height: 32mm;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+      }
+
+      .stamp img {
+        display: block;
+
+        max-width: 30mm;
+        max-height: 30mm;
+
+        width: auto;
+        height: auto;
+
+        object-fit: contain;
+      }
+
+      /* =====================================================
+           FOOTER CORPORATION
+        ===================================================== */
+
+      .footer-corporation {
+        position: absolute;
+
+        right: 0;
+        bottom: 4mm;
+
+        font-size: 10px;
+
+        line-height: 1.3;
+
+        text-align: right;
+
+        white-space: nowrap;
+      }
+
+      /* =====================================================
+           PAGE NUMBER
+        ===================================================== */
+
+      .page-number {
+        position: absolute;
+
+        right: 16mm;
+        bottom: 4mm;
+
+        z-index: 10;
+
+        font-size: 8.5px;
+
+        line-height: 1;
+      }
+
+      /* =====================================================
+           PRINT
+        ===================================================== */
+
+      @media print {
+        html,
+        body {
+          width: 210mm;
+          height: 297mm;
+
+          margin: 0;
+          padding: 0;
+        }
+
+        .page {
+          width: 210mm;
+          height: 297mm;
+
+          margin: 0;
+          padding: 0;
+
+          page-break-after: always;
+        }
+
+        .page:last-child {
+          page-break-after: auto;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <!-- =================================================
+             FIXED BORDER
+        ================================================== -->
+
+      <div class="certificate-border"></div>
+
+      <!-- =================================================
+             CERTIFICATE
+        ================================================== -->
+
+      <div class="certificate">
+        <!-- =================================================
+                 HEADER
+            ================================================== -->
+
+        <div class="header">
+          {{#if ULBLOGO}}
+          <div class="left-logo">
+            <img src="{{ULBLOGO}}" alt="ULB Logo" />
+          </div>
+          {{/if}} {{#if APLESEVA_LOGO}}
+          <div class="right-logo">
+            <img src="{{APLESEVA_LOGO}}" alt="Aaple Seva Logo" />
+          </div>
+          {{/if}}
+
+          <div class="corporation-name">{{CORPORATIONNAME}}</div>
+
+          <div class="certificate-title">
+           मांस दुकान ( गोमांस, डुकराचे मांस, पोल्ट्री ) ना हरकत प्रमाणपत्र
+          </div>
+
+          <div class="header-line"></div>
+        </div>
+
+        <!-- =================================================
+                 CERTIFICATE NUMBER / DATE
+            ================================================== -->
+
+        <div class="certificate-meta">
+          <div class="certificate-number">
+            ना हरकत प्रमाणपत्र क्रमांक : {{CERTIFICATENO}}
+          </div>
+
+          <div class="certificate-date">दिनांक : {{APPLICATIONDATE}}</div>
+        </div>
+
+        <!-- =================================================
+                 APPLICANT / RECIPIENT
+            ================================================== -->
+
+        <div class="recipient">
+          <div class="recipient-line">प्रति,</div>
+
+          <div class="recipient-line">श्री./श्रीमती. {{APPLINAME}}</div>
+
+          {{#if APPLIADDRESS}}
+          <div class="recipient-line">{{APPLIADDRESS}}</div>
+          {{/if}}
+        </div>
+
+        <!-- =================================================
+                 SUBJECT + REFERENCES
+            ================================================== -->
+
+        <div class="subject-reference">
+          <div class="subject-row">
+            <div class="subject-label">विषय :</div>
+
+            <div class="subject-value">
+              मांस दुकान ( गोमांस, डुकराचे मांस, पोल्ट्री ) ना हरकत प्रमाणपत्र
+            </div>
+          </div>
+
+          <div class="reference-wrapper">
+            <span class="reference-heading"> संदर्भ : </span>
+
+            <span class="reference-content">
+              <div class="reference-item">
+                १) अर्ज क्रमांक : {{APPLINO}} {{#if APPLDATE}}
+                &nbsp;&nbsp;दिनांक : {{APPLDATE}} {{/if}}
+              </div>
+
+              <div class="reference-item">
+                २) पावती क्रमांक : {{RECEIPTNO}} {{#if RECEIPTDATE}}
+                &nbsp;&nbsp;दिनांक : {{RECEIPTDATE}} {{/if}}
+              </div>
+            </span>
+          </div>
+        </div>
+
+        <!-- =================================================
+                 INTRO
+            ================================================== -->
+
+        <p class="intro">
+          उपरोक्त संदर्भिय अर्जानुसार आपणास मांस दुकान ( गोमांस, डुकराचे मांस, पोल्ट्री )व्यवसाय करण्यासाठी
+          ना हरकत प्रमाणपत्र देण्यात येत आहे. सदर अटी आणि शर्तींचे पालन करणे
+          बंधनकारक राहील.
+        </p>
+
+        <!-- =================================================
+                 BUSINESS DETAILS
+            ================================================== -->
+
+        <div class="business-details">
+          {{#if BUSINESSADDRESS}}
+
+          <div class="business-row">
+            <div class="business-label">व्यवसायाचे ठिकाण</div>
+
+            <div class="business-colon">:</div>
+
+            <div class="business-value">{{BUSINESSADDRESS}}</div>
+          </div>
+
+          <div class="business-row">
+            <div class="business-label">व्यवसायाचे वर्णन</div>
+
+            <div class="business-colon">:</div>
+
+            <div class="business-value">{{BUSINESSTYPE}}</div>
+          </div>
+
+          {{/if}}
+        </div>
+
+        <!-- =================================================
+                 CONDITIONS
+            ================================================== -->
+
+      <div class="conditions-heading">
+    अटी आणि शर्ती :-
+</div>
+
+<ol class="conditions">
+
+    <li>
+        सदरचे व्यवसाय आजूबाजूचे रहिवासी यांना कोणत्याही प्रकारचा त्रास होणार
+        नाही याची दक्षता अर्जदार यांनी घेण्याची आहे. तसेच कोणत्याही प्रकारची
+        तक्रार आल्यास सदर दाखला आपोआप रद्द होईल. कोणत्याही प्रकारची जिवित /
+        वित्त हाणी झाल्यास न.प. जबाबदार राहणार नाही.
+    </li>
+
+    <li>
+        सदर व्यवसायासाठी आवश्यक असणारे इतर प्रशासकीय परवाने अर्जदार यांनी
+        स्वतः परस्पर प्राप्त करुन घेण्यात यावी.
+    </li>
+
+    <li>
+        सदरचा ना हरकत दाखला 31/03/2027 पर्यंतच वैध राहील.
+    </li>
+
+    <li>
+        सदरचा ना हरकत दाखला न्यायालयीन कामकाज करिता ग्राह्य धरण्यात येवू नये.
+    </li>
+
+    <li>
+        जागेचा मालकी हक्काचा किंवा जागा भाड्याने घेतली असल्यास त्याजागेबाबत
+        सर्वस्वी जबाबदारी आपली /अर्जदाराची राहील.
+    </li>
+
+    <li>
+        सदरचा दाखला महाराष्ट्र अन्न नागरी पुरवठा विभाग यांचे अधिनियमानुसार
+        व्यवसाय करणे बंधनकारक राहिल तसेच काही वाद किंवा शासनाची फसवणुक होईल
+        असे अनुचित प्रकार घडल्यास त्यास नगरपरिषद जबाबदार राहणार नाही व
+        दिलेला दाखला रद्द करण्यात / समजणेत येईल.
+    </li>
+
+    <li>
+        नागरी घनकचरा अधिनियम नुसार नगरपरिषदेने 2016 ठरवून दिलेल्या प्रकारानुसार
+        घनकचरा वर्गीकरण करुन देणे अर्जदारास बंधनकारक राहील.
+    </li>
+
+    <li>
+        प्लॅस्टिक व थर्माकॉल बंदी सन 2018 ची अंमलबजावणी करणे अर्जदारास
+        बंधनकारक राहील.
+    </li>
+
+    <li>
+        इतर शासकिय विभागाची परवानगी घेणे आपल्यावर बंधनकारक आहे. तरी याबाबत
+        काही तक्रार व बेकायदेशीर बाब आढळल्यास ना हरकत दाखला आपोआप रद्द होईल.
+    </li>
+
+    <li>
+        सदरचा ना हरकत दाखला मुदती पूर्व रद्द करण्याबाबतचे अधिकार
+        नगरपरिषदेने राखून ठेवले आहे.
+    </li>
+
+</ol>
+
+<div class="fee">
+    ना हरकत दाखला फी रक्कम रु. 1000/-
+</div>
+
+        <div class="footer">
+          {{#if QRCODE}}
+          <div class="qr-code">
+            <img src="{{QRCODE}}" alt="QR Code" />
+          </div>
+          {{/if}} {{#if STAMP}}
+          <div class="stamp">
+            <img src="{{STAMP}}" alt="Official Stamp" />
+          </div>
+          {{/if}}
+
+          <div class="footer-corporation">{{CORPORATIONNAME}}</div>
+        </div>
+      </div>
+
+      <!-- =================================================
+             PAGE NUMBER
+        ================================================== -->
+
+      <div class="page-number">Page 1 of 1</div>
+    </div>
+  </body>
+</html>
