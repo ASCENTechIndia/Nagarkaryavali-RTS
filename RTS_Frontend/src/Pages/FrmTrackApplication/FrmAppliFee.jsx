@@ -201,7 +201,6 @@ const FrmAppliFee = () => {
     const isMahaPayment = String(applicationSource?.APPSOURCE || "").toUpperCase() === "MAHA" && String(applicationSource?.MAHAPAY || "").toUpperCase() === "N";
 
     const createPaymentSession = async () => {
-        debugger;
         if (!appNo) {
             await Swal.fire({ text: "Application No. can not be blank." });
             return null;
@@ -297,10 +296,7 @@ const FrmAppliFee = () => {
 
             await Swal.fire({
                 icon: "error",
-                text:
-                    error?.response?.data?.message ||
-                    error?.message ||
-                    "Unable to create payment session."
+                text: error?.response?.data?.message || error?.message || "Unable to create payment session."
             });
 
             return null;
@@ -357,8 +353,9 @@ const FrmAppliFee = () => {
     console.log("Payment Gateway Request", {paymentUrl, transactionId, returnUrl, msg});
 
     const confirmed = await Swal.fire({
-        icon: "success",
+        // icon: "success",
         // text: `Transaction No. : ${transactionId}`,
+        text: `Redirecting for Payment`,
         confirmButtonText: "Continue",
         // timer: 1500,
         allowOutsideClick: false

@@ -496,7 +496,7 @@ const FrmAfterTransactionTMC = () => {
                                     {email || "-"}
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4">
+                            {/* <div className="flex items-center gap-4">
                                 <div className="flex w-40 shrink-0 items-center justify-between">
                                     <Label text="Service ID" />
                                     <span>:</span>
@@ -504,8 +504,8 @@ const FrmAfterTransactionTMC = () => {
                                 <div className="min-w-0 flex-1 rounded-md border bg-gray-50 px-3 py-2 text-sm text-gray-700">
                                     {serviceId || "-"}
                                 </div>
-                            </div>
-                            <div className="flex items-center gap-4">
+                            </div> */}
+                            {/* <div className="flex items-center gap-4">
                                 <div className="flex w-40 shrink-0 items-center justify-between">
                                     <Label text="User Unique ID" />
                                     <span>:</span>
@@ -513,8 +513,8 @@ const FrmAfterTransactionTMC = () => {
                                 <div className="min-w-0 flex-1 rounded-md border bg-gray-50 px-3 py-2 text-sm text-gray-700">
                                     {userUniqueId || "-"}
                                 </div>
-                            </div>
-                            <div className="flex items-center gap-4">
+                            </div> */}
+                            {/* <div className="flex items-center gap-4">
                                 <div className="flex w-40 shrink-0 items-center justify-between">
                                     <Label text="ULB ID" />
                                     <span>:</span>
@@ -522,7 +522,7 @@ const FrmAfterTransactionTMC = () => {
                                 <div className="min-w-0 flex-1 rounded-md border bg-gray-50 px-3 py-2 text-sm text-gray-700">
                                     {ulbId || "-"}
                                 </div>
-                            </div>
+                            </div> */}
                             <div className="flex items-center gap-4 md:col-span-2">
                                 <div className="flex w-40 shrink-0 items-center justify-between">
                                     <Label text="Payment Status" />

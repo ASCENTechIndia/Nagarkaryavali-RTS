@@ -143,6 +143,11 @@ app.use("/api/FrmElectrical", require("./modules/NOC/FrmElectrical/FrmElectrical
 app.use("/api/FrmMeatShopNOC", require("./modules/NOC/FrmMeatShopNOC/FrmMeatShopNOC.route"));
 app.use("/api/FrmHospitalParvana", require("./modules/AdminDepartment/FrmHospitalParvana/frmHospitalParvana.routes"));
 app.use("/api/FrmHospitalNOC", require("./modules/NOC/NOCPdf/frmHospitalNOC.route"));
+app.use("/api/FrmBusinessTypeListMst", require("./modules/AdminDepartment/FrmBusinessTypeListMst/FrmBusinessTypeListMst.routes"))
+app.use("/api/FrmNOCHordingType", require("./modules/AdminDepartment/FrmNOCHordingType/FrmNOCHordingType.routes"))
+app.use("/api/FrmNOCHordingSubType", require("./modules/AdminDepartment/FrmNOCHordingSubType/FrmNOCHordingSubType.routes"));
+app.use("/api/FrmLicenseType", require("./modules/AdminDepartment/FrmLicenseTypeList/FrmLicenseTypeList.route"));
+app.use("/api/FrmNocRoadType",    require("./modules/AdminDepartment/FrmRoadType/frmNocRoadType.routes"));
 
 app.use(errorMiddleware);
 
