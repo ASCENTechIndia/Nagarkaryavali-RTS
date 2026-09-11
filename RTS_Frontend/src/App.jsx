@@ -70,6 +70,18 @@ import FrmMeatShopNOC from "./Pages/NOC/FrmMeatShopNOC";
 import FrmNOCService from "././Pages/NOC/FrmNOCService";
 import FrmNOMNoc from "./Pages/NOC/FrmNOMNoc";
 import FrmNORNoc from "./Pages/NOC/FrmNORNoc";
+import FrmBusinessTypeList from "./Pages/Admin/FrmBusinessTypeList";
+import FrmBusinessTypeMst from "./Pages/Admin/FrmBusinessTypeMst";
+import FrmNOCHordingTypeList from "./Pages/Admin/FrmNOCHordingTypeList";
+import FrmNOCHordingTypeMst from "./Pages/Admin/FrmNOCHordingTypeMst";
+import FrmNOCHordingSubTypeList from "./Pages/Admin/FrmNOCHordingSubTypeList";
+import FrmNOCHordingSubTypeMst from "./Pages/Admin/FrmNOCHordingSubTypeMst";
+import FrmLicenseTypeList from "./Pages/Admin/FrmLicenseTypeList";
+import FrmLicenseTypeMst from "./Pages/Admin/FrmLicenseTypeMst";      
+import FrmNocRoadType from "./Pages/Admin/FrmNocRoadType";
+import FrmNocRoadTypeMst from "./Pages/Admin/FrmNocRoadTypeMst";
+
+
 
 function HomePage() {
   return <div>Welcome to Employee Portal</div>;
@@ -356,6 +368,47 @@ const router = createBrowserRouter([
         path:"/app/FrmNOCService",
         element:<FrmNOMNoc />
       },
+         {
+        path:"/app/FrmBusinessTypeList",
+        element:<FrmBusinessTypeList />
+      },
+         {
+        path:"/app/FrmBusinessTypeMst",
+        element:<FrmBusinessTypeMst />
+      },
+      {
+        path:"/App/FrmNOCHordingTypeList",
+        element:<FrmNOCHordingTypeList />
+      },
+      {
+        path:"/App/FrmNOCHordingTypeMst",
+        element:<FrmNOCHordingTypeMst />
+      },
+      {
+        path:"/App/FrmNOCHordingSubTypeList",
+        element:<FrmNOCHordingSubTypeList />
+      },
+      {
+        path:"/App/FrmNOCHordingSubTypeMst",
+        element:<FrmNOCHordingSubTypeMst />
+      },     
+      {
+        path: "/app/FrmLicenseTypeList",
+        element: <FrmLicenseTypeList />
+      },
+      {
+        path: "/app/FrmLicenseTypeMst",
+        element: <FrmLicenseTypeMst />
+      },
+      {
+        path: "/app/FrmNocRoadType",
+        element: <FrmNocRoadType />,
+      },
+      {
+        path: "/app/FrmNocRoadTypeMst",
+        element: <FrmNocRoadTypeMst />,
+      },
+
     ]
   },
 ]);
