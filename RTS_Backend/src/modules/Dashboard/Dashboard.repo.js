@@ -209,7 +209,7 @@ const getDepartmentMenuRepo = async ({ ulbid }) => {
             var_entry_status,
             var_entry_path
         FROM vw_accordbk
-        INNER JOIN aorts_service_def
+        INNER JOIN aorts_tmcservice_def
             ON num_service_deptid = deptid
         INNER JOIN aorts_service_config
             ON num_serv_deptid = deptid
@@ -247,7 +247,7 @@ const getServicesByDeptIdRepo = async ({ ulbid, deptId }) => {
     //             num_service_serviceid,
     //             var_dept_engname,
     //             num_dept_id
-    //         FROM aorts.aorts_service_def
+    //         FROM aorts.aorts_tmcservice_def
     //         INNER JOIN admins.aoms_dept_mas
     //             ON num_dept_id = num_service_deptid
     //         INNER JOIN aorts_service_config
@@ -269,7 +269,7 @@ const getServicesByDeptIdRepo = async ({ ulbid, deptId }) => {
     //             num_service_serviceid,
     //             var_dept_engname,
     //             num_dept_id
-    //         FROM aorts.aorts_service_def
+    //         FROM aorts.aorts_tmcservice_def
     //         INNER JOIN admins.aoms_dept_mas
     //             ON num_dept_id = num_service_deptid
     //         INNER JOIN aorts_service_config

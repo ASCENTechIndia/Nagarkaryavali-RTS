@@ -148,7 +148,7 @@ const getServiceDocumentsRepo = async (serviceId) => {
         var_doc_marname AS marname,
         num_service_serviceid AS serviceid
       FROM aorts_doc_def
-      INNER JOIN aorts_service_def
+      INNER JOIN aorts_tmcservice_def
         ON num_service_serviceid = num_doc_serviceid
       WHERE num_doc_serviceid = :serviceId
       ORDER BY num_doc_id
