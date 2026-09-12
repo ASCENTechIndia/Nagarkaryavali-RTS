@@ -14,7 +14,7 @@ import config from "@/utils/config";
 const FrmWaterConnectionApplication = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   console.log({ location })
   const locationState = location.state || {};
   const ulbId = locationState.ulbId || user?.ulbId
@@ -99,7 +99,9 @@ const FrmWaterConnectionApplication = () => {
     try {
       setZoneLoading(true);
       const url = `${BASE_URL}/api/watermodule/wards`;
-      const response = await axios.get(url);
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       console.log("Zone API Response:", response.data);
 
@@ -126,7 +128,9 @@ const FrmWaterConnectionApplication = () => {
       setConsumerTypeLoading(true);
 
       const url = `${BASE_URL}/api/watermodule/water-consumer-types`;
-      const response = await axios.get(url);
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       console.log("Consumer Type Response:", response.data);
 
@@ -152,7 +156,9 @@ const FrmWaterConnectionApplication = () => {
     try {
       setSewerageTypeLoading(true);
 
-      const response = await axios.get(`${BASE_URL}/api/watermodule/water-sewerage-types`);
+      const response = await axios.get(`${BASE_URL}/api/watermodule/water-sewerage-types`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (response?.data?.ok === true && response?.data?.data?.success === true) {
         const meterTypes = response.data.data.data || [];
@@ -174,7 +180,9 @@ const FrmWaterConnectionApplication = () => {
       setMeterTypeLoading(true);
 
       const url = `${BASE_URL}/api/watermodule/water-meter-types`;
-      const response = await axios.get(url);
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (response?.data?.ok === true && response?.data?.data?.success === true) {
         const meterTypes = response.data.data.data || [];
@@ -211,8 +219,7 @@ const FrmWaterConnectionApplication = () => {
 
 
 
-      const url =
-        `${BASE_URL}/api/watermodule/service-documents`;
+      const url = `${BASE_URL}/api/watermodule/service-documents`;
 
       console.log(
         "Fetching service documents:",
@@ -223,14 +230,12 @@ const FrmWaterConnectionApplication = () => {
         }
       );
 
-      const response = await axios.get(
-        url,
+      const response = await axios.get(url,
         {
-          params: {
-            serviceId: serviceId,
-            ulbid: ulbId,
-          },
-        }
+          params: { serviceId: serviceId, ulbid: ulbId },
+          headers: { Authorization: `Bearer ${token}` },
+        },
+
       );
 
       console.log(
@@ -302,6 +307,9 @@ const FrmWaterConnectionApplication = () => {
           birthDeathDate,
           fatherName: fatherName.trim(),
           motherName: motherName.trim(),
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -344,9 +352,9 @@ const FrmWaterConnectionApplication = () => {
     try {
       setNocPurposeLoading(true);
 
-      const response = await axios.get(
-        `${BASE_URL}/api/watermodule/noc-purpose`
-      );
+      const response = await axios.get(`${BASE_URL}/api/watermodule/noc-purpose`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       console.log("NOC Purpose API Response:", response.data);
 
@@ -597,7 +605,7 @@ const FrmWaterConnectionApplication = () => {
       return;
     }
 
-    if (!isFireBrigadeService && !formData.consumeType) {
+    if (!isFireBrigadeService && !isBndService && !formData.consumeType) {
       Swal.fire({
         text: "Please select Consumer Type.",
         confirmButtonColor: "#1e3a8a",
@@ -605,7 +613,7 @@ const FrmWaterConnectionApplication = () => {
       return;
     }
 
-    if (!isFireBrigadeService && !formData.meterType) {
+    if (!isFireBrigadeService && !isBndService && !formData.meterType) {
       Swal.fire({
         text: "Please select Meter Type.",
         confirmButtonColor: "#1e3a8a",
@@ -741,7 +749,7 @@ const FrmWaterConnectionApplication = () => {
         in_purposeM: formData.purposeMarathi.trim(),
         in_zoneid: Number(formData.zone),
         in_wardno: Number(formData.zone),
-        in_propertyno: formData.connectionNo.trim(),
+        in_propertyno: !isFireBrigadeService && !isBndService ? formData.connectionNo.trim() : "",
         in_mode: 1,
         in_PropertyUsage: 1,
         in_SellerName: "",
@@ -766,10 +774,9 @@ const FrmWaterConnectionApplication = () => {
 
 
       const saveResponse =
-        await axios.post(
-          `${BASE_URL}/api/watermodule/save`,
-          savePayload
-        );
+        await axios.post(`${BASE_URL}/api/watermodule/save`, savePayload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
       console.log(
         "Save API Response:",
@@ -908,34 +915,19 @@ const FrmWaterConnectionApplication = () => {
             document.file.name
           );
 
-          const uploadResponse =
-            await axios.post(
-              `${BASE_URL}/api/watermodule/upload-app-doc`,
-              uploadFormData,
-              {
-                params: {
-                  CorpId:
-                    Number(ulbId),
-
-                  ServiceId:
-                    Number(serviceId),
-
-                  AppNo:
-                    applicationNo,
-
-                  DocType:
-                    docType,
-
-                  DocumentId:
-                    document.documentId,
-                },
-
-                headers: {
-                  "Content-Type":
-                    "multipart/form-data",
-                },
-              }
-            );
+          const uploadResponse = await axios.post(`${BASE_URL}/api/watermodule/upload-app-doc`,
+            uploadFormData,
+            {
+              params: {
+                CorpId: Number(ulbId),
+                ServiceId: Number(serviceId),
+                AppNo: applicationNo,
+                DocType: docType,
+                DocumentId: document.documentId,
+              },
+              headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+            }
+          );
 
           console.log(
             "Document Upload Response:",
@@ -1437,13 +1429,11 @@ const FrmWaterConnectionApplication = () => {
                 <Input
                   type="text"
                   maxLength={10}
-                  value={
-                    formData.mobileNo
-                  }
+                  value={formData.mobileNo}
                   onChange={(e) =>
                     handleChange(
                       "mobileNo",
-                      e.target.value
+                      e.target.value.replace(/\D/g, "").slice(0, 10)
                     )
                   }
                   placeholder="Mobile No."
@@ -1497,6 +1487,7 @@ const FrmWaterConnectionApplication = () => {
 
                 <Input
                   type="email"
+                  maxLength={25}
                   value={
                     formData.email
                   }
@@ -1708,7 +1699,7 @@ const FrmWaterConnectionApplication = () => {
                 <>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                     <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                      <Label text="Connection No" required/>
+                      <Label text="Connection No" required />
                       <span>:</span>
                     </div>
 

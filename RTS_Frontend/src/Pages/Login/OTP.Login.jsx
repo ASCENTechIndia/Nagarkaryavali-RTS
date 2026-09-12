@@ -296,7 +296,7 @@ const OTPLogin = () => {
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: 0.1 }}
                                 >
-                                    <Label text="Mobile Number" required />
+                                    <Label text="Mobile Number" required className="min-w-fit"/>
 
                                     <div className="flex items-center gap-2">
                                         <PhoneIcon size={19} className="shrink-0 text-[#184aa6]" />

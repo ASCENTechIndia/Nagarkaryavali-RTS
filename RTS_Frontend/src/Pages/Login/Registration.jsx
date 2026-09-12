@@ -81,6 +81,14 @@ const Registration = () => {
             });
             return;
         }
+
+        if (values.dob > new Date()) {
+            await Swal.fire({
+                text: "Date of birth cannot be greater than today's date",
+                confirmButtonText: "OK"
+            });
+            return;
+        }
         if (!values.password) {
             await Swal.fire({
                 text: "Please enter password",
