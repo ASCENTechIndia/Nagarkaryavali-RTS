@@ -45,6 +45,9 @@ async function insertNOCApplication(params) {
     hoardingType,
     hoardingSubType,
     zoneId,
+    businessLicenseNo,
+    buildingPermissionProposalNo,
+    licenseType,
   } = params;
 
   const toNum = (v) => {
@@ -124,8 +127,8 @@ async function insertNOCApplication(params) {
     in_propno: propertyNo || "",
     in_nocaddress: businessAddress || "",
     in_wtconnno: waterConnectionNo || "",
-    in_nocpermino: permitFromDate || "",
-    in_buildpermino: permitToDate || "",
+    in_nocpermino: businessLicenseNo || "",
+    in_buildpermino: buildingPermissionProposalNo || "",
     in_occupcerno: occupancyCertificateNo || "",
     in_roadtype: roadType || "",
     in_roadlength: toNum(roadLength),
@@ -134,8 +137,8 @@ async function insertNOCApplication(params) {
     in_excavationshape: toNum(excavationArea),
     in_exctionstrtpoint: toNum(excavationStartPoint),
     in_exctionendpoint: toNum(excavationEndPoint),
-    in_Latitude: toNum(latitude),
-    in_Longitude: toNum(longitude),
+    in_Latitude: latitude ? String(latitude) : "",   
+    in_Longitude: longitude ? String(longitude) : "",
     in_clinicnm: hospitalName || "",
     in_healthnocno: healthAgencyNo || "",
     in_mandpreq_area: fixedArea || "",
@@ -158,6 +161,7 @@ async function insertNOCApplication(params) {
     throw new Error(result.error);
   }
 
+  console.log("binds", binds);
   console.log("NOC Application Insert Result:", result.outBinds);
   return result.outBinds;
 }
@@ -199,7 +203,60 @@ async function getServiceFields({ serviceId, deptId, ulbId }) {
   return result;
 }
 
+
+const getBusinessTypeDropdownRepo = async ({ ulbid }) => {
+    console.log("Repo: Fetch Business Type Dropdown", { ulbid });
+
+    const binds = { ulbid };
+
+    const sql = `
+        SELECT
+            num_bustyp_id AS BUSTYPID,
+            var_bustyp_name AS BUSTYPNAME
+        FROM AORTS_NOCBUSINESSTYP_MAS
+        WHERE num_bustyp_ulbid = :ulbid
+        ORDER BY var_bustyp_name
+    `;
+
+    const result = await executeQueryTMC(sql, binds);
+
+    if (!result || !result.success) {
+        throw new Error(
+            result?.error || "Failed to fetch business type dropdown"
+        );
+    }
+
+    return result.rows;
+};
+
+const getRoadTypeDropdownRepo = async ({ ulbid }) => {
+    console.log("Repo: Fetch Road Type Dropdown", { ulbid });
+
+    const binds = { ulbid };
+
+    const sql = `
+        SELECT
+            num_roadtype_id AS ROADTYPEID,
+            var_roadtype_name AS ROADTYPENAME
+        FROM AORTS_NOCROADTYPE_MAS
+        WHERE num_roadtype_ulbid = :ulbid
+        ORDER BY var_roadtype_name
+    `;
+
+    const result = await executeQueryTMC(sql, binds);
+
+    if (!result || !result.success) {
+        throw new Error(
+            result?.error || "Failed to fetch road type dropdown"
+        );
+    }
+
+    return result.rows;
+};
+
 module.exports = {
   insertNOCApplication,
-  getServiceFields
+  getServiceFields,
+  getBusinessTypeDropdownRepo,
+  getRoadTypeDropdownRepo,
 };

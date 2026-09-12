@@ -7,7 +7,7 @@ const getServiceListRepo = async () => {
       SELECT
         num_service_serviceid AS SERVICEID,
         var_service_eng_name  AS SERVICENAME
-      FROM aorts_service_def
+      FROM aorts_tmcservice_def
       ORDER BY num_service_serviceid
     `;
 
@@ -175,7 +175,7 @@ const getAppliReportRepo = async ({
           AND applidet.num_application_ulbid     = appinfo.num_appl_ulbid
         JOIN admins.aoms_dept_mas
           ON num_dept_id = applidet.num_application_deptid
-        JOIN aorts_service_def
+        JOIN aorts_tmcservice_def
           ON num_service_serviceid = appinfo.num_appl_serviceid
         JOIN aorts_servmenu_mas
           ON num_servmenu_servid = appinfo.num_appl_serviceid

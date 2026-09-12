@@ -24,7 +24,7 @@ async function fetchApplicationsSummary({ fromDate, toDate, deptId }) {
       SUM(num_application_amount) AS amount,
       COUNT(num_application_amount) AS appcount
     FROM aorts_application_det
-    INNER JOIN aorts_service_def 
+    INNER JOIN aorts_tmcservice_def 
       ON num_service_serviceid = num_application_serviceid
     WHERE 1=1
       AND TRUNC(dat_application_recieptdate) >= TO_DATE(:fromDate, 'dd/MM/yyyy')
@@ -77,7 +77,7 @@ async function fetchApplicationsDetail({ fromDate, toDate, serviceId, deptId }) 
     FROM aorts_application_det
     INNER JOIN aorts_user_def  
       ON var_application_userid = num_user_uniqueid 
-    INNER JOIN aorts_service_def 
+    INNER JOIN aorts_tmcservice_def 
       ON num_service_serviceid = num_application_serviceid
     WHERE TRUNC(dat_application_recieptdate) >= TO_DATE(:fromDate, 'dd/MM/yyyy')
       AND TRUNC(dat_application_recieptdate) <= TO_DATE(:toDate, 'dd/MM/yyyy')

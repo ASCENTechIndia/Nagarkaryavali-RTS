@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useFormikContext } from "formik";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,71 +15,69 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
-
-const BUSINESS_TYPES = [
-  {
-    id: "3206",
-    name: "Store-स्टोअर",
-  },
-  {
-    id: "3207",
-    name: "Trade-व्यापार  ",
-  },
-  {
-    id: "3208",
-    name: "Process-प्रक्रिया",
-  },
-  {
-    id: "3209",
-    name: "Service-सेवा",
-  },
-  {
-    id: "3210",
-    name: "Others-इतर",
-  },
-];
 
 const ApplicantDetails = () => {
   const {
     values,
-    errors,
-    touched,
     setFieldValue,
     handleChange,
     handleBlur,
   } = useFormikContext();
 
   const { user, token } = useAuth();
+
   const [zoneList, setZoneList] = useState([]);
+  const [businessTypeList, setBusinessTypeList] = useState([]);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
-  const ulbId = user?.ulbId; 
+  const ulbId = user?.ulbId;
+
+  const axiosConfig = {
+    headers: {
+      Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+    },
+  };
 
   useEffect(() => {
-    const fetchZones = async () => {
-      try {
-        const response = await axios.get(
-          `${BASE_URL}/api/FrmWaterRegister/ward-dropdown?ulbid=${ulbId || ""}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-            },
-          },
-        );
+    if (!ulbId) return;
 
-        if (response?.data?.ok && response?.data?.data?.data) {
-          setZoneList(response.data.data.data);
+    const fetchDropdowns = async () => {
+      try {
+        const [zoneResponse, businessTypeResponse] = await Promise.all([
+          axios.get(
+            `${BASE_URL}/api/FrmWaterRegister/ward-dropdown?ulbid=${ulbId}`,
+            axiosConfig
+          ),
+          axios.get(
+            `${BASE_URL}/api/FrmToursTravels/business-type-dropdown?ulbid=${ulbId}`,
+            axiosConfig
+          ),
+        ]);
+
+        if (
+          zoneResponse?.data?.ok &&
+          zoneResponse?.data?.data?.data
+        ) {
+          setZoneList(zoneResponse.data.data.data);
+        }
+
+        if (
+          businessTypeResponse?.data?.ok &&
+          businessTypeResponse?.data?.data?.data
+        ) {
+          setBusinessTypeList(
+            businessTypeResponse.data.data.data
+          );
         }
       } catch (error) {
-        console.error("Error fetching zones:", error);
+        console.error("Error fetching dropdowns:", error);
       }
     };
 
-    fetchZones();
-  }, []);
+    fetchDropdowns();
+  }, [ulbId]);
 
   return (
     <Card className="border shadow-sm">
@@ -104,7 +102,7 @@ const ApplicantDetails = () => {
                 onChange={handleChange}
                 onBlur={handleBlur}
                 placeholder="पहिले नाव"
-                className={`w-full h-9`}
+                className="w-full h-9"
               />
 
               <Input
@@ -144,7 +142,6 @@ const ApplicantDetails = () => {
                 <SelectTrigger className="w-20 h-9">
                   <SelectValue />
                 </SelectTrigger>
-
                 <SelectContent>
                   <SelectItem value="+91">+91</SelectItem>
                 </SelectContent>
@@ -163,7 +160,7 @@ const ApplicantDetails = () => {
                 onBlur={handleBlur}
                 placeholder="मोबाइल क्रमांक"
                 maxLength={10}
-                className={`w-full h-9`}
+                className="w-full h-9"
               />
             </div>
           </div>
@@ -181,7 +178,7 @@ const ApplicantDetails = () => {
               onChange={handleChange}
               onBlur={handleBlur}
               placeholder="ई-मेल आयडी"
-              className={`w-full h-9`}
+              className="w-full h-9"
             />
           </div>
 
@@ -204,7 +201,7 @@ const ApplicantDetails = () => {
               onBlur={handleBlur}
               placeholder="Enter number only"
               maxLength={12}
-              className={`w-full h-9`}
+              className="w-full h-9"
             />
           </div>
 
@@ -220,7 +217,7 @@ const ApplicantDetails = () => {
               onChange={handleChange}
               onBlur={handleBlur}
               placeholder="अर्जदाराचा निवासी पत्ता"
-              className={`w-full h-9`}
+              className="w-full h-9"
             />
           </div>
 
@@ -233,14 +230,12 @@ const ApplicantDetails = () => {
             <Input
               name="panCard"
               value={values.panCard || ""}
-              onChange={(e) => {
+              onChange={(e) =>
                 setFieldValue(
                   "panCard",
-                  e.target.value
-                    .toUpperCase()
-                    .slice(0, 10)
-                );
-              }}
+                  e.target.value.toUpperCase().slice(0, 10)
+                )
+              }
               onBlur={handleBlur}
               placeholder="Enter PAN Card Number"
               maxLength={10}
@@ -292,19 +287,17 @@ const ApplicantDetails = () => {
                 setFieldValue("businessType", value)
               }
             >
-              <SelectTrigger
-                className={`w-full h-9`}
-              >
-                <SelectValue placeholder="--Select Option--" />
+              <SelectTrigger className="w-full h-9">
+                <SelectValue placeholder="व्यवसायचा प्रकार निवडा" />
               </SelectTrigger>
 
               <SelectContent>
-                {BUSINESS_TYPES.map((item) => (
+                {businessTypeList.map((item) => (
                   <SelectItem
-                    key={item.id}
-                    value={item.id}
+                    key={item.BUSTYPID}
+                    value={String(item.BUSTYPID)}
                   >
-                    {item.name}
+                    {item.BUSTYPNAME}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -331,16 +324,23 @@ const ApplicantDetails = () => {
               <Label required text="Zone" />
               <span>:</span>
             </div>
+
             <Select
               value={values.zoneId || ""}
-              onValueChange={(value) => setFieldValue("zoneId", value)}
+              onValueChange={(value) =>
+                setFieldValue("zoneId", value)
+              }
             >
               <SelectTrigger className="w-full h-9">
                 <SelectValue placeholder="-- Select Zone --" />
               </SelectTrigger>
+
               <SelectContent>
                 {zoneList.map((zone) => (
-                  <SelectItem key={zone.WARDID} value={String(zone.WARDID)}>
+                  <SelectItem
+                    key={zone.WARDID}
+                    value={String(zone.WARDID)}
+                  >
                     {zone.WARDNAME}
                   </SelectItem>
                 ))}

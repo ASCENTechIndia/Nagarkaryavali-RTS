@@ -476,7 +476,7 @@ const FrmMarketLicenseUpdt = () => {
     }
   };
 
-  const handleTradeCategoryChange = async ( categoryId, categoryType, jwalanshilstat, setFieldValue ) => {
+  const handleTradeCategoryChange = async (categoryId, categoryType, jwalanshilstat, setFieldValue) => {
     setFieldValue("tradeCategory", categoryId);
     setFieldValue("tradeType", "");
     setFieldValue("rate", "0");
@@ -486,7 +486,7 @@ const FrmMarketLicenseUpdt = () => {
       return;
     }
 
-    await fetchTradeTypes( categoryId, categoryType, jwalanshilstat);
+    await fetchTradeTypes(categoryId, categoryType, jwalanshilstat);
   };
 
   const handleFileUploadChange = (id, event) => {
@@ -542,11 +542,11 @@ const FrmMarketLicenseUpdt = () => {
       return;
     }
 
-    const category = tradeCategory.find((item) =>String(item.CATEGORY_CATGRYID || item.categoryId || item.id) === String(values.tradeCategory));
+    const category = tradeCategory.find((item) => String(item.CATEGORY_CATGRYID || item.categoryId || item.id) === String(values.tradeCategory));
 
     const type = tradeType.find((item) => String(item.CATEGORYTYPE_CATGTYPID || item.tradeTypeId || item.id) === String(values.tradeType));
 
-    const exists = tradeTypeGrid.some((item) =>String(item.tradetypeid) === String(values.tradeType));
+    const exists = tradeTypeGrid.some((item) => String(item.tradetypeid) === String(values.tradeType));
 
     if (exists) {
       Swal.fire({
@@ -566,8 +566,8 @@ const FrmMarketLicenseUpdt = () => {
 
     const updated = [...tradeTypeGrid, newEntry];
     setTradeTypeGrid(updated);
-    setFieldValue( "rate", "0");
-    setFieldValue( "tradeType", "");
+    setFieldValue("rate", "0");
+    setFieldValue("tradeType", "");
   };
 
   const handleRemoveFromGrid = (gridSetter, index) => {
@@ -1501,18 +1501,20 @@ const FrmMarketLicenseUpdt = () => {
                               required
                             />
                             <Select
-                              value={values.cancelGender}
-                              onValueChange={(value) =>
-                                setFieldValue("cancelGender", value)
-                              }
+                              value={values.cancelGender || ""}
+                              onValueChange={(value) => {
+                                console.log("Selected Gender:", value);
+                                setFieldValue("cancelGender", value);
+                              }}
                             >
                               <SelectTrigger className="h-9 w-full sm:h-10">
                                 <SelectValue placeholder="-- Select --" />
                               </SelectTrigger>
-                              <SelectContent>
-                                {cancelGender.map((item, index) => (
+
+                              <SelectContent >
+                                {cancelGender.map((item) => (
                                   <SelectItem
-                                    key={item.GENDER_ID || index}
+                                    key={String(item.GENDER_ID)}
                                     value={String(item.GENDER_ID)}
                                   >
                                     {item.GENDER_NAME}
@@ -1760,23 +1762,23 @@ const FrmMarketLicenseUpdt = () => {
                           required
                         />
                         <Select
-                          value={values.buisiGender}
-                          onValueChange={(value) =>
-                            setFieldValue("buisiGender", value)
-                          }
+                          value={values.buisiGender || ""}
+                          onValueChange={(value) => {
+                            console.log("Selected Business Gender:", value);
+                            setFieldValue("buisiGender", value);
+                          }}
                         >
                           <SelectTrigger className="h-9 w-full sm:h-10">
                             <SelectValue placeholder="-- Select --" />
                           </SelectTrigger>
-                          <SelectContent>
-                            {buisiGender.map((item, index) => (
+
+                          <SelectContent >
+                            {buisiGender.map((item) => (
                               <SelectItem
-                                key={item.id || index}
-                                value={String(item.id)}
+                                key={String(item.GENDER_ID)}
+                                value={String(item.GENDER_ID)}
                               >
-                                {item.name ||
-                                  item.GENDER_NAME ||
-                                  item.GENDER}
+                                {item.GENDER_NAME}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1840,7 +1842,7 @@ const FrmMarketLicenseUpdt = () => {
                           onValueChange={(value) =>
                             handleTradeCategoryChange(value, values.licenseType, values.buisiJwalan, setFieldValue)
                           }
-                          disabled={!values.buisiJwalan || !values.licenseType }
+                          disabled={!values.buisiJwalan || !values.licenseType}
                         >
                           <SelectTrigger className="h-9 w-full sm:h-10">
                             <SelectValue
@@ -1878,7 +1880,7 @@ const FrmMarketLicenseUpdt = () => {
 
                             setFieldValue("rate", selected?.RATE || selected?.rate || "0");
                           }}
-                          disabled={ !values.tradeCategory || !values.licenseType}
+                          disabled={!values.tradeCategory || !values.licenseType}
                         >
                           <SelectTrigger className="h-9 w-full sm:h-10">
                             <SelectValue placeholder="-- Select --" />
@@ -1960,7 +1962,7 @@ const FrmMarketLicenseUpdt = () => {
                         required
                       />
                       <Select
-                        value={values.busiNameGender}
+                        value={values.busiNameGender || ""}
                         onValueChange={(value) =>
                           setFieldValue("busiNameGender", value)
                         }
@@ -1968,15 +1970,14 @@ const FrmMarketLicenseUpdt = () => {
                         <SelectTrigger className="h-9 w-full md:w-64 sm:h-10">
                           <SelectValue placeholder="-- Select --" />
                         </SelectTrigger>
-                        <SelectContent>
-                          {busiNameGender.map((item, index) => (
+
+                        <SelectContent >
+                          {busiNameGender.map((item) => (
                             <SelectItem
-                              key={item.id || index}
-                              value={String(item.id)}
+                              key={String(item.GENDER_ID)}
+                              value={String(item.GENDER_ID)}
                             >
-                              {item.name ||
-                                item.GENDER_NAME ||
-                                item.GENDER}
+                              {item.GENDER_NAME}
                             </SelectItem>
                           ))}
                         </SelectContent>

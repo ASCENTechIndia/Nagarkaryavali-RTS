@@ -646,7 +646,7 @@ const FrmTrackApplication = () => {
       if (status === "Done" || appAuth === "Done") {
         const departmentId = selectedApp?.departmentId ;
         
-        if (departmentId === 7) {
+        if (departmentId === 7 || departmentId === 290) {
           Swal.fire({
             text: "Generating certificate...",
             allowOutsideClick: false,

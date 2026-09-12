@@ -16,7 +16,7 @@ async function submitNOCApplicationService(payload) {
     latitude, longitude, hospitalName, healthAgencyNo,
     fixedArea, newHoarding, hoardingNumber,
     advertisingArea, numberOfDays,
-    hoardingType, hoardingSubType,
+    hoardingType, hoardingSubType, businessLicenseNo, buildingPermissionProposalNo, licenseType
   } = payload;
 
   if (!userId) throw new AppError("User ID is required", 400);
@@ -40,7 +40,7 @@ async function submitNOCApplicationService(payload) {
     latitude, longitude, hospitalName, healthAgencyNo,
     fixedArea, newHoarding, hoardingNumber,
     advertisingArea, numberOfDays,
-    hoardingType, hoardingSubType,
+    hoardingType, hoardingSubType, businessLicenseNo, buildingPermissionProposalNo, licenseType
   });
 
   if (Number(appResult.out_errcode) !== 9999) {
@@ -73,7 +73,49 @@ async function getServiceFieldsService({ serviceId, deptId, ulbId }) {
   };
 }
 
+const getBusinessTypeDropdownService = async (payload) => {
+    console.log("Service: Fetch Business Type Dropdown", payload);
+
+    const data = await repo.getBusinessTypeDropdownRepo(payload);
+
+    if (!data || data.length === 0) {
+        return {
+            success: false,
+            message: "No data Found",
+            data: []
+        };
+    }
+
+    return {
+        success: true,
+        count: data.length,
+        data
+    };
+};
+
+const getRoadTypeDropdownService = async (payload) => {
+    console.log("Service: Fetch Road Type Dropdown", payload);
+
+    const data = await repo.getRoadTypeDropdownRepo(payload);
+
+    if (!data || data.length === 0) {
+        return {
+            success: false,
+            message: "No data Found",
+            data: []
+        };
+    }
+
+    return {
+        success: true,
+        count: data.length,
+        data
+    };
+};
+
 module.exports = {
   submitNOCApplicationService,
-  getServiceFieldsService
+  getServiceFieldsService,
+  getBusinessTypeDropdownService,
+  getRoadTypeDropdownService
 };

@@ -6,6 +6,7 @@ const { AppError } = require("../../../libs/errors");
 
 const { ExtractOfPropertyReportHelper } = require("../../../utils/pdfHelper/FrmTrackApplication");
 const { getCorporationDetailsService } = require("../../Dashboard/Dashboard.service");
+const FrmServiceCertificatePdfHelper = require("../../../utils/pdfHelper/FrmServiceCertificatePdfHelper");
 
 // ============================================================
 // GET APPLICATION DETAILS
@@ -583,6 +584,7 @@ const generateCertificateReport = asyncHandler(async (req, res) => {
   }
 
   const reportData = serviceResult.data;
+  console.log("reportData: ", reportData);
 
   // ------------------------------------------------------
   // 2. Get Corporation Information
@@ -610,16 +612,27 @@ const generateCertificateReport = asyncHandler(async (req, res) => {
 
   let pdf;
 
-  pdf = await ExtractOfPropertyReportHelper({
-    rows: reportData,
-    corporationName: corporationName || "",
-    ulbLogo: ulbLogo || "",
-    reportName: "मालमत्ता कर उतारा",
-    serviceId: filters.serviceId,
-    appNo: filters.appNo,
-    ulbId: filters.ulbId,
-  });
-
+  if (["515", "516", "517", "518", "519", "520", "521"].includes(filters.serviceId)) {
+    pdf = await FrmServiceCertificatePdfHelper({
+      rows: reportData,
+      corporationName: corporationName || "",
+      ulbLogo: ulbLogo || "",
+      serviceId: filters.serviceId,
+      appNo: filters.appNo,
+      ulbId: filters.ulbId,
+    });
+  } else {
+    pdf = await ExtractOfPropertyReportHelper({
+      rows: reportData,
+      corporationName: corporationName || "",
+      ulbLogo: ulbLogo || "",
+      reportName: "मालमत्ता कर उतारा",
+      serviceId: filters.serviceId,
+      appNo: filters.appNo,
+      ulbId: filters.ulbId,
+    });
+  }
+  
   // ------------------------------------------------------
   // 4. Validate PDF
   // ------------------------------------------------------

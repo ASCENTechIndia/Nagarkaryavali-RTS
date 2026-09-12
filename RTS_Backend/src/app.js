@@ -133,14 +133,21 @@ app.use("/api/FrmChallanGenReport", require("./modules/AdminDepartment/FrmChalla
 app.use("/api/FrmTownPlanningSectorMapping", require("./modules/AdminDepartment/FrmTownPlanningSectorMapping/frmTownPlanningSectorMapping.routes"));
 app.use("/api/FrmAppliReportEMst", require("./modules/AdminDepartment/FrmAppliReportEMst/frmAppliReportEMst.routes"));
 app.use("/api/FrmHearingProccess", require("./modules/AdminDepartment/FrmHearingProccess/FrmHearingProccess.routes"));
-app.use("/api/FrmHearingDateAssign", require("./modules/AdminDepartment/FrmHearingDateAssign/FrmHearingDateAssign.routes"));
-app.use("/api/FrmHospitalParvana", require("./modules/AdminDepartment/FrmHospitalParvana/frmHospitalParvana.routes"));
+app.use("/api/FrmHearingDateAssign", require("./modules/AdminDepartment/FrmHearingDateAssign/FrmHearingDateAssign.routes"))
+app.use("/api/FrmNOCHordingType", require("./modules/AdminDepartment/FrmNOCHordingType/FrmNOCHordingType.routes"))
 
 // NOC
 app.use("/api/FrmToursTravels", require("./modules/NOC/FrmToursTravels/FrmToursTravels.routes"));
 app.use("/api/FrmMandapStall", require("./modules/NOC/FrmNOMNoc/FrmMandapStall.route"));
 app.use("/api/FrmElectrical", require("./modules/NOC/FrmElectrical/FrmElectrical.route"));
 app.use("/api/FrmMeatShopNOC", require("./modules/NOC/FrmMeatShopNOC/FrmMeatShopNOC.route"));
+app.use("/api/FrmHospitalParvana", require("./modules/AdminDepartment/FrmHospitalParvana/frmHospitalParvana.routes"));
+app.use("/api/FrmHospitalNOC", require("./modules/NOC/NOCPdf/frmHospitalNOC.route"));
+app.use("/api/FrmBusinessTypeListMst", require("./modules/AdminDepartment/FrmBusinessTypeListMst/FrmBusinessTypeListMst.routes"))
+app.use("/api/FrmNOCHordingType", require("./modules/AdminDepartment/FrmNOCHordingType/FrmNOCHordingType.routes"))
+app.use("/api/FrmNOCHordingSubType", require("./modules/AdminDepartment/FrmNOCHordingSubType/FrmNOCHordingSubType.routes"));
+app.use("/api/FrmLicenseType", require("./modules/AdminDepartment/FrmLicenseTypeList/FrmLicenseTypeList.route"));
+app.use("/api/FrmNocRoadType",    require("./modules/AdminDepartment/FrmRoadType/frmNocRoadType.routes"));
 
 app.use(errorMiddleware);
 

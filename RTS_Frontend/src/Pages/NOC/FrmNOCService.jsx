@@ -19,19 +19,12 @@ import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import config from "@/utils/config";
-import { toursAndTravelsValidationSchema, validateDynamicFields, documentValidationSchema } from "@/validations/global.validation";
-import ShadCNTable from "@/components/ui/table"; 
-
-const ROAD_TYPES = [
-  { id: "200023793", name: "सिमेंट रोड" },
-  { id: "200023795", name: "Gravel Road" },
-  { id: "200023794", name: "हार्ड मिक्स रोड" },
-  { id: "200023792", name: "मेटल रोड" },
-  { id: "200023797", name: "जुना सिमेंट रोड" },
-  { id: "200023796", name: "जुना तार रोड" },
-  { id: "200023790", name: "साधा रस्ता" },
-  { id: "200023791", name: "तार / डांबर रोड" },
-];
+import {
+  toursAndTravelsValidationSchema,
+  validateDynamicFields,
+  documentValidationSchema,
+} from "@/validations/global.validation";
+import ShadCNTable from "@/components/ui/table";
 
 const YES_NO_OPTIONS = [
   { id: "yes", name: "होय" },
@@ -146,6 +139,7 @@ const FrmNOCService = () => {
   const [docsLoading, setDocsLoading] = useState(false);
   const originalDocumentDefs = useRef([]);
 
+  const [roadTypeList, setRoadTypeList] = useState([]);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -195,14 +189,46 @@ const FrmNOCService = () => {
       console.error("Error fetching document definitions:", error);
       Swal.fire({
         text:
-          error?.response?.data?.error ||
-          "Failed to load document definitions",
+          error?.response?.data?.error || "Failed to load document definitions",
         confirmButtonColor: "#1e3a8a",
       });
     } finally {
       setDocsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!ulbId) {
+      setRoadTypeList([]);
+      return;
+    }
+
+    const fetchRoadTypes = async () => {
+      try {
+        const response = await axios.get(
+          `${BASE_URL}/api/FrmToursTravels/road-type-dropdown?ulbid=${ulbId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+            },
+          },
+        );
+
+        const roadTypes = response?.data?.data?.data;
+
+        if (response?.data?.ok && Array.isArray(roadTypes)) {
+          setRoadTypeList(roadTypes);
+        } else {
+          setRoadTypeList([]);
+        }
+      } catch (error) {
+        console.error("Error fetching road types:", error);
+        setRoadTypeList([]);
+      }
+    };
+
+    fetchRoadTypes();
+  }, [ulbId, token]);
 
   useEffect(() => {
     const fetchServiceFields = async () => {
@@ -381,6 +407,10 @@ const FrmNOCService = () => {
         waterConnectionNo: values.waterConnectionNo,
         permitFromDate: toDateStr(values.permitFromDate),
         permitToDate: toDateStr(values.permitToDate),
+        businessLicenseNo: values.businessLicenseNo,
+        buildingPermissionProposalNo: values.buildingPermissionProposalNo,
+        licenseType: values.licenseType,
+
         occupancyCertificateNo: values.occupancyCertificateNo,
         roadType: values.roadType,
         roadLength: values.roadLength,
@@ -424,7 +454,9 @@ const FrmNOCService = () => {
       }
 
       const applicationNo = submitResponse.data.data?.applicationNo;
-      const message = `${submitResponse.data.message}. Application No: ${applicationNo}` || "Application submitted successfully";
+      const message =
+        `${submitResponse.data.message}. Application No: ${applicationNo}` ||
+        "Application submitted successfully";
 
       if (applicationNo && documents.length > 0) {
         for (const doc of documents) {
@@ -486,10 +518,8 @@ const FrmNOCService = () => {
     if (file) {
       setTableData((prev) =>
         prev.map((row) =>
-          row.id === id
-            ? { ...row, file: file, fileName: file.name }
-            : row
-        )
+          row.id === id ? { ...row, file: file, fileName: file.name } : row,
+        ),
       );
     }
   };
@@ -554,7 +584,9 @@ const FrmNOCService = () => {
                         </div>
                         <DatePicker
                           value={values.permitFromDate || undefined}
-                          onChange={(date) => setFieldValue("permitFromDate", date || null)}
+                          onChange={(date) =>
+                            setFieldValue("permitFromDate", date || null)
+                          }
                           className="w-full h-9"
                         />
                       </div>
@@ -568,7 +600,9 @@ const FrmNOCService = () => {
                         </div>
                         <DatePicker
                           value={values.permitToDate || undefined}
-                          onChange={(date) => setFieldValue("permitToDate", date || null)}
+                          onChange={(date) =>
+                            setFieldValue("permitToDate", date || null)
+                          }
                           className="w-full h-9"
                         />
                       </div>
@@ -657,7 +691,10 @@ const FrmNOCService = () => {
                     {isVisible(18) && (
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                          <Label required text="बांधकाम परवानगी प्रस्ताव क्रमांक" />
+                          <Label
+                            required
+                            text="बांधकाम परवानगी प्रस्ताव क्रमांक"
+                          />
                           <span>:</span>
                         </div>
                         <Input
@@ -692,19 +729,24 @@ const FrmNOCService = () => {
                           <Label required text="रस्त्याचे प्रकार" />
                           <span>:</span>
                         </div>
+
                         <Select
-                          value={values.roadType || ""}
-                          onValueChange={(value) =>
-                            setFieldValue("roadType", value)
-                          }
+                          value={values.roadType ? String(values.roadType) : ""}
+                          onValueChange={(value) => {
+                            setFieldValue("roadType", String(value));
+                          }}
                         >
-                          <SelectTrigger className={`w-full h-9`}>
-                            <SelectValue placeholder="--Select Option--" />
+                          <SelectTrigger className="w-full h-9">
+                            <SelectValue placeholder="रस्त्याचे प्रकार निवडा" />
                           </SelectTrigger>
+
                           <SelectContent>
-                            {ROAD_TYPES.map((item) => (
-                              <SelectItem key={item.id} value={item.id}>
-                                {item.name}
+                            {roadTypeList.map((road) => (
+                              <SelectItem
+                                key={String(road.ROADTYPEID)}
+                                value={String(road.ROADTYPEID)}
+                              >
+                                {road.ROADTYPENAME}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -879,7 +921,10 @@ const FrmNOCService = () => {
                     {isVisible(31) && (
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                          <Label required text="मंडपसाठी विनंती केलेले क्षेत्र" />
+                          <Label
+                            required
+                            text="मंडपसाठी विनंती केलेले क्षेत्र"
+                          />
                           <span>:</span>
                         </div>
                         <Input
@@ -939,7 +984,10 @@ const FrmNOCService = () => {
                     {isVisible(34) && (
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                          <Label required text="जाहिरातीसाठी विनंती केलेले क्षेत्र" />
+                          <Label
+                            required
+                            text="जाहिरातीसाठी विनंती केलेले क्षेत्र"
+                          />
                           <span>:</span>
                         </div>
                         <Input
@@ -1037,7 +1085,9 @@ const FrmNOCService = () => {
 
                   <CardContent className="p-4 sm:p-6">
                     {docsLoading ? (
-                      <div className="text-center py-4">Loading documents...</div>
+                      <div className="text-center py-4">
+                        Loading documents...
+                      </div>
                     ) : (
                       <div className="overflow-x-auto">
                         <ShadCNTable

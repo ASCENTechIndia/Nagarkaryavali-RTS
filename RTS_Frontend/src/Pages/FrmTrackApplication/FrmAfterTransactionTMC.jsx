@@ -59,8 +59,7 @@ const FrmAfterTransactionTMC = () => {
             setPaymentResponse(currentPaymentResponse);
 
             try {
-                const sessionResponse = await axios.get(
-                    `${baseUrl}/api/FrmAppFrmAfterTransactionTMCliFee/payment-session-details`,
+                const sessionResponse = await axios.get(`${baseUrl}/api/FrmAppFrmAfterTransactionTMCliFee/payment-session-details`,
                     {
                         params: { paymentSessionId: currentTransactionId },
                         headers: { Authorization: `Bearer ${token}` }
@@ -119,9 +118,7 @@ const FrmAfterTransactionTMC = () => {
 
                 const paymentInsResponse = await axios.post(`${baseUrl}/api/FrmAppFrmAfterTransactionTMCliFee/payment-ins`,
                     { appNo, amount, paymentStatus: currentPaymentStatus, paymentResponse },
-                    {
-                        headers: { Authorization: `Bearer ${token}` }
-                    }
+                    { headers: { Authorization: `Bearer ${token}` } }
                 );
 
                 const paymentInsResult = paymentInsResponse?.data?.data;
@@ -139,7 +136,7 @@ const FrmAfterTransactionTMC = () => {
                         confirmButtonText: "OK",
                     });
 
-                    return; // STOP HERE — no receipt/certificate API will execute
+                    return; // STOPS HERE — no receipt api certificate API will execute
                 }
 
                 setPaymentProcessed(true);
@@ -187,14 +184,8 @@ const FrmAfterTransactionTMC = () => {
 
                 try {
                     const receiptResponse = await axios.post(`${baseUrl}/api/FrmAfterTransactionTMC/paymentacknowledgement`,
-                        {
-                            serviceId: String(serviceId), appNo: String(appNo), ulbId: String(ulbId),
-                        },
-                        {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                            },
-                        }
+                        {serviceId: String(serviceId), appNo: String(appNo), ulbId: String(ulbId)},
+                        {headers: {Authorization: `Bearer ${token}`}}
                     );
 
                     const receiptResult = receiptResponse?.data;
@@ -202,9 +193,7 @@ const FrmAfterTransactionTMC = () => {
                     console.log({ receiptResult });
 
                     if (!receiptResult?.success || !receiptResult?.pdfUrl) {
-                        throw new Error(
-                            receiptResult?.message || "Unable to generate payment acknowledgement PDF."
-                        );
+                        throw new Error(receiptResult?.message || "Unable to generate payment acknowledgement PDF.");
                     }
 
                     // Open PDF in a new tab
@@ -429,12 +418,8 @@ const FrmAfterTransactionTMC = () => {
         return (
             <div className="flex min-h-[70vh] items-center justify-center bg-[#f4f7fb]">
                 <div className="text-center">
-                    <div className="mb-2 text-lg font-semibold text-gray-800">
-                        Loading Transaction Details...
-                    </div>
-                    <div className="text-sm text-gray-500">
-                        Please wait.
-                    </div>
+                    <div className="mb-2 text-lg font-semibold text-gray-800">Loading Transaction Details...</div>
+                    <div className="text-sm text-gray-500">Please wait.</div>
                 </div>
             </div>
         );
@@ -496,7 +481,7 @@ const FrmAfterTransactionTMC = () => {
                                     {email || "-"}
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4">
+                            {/* <div className="flex items-center gap-4">
                                 <div className="flex w-40 shrink-0 items-center justify-between">
                                     <Label text="Service ID" />
                                     <span>:</span>
@@ -504,8 +489,8 @@ const FrmAfterTransactionTMC = () => {
                                 <div className="min-w-0 flex-1 rounded-md border bg-gray-50 px-3 py-2 text-sm text-gray-700">
                                     {serviceId || "-"}
                                 </div>
-                            </div>
-                            <div className="flex items-center gap-4">
+                            </div> */}
+                            {/* <div className="flex items-center gap-4">
                                 <div className="flex w-40 shrink-0 items-center justify-between">
                                     <Label text="User Unique ID" />
                                     <span>:</span>
@@ -513,8 +498,8 @@ const FrmAfterTransactionTMC = () => {
                                 <div className="min-w-0 flex-1 rounded-md border bg-gray-50 px-3 py-2 text-sm text-gray-700">
                                     {userUniqueId || "-"}
                                 </div>
-                            </div>
-                            <div className="flex items-center gap-4">
+                            </div> */}
+                            {/* <div className="flex items-center gap-4">
                                 <div className="flex w-40 shrink-0 items-center justify-between">
                                     <Label text="ULB ID" />
                                     <span>:</span>
@@ -522,7 +507,7 @@ const FrmAfterTransactionTMC = () => {
                                 <div className="min-w-0 flex-1 rounded-md border bg-gray-50 px-3 py-2 text-sm text-gray-700">
                                     {ulbId || "-"}
                                 </div>
-                            </div>
+                            </div> */}
                             <div className="flex items-center gap-4 md:col-span-2">
                                 <div className="flex w-40 shrink-0 items-center justify-between">
                                     <Label text="Payment Status" />

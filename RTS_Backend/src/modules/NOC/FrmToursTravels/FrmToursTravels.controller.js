@@ -18,6 +18,9 @@ exports.submitApplication = asyncHandler(async (req, res) => {
     fixedArea, newHoarding, hoardingNumber,
     advertisingArea, numberOfDays,
     hoardingType, hoardingSubType,
+    businessLicenseNo,
+    buildingPermissionProposalNo,
+    licenseType,
   } = req.body;
 
   if (!userId) return fail(res, "User ID is required");
@@ -40,6 +43,9 @@ exports.submitApplication = asyncHandler(async (req, res) => {
     fixedArea, newHoarding, hoardingNumber,
     advertisingArea, numberOfDays,
     hoardingType, hoardingSubType,
+    businessLicenseNo,
+    buildingPermissionProposalNo,
+    licenseType,
   });
 
   if (!result.success) {
@@ -68,3 +74,44 @@ exports.getServiceFields = asyncHandler(async (req, res) => {
 
   return ok(res, result, "Service fields fetched successfully");
 });
+
+
+exports.getBusinessTypeDropdownController = asyncHandler(
+    async (req, res) => {
+        console.log("Business Type Dropdown Request:", req.query);
+
+        const { ulbid } = req.query;
+
+        if (!ulbid) {
+            return fail(res, "ulbid is required");
+        }
+
+        const data = await service.getBusinessTypeDropdownService({ ulbid });
+
+        return ok(
+            res,
+            data,
+            data.message || "Business type dropdown fetched successfully"
+        );
+    }
+);
+
+exports.getRoadTypeDropdownController = asyncHandler(
+    async (req, res) => {
+        console.log("Road Type Dropdown Request:", req.query);
+
+        const { ulbid } = req.query;
+
+        if (!ulbid) {
+            return fail(res, "ulbid is required");
+        }
+
+        const data = await service.getRoadTypeDropdownService({ ulbid });
+
+        return ok(
+            res,
+            data,
+            data.message || "Road type dropdown fetched successfully"
+        );
+    }
+);
