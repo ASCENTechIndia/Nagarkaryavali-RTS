@@ -86,9 +86,9 @@ const FrmAppAuthorisationMst = () => {
   const [certificateServiceId, setCertificateServiceId] = useState("");
   const [tradeType, setTradeType] = useState("T");
   const [certificateFormData, setCertificateFormData] = useState({});
-  // const [manualCertificateGenerating, setManualCertificateGenerating] = useState(false);
-  // const [manualCertificateUrl, setManualCertificateUrl] = useState(null);
-  // const [manualCertificateGenerated, setManualCertificateGenerated] = useState(false);
+  const [manualCertificateGenerating, setManualCertificateGenerating] = useState(false);
+  const [manualCertificateUrl, setManualCertificateUrl] = useState(null);
+  const [manualCertificateGenerated, setManualCertificateGenerated] = useState(false);
   const [hoClerkRemark, setHoClerkRemark] = useState("");
 
   const tableRef = useRef(null);
@@ -736,100 +736,115 @@ const FrmAppAuthorisationMst = () => {
     setUploadedFiles(newUploadedFiles);
   };
 
-  // const isAutoCertificateMode = () => {
-  //   return authMode === "CK" && (Number(departId) === 7 || Number(departId) === 290);
-  // };
+  const isAutoCertificateMode = () => {
+    return authMode === "CK" && (Number(departId) === 7 || Number(departId) === 290);
+  };
 
-  // const handleGenerateCertificate = async () => {
-  //   try {
-  //     setManualCertificateGenerating(true);
+  const handleGenerateCertificate = async () => {
+    try {
+      setManualCertificateGenerating(true);
 
-  //     const loader = Swal.fire({
-  //       title: "Generating Certificate...",
-  //       text: "Please wait while we generate the certificate.",
-  //       allowOutsideClick: false,
-  //       showConfirmButton: false,
-  //       didOpen: () => Swal.showLoading(),
-  //     });
+      const loader = Swal.fire({
+        title: "Generating Certificate...",
+        text: "Please wait while we generate the certificate.",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading(),
+      });
 
-  //     const response = await axios.post(
-  //       `${BASE_URL}/api/frmAppAuth/test-generate-certificate`,
-  //       {
-  //         appNo: selectedData.applino,
-  //         serviceId: selectedData.servicid,
-  //         ulbId: ulbId,
-  //         userId: user?.userId,
-  //       },
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-  //         },
-  //       }
-  //     );
+      const response = await axios.post(
+        `${BASE_URL}/api/frmAppAuth/generate-noc-certificate`,
+        {
+          userId: user?.userId,
+          ulbId: ulbId,
+          serviceId: Number(selectedData.servicid),
+          appNo: selectedData.applino,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+          },
+        }
+      );
 
-  //     loader.close();
+      loader.close();
 
-  //     if (response.data.ok || response.data.success) {
-  //       const certResponse = await axios.post(
-  //         `${BASE_URL}/api/FrmTrackApplication/generate-certificate-report`,
-  //         {
-  //           serviceId: String(selectedData.servicid),
-  //           appNo: selectedData.applino,
-  //           ulbId: ulbId,
-  //         },
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-  //           },
-  //         }
-  //       );
+      const errorCode = response.data?.data?.errorCode;
 
-  //       if (certResponse.data.success && certResponse.data.pdfUrl) {
-  //         setManualCertificateUrl(certResponse.data.pdfUrl);
-  //         setManualCertificateGenerated(true);
+      if (errorCode !== 9999 && errorCode !== -160) {
+        Swal.fire({
+          text: response.data.message || "Certificate generation failed.",
+          confirmButtonColor: "#1e3a8a",
+        });
+        return;
+      }
 
-  //         window.open(certResponse.data.pdfUrl, "_blank");
+      const certLoader = Swal.fire({
+        title: "Fetching Certificate...",
+        text: "Please wait while we fetch the certificate PDF.",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading(),
+      });
 
-  //         Swal.fire({
-  //           text: "Certificate generated successfully!",
-  //           icon: "success",
-  //           confirmButtonColor: "#1e3a8a",
-  //           timer: 1500,
-  //           showConfirmButton: false,
-  //         });
-  //       } else {
-  //         Swal.fire({
-  //           text: "Failed to generate certificate PDF.",
-  //           confirmButtonColor: "#1e3a8a",
-  //         });
-  //       }
-  //     } else {
-  //       Swal.fire({
-  //         text: response.data.message || "Certificate generation failed.",
-  //         confirmButtonColor: "#1e3a8a",
-  //       });
-  //     }
-  //   } catch (error) {
-  //     console.error("Error generating certificate:", error);
-  //     Swal.fire({
-  //       text: error?.response?.data?.error || "Error generating certificate.",
-  //       confirmButtonColor: "#1e3a8a",
-  //     });
-  //   } finally {
-  //     setManualCertificateGenerating(false);
-  //   }
-  // };
+      const certResponse = await axios.post(
+        `${BASE_URL}/api/FrmTrackApplication/generate-certificate-report`,
+        {
+          serviceId: String(selectedData.servicid),
+          appNo: selectedData.applino,
+          ulbId: ulbId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+          },
+        }
+      );
 
-  // const viewManualCertificate = () => {
-  //   if (manualCertificateUrl) {
-  //     window.open(manualCertificateUrl, "_blank");
-  //   } else {
-  //     Swal.fire({
-  //       text: "Certificate not generated yet. Please click 'Generate Certificate' first.",
-  //       confirmButtonColor: "#1e3a8a",
-  //     });
-  //   }
-  // };
+      console.log("certResponse : ", certResponse);
+
+      certLoader.close();
+
+      if (certResponse.data.success && certResponse.data.pdfUrl) {
+        setManualCertificateUrl(certResponse.data.pdfUrl);
+        setManualCertificateGenerated(true);
+
+        window.open(certResponse.data.pdfUrl, "_blank");
+
+        Swal.fire({
+          text: response.data.message || "Certificate generated successfully!",
+          icon: "success",
+          confirmButtonColor: "#1e3a8a",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({
+          text: "Failed to generate certificate PDF.",
+          confirmButtonColor: "#1e3a8a",
+        });
+      }
+    } catch (error) {
+      console.error("Error generating certificate:", error);
+      Swal.fire({
+        text: error?.response?.data?.error || "Error generating certificate.",
+        confirmButtonColor: "#1e3a8a",
+      });
+    } finally {
+      setManualCertificateGenerating(false);
+    }
+  };
+
+  const viewManualCertificate = () => {
+    if (manualCertificateUrl) {
+      window.open(manualCertificateUrl, "_blank");
+    } else {
+      Swal.fire({
+        text: "Certificate not generated yet. Please click 'Generate Certificate' first.",
+        confirmButtonColor: "#1e3a8a",
+      });
+    }
+  };
 
   useEffect(() => {
     if (authMode === "CK" && verificationDocs.length === 0) {
@@ -920,8 +935,8 @@ const FrmAppAuthorisationMst = () => {
       }
     }
 
-    // if (showVerificationGrid && Number(departId) !== 7 && Number(departId) !== 290) {
-    if (showVerificationGrid) {
+    if (showVerificationGrid && Number(departId) !== 7 && Number(departId) !== 290) {
+    // if (showVerificationGrid) {
       const hasAnyDocs = verificationDocs.length > 0;
       if (!hasAnyDocs) {
         Swal.fire({
@@ -944,17 +959,17 @@ const FrmAppAuthorisationMst = () => {
       }
     }
 
-    // if (
-    //   authMode === "CK" && 
-    //   (Number(departId) === 7 || Number(departId) === 290) && 
-    //   !manualCertificateGenerated
-    // ) {
-    //   Swal.fire({
-    //     text: "Please generate the certificate first.",
-    //     confirmButtonColor: "#1e3a8a",
-    //   });
-    //   return;
-    // }
+    if (
+      authMode === "CK" && 
+      (Number(departId) === 7 || Number(departId) === 290) && 
+      !manualCertificateGenerated
+    ) {
+      Swal.fire({
+        text: "Please generate the certificate first.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
 
     setSubmitting(true);
 
@@ -1004,57 +1019,44 @@ const FrmAppAuthorisationMst = () => {
       }
 
       // Generate Cerificate
-      // if ((Number(departId) === 7 || Number(departId) === 290) && manualCertificateUrl) {
-      //   try {
-      //     const pdfResponse = await fetch(manualCertificateUrl);
-      //     const pdfBlob = await pdfResponse.blob();
+      if ((Number(departId) === 7 || Number(departId) === 290) && manualCertificateUrl) {
+        try {
+          const pdfResponse = await fetch(manualCertificateUrl);
+          const pdfBlob = await pdfResponse.blob();
           
-      //     const pdfFile = new File([pdfBlob], `Certificate_${selectedData.applino}.pdf`, { 
-      //       type: "application/pdf" 
-      //     });
+          const pdfFile = new File([pdfBlob], `Certificate_${selectedData.applino}.pdf`, { 
+            type: "application/pdf" 
+          });
 
-      //     const formData = new FormData();
-      //     formData.append("ulbid", ulbId);
-      //     formData.append("applino", selectedData.applino);
-      //     formData.append("userid", user?.userId);
-      //     formData.append("docname", "CertificateORG");
-      //     formData.append("document", pdfFile);
+          const formData = new FormData();
+          formData.append("ulbid", ulbId);
+          formData.append("applino", selectedData.applino);
+          formData.append("userid", user?.userId);
+          formData.append("docname", "CertificateORG");
+          formData.append("document", pdfFile);
 
-      //     const uploadResponse = await axios.post(
-      //       `${BASE_URL}/api/frmAppAuth/application-verification-document`,
-      //       formData,
-      //       {
-      //         headers: {
-      //           Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-      //           "Content-Type": "multipart/form-data",
-      //         },
-      //       },
-      //     );
+          const uploadResponse = await axios.post(
+            `${BASE_URL}/api/frmAppAuth/application-verification-document`,
+            formData,
+            {
+              headers: {
+                Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+                "Content-Type": "multipart/form-data",
+              },
+            },
+          );
 
-      //     if (!uploadResponse.data.ok) {
-      //       console.error("Failed to upload certificate:", uploadResponse.data);
-      //     } else {
-      //       console.log("Certificate uploaded successfully");
-      //     }
-      //   } catch (uploadError) {
-      //     console.error("Error uploading certificate:", uploadError);
-      //   }
-      // }
+          if (!uploadResponse.data.ok) {
+            console.error("Failed to upload certificate:", uploadResponse.data);
+          } else {
+            console.log("Certificate uploaded successfully");
+          }
+        } catch (uploadError) {
+          console.error("Error uploading certificate:", uploadError);
+        }
+      }
 
-      // if (authMode === "CK" && !(Number(departId) === 7 || Number(departId) === 290)) {
-      //   const filesToUpload = Object.keys(uploadedFiles)
-      //     .filter((key) => uploadedFiles[key]?.file)
-      //     .map((key) => ({
-      //       docName: verificationDocs[parseInt(key)]?.docName || "CertificateORG",
-      //       file: uploadedFiles[key].file,
-      //     }));
-
-      //   if (filesToUpload.length > 0) {
-      //     await uploadVerificationDocuments(filesToUpload);
-      //   }
-      // }
-
-      if (authMode === "CK") {
+      if (authMode === "CK" && !(Number(departId) === 7 || Number(departId) === 290)) {
         const filesToUpload = Object.keys(uploadedFiles)
           .filter((key) => uploadedFiles[key]?.file)
           .map((key) => ({
@@ -1066,6 +1068,19 @@ const FrmAppAuthorisationMst = () => {
           await uploadVerificationDocuments(filesToUpload);
         }
       }
+
+      // if (authMode === "CK") {
+      //   const filesToUpload = Object.keys(uploadedFiles)
+      //     .filter((key) => uploadedFiles[key]?.file)
+      //     .map((key) => ({
+      //       docName: verificationDocs[parseInt(key)]?.docName || "CertificateORG",
+      //       file: uploadedFiles[key].file,
+      //     }));
+
+      //   if (filesToUpload.length > 0) {
+      //     await uploadVerificationDocuments(filesToUpload);
+      //   }
+      // }
 
       if (authMode === "HO" && applicationData.APPSOURCE === "MAHA") {
         await handleMahaOnlineIntegration(authAction);
@@ -2858,14 +2873,14 @@ const FrmAppAuthorisationMst = () => {
                           accept=".jpg,.jpeg,.png,.pdf"
                           className="w-full h-9"
                           onChange={(e) => handleFileUpload(e, index)}
-                          // disabled={isAutoMode && index === 0}
+                          disabled={isAutoMode && index === 0}
                         />
                         {/* {doc.fileName && doc.fileName !== "No file chosen" && (
                           <span className="text-xs text-gray-500 truncate max-w-[80px]">
                             {doc.fileName}
                           </span>
                         )} */}
-                        {/* {isAutoMode && index === 0 && (
+                        {isAutoMode && index === 0 && (
                           <Button
                             type="button"
                             size="sm"
@@ -2875,66 +2890,66 @@ const FrmAppAuthorisationMst = () => {
                           >
                             {manualCertificateGenerating ? "Generating..." : "Generate Certificate"}
                           </Button>
-                        )} */}
+                        )}
                       </div>
                     ),
-                    action: (
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className={`px-0 ${index === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-800'}`}
-                        onClick={() => {
-                          if (index === 0 && doc.docName === "CertificateORG") {
-                            return;
-                          }
-                          removeVerificationRow(index);
-                        }}
-                        disabled={index === 0 && doc.docName === "CertificateORG"}
-                      >
-                        Remove
-                      </Button>
-                    ),
+                    // action: (
+                    //   <Button
+                    //     variant="link"
+                    //     size="sm"
+                    //     className={`px-0 ${index === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-800'}`}
+                    //     onClick={() => {
+                    //       if (index === 0 && doc.docName === "CertificateORG") {
+                    //         return;
+                    //       }
+                    //       removeVerificationRow(index);
+                    //     }}
+                    //     disabled={index === 0 && doc.docName === "CertificateORG"}
+                    //   >
+                    //     Remove
+                    //   </Button>
+                    // ),
 
                     // For View Button Procedure
-                    // action: (
-                    //   <div className="flex items-center gap-2">
-                    //     <Button
-                    //       variant="link"
-                    //       size="sm"
-                    //       className={`px-0 ${
-                    //         (isAutoMode && index === 0) || (index === 0 && doc.docName === "CertificateORG")
-                    //           ? 'text-gray-400 cursor-not-allowed' 
-                    //           : 'text-red-600 hover:text-red-800'
-                    //       }`}
-                    //       onClick={() => {
-                    //         if (isAutoMode && index === 0) return;
-                    //         if (index === 0 && doc.docName === "CertificateORG") {
-                    //           return;
-                    //         }
-                    //         removeVerificationRow(index);
-                    //       }}
-                    //       disabled={(isAutoMode && index === 0) || (index === 0 && doc.docName === "CertificateORG")}
-                    //     >
-                    //       Remove
-                    //     </Button>
+                    action: (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className={`px-0 ${
+                            (isAutoMode && index === 0) || (index === 0 && doc.docName === "CertificateORG")
+                              ? 'text-gray-400 cursor-not-allowed' 
+                              : 'text-red-600 hover:text-red-800'
+                          }`}
+                          onClick={() => {
+                            if (isAutoMode && index === 0) return;
+                            if (index === 0 && doc.docName === "CertificateORG") {
+                              return;
+                            }
+                            removeVerificationRow(index);
+                          }}
+                          disabled={(isAutoMode && index === 0) || (index === 0 && doc.docName === "CertificateORG")}
+                        >
+                          Remove
+                        </Button>
 
-                    //     {isAutoMode && index === 0 && (
-                    //       <Button
-                    //         variant="link"
-                    //         size="sm"
-                    //         className={`px-0 ${
-                    //           manualCertificateGenerated 
-                    //             ? 'text-blue-700 hover:text-blue-900' 
-                    //             : 'text-gray-400 cursor-not-allowed'
-                    //         }`}
-                    //         onClick={viewManualCertificate}
-                    //         disabled={!manualCertificateGenerated}
-                    //       >
-                    //         View
-                    //       </Button>
-                    //     )}
-                    //   </div>
-                    // ),
+                        {isAutoMode && index === 0 && (
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className={`px-0 ${
+                              manualCertificateGenerated 
+                                ? 'text-blue-700 hover:text-blue-900' 
+                                : 'text-gray-400 cursor-not-allowed'
+                            }`}
+                            onClick={viewManualCertificate}
+                            disabled={!manualCertificateGenerated}
+                          >
+                            View
+                          </Button>
+                        )}
+                      </div>
+                    ),
                   }})}
                   keyMapping={verifyKeyMapping}
                   pagination={false}

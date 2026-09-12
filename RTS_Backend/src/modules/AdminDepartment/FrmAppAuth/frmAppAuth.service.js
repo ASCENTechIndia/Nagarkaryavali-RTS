@@ -265,6 +265,28 @@ const getCertificateDataService = async ({ serviceId, appNo }) => {
   return result;
 };
 
+const generateNocCertificateService = async ({ userId, ulbId, serviceId, appNo }) => {
+  if (!userId) {
+    throw new Error("User ID is required.");
+  }
+  if (!ulbId) {
+    throw new Error("ULB ID is required.");
+  }
+  if (!serviceId) {
+    throw new Error("Service ID is required.");
+  }
+  if (!appNo) {
+    throw new Error("Application number is required.");
+  }
+
+  return await repo.generateNocCertificateRepo({
+    userId,
+    ulbId,
+    serviceId,
+    appNo,
+  });
+};
+
 module.exports = {
   getUserPrabhagListService,
   getUserDeptListService,
@@ -278,4 +300,5 @@ module.exports = {
   certificateDataService,
   updateDocumentFlagService,
   getCertificateDataService,
+  generateNocCertificateService
 };

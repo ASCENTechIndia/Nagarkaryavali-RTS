@@ -1985,6 +1985,81 @@ const getCertificateDataRepo = async ({ serviceId, appNo }) => {
   }
 };
 
+const generateNocCertificateRepo = async ({ userId, ulbId, serviceId, appNo }) => {
+  try {
+    const result = await withTxTMC(async (connection) => {
+      const query = `
+        BEGIN
+          AORTS_NOCCERTIFICATE_INS(
+            :in_userid,
+            :in_ulbid,
+            :in_serviceid,
+            :in_appno,
+            :out_certificateno,
+            :out_errcode,
+            :out_errmsg
+          );
+        END;
+      `;
+
+      const binds = {
+        in_userid: String(userId || ""),
+        in_ulbid: Number(ulbId) || 0,
+        in_serviceid: Number(serviceId) || 0,
+        in_appno: String(appNo || ""),
+        out_certificateno: {
+          dir: oracledb.BIND_OUT,
+          type: oracledb.STRING,
+          maxSize: 100,
+        },
+        out_errcode: {
+          dir: oracledb.BIND_OUT,
+          type: oracledb.NUMBER,
+        },
+        out_errmsg: {
+          dir: oracledb.BIND_OUT,
+          type: oracledb.STRING,
+          maxSize: 500,
+        },
+      };
+
+      console.log("================================================");
+      console.log("GENERATE NOC CERTIFICATE PROCEDURE");
+      console.log("Procedure: AORTS_NOCCERTIFICATE_INS");
+      console.log("Binds:", {
+        in_userid: binds.in_userid,
+        in_ulbid: binds.in_ulbid,
+        in_serviceid: binds.in_serviceid,
+        in_appno: binds.in_appno,
+      });
+      console.log("================================================");
+
+      const procedureResult = await connection.execute(query, binds, {
+        autoCommit: false,
+      });
+
+      return procedureResult.outBinds;
+    });
+
+    console.log("GENERATE NOC CERTIFICATE RESULT:", result);
+
+    return {
+      success: true,
+      certificateNo: result?.out_certificateno,
+      errorCode: result?.out_errcode,
+      errorMsg: result?.out_errmsg,
+    };
+  } catch (error) {
+    console.error("GENERATE NOC CERTIFICATE REPO ERROR:", error);
+
+    return {
+      success: false,
+      errorCode: 1500,
+      errorMsg: error.message,
+    };
+  }
+};
+
 module.exports = {
   getUserPrabhagListRepo,
   getUserDeptListRepo,
@@ -1998,4 +2073,5 @@ module.exports = {
   certificateDataRepo,
   updateDocumentFlagRepo,
   getCertificateDataRepo,
+  generateNocCertificateRepo
 };

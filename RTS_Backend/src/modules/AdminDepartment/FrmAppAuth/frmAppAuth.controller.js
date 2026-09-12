@@ -648,6 +648,52 @@ const generateCertificate = asyncHandler(async (req, res) => {
   });
 });
 
+const generateNocCertificate = asyncHandler(async (req, res) => {
+  console.log("================================================");
+  console.log("Request: Generate NOC Certificate");
+  console.log("Request Body:", req.body);
+  console.log("================================================");
+
+  const { userId, ulbId, serviceId, appNo } = req.body;
+
+  if (!userId) {
+    throw new AppError("userId is required", 400);
+  }
+  if (!ulbId) {
+    throw new AppError("ulbId is required", 400);
+  }
+  if (!serviceId) {
+    throw new AppError("serviceId is required", 400);
+  }
+  if (!appNo) {
+    throw new AppError("appNo is required", 400);
+  }
+
+  const result = await service.generateNocCertificateService({
+    userId,
+    ulbId,
+    serviceId,
+    appNo,
+  });
+
+  if (!result.success) {
+    throw new AppError(
+      result.errorMsg || "Failed to generate NOC certificate.",
+      500
+    );
+  }
+
+  return ok(res, {
+    status: "SUCCESS",
+    message: result.errorMsg || "Certificate Number Generated Successfully",
+    errorCode: result.errorCode,
+    data: {
+      certificateNo: result.certificateNo,
+      errorCode: result.errorCode,
+    },
+  });
+});
+
 module.exports = {
   getUserPrabhagList,
   getUserDeptList,
@@ -661,5 +707,6 @@ module.exports = {
   certificatePreview,
   tradeCertificate,
   updateDocumentFlag,
-  generateCertificate
+  generateCertificate,
+  generateNocCertificate
 };

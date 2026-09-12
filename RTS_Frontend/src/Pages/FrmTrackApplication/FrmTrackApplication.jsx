@@ -653,31 +653,32 @@ const FrmTrackApplication = () => {
       if (status === "Done" || appAuth === "Done") {
         const departmentId = selectedApp?.departmentId ;
         
-        if (departmentId === 7 || departmentId === 290) {
-          Swal.fire({
-            text: "Generating certificate...",
-            allowOutsideClick: false,
-            showConfirmButton: false,
-            didOpen: () => Swal.showLoading(),
-          });
+        // if (departmentId === 7 || departmentId === 290) {
+        //   Swal.fire({
+        //     text: "Generating certificate...",
+        //     allowOutsideClick: false,
+        //     showConfirmButton: false,
+        //     didOpen: () => Swal.showLoading(),
+        //   });
 
-          const success = await downloadCertificate(appNo, serviceId, userId, ulbId);
+        //   const success = await downloadCertificate(appNo, serviceId, userId, ulbId);
 
-          Swal.close();
+        //   Swal.close();
 
-          if (success) {
-            Swal.fire({
-              text: "Certificate downloaded successfully!",
-              confirmButtonColor: '#1e3a8a',
-              timer: 2000,
-            });
-          } else {
-            Swal.fire({
-              text: "Error downloading certificate. Please try again.",
-              confirmButtonColor: '#1e3a8a',
-            });
-          }
-        } else {
+        //   if (success) {
+        //     Swal.fire({
+        //       text: "Certificate downloaded successfully!",
+        //       confirmButtonColor: '#1e3a8a',
+        //       timer: 2000,
+        //     });
+        //   } else {
+        //     Swal.fire({
+        //       text: "Error downloading certificate. Please try again.",
+        //       confirmButtonColor: '#1e3a8a',
+        //     });
+        //   }
+        // } 
+        // else {
           Swal.fire({
             text: "Fetching certificate...",
             allowOutsideClick: false,
@@ -701,7 +702,7 @@ const FrmTrackApplication = () => {
               confirmButtonColor: '#1e3a8a',
             });
           }
-        }
+        // }
         return;
       }
     

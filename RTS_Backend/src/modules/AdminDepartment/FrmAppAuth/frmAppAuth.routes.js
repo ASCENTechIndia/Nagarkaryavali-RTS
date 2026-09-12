@@ -20,5 +20,6 @@ router.post("/update-document-flag", auth(), controller.updateDocumentFlag);
 router.post("/menu-details", auth(), controller.getMenuDetails);
 
 router.post("/generate-certificate", auth(), controller.generateCertificate);
+router.post("/generate-noc-certificate", auth(), controller.generateNocCertificate);
 
 module.exports = router;
