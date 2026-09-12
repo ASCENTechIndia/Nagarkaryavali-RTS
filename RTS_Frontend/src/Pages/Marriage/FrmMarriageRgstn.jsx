@@ -842,14 +842,14 @@ function FrmMarriageRgstn() {
                           >
                             {loading || isSubmitting ? "Submitting..." : "Submit"}
                           </Button>
-                          <Button
+                          {/* <Button
                             type="button"
                             variant="outline"
                             className="bg-gray-100 hover:bg-gray-200"
                             onClick={() => window.print()}
                           >
                             Print
-                          </Button>
+                          </Button> */}
                         </div>
                       </Tabs>
                     </div>

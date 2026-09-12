@@ -29,7 +29,7 @@ const FrmAppAuthorisationList = () => {
   const [tableData, setTableData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [searchText, setSearchText] = useState("");
-  const [headerText, setHeaderText] = useState("Clerk Verification List");
+  const [headerText, setHeaderText] = useState("Clerk Authorization List");
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -93,7 +93,7 @@ const FrmAppAuthorisationList = () => {
         setHeaderText("Clerk Document Verification List");
         break;
       case "CK":
-        setHeaderText("Clerk Verification List");
+        setHeaderText("Clerk Authorization List");
         break;
       case "HODV":
         setHeaderText("HOD Verification List");

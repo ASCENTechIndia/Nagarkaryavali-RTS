@@ -18,6 +18,7 @@ import config from "@/utils/config";
 
 const STATUS_COLORS = {
   Done: "bg-green-500 text-white",
+  Completed: "bg-green-500 text-white",
   Rejected: "bg-red-500 text-white",
   Pending: "bg-yellow-500 text-white",
   "N/A": "bg-gray-400 text-white",
@@ -120,6 +121,11 @@ const FrmTrackApplication = () => {
     } catch (error) {
       return "-";
     }
+  };
+
+  const formatStatusLabel = (status) => {
+    if (status === "Done") return "Completed";
+    return status;
   };
 
   const fetchApplications = async () => {
@@ -255,7 +261,7 @@ const FrmTrackApplication = () => {
           documentName: doc.DOCNAME,
           fileType: doc.FILETYPE || "PDF",
           uploadedDate: doc.UPLOADEDDATE || "-",
-          fileBytes: doc.FILEBYTES,
+          fileBytes: doc.filebytes,
         }));
         setDocuments(docs);
       }
@@ -447,36 +453,37 @@ const FrmTrackApplication = () => {
     }
   };
 
-  const downloadDocument = async (docId) => {
+  const downloadDocument = async (doc) => {
     try {
-      const response = await axios.post(
-        `${BASE_URL}/api/FrmTrackApplication/downloaddocument`,
-        { docId },
-        {
-          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
-          responseType: 'blob',
-        }
-      );
+      console.log("doc: ", doc);
 
-      const contentType = response.headers['content-type'] || 'application/octet-stream';
-      const blob = new Blob([response.data], { type: contentType });
+      const base64Data = doc.fileBytes || doc.filebytes;
+
+      if (!base64Data) {
+        Swal.fire({
+          text: "Document data not available.",
+          confirmButtonColor: '#1e3a8a',
+        });
+        return;
+      }
+
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+
+      const blob = new Blob([byteArray], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Document_${docId}_${new Date().getTime()}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
 
-      Swal.fire({
-        text: "Document downloaded successfully!",
-        confirmButtonColor: '#1e3a8a',
-      });
+      window.open(url, '_blank');
+
+      setTimeout(() => window.URL.revokeObjectURL(url), 5000);
     } catch (error) {
-      console.error("Error downloading document:", error);
+      console.error("Error opening document:", error);
       Swal.fire({
-        text: "Error downloading document. Please try again.",
+        text: "Error opening document. Please try again.",
         confirmButtonColor: '#1e3a8a',
       });
     }
@@ -727,7 +734,30 @@ const FrmTrackApplication = () => {
     Swal.close();
 
     if (serviceDetails && serviceDetails.redirectUrl) {
-      navigate(serviceDetails.redirectUrl);
+      let cleanUrl = serviceDetails.redirectUrl;
+      cleanUrl = cleanUrl.replace(/^~\//, "").replace(/^~/, "");
+      if (!cleanUrl.startsWith("/")) {
+        cleanUrl = "/" + cleanUrl;
+      }
+
+      console.log("Original URL:", serviceDetails.redirectUrl);
+      console.log("Cleaned URL:", cleanUrl);
+
+      navigate(cleanUrl, {
+        state: {
+          ulbId: ulbId,
+          serviceId: serviceDetails.serviceId,
+          deptId: selectedApp?.departmentId,
+          serviceName: serviceDetails.serviceName,
+          appNo: selectedApp?.applicationNo,
+          userId: userId,
+          corpId: user?.corpId,
+          userUniqueId: userId,
+          trackId: user?.trackId,
+          username: user?.username || user?.email,
+          userFullName: selectedApp?.applicantName,
+        }
+      });
     } else {
       Swal.fire({
         text: "Unable to load re-application form. Please try again.",
@@ -737,7 +767,7 @@ const FrmTrackApplication = () => {
   };
 
   const handleDocumentDownload = async (doc) => {
-    await downloadDocument(doc.docId);
+    await downloadDocument(doc);
   };
 
   const getTransformedAppData = () => {
@@ -756,8 +786,13 @@ const FrmTrackApplication = () => {
   };
 
   const getTransformedStepsData = () => {
+
+    const isAuthRejected = appAuth === "Rejected" || 
+    trackingSteps.some(s => s.step === "Application Authorization" && s.status === "Rejected");
+
     return trackingSteps.map(step => {
         let actionElement = null;
+        const isPendingAfterRejection = isAuthRejected && step.status === "Pending";
 
         if (step.step === "Application Entry" && step.status === "Done") {
         const { firstAppealAvailable, secondAppealAvailable, firstAppealExists, secondAppealExists } = appealDetails;
@@ -800,8 +835,13 @@ const FrmTrackApplication = () => {
         actionElement = (
             <Button
             type="button"
-            className="bg-blue-900 hover:bg-blue-800 text-white text-xs px-3 py-1"
-            onClick={() => handleStepAction(step, "Make Payment")}
+            disabled={isAuthRejected}
+            className={
+              isAuthRejected
+                ? "bg-gray-300 text-gray-900 text-xs px-3 py-1 cursor-not-allowed"
+                : "bg-blue-900 hover:bg-blue-800 text-white text-xs px-3 py-1"
+            }
+            onClick={() => !isAuthRejected && handleStepAction(step, "Make Payment")}
             >
             Make Payment
             </Button>
@@ -842,12 +882,18 @@ const FrmTrackApplication = () => {
         }
         }
 
+        let statusBadgeClass = STATUS_COLORS[step.status] || STATUS_COLORS.Pending;
+
+        if (isPendingAfterRejection) {
+          statusBadgeClass = "bg-gray-300 text-gray-600";
+        }
+
         return {
         ...step,
         action: actionElement,
         status: (
-            <span className={`px-2 py-1 rounded text-xs font-medium ${STATUS_COLORS[step.status] || STATUS_COLORS.Pending}`}>
-            {step.status}
+            <span className={`px-2 py-1 rounded text-xs font-medium ${statusBadgeClass}`}>
+            {formatStatusLabel(step.status)}
             </span>
         ),
         date: step.date ? new Date(step.date).toLocaleString('en-IN', {
