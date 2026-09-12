@@ -8,13 +8,13 @@ router.post("/submit", auth(), controller.submitApplication);
 
 router.get(
     "/business-type-dropdown",
-    // auth(),
+    auth(),
     controller.getBusinessTypeDropdownController
 );
 
 router.get(
     "/road-type-dropdown",
-    // auth(),
+    auth(),
     controller.getRoadTypeDropdownController
 );
 
