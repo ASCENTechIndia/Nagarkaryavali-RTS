@@ -3,7 +3,7 @@ const controller = require("./FrmNewTaxAssesment.controller");
 
 const router = express.Router();
 
-router.post("/new-tax-asses", controller.createNewTaxAsses);
-router.post("/wards", controller.getWardsByUlb)
+router.post("/new-tax-asses",auth(), controller.createNewTaxAsses);
+router.post("/wards", auth(), controller.getWardsByUlb)
 
 module.exports = router;
