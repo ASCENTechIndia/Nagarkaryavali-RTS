@@ -632,7 +632,7 @@ const generateCertificateReport = asyncHandler(async (req, res) => {
       ulbId: filters.ulbId,
     });
   }
-  
+
   // ------------------------------------------------------
   // 4. Validate PDF
   // ------------------------------------------------------
@@ -648,10 +648,11 @@ const generateCertificateReport = asyncHandler(async (req, res) => {
   // 5. Construct PDF URL
   // ------------------------------------------------------
 
-  const baseUrl = `${req.protocol}://${req.get("host")}`;
-
-  const pdfUrl = `${baseUrl}/pdf/${path.basename(pdf.filePath)}`;
-
+  console.log({ URL: process.env.BASE_URL })
+  // const pdfUrl = `${baseUrl}/pdf/${path.basename(pdf.filePath)}`;
+  const pdfUrl = `${process.env.BASE_URL}/pdf/${path.basename(
+    pdf.filePath
+  )}`;
   // ------------------------------------------------------
   // 6. Return Response
   // ------------------------------------------------------

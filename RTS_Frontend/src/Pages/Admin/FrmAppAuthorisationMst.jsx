@@ -109,14 +109,14 @@ const FrmAppAuthorisationMst = () => {
       "Document Upload by": "DocType",
       View: "view",
     };
-    
+
     if (authMode === "CKV") {
       return {
         ...baseMapping,
         "Verification Status": "verificationStatus",
       };
     }
-    
+
     return baseMapping;
   };
 
@@ -321,7 +321,7 @@ const FrmAppAuthorisationMst = () => {
                 </Button>
               ),
             };
-            
+
             if (authMode === "CKV") {
               row.verificationStatus = (
                 <Input
@@ -340,7 +340,7 @@ const FrmAppAuthorisationMst = () => {
                 />
               );
             }
-            
+
             return row;
           });
           setTableData(tableRows);
@@ -656,10 +656,10 @@ const FrmAppAuthorisationMst = () => {
         );
 
         loader.close();
-        
+
         if (response.data.ok) {
           await fetchMenuDetails(selectedData.applino, selectedData.servicid);
-          
+
           Swal.fire({
             text: "Document verified successfully.",
             confirmButtonColor: "#1e3a8a",
@@ -936,7 +936,7 @@ const FrmAppAuthorisationMst = () => {
     }
 
     if (showVerificationGrid && Number(departId) !== 7 && Number(departId) !== 290) {
-    // if (showVerificationGrid) {
+      // if (showVerificationGrid) {
       const hasAnyDocs = verificationDocs.length > 0;
       if (!hasAnyDocs) {
         Swal.fire({
@@ -960,8 +960,8 @@ const FrmAppAuthorisationMst = () => {
     }
 
     if (
-      authMode === "CK" && 
-      (Number(departId) === 7 || Number(departId) === 290) && 
+      authMode === "CK" &&
+      (Number(departId) === 7 || Number(departId) === 290) &&
       !manualCertificateGenerated
     ) {
       Swal.fire({
@@ -1021,13 +1021,16 @@ const FrmAppAuthorisationMst = () => {
       // Generate Cerificate
       if ((Number(departId) === 7 || Number(departId) === 290) && manualCertificateUrl) {
         try {
+          console.log({ manualCertificateUrl })
           const pdfResponse = await fetch(manualCertificateUrl);
-          const pdfBlob = await pdfResponse.blob();
-          
-          const pdfFile = new File([pdfBlob], `Certificate_${selectedData.applino}.pdf`, { 
-            type: "application/pdf" 
-          });
+          console.log({ pdfResponse })
 
+          const pdfBlob = await pdfResponse.blob();
+          console.log({ pdfBlob })
+          const pdfFile = new File([pdfBlob], `Certificate_${selectedData.applino}.pdf`, {
+            type: "application/pdf"
+          });
+          console.log({ pdfFile })
           const formData = new FormData();
           formData.append("ulbid", ulbId);
           formData.append("applino", selectedData.applino);
@@ -1169,12 +1172,12 @@ const FrmAppAuthorisationMst = () => {
 
   const handleCertificateInfo = () => {
     const serviceId = String(selectedData.servicid);
-    
+
     if (String(departId) === "24") {
       setCertificateServiceId(serviceId);
       setShowCertificatePopup(true);
     }
-    
+
     else if (String(departId) === "841" && ["501", "304"].includes(serviceId)) {
       setShowTradePopup(true);
     }
@@ -1187,7 +1190,7 @@ const FrmAppAuthorisationMst = () => {
   const buildCertificateData = (serviceId) => {
     const service = String(serviceId);
     const data = [];
-    
+
     switch (service) {
       case "22":
         data.push(
@@ -1315,7 +1318,7 @@ const FrmAppAuthorisationMst = () => {
       default:
         return "";
     }
-    
+
     return data.join("~");
   };
 
@@ -1696,7 +1699,7 @@ const FrmAppAuthorisationMst = () => {
             </SelectContent>
           </Select>
         </div>
-        
+
         {tradeType === "T" ? renderTradeDetailsForm() : renderStorageDetailsForm()}
       </div>
     );
@@ -1705,20 +1708,20 @@ const FrmAppAuthorisationMst = () => {
   const handlePreviewCertificate = async () => {
     try {
       const applidata = buildCertificateData(certificateServiceId);
-      
+
       const payload = {
         userId: user?.userId,
         applino: selectedData.applino,
         serviceid: certificateServiceId,
         applidata: applidata,
       };
-      
+
       const response = await axios.post(
         `${BASE_URL}/api/frmAppAuth/certificate-preview`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+
       if (response.data.ok) {
         window.open(response.data.data.certificateUrl, '_blank');
       }
@@ -1745,7 +1748,7 @@ const FrmAppAuthorisationMst = () => {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+
       if (response.data.ok) {
         Swal.fire({
           text: "Trade certificate generated successfully",
@@ -1800,10 +1803,10 @@ const FrmAppAuthorisationMst = () => {
 
     const formattedDate = APLIDT
       ? new Date(APLIDT).toLocaleDateString("en-IN", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
       : "";
 
     const serviceId = selectedData.servicid;
@@ -2853,104 +2856,103 @@ const FrmAppAuthorisationMst = () => {
               <div className="overflow-x-auto">
                 <ShadCNTable
                   headers={verifyHeaders}
-                  data={verificationDocs.map((doc, index) => { 
+                  data={verificationDocs.map((doc, index) => {
                     const isAutoMode = Number(departId) === 7 || Number(departId) === 290;
                     return {
-                    docName: (
-                      <Input
-                        type="text"
-                        placeholder="Enter document name..."
-                        className="w-full h-8 text-sm"
-                        value={doc.docName || ""}
-                        onChange={(e) => handleDocNameChange(index, e.target.value)}
-                        disabled={index === 0 && doc.docName === "CertificateORG"}
-                      />
-                    ),
-                    upload: (
-                      <div className="flex flex-row gap-1">
+                      docName: (
                         <Input
-                          type="file"
-                          accept=".jpg,.jpeg,.png,.pdf"
-                          className="w-full h-9"
-                          onChange={(e) => handleFileUpload(e, index)}
-                          disabled={isAutoMode && index === 0}
+                          type="text"
+                          placeholder="Enter document name..."
+                          className="w-full h-8 text-sm"
+                          value={doc.docName || ""}
+                          onChange={(e) => handleDocNameChange(index, e.target.value)}
+                          disabled={index === 0 && doc.docName === "CertificateORG"}
                         />
-                        {/* {doc.fileName && doc.fileName !== "No file chosen" && (
+                      ),
+                      upload: (
+                        <div className="flex flex-row gap-1">
+                          <Input
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.pdf"
+                            className="w-full h-9"
+                            onChange={(e) => handleFileUpload(e, index)}
+                            disabled={isAutoMode && index === 0}
+                          />
+                          {/* {doc.fileName && doc.fileName !== "No file chosen" && (
                           <span className="text-xs text-gray-500 truncate max-w-[80px]">
                             {doc.fileName}
                           </span>
                         )} */}
-                        {isAutoMode && index === 0 && (
-                          <Button
-                            type="button"
-                            size="sm"
-                            className="bg-green-700 hover:bg-green-800 text-white whitespace-nowrap h-9"
-                            onClick={handleGenerateCertificate}
-                            disabled={manualCertificateGenerating}
-                          >
-                            {manualCertificateGenerating ? "Generating..." : "Generate Certificate"}
-                          </Button>
-                        )}
-                      </div>
-                    ),
-                    // action: (
-                    //   <Button
-                    //     variant="link"
-                    //     size="sm"
-                    //     className={`px-0 ${index === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-800'}`}
-                    //     onClick={() => {
-                    //       if (index === 0 && doc.docName === "CertificateORG") {
-                    //         return;
-                    //       }
-                    //       removeVerificationRow(index);
-                    //     }}
-                    //     disabled={index === 0 && doc.docName === "CertificateORG"}
-                    //   >
-                    //     Remove
-                    //   </Button>
-                    // ),
+                          {isAutoMode && index === 0 && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              className="bg-green-700 hover:bg-green-800 text-white whitespace-nowrap h-9"
+                              onClick={handleGenerateCertificate}
+                              disabled={manualCertificateGenerating}
+                            >
+                              {manualCertificateGenerating ? "Generating..." : "Generate Certificate"}
+                            </Button>
+                          )}
+                        </div>
+                      ),
+                      // action: (
+                      //   <Button
+                      //     variant="link"
+                      //     size="sm"
+                      //     className={`px-0 ${index === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-800'}`}
+                      //     onClick={() => {
+                      //       if (index === 0 && doc.docName === "CertificateORG") {
+                      //         return;
+                      //       }
+                      //       removeVerificationRow(index);
+                      //     }}
+                      //     disabled={index === 0 && doc.docName === "CertificateORG"}
+                      //   >
+                      //     Remove
+                      //   </Button>
+                      // ),
 
-                    // For View Button Procedure
-                    action: (
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className={`px-0 ${
-                            (isAutoMode && index === 0) || (index === 0 && doc.docName === "CertificateORG")
-                              ? 'text-gray-400 cursor-not-allowed' 
-                              : 'text-red-600 hover:text-red-800'
-                          }`}
-                          onClick={() => {
-                            if (isAutoMode && index === 0) return;
-                            if (index === 0 && doc.docName === "CertificateORG") {
-                              return;
-                            }
-                            removeVerificationRow(index);
-                          }}
-                          disabled={(isAutoMode && index === 0) || (index === 0 && doc.docName === "CertificateORG")}
-                        >
-                          Remove
-                        </Button>
-
-                        {isAutoMode && index === 0 && (
+                      // For View Button Procedure
+                      action: (
+                        <div className="flex items-center gap-2">
                           <Button
                             variant="link"
                             size="sm"
-                            className={`px-0 ${
-                              manualCertificateGenerated 
-                                ? 'text-blue-700 hover:text-blue-900' 
-                                : 'text-gray-400 cursor-not-allowed'
-                            }`}
-                            onClick={viewManualCertificate}
-                            disabled={!manualCertificateGenerated}
+                            className={`px-0 ${(isAutoMode && index === 0) || (index === 0 && doc.docName === "CertificateORG")
+                                ? 'text-gray-400 cursor-not-allowed'
+                                : 'text-red-600 hover:text-red-800'
+                              }`}
+                            onClick={() => {
+                              if (isAutoMode && index === 0) return;
+                              if (index === 0 && doc.docName === "CertificateORG") {
+                                return;
+                              }
+                              removeVerificationRow(index);
+                            }}
+                            disabled={(isAutoMode && index === 0) || (index === 0 && doc.docName === "CertificateORG")}
                           >
-                            View
+                            Remove
                           </Button>
-                        )}
-                      </div>
-                    ),
-                  }})}
+
+                          {isAutoMode && index === 0 && (
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className={`px-0 ${manualCertificateGenerated
+                                  ? 'text-blue-700 hover:text-blue-900'
+                                  : 'text-gray-400 cursor-not-allowed'
+                                }`}
+                              onClick={viewManualCertificate}
+                              disabled={!manualCertificateGenerated}
+                            >
+                              View
+                            </Button>
+                          )}
+                        </div>
+                      ),
+                    }
+                  })}
                   keyMapping={verifyKeyMapping}
                   pagination={false}
                   className="max-md:min-w-380"
@@ -3003,11 +3005,11 @@ const FrmAppAuthorisationMst = () => {
                   <h3 className="text-lg font-semibold">Certificate Info</h3>
                   <Button variant="ghost" onClick={() => setShowCertificatePopup(false)}>✕</Button>
                 </div>
-                
+
                 {renderCertificateForm(certificateServiceId)}
-                
+
                 <div className="flex justify-end gap-3 mt-4">
-                  <Button 
+                  <Button
                     className="bg-blue-900 hover:bg-blue-800 text-white"
                     onClick={handlePreviewCertificate}
                   >
@@ -3031,11 +3033,11 @@ const FrmAppAuthorisationMst = () => {
                   <h3 className="text-lg font-semibold">Trade Certificate Details</h3>
                   <Button variant="ghost" onClick={() => setShowTradePopup(false)}>✕</Button>
                 </div>
-                
+
                 {renderTradeForm()}
-                
+
                 <div className="flex justify-end gap-3 mt-4">
-                  <Button 
+                  <Button
                     className="bg-blue-900 hover:bg-blue-800 text-white"
                     onClick={handleSubmitTrade}
                   >
