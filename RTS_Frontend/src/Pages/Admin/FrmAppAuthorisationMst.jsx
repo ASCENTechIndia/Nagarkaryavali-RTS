@@ -86,6 +86,11 @@ const FrmAppAuthorisationMst = () => {
   const [certificateServiceId, setCertificateServiceId] = useState("");
   const [tradeType, setTradeType] = useState("T");
   const [certificateFormData, setCertificateFormData] = useState({});
+  // const [manualCertificateGenerating, setManualCertificateGenerating] = useState(false);
+  // const [manualCertificateUrl, setManualCertificateUrl] = useState(null);
+  // const [manualCertificateGenerated, setManualCertificateGenerated] = useState(false);
+  const [hoClerkRemark, setHoClerkRemark] = useState("");
+
   const tableRef = useRef(null);
 
   const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -290,6 +295,10 @@ const FrmAppAuthorisationMst = () => {
           setHoRejectRemark(mergedData.HODREMARK || "");
         }
 
+        if (mergedData.HOAUTH === null || mergedData.HOAUTH === undefined) {
+          setHoClerkRemark(mergedData.HODREMARK || "");
+        }
+
         if (mergedData.AMOUNT) {
           setAmount(String(mergedData.AMOUNT));
         }
@@ -319,7 +328,14 @@ const FrmAppAuthorisationMst = () => {
                   type="checkbox"
                   checked={doc.vrfyFlag === "Y"}
                   disabled={true}
-                  className="h-4 w-4 cursor-not-allowed accent-primary opacity-70"
+                  className="h-5 w-5 cursor-not-allowed"
+                  style={{
+                    accentColor: "#000000",
+                    opacity: 1,
+                    filter: "none",
+                    WebkitFilter: "none",
+                    WebkitOpacity: 1,
+                  }}
                   data-docid={docId}
                 />
               );
@@ -720,6 +736,101 @@ const FrmAppAuthorisationMst = () => {
     setUploadedFiles(newUploadedFiles);
   };
 
+  // const isAutoCertificateMode = () => {
+  //   return authMode === "CK" && (Number(departId) === 7 || Number(departId) === 290);
+  // };
+
+  // const handleGenerateCertificate = async () => {
+  //   try {
+  //     setManualCertificateGenerating(true);
+
+  //     const loader = Swal.fire({
+  //       title: "Generating Certificate...",
+  //       text: "Please wait while we generate the certificate.",
+  //       allowOutsideClick: false,
+  //       showConfirmButton: false,
+  //       didOpen: () => Swal.showLoading(),
+  //     });
+
+  //     const response = await axios.post(
+  //       `${BASE_URL}/api/frmAppAuth/test-generate-certificate`,
+  //       {
+  //         appNo: selectedData.applino,
+  //         serviceId: selectedData.servicid,
+  //         ulbId: ulbId,
+  //         userId: user?.userId,
+  //       },
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+  //         },
+  //       }
+  //     );
+
+  //     loader.close();
+
+  //     if (response.data.ok || response.data.success) {
+  //       const certResponse = await axios.post(
+  //         `${BASE_URL}/api/FrmTrackApplication/generate-certificate-report`,
+  //         {
+  //           serviceId: String(selectedData.servicid),
+  //           appNo: selectedData.applino,
+  //           ulbId: ulbId,
+  //         },
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+  //           },
+  //         }
+  //       );
+
+  //       if (certResponse.data.success && certResponse.data.pdfUrl) {
+  //         setManualCertificateUrl(certResponse.data.pdfUrl);
+  //         setManualCertificateGenerated(true);
+
+  //         window.open(certResponse.data.pdfUrl, "_blank");
+
+  //         Swal.fire({
+  //           text: "Certificate generated successfully!",
+  //           icon: "success",
+  //           confirmButtonColor: "#1e3a8a",
+  //           timer: 1500,
+  //           showConfirmButton: false,
+  //         });
+  //       } else {
+  //         Swal.fire({
+  //           text: "Failed to generate certificate PDF.",
+  //           confirmButtonColor: "#1e3a8a",
+  //         });
+  //       }
+  //     } else {
+  //       Swal.fire({
+  //         text: response.data.message || "Certificate generation failed.",
+  //         confirmButtonColor: "#1e3a8a",
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Error generating certificate:", error);
+  //     Swal.fire({
+  //       text: error?.response?.data?.error || "Error generating certificate.",
+  //       confirmButtonColor: "#1e3a8a",
+  //     });
+  //   } finally {
+  //     setManualCertificateGenerating(false);
+  //   }
+  // };
+
+  // const viewManualCertificate = () => {
+  //   if (manualCertificateUrl) {
+  //     window.open(manualCertificateUrl, "_blank");
+  //   } else {
+  //     Swal.fire({
+  //       text: "Certificate not generated yet. Please click 'Generate Certificate' first.",
+  //       confirmButtonColor: "#1e3a8a",
+  //     });
+  //   }
+  // };
+
   useEffect(() => {
     if (authMode === "CK" && verificationDocs.length === 0) {
       setVerificationDocs([
@@ -772,9 +883,17 @@ const FrmAppAuthorisationMst = () => {
       return;
     }
 
-    if (!remark.trim()) {
+    if (authAction !== "Reject" && !remark.trim()) {
       Swal.fire({
         text: "Please Enter Remark",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    if (authAction === "Reject" && !rejectReason.trim()) {
+      Swal.fire({
+        text: "Please Enter Reject Reason",
         confirmButtonColor: "#1e3a8a",
       });
       return;
@@ -800,6 +919,42 @@ const FrmAppAuthorisationMst = () => {
         }
       }
     }
+
+    // if (showVerificationGrid && Number(departId) !== 7 && Number(departId) !== 290) {
+    if (showVerificationGrid) {
+      const hasAnyDocs = verificationDocs.length > 0;
+      if (!hasAnyDocs) {
+        Swal.fire({
+          text: "Please add document to upload.",
+          confirmButtonColor: "#1e3a8a",
+        });
+        return;
+      }
+
+      const invalidRows = verificationDocs.filter(
+        (doc) => !doc.docName?.trim() || !doc.file
+      );
+
+      if (invalidRows.length > 0) {
+        Swal.fire({
+          text: "Please add document to upload.",
+          confirmButtonColor: "#1e3a8a",
+        });
+        return;
+      }
+    }
+
+    // if (
+    //   authMode === "CK" && 
+    //   (Number(departId) === 7 || Number(departId) === 290) && 
+    //   !manualCertificateGenerated
+    // ) {
+    //   Swal.fire({
+    //     text: "Please generate the certificate first.",
+    //     confirmButtonColor: "#1e3a8a",
+    //   });
+    //   return;
+    // }
 
     setSubmitting(true);
 
@@ -841,12 +996,63 @@ const FrmAppAuthorisationMst = () => {
 
       if (!authResponse.data.ok) {
         Swal.fire({
-          text: authResponse.data.data.errorMsg || "Authorization failed",
+          text: authResponse.data.data.data.errorMsg || "Authorization failed",
           confirmButtonColor: "#1e3a8a",
         });
         setSubmitting(false);
         return;
       }
+
+      // Generate Cerificate
+      // if ((Number(departId) === 7 || Number(departId) === 290) && manualCertificateUrl) {
+      //   try {
+      //     const pdfResponse = await fetch(manualCertificateUrl);
+      //     const pdfBlob = await pdfResponse.blob();
+          
+      //     const pdfFile = new File([pdfBlob], `Certificate_${selectedData.applino}.pdf`, { 
+      //       type: "application/pdf" 
+      //     });
+
+      //     const formData = new FormData();
+      //     formData.append("ulbid", ulbId);
+      //     formData.append("applino", selectedData.applino);
+      //     formData.append("userid", user?.userId);
+      //     formData.append("docname", "CertificateORG");
+      //     formData.append("document", pdfFile);
+
+      //     const uploadResponse = await axios.post(
+      //       `${BASE_URL}/api/frmAppAuth/application-verification-document`,
+      //       formData,
+      //       {
+      //         headers: {
+      //           Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+      //           "Content-Type": "multipart/form-data",
+      //         },
+      //       },
+      //     );
+
+      //     if (!uploadResponse.data.ok) {
+      //       console.error("Failed to upload certificate:", uploadResponse.data);
+      //     } else {
+      //       console.log("Certificate uploaded successfully");
+      //     }
+      //   } catch (uploadError) {
+      //     console.error("Error uploading certificate:", uploadError);
+      //   }
+      // }
+
+      // if (authMode === "CK" && !(Number(departId) === 7 || Number(departId) === 290)) {
+      //   const filesToUpload = Object.keys(uploadedFiles)
+      //     .filter((key) => uploadedFiles[key]?.file)
+      //     .map((key) => ({
+      //       docName: verificationDocs[parseInt(key)]?.docName || "CertificateORG",
+      //       file: uploadedFiles[key].file,
+      //     }));
+
+      //   if (filesToUpload.length > 0) {
+      //     await uploadVerificationDocuments(filesToUpload);
+      //   }
+      // }
 
       if (authMode === "CK") {
         const filesToUpload = Object.keys(uploadedFiles)
@@ -861,12 +1067,12 @@ const FrmAppAuthorisationMst = () => {
         }
       }
 
-      // if (authMode === "HO" && applicationData.APPSOURCE === "MAHA") {
-      //   await handleMahaOnlineIntegration(authAction);
-      // }
+      if (authMode === "HO" && applicationData.APPSOURCE === "MAHA") {
+        await handleMahaOnlineIntegration(authAction);
+      }
 
       Swal.fire({
-        text: authResponse.data.data.errorMsg || "Authorization submitted successfully",
+        text: authResponse.data.data.data.errorMsg || "Authorization submitted successfully",
         confirmButtonColor: "#1e3a8a",
       }).then(() => {
         navigate(`/app/FrmAppAuthorisationList?@=${authMode}`)
@@ -2628,11 +2834,13 @@ const FrmAppAuthorisationMst = () => {
 
           {showVerificationGrid && (
             <div className="border rounded-lg p-4">
-              <div className="font-semibold text-md mb-4">Verification Documents</div>
+              <div className="font-semibold text-md mb-4">Upload Documents</div>
               <div className="overflow-x-auto">
                 <ShadCNTable
                   headers={verifyHeaders}
-                  data={verificationDocs.map((doc, index) => ({
+                  data={verificationDocs.map((doc, index) => { 
+                    const isAutoMode = Number(departId) === 7 || Number(departId) === 290;
+                    return {
                     docName: (
                       <Input
                         type="text"
@@ -2644,18 +2852,29 @@ const FrmAppAuthorisationMst = () => {
                       />
                     ),
                     upload: (
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-row gap-1">
                         <Input
                           type="file"
                           accept=".jpg,.jpeg,.png,.pdf"
                           className="w-full h-9"
                           onChange={(e) => handleFileUpload(e, index)}
-                          // disabled={index === 0 && doc.docName === "CertificateORG"}
+                          // disabled={isAutoMode && index === 0}
                         />
                         {/* {doc.fileName && doc.fileName !== "No file chosen" && (
                           <span className="text-xs text-gray-500 truncate max-w-[80px]">
                             {doc.fileName}
                           </span>
+                        )} */}
+                        {/* {isAutoMode && index === 0 && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="bg-green-700 hover:bg-green-800 text-white whitespace-nowrap h-9"
+                            onClick={handleGenerateCertificate}
+                            disabled={manualCertificateGenerating}
+                          >
+                            {manualCertificateGenerating ? "Generating..." : "Generate Certificate"}
+                          </Button>
                         )} */}
                       </div>
                     ),
@@ -2675,7 +2894,48 @@ const FrmAppAuthorisationMst = () => {
                         Remove
                       </Button>
                     ),
-                  }))}
+
+                    // For View Button Procedure
+                    // action: (
+                    //   <div className="flex items-center gap-2">
+                    //     <Button
+                    //       variant="link"
+                    //       size="sm"
+                    //       className={`px-0 ${
+                    //         (isAutoMode && index === 0) || (index === 0 && doc.docName === "CertificateORG")
+                    //           ? 'text-gray-400 cursor-not-allowed' 
+                    //           : 'text-red-600 hover:text-red-800'
+                    //       }`}
+                    //       onClick={() => {
+                    //         if (isAutoMode && index === 0) return;
+                    //         if (index === 0 && doc.docName === "CertificateORG") {
+                    //           return;
+                    //         }
+                    //         removeVerificationRow(index);
+                    //       }}
+                    //       disabled={(isAutoMode && index === 0) || (index === 0 && doc.docName === "CertificateORG")}
+                    //     >
+                    //       Remove
+                    //     </Button>
+
+                    //     {isAutoMode && index === 0 && (
+                    //       <Button
+                    //         variant="link"
+                    //         size="sm"
+                    //         className={`px-0 ${
+                    //           manualCertificateGenerated 
+                    //             ? 'text-blue-700 hover:text-blue-900' 
+                    //             : 'text-gray-400 cursor-not-allowed'
+                    //         }`}
+                    //         onClick={viewManualCertificate}
+                    //         disabled={!manualCertificateGenerated}
+                    //       >
+                    //         View
+                    //       </Button>
+                    //     )}
+                    //   </div>
+                    // ),
+                  }})}
                   keyMapping={verifyKeyMapping}
                   pagination={false}
                   className="max-md:min-w-380"
@@ -2780,13 +3040,23 @@ const FrmAppAuthorisationMst = () => {
           <div className="border rounded-lg p-4">
             <div className="font-semibold text-md mb-4">Authorization</div>
 
-            {hoRejectRemark && (
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-4 p-2 bg-red-50 rounded">
+            {authMode === "HO" && (applicationData.HOAUTH === null || applicationData.HOAUTH === undefined) && hoClerkRemark && (
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 mb-4">
                 <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                  <Label className="text-red-600 font-medium" text="HO Reject Remark" />
+                  <Label className="font-medium" text="Clerk Remark" />
                   <span>:</span>
                 </div>
-                <span className="text-red-600">{hoRejectRemark}</span>
+                <span className="font-medium">{hoClerkRemark}</span>
+              </div>
+            )}
+
+            {hoRejectRemark && (
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 mb-4">
+                <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                  <Label className="font-medium" text="HO Returned Remark" />
+                  <span>:</span>
+                </div>
+                <span className="font-medium">{hoRejectRemark}</span>
               </div>
             )}
 
@@ -2886,7 +3156,7 @@ const FrmAppAuthorisationMst = () => {
             {authAction === "Reject" && (
               <div className="flex flex-col sm:flex-row sm:items-start gap-2 mb-4">
                 <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                  <Label text="Enter Reason" />
+                  <Label required text="Enter Reason" />
                   <span>:</span>
                 </div>
                 <Input

@@ -1134,7 +1134,7 @@ const getMenuDetailsRepo = async ({ serviceId, appNo, authMode }) => {
       // 3. HO DOCUMENTS
       // Legacy code adds Clerk documents only for HO mode
       // ---------------------------------------------------------
-      if (String(authMode) === "HO") {
+      if (String(authMode) === "HO" || String(authMode) === "CK") {
         documentQuery += `
           UNION ALL
 
