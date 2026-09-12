@@ -1341,6 +1341,7 @@ const FrmMarketLicenseUpdt = () => {
                       required
                     />
                     <Input
+                      maxLength={15}
                       name="licno"
                       value={values.licno}
                       onChange={handleChange}
