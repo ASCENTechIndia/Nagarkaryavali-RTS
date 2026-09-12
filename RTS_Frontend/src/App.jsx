@@ -34,7 +34,6 @@ import FrmMarriageRgstn from "./Pages/Marriage/FrmMarriageRgstn";
 import FrmServiceApplicationMstNew from "./Pages/PWD/FrmServiceApplicationMstNew";
 import FrmAppoints from "./Pages/Marriage/FrmAppoints";
 import FrmRoadCutting from "./Pages/PWD/FrmRoadCutting";
-import FrmhospitalParvana from "./Pages/NOC/FrmhospitalParvana";
 import Step0 from "./Pages/TownPlanning/Step0";
 import FrmWaterAppliEntry from "./Pages/WaterModule/FrmWaterAppliEntry";
 import FrmWaterAppliDetails from "./Pages/WaterModule/FrmWaterAppliDetails";
@@ -67,9 +66,21 @@ import FrmAppliReportEMst from "./Pages/Admin/FrmAppliReportEMst";
 import FrmHearingProccess from "./Pages/Admin/FrmHearingProccess";
 import FrmAppealHearing_New from "./Pages/Admin/FrmAppealHearing_New";
 import FrmHearingDateAssign from "./Pages/Admin/FrmHearingDateAssign";
-import FrmToursTravels from "./Pages/NOC/FrmToursTravels";
+import FrmMeatShopNOC from "./Pages/NOC/FrmMeatShopNOC";
+import FrmNOCService from "././Pages/NOC/FrmNOCService";
 import FrmNOMNoc from "./Pages/NOC/FrmNOMNoc";
-import FrmNORNoc from "./Pages/NOC/FrmNORNoc";
+import FrmNOCHordingType from "./Pages/Admin/FrmNOCHordingTypeList";
+import FrmBusinessTypeList from "./Pages/Admin/FrmBusinessTypeList";
+import FrmBusinessTypeMst from "./Pages/Admin/FrmBusinessTypeMst";
+import FrmNOCHordingTypeList from "./Pages/Admin/FrmNOCHordingTypeList";
+import FrmNOCHordingTypeMst from "./Pages/Admin/FrmNOCHordingTypeMst";
+import FrmNOCHordingSubTypeList from "./Pages/Admin/FrmNOCHordingSubTypeList";
+import FrmNOCHordingSubTypeMst from "./Pages/Admin/FrmNOCHordingSubTypeMst";
+import FrmLicenseTypeList from "./Pages/Admin/FrmLicenseTypeList";
+import FrmLicenseTypeMst from "./Pages/Admin/FrmLicenseTypeMst";      
+import FrmNocRoadType from "./Pages/Admin/FrmNocRoadType";
+import FrmNocRoadTypeMst from "./Pages/Admin/FrmNocRoadTypeMst";
+
 
 function HomePage() {
   return <div>Welcome to Employee Portal</div>;
@@ -209,11 +220,6 @@ const router = createBrowserRouter([
         path: "/app/FrmRoadCutting",
         element: <FrmRoadCutting />,
       },
-
-      {
-        path: "/app/FrmHospitalLicience",
-        element: <FrmhospitalParvana />,
-      },
       {
         path: "/app/Step0",
         element: <Step0 />,
@@ -226,10 +232,18 @@ const router = createBrowserRouter([
         path: "/app/FrmWaterAppliDetails",
         element: <FrmWaterAppliDetails />,
       },
+      // {
+      //   path: "/app/FrmToursTravel",
+      //   element: <FrmToursTravels />,
+      // },
       {
-        path: "/app/FrmToursTravel",
-        element: <FrmToursTravels />,
+        path: "/app/FrmMeatShopNOC",
+        element: <FrmMeatShopNOC />
       },
+      {
+        path: "/app/FrmNOCService",
+        element: <FrmNOCService />
+      }
     ],
   },
   {
@@ -350,14 +364,61 @@ const router = createBrowserRouter([
         element: <FrmHearingDateAssign />
       },
       {
-        path: "/App/FrmNOMNoc",
+        path: "/app/FrmNOCService",
         element: <FrmNOMNoc />
       },
-
       {
-        path: "/App/FrmNORNoc",
-        element: <FrmNORNoc />
-      }
+        path: "/App/FrmNOCHordingType",
+        element: <FrmNOCHordingType />
+      },
+      {
+        path: "/app/FrmNocRoadType",
+        element: <FrmNocRoadType />,
+      },
+      {
+        path: "/app/FrmNocRoadTypeMst",
+        element: <FrmNocRoadTypeMst />,
+      },
+      {
+        path:"/app/FrmBusinessTypeList",
+        element:<FrmBusinessTypeList />
+      },
+         {
+        path:"/app/FrmBusinessTypeMst",
+        element:<FrmBusinessTypeMst />
+      },
+      {
+        path:"/App/FrmNOCHordingTypeList",
+        element:<FrmNOCHordingTypeList />
+      },
+      {
+        path:"/App/FrmNOCHordingTypeMst",
+        element:<FrmNOCHordingTypeMst />
+      },
+      {
+        path:"/App/FrmNOCHordingSubTypeList",
+        element:<FrmNOCHordingSubTypeList />
+      },
+      {
+        path:"/App/FrmNOCHordingSubTypeMst",
+        element:<FrmNOCHordingSubTypeMst />
+      },     
+      {
+        path: "/app/FrmLicenseTypeList",
+        element: <FrmLicenseTypeList />
+      },
+      {
+        path: "/app/FrmLicenseTypeMst",
+        element: <FrmLicenseTypeMst />
+      },
+      {
+        path: "/app/FrmNocRoadType",
+        element: <FrmNocRoadType />,
+      },
+      {
+        path: "/app/FrmNocRoadTypeMst",
+        element: <FrmNocRoadTypeMst />,
+      },
     ]
   },
 ]);

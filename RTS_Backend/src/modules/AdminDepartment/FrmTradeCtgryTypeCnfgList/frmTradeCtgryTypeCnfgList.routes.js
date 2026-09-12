@@ -1,25 +1,23 @@
 const express = require("express");
 const router = express.Router();
 const controller = require("./frmTradeCtgryTypeCnfgList.controller");
+const auth = require("../../../middlewares/auth.middleware");
 
-// FrmTradeCtgryTypeCnfgList Routes
 
-router.post("/list",controller.getTradeTypeConfigList);
+router.post("/list", auth(), controller.getTradeTypeConfigList);
 
-router.post("/categories",controller.getTradeCategories);
+router.post("/categories", auth(), controller.getTradeCategories);
 
-router.post("/category-types",controller.getCategoryTypeConfig);
+router.post("/category-types", auth(), controller.getCategoryTypeConfig);
 
-router.post("/trade-types",controller.getTradeTypes);
+router.post("/trade-types",auth(), controller.getTradeTypes);
 
-router.post("/tradetype-config-save",controller.saveTradeTypeConfig);
+router.post("/tradetype-config-save", auth(), controller.saveTradeTypeConfig);
 
-// FrmTradeCtgryList Routes
+router.post("/tradecategorylist",auth(), controller.getTradeCategoriesConfig);
 
-router.post("/tradecategorylist",controller.getTradeCategoriesConfig);
+router.post("/tradecategoryby-id",auth(), controller.getTradeCategoryById);
 
-router.post("/tradecategoryby-id",controller.getTradeCategoryById);
-
-router.post("/trade-category-save",controller.saveTradeCategory);
+router.post("/trade-category-save",auth(), controller.saveTradeCategory);
 
 module.exports = router;
