@@ -1,5 +1,6 @@
 const express = require("express");
 const controller = require("./FrmNewTaxAssesment.controller");
+const auth = require("../../../middlewares/auth.middleware");
 
 const router = express.Router();
 
