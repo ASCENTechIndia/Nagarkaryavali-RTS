@@ -82,6 +82,8 @@ const FrmNoDuesCerti = () => {
   const [zone, setZone] = useState("");
   const [wardno, setWardno] = useState("");
   const [zoneList, setZoneList] = useState([]);
+  const [propertyFound, setPropertyFound] = useState(false);  
+  const [hasSearched, setHasSearched] = useState(false); 
 
   const originalDocumentDefs = useRef([]);
 
@@ -127,7 +129,7 @@ const FrmNoDuesCerti = () => {
         `${BASE_URL}/api/FrmAssessmentCerti/documents`,
         {
           serviceId: String(serviceId),
-          ulbId: String(ulbId || "3"),
+          ulbId: String(ulbId),
         },
         {
           headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
@@ -275,6 +277,7 @@ const FrmNoDuesCerti = () => {
     }
 
     setIsSearching(true);
+     setHasSearched(true);
     try {
       let fullPropNo = values.ptn;
       if (values.subcode && values.subcode.trim() !== "") {
@@ -294,6 +297,7 @@ const FrmNoDuesCerti = () => {
             allowOutsideClick: false,
           }).then(() => {
             resetFormAfterSearch(setFieldValue, resetForm);
+            setHasSearched(false); 
           });
           setIsSearching(false);
           return;
@@ -312,6 +316,8 @@ const FrmNoDuesCerti = () => {
         setZone(propData.zonename || "");
         setWardno(propData.wardname || "");
 
+        setPropertyFound(true);  
+
         Swal.fire({
           text: "Property details fetched successfully!",
           confirmButtonColor: '#1e3a8a',
@@ -326,10 +332,12 @@ const FrmNoDuesCerti = () => {
           allowOutsideClick: false,
         }).then(() => {
           resetFormAfterSearch(setFieldValue, resetForm);
+          setHasSearched(false); 
         });
       }
     } catch (error) {
       console.error("Error fetching property details:", error);
+      setHasSearched(false); 
       Swal.fire({
         text: error?.response?.data?.error || "Error fetching property details. Please try again.",
         confirmButtonColor: '#1e3a8a',
@@ -344,6 +352,8 @@ const FrmNoDuesCerti = () => {
   const resetFormAfterSearch = (setFieldValue, resetForm) => {
 
     resetForm();
+
+    setHasSearched(false); 
     
     setFieldValue("ptn", "");
     setFieldValue("subcode", "");
@@ -747,7 +757,14 @@ const FrmNoDuesCerti = () => {
                     <Input
                       name="ptn"
                       value={values.ptn}
-                      onChange={handleChange}
+                      // onChange={handleChange}
+                      onChange={(e) => {
+                        handleChange(e);
+                        if (propertyFound || hasSearched) {
+                          setPropertyFound(false);
+                          setHasSearched(false);
+                        }
+                      }}
                       className="w-full h-9"
                     />
                   </div>
@@ -917,7 +934,7 @@ const FrmNoDuesCerti = () => {
                   <Button
                     type="submit"
                     className="bg-blue-900 hover:bg-blue-800 text-white"
-                    disabled={loading}
+                    disabled={loading || !propertyFound}
                   >
                     {loading ? "Submitting..." : "Submit"}
                   </Button>

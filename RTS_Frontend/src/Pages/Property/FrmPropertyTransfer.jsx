@@ -79,6 +79,8 @@ const FrmPropertyTransfer = () => {
   const [zone, setZone] = useState("");
   const [wardno, setWardno] = useState("");
   const [zoneList, setZoneList] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [propertyFound, setPropertyFound] = useState(false);   
 
   const originalDocumentDefs = useRef([]);
 
@@ -339,6 +341,8 @@ const FrmPropertyTransfer = () => {
     }
 
     setIsSearching(true);
+     setHasSearched(true);
+      setPropertyFound(false);  
     try {
       let fullPropNo = values.ptn;
       if (values.subcode && values.subcode.trim() !== "") {
@@ -380,6 +384,8 @@ const FrmPropertyTransfer = () => {
         setZone(propData.zonename || "");
         setWardno(propData.wardname || "");
 
+        setPropertyFound(true);  
+
         Swal.fire({
           text: "Property details fetched successfully!",
           confirmButtonColor: '#1e3a8a',
@@ -393,11 +399,15 @@ const FrmPropertyTransfer = () => {
           confirmButtonText: "OK",
           allowOutsideClick: false,
         }).then(() => {
+          setHasSearched(false); 
+          setPropertyFound(false);   
           resetFormAfterSearch(setFieldValue, resetForm);
         });
       }
     } catch (error) {
       console.error("Error fetching property details:", error);
+      setHasSearched(false); 
+      setPropertyFound(false);   
       Swal.fire({
         text: error?.response?.data?.error || "Error fetching property details. Please try again.",
         confirmButtonColor: '#1e3a8a',
@@ -415,6 +425,8 @@ const FrmPropertyTransfer = () => {
     if (currentTransferType) {
       setFieldValue("transferType", currentTransferType);
     }
+    setHasSearched(false);
+    setPropertyFound(false);   
 
     setFieldValue("zoneId", "");
     
@@ -775,7 +787,14 @@ const FrmPropertyTransfer = () => {
                       <Input
                         name="ptn"
                         value={values.ptn}
-                        onChange={handleChange}
+                        // onChange={handleChange}
+                        onChange={(e) => {
+                          handleChange(e);
+                          if (propertyFound || hasSearched) {
+                            setPropertyFound(false);
+                            setHasSearched(false);
+                          }
+                        }}
                         className="w-full h-9"
                       />
                     </div>
@@ -1031,7 +1050,7 @@ const FrmPropertyTransfer = () => {
                     <Button
                       type="submit"
                       className="bg-blue-900 hover:bg-blue-800 text-white"
-                      disabled={loading}
+                      disabled={loading || !propertyFound}
                     >
                       {loading ? "Submitting..." : "Submit"}
                     </Button>
