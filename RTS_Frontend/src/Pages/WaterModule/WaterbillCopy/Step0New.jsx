@@ -496,6 +496,14 @@ const FrmWaterConnectionApplication = () => {
       });
       return;
     }
+    if (!formData.middleNameMarathi.trim()) {
+      Swal.fire({
+
+        text: "Please enter मधले नाव.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
 
     if (!formData.lastName.trim()) {
       Swal.fire({
@@ -647,8 +655,8 @@ const FrmWaterConnectionApplication = () => {
         documentType: document.DOCTYPE || "",
         file: file,
       };
-    })
-      .filter(Boolean);
+    }).filter(Boolean);
+
 
     console.log("Selected Documents:", selectedDocuments);
 
@@ -1363,6 +1371,7 @@ const FrmWaterConnectionApplication = () => {
 
                   <Label
                     text="मधले नाव"
+                    required
                   />
 
                   <span>:</span>
@@ -1460,12 +1469,14 @@ const FrmWaterConnectionApplication = () => {
                   value={
                     formData.aadharNo
                   }
+                  inputMode="numeric"
                   onChange={(e) =>
                     handleChange(
                       "aadharNo",
-                      e.target.value
+                      e.target.value.replace(/\D/g, "")
                     )
                   }
+
                   placeholder="Aadhar Card No"
                 />
 
@@ -1970,7 +1981,7 @@ const FrmWaterConnectionApplication = () => {
                           </div>
                         </td>
                         <td className="border px-3 py-2">
-                          <Input
+                          {/* <Input
                             type="file"
                             accept=".jpg,.jpeg,.png,.pdf"
                             onChange={(e) =>
@@ -1978,6 +1989,32 @@ const FrmWaterConnectionApplication = () => {
                                 document.DOCID,
                                 e.target.files?.[0] ||
                                 null
+                              )
+                            }
+                            className="cursor-pointer"
+                          /> */}
+                          <Input
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.pdf"
+                            maxFileSize={5 * 1024 * 1024}
+                            onInvalidFile={() => {
+                              Swal.fire({
+                                // icon: "warning",
+                                // title: "File Too Large",
+                                text: "Document size must not exceed 5 MB.",
+                                confirmButtonColor: "#1e3a8a",
+                              });
+
+                              setDocumentFiles((prev) => {
+                                const updatedFiles = { ...prev };
+                                delete updatedFiles[document.DOCID];
+                                return updatedFiles;
+                              });
+                            }}
+                            onChange={(e) =>
+                              handleDocumentFileChange(
+                                document.DOCID,
+                                e.target.files?.[0] || null
                               )
                             }
                             className="cursor-pointer"

@@ -1,6 +1,56 @@
-import { cn } from "@/lib/utils";
+{/* <Input
+  type="file"
+  accept=".jpg,.jpeg,.png,.pdf"
+  maxFileSize={5 * 1024 * 1024}
+  onInvalidFile={() => {
+    Swal.fire({
+      // title: "File Too Large",
+      text: "Document size must not exceed 5 MB.",
+      confirmButtonColor: "#1e3a8a",
+    });
 
-function Input({ className, type = "text", ...props }) {
+    setDocumentFiles((prev) => {
+      const updatedFiles = { ...prev };
+      delete updatedFiles[document.DOCID];
+      return updatedFiles;
+    });
+  }}
+  onChange={(e) =>
+    handleDocumentFileChange(
+      document.DOCID,
+      e.target.files?.[0] || null
+    )
+  }
+  className="cursor-pointer"
+/> */}
+
+
+
+import { cn } from "@/lib/utils";
+import Swal from "sweetalert2";
+
+const DEFAULT_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const DEFAULT_FILE_ACCEPT = ".jpg,.jpeg,.png,.pdf";
+
+function Input({ className, type = "text", accept = type === "file" ? DEFAULT_FILE_ACCEPT : undefined, maxFileSize = type === "file" ? DEFAULT_MAX_FILE_SIZE : undefined, onChange, onInvalidFile = () => { Swal.fire({ text: "Document size must not exceed 5 MB.", confirmButtonColor: "#1e3a8a" }) }, ...props }) {
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+
+    if (type === "file" && file && maxFileSize) {
+      if (file.size > maxFileSize) {
+        // Clear browser's selected file name
+        e.target.value = "";
+
+        onInvalidFile?.(file);
+
+        return;
+      }
+    }
+
+    onChange?.(e);
+  };
+
   /* ---------- RADIO / CHECKBOX ---------- */
   if (type === "radio" || type === "checkbox") {
     return (
@@ -25,6 +75,7 @@ function Input({ className, type = "text", ...props }) {
       data-slot="input"
       //     min="0"
       // step="1"
+      onChange={type === "file" ? handleFileChange : onChange}
       onKeyDown={(e) => {
         if (type === "number" && ["-", "e", "+", "*", "/"].includes(e.key)) {
           e.preventDefault();
