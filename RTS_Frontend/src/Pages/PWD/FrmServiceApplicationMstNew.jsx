@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
 import config from "@/utils/config";
 
 import {
@@ -53,13 +54,11 @@ const FrmServiceApplicationMstNew = () => {
   const ulbId = locationState.ulbId || user?.ulbId || "";
   const userId = locationState.userId || user?.userId || "";
   const serviceId = locationState.serviceId || user?.serviceId || "";
-
   const serviceName = locationState.serviceName || "Service Application";
 
   const serviceIdString = String(serviceId);
 
   const isSectorService = SECTOR_SERVICES.includes(serviceIdString);
-
   const isAutoPrabhagService = AUTO_PRABHAG_SERVICES.includes(serviceIdString);
 
   const [loading, setLoading] = useState(false);
@@ -113,6 +112,12 @@ const FrmServiceApplicationMstNew = () => {
     loadInitialData();
   }, [token, ulbId, serviceId]);
 
+  const getHeaders = () => ({
+    headers: {
+      Authorization: `Bearer ${token || localStorage.getItem("token") || ""}`,
+    },
+  });
+
   const loadInitialData = async () => {
     try {
       setLoading(true);
@@ -164,13 +169,7 @@ const FrmServiceApplicationMstNew = () => {
         {
           ulbId: Number(ulbId),
         },
-        {
-          headers: {
-            Authorization: `Bearer ${
-              token || localStorage.getItem("token") || ""
-            }`,
-          },
-        },
+        getHeaders(),
       );
 
       if (!response?.data?.ok) {
@@ -188,9 +187,7 @@ const FrmServiceApplicationMstNew = () => {
       return wardData;
     } catch (error) {
       console.error("Ward list API error:", error);
-
       setWards([]);
-
       throw error;
     }
   };
@@ -202,13 +199,7 @@ const FrmServiceApplicationMstNew = () => {
         {
           serviceId: Number(serviceId),
         },
-        {
-          headers: {
-            Authorization: `Bearer ${
-              token || localStorage.getItem("token") || ""
-            }`,
-          },
-        },
+        getHeaders(),
       );
 
       if (!response?.data?.ok) {
@@ -226,9 +217,7 @@ const FrmServiceApplicationMstNew = () => {
       return sectorData;
     } catch (error) {
       console.error("Sector list API error:", error);
-
       setSectors([]);
-
       throw error;
     }
   };
@@ -247,13 +236,7 @@ const FrmServiceApplicationMstNew = () => {
         {
           sectorId: Number(selectedSectorId),
         },
-        {
-          headers: {
-            Authorization: `Bearer ${
-              token || localStorage.getItem("token") || ""
-            }`,
-          },
-        },
+        getHeaders(),
       );
 
       if (!response?.data?.ok) {
@@ -301,13 +284,7 @@ const FrmServiceApplicationMstNew = () => {
           serviceId: Number(serviceId),
           ulbId: Number(ulbId),
         },
-        {
-          headers: {
-            Authorization: `Bearer ${
-              token || localStorage.getItem("token") || ""
-            }`,
-          },
-        },
+        getHeaders(),
       );
 
       if (!response?.data?.ok) {
@@ -339,9 +316,7 @@ const FrmServiceApplicationMstNew = () => {
       return mappedDocuments;
     } catch (error) {
       console.error("Document list API error:", error);
-
       setDocuments([]);
-
       throw error;
     } finally {
       setDocumentLoading(false);
@@ -368,7 +343,7 @@ const FrmServiceApplicationMstNew = () => {
     return null;
   };
 
-  const handleFileChange = (documentId, event, setFieldValue, values) => {
+  const handleFileChange = (documentId, event, setFieldValue) => {
     const file = event.currentTarget.files?.[0];
 
     if (!file) {
@@ -386,7 +361,6 @@ const FrmServiceApplicationMstNew = () => {
       });
 
       event.target.value = "";
-
       return;
     }
 
@@ -401,7 +375,6 @@ const FrmServiceApplicationMstNew = () => {
     );
 
     setDocuments(updatedDocuments);
-
     setFieldValue("documents", updatedDocuments);
   };
 
@@ -422,7 +395,6 @@ const FrmServiceApplicationMstNew = () => {
 
       if (isSectorService) {
         sectorId = Number(values.sectorId) || 0;
-
         villageId = Number(values.villageId) || 0;
 
         zoneId =
@@ -438,9 +410,7 @@ const FrmServiceApplicationMstNew = () => {
           ) || 0;
 
         locality = values.locality?.trim() || "";
-
         landmark = values.landmark?.trim() || "";
-
         pincode = Number(values.pincode) || 0;
       } else {
         zoneId = Number(values.zoneId) || 0;
@@ -470,13 +440,7 @@ const FrmServiceApplicationMstNew = () => {
       const response = await axios.post(
         `${BASE_URL}/api/FrmServiceApplicationMst/save`,
         payload,
-        {
-          headers: {
-            Authorization: `Bearer ${
-              token || localStorage.getItem("token") || ""
-            }`,
-          },
-        },
+        getHeaders(),
       );
 
       if (!response?.data?.success) {
@@ -543,42 +507,55 @@ const FrmServiceApplicationMstNew = () => {
         </CardTitle>
       </CardHeader>
 
-      <Formik
-        initialValues={{
-          ...initialValues,
-          zoneId: isAutoPrabhagService ? AUTO_PRABHAG_WARD_ID : "",
-        }}
-        enableReinitialize
-        validate={(values) => {
-          const result =
-            serviceApplicationValidationSchema(serviceId).safeParse(values);
+   <Formik
+  initialValues={{
+    ...initialValues,
+    zoneId: isAutoPrabhagService
+      ? AUTO_PRABHAG_WARD_ID
+      : "",
+  }}
+  enableReinitialize
+  validateOnChange={false}
+  validateOnBlur={false}
+  onSubmit={async (values, formikHelpers) => {
+    const result =
+      serviceApplicationValidationSchema(serviceId).safeParse(values);
 
-          if (result.success) {
-            return {};
-          }
+    if (!result.success) {
+      const firstError = result.error.issues[0];
 
-          return result.error.issues.reduce((errors, issue) => {
-            const field = issue.path?.[0];
+      const fieldName = firstError.path?.[0];
+      const errorMessage = firstError.message;
 
-            if (field && !errors[field]) {
-              errors[field] = issue.message;
-            }
+      if (fieldName) {
+        formikHelpers.setFieldTouched(fieldName, true, false);
+        formikHelpers.setFieldError(fieldName, errorMessage);
+      }
 
-            return errors;
-          }, {});
-        }}
-        onSubmit={handleSubmit}
-      >
+      await Swal.fire({
+        icon: "warning",
+        title: "Validation Required",
+        text: errorMessage,
+        confirmButtonText: "OK",
+      });
+
+      return;
+    }
+
+    await handleSubmit(values, formikHelpers);
+  }}
+>
         {({ values, handleChange, setFieldValue }) => {
           const transformedTableData = documents.map((document) => ({
             ...document,
-
             fileUpload: (
               <Input
                 type="file"
                 accept=".jpg,.jpeg,.png,.pdf"
+                 maxFileSize={5 * 1024 * 1024}
+
                 onChange={(event) =>
-                  handleFileChange(document.id, event, setFieldValue, values)
+                  handleFileChange(document.id, event, setFieldValue)
                 }
                 className="h-9 w-full min-w-[280px] cursor-pointer bg-white text-xs"
               />
@@ -626,37 +603,37 @@ const FrmServiceApplicationMstNew = () => {
                     </div>
 
                     {["41", "461"].includes(serviceIdString) && (
-                      <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
-                        <Label
-                          text="Locality :"
-                          required
-                          className="whitespace-nowrap text-sm font-medium text-black sm:text-right"
-                        />
+                      <>
+                        <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
+                          <Label
+                            text="Locality :"
+                            required
+                            className="whitespace-nowrap text-sm font-medium text-black sm:text-right"
+                          />
 
-                        <Input
-                          name="locality"
-                          value={values.locality}
-                          onChange={handleChange}
-                          className="h-9"
-                        />
-                      </div>
-                    )}
+                          <Input
+                            name="locality"
+                            value={values.locality}
+                            onChange={handleChange}
+                            className="h-9"
+                          />
+                        </div>
 
-                    {["41", "461"].includes(serviceIdString) && (
-                      <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
-                        <Label
-                          text="Landmark :"
-                          required
-                          className="whitespace-nowrap text-sm font-medium text-black sm:text-right"
-                        />
+                        <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
+                          <Label
+                            text="Landmark :"
+                            required
+                            className="whitespace-nowrap text-sm font-medium text-black sm:text-right"
+                          />
 
-                        <Input
-                          name="landmark"
-                          value={values.landmark}
-                          onChange={handleChange}
-                          className="h-9"
-                        />
-                      </div>
+                          <Input
+                            name="landmark"
+                            value={values.landmark}
+                            onChange={handleChange}
+                            className="h-9"
+                          />
+                        </div>
+                      </>
                     )}
 
                     <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_minmax(0,1fr)]">
@@ -733,11 +710,8 @@ const FrmServiceApplicationMstNew = () => {
                             }
                             onValueChange={(value) => {
                               setFieldValue("sectorId", value);
-
                               setFieldValue("villageId", "");
-
                               setVillages([]);
-
                               loadVillages(value);
                             }}
                           >
@@ -815,7 +789,6 @@ const FrmServiceApplicationMstNew = () => {
 
                           setFieldValue("zoneId", value);
                         }}
-                      
                       >
                         <SelectTrigger className="h-9 w-full rounded-md">
                           <SelectValue placeholder="Select Prabhag" />
