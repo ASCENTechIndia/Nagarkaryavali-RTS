@@ -1,9 +1,43 @@
 const jwt = require("jsonwebtoken");
 const { AppError } = require("../../libs/errors");
 const repo = require("./auth.repo");
-const { JWT_SECRET } = require("../../config/env");
+const { JWT_SECRET, JWT_REFRESH_SECRET } = require("../../config/env");
 
 const ACCESS_TOKEN_EXPIRES_IN = "30m";
+const REFRESH_TOKEN_EXPIRES_IN = "7d";
+
+function signRefreshToken(payload) {
+  return jwt.sign(payload, JWT_REFRESH_SECRET, {
+    expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+  });
+}
+
+function verifyRefreshToken(token) {
+  try {
+    return jwt.verify(token, JWT_REFRESH_SECRET);
+  } catch (error) {
+    throw new AppError("Invalid or expired refresh token", 401);
+  }
+}
+
+async function refreshAccessToken(refreshToken) {
+  if (!refreshToken) {
+    throw new AppError("Refresh token is required", 401);
+  }
+
+  const decoded = verifyRefreshToken(refreshToken);
+
+  const payload = {
+    sub: decoded.sub,
+    name: decoded.name,
+    ulbId: decoded.ulbId,
+    corpId: decoded.corpId,
+  };
+
+  return {
+    token: signAccessToken(payload),
+  };
+}
 
 function encodePassword(password) {
   if (!password || typeof password !== "string") {
@@ -116,13 +150,16 @@ async function loginProc({ corpId, mobile, password, ulbId, logflag }) {
     throw new AppError(errorMsg, 401);
   }
 
+  const tokenPayload = {
+    sub: out.userId,
+    name: out.username,
+    ulbId: out.ulbId,
+    corpId: Number(corpId),
+  };
+
   return {
-    token: signAccessToken({
-      sub: out.userId,
-      name: out.username,
-      ulbId: out.ulbId,
-      corpId: Number(corpId)
-    }),
+    token: signAccessToken(tokenPayload),
+    refreshToken: signRefreshToken(tokenPayload),
     user: {
       userId: out.userId,
       username: out.username,
@@ -192,13 +229,16 @@ async function loginWithOtp({ userId, ulbId, mobileNumber, otp }) {
 
   const corpId = 10001;
 
+  const tokenPayload = {
+    sub: result.userId,
+    name: result.username,
+    ulbId: result.ulbId,
+    corpId: corpId,
+  };
+
   return {
-    token: signAccessToken({
-      sub: result.userId,
-      name: result.username,
-      ulbId: result.ulbId,
-      corpId
-    }),
+    token: signAccessToken(tokenPayload),
+    refreshToken: signRefreshToken(tokenPayload),
     user: {
       userId: result.userId,
       username: result.username,
@@ -330,28 +370,28 @@ async function employeeLoginService({ corpId = 10001, userId, password }) {
 
   const result = await repo.employeeLoginRepo({ corpId: employeeCorpId, userId: userId.trim(), password });
   if (!result?.success) {
-    throw new AppError( result?.error || "Unable to process employee login.", 500 );
+    throw new AppError(result?.error || "Unable to process employee login.", 500);
   }
 
   const errCode = Number(result?.errCode ?? 0);
   if (errCode !== 9999) {
-    throw new AppError( result?.errMsg || "Invalid Username or Password.", 401 );
+    throw new AppError(result?.errMsg || "Invalid Username or Password.", 401);
   }
 
   const strInfo = String(result?.strInfo || "");
   const values = strInfo.split("$");
 
   if (values.length < 9) {
-    throw new AppError( "Invalid employee information received from login procedure.", 500 );
+    throw new AppError("Invalid employee information received from login procedure.", 500);
   }
 
-  const [ procedureCorpId, username, lastLogin, lastLogout, empType, zoneId, ulbId, otpValidate, mobileNo ] = values.map((value) => String(value ?? "").trim());
+  const [procedureCorpId, username, lastLogin, lastLogout, empType, zoneId, ulbId, otpValidate, mobileNo] = values.map((value) => String(value ?? "").trim());
 
   if (!username) {
-    throw new AppError( "Employee username was not returned from login procedure.", 500 );
+    throw new AppError("Employee username was not returned from login procedure.", 500);
   }
   if (!ulbId) {
-    throw new AppError( "ULB ID was not returned from login procedure.", 500 );
+    throw new AppError("ULB ID was not returned from login procedure.", 500);
   }
 
   const finalCorpId = Number(procedureCorpId || employeeCorpId);
@@ -369,14 +409,17 @@ async function employeeLoginService({ corpId = 10001, userId, password }) {
     mobileNo: mobileNo,
   };
 
-  const token = signAccessToken({
+  const tokenPayload = {
     sub: employeeUser.userId,
     name: employeeUser.username,
     ulbId: employeeUser.ulbId,
     corpId: employeeUser.corpId,
     empType: employeeUser.empType,
     zoneId: employeeUser.zoneId,
-  });
+  };
+
+  const token = signAccessToken(tokenPayload);
+  const refreshToken = signRefreshToken(tokenPayload);
 
   return {
     success: true,
@@ -384,6 +427,7 @@ async function employeeLoginService({ corpId = 10001, userId, password }) {
     resultString: result.strInfo,
     message: "Login successful.",
     token,
+    refreshToken,
     user: employeeUser,
   };
 }
@@ -398,5 +442,8 @@ module.exports = {
   changePassword,
   verifyToken,
   getCitizenDetailsByMobile,
-  employeeLoginService
+  employeeLoginService,
+  signRefreshToken,
+  verifyRefreshToken,
+  refreshAccessToken,
 };

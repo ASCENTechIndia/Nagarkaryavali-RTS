@@ -6,7 +6,7 @@ function Label({
   text,
   required = false,
   className,
-  copyText = "Mehnat kr badh AAGE", //--
+  // copyText = "Mehnat kr badh AAGE", //--
   children,
   ...props
 }) {
@@ -20,10 +20,10 @@ function Label({
       : labelText;
 
       //--
-  const handleCopy = (e) => {
-    e.preventDefault();
-    e.clipboardData.setData("text/plain", copyText);
-  };
+  // const handleCopy = (e) => {
+  //   e.preventDefault();
+  //   e.clipboardData.setData("text/plain", copyText);
+  // };
 
   return (
     <LabelPrimitive.Root
@@ -31,7 +31,7 @@ function Label({
         "flex items-center sm:w-28 text-sm font-medium text-gray-800 gap-1",
         className
       )}
-      onCopy={handleCopy}//--
+      // onCopy={handleCopy}//--
       {...props}
     >
       <span>{finalText}</span>
