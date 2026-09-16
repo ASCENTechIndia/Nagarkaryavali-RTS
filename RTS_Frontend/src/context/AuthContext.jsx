@@ -10,7 +10,7 @@ const DEFAULT_ULB_ID = import.meta.env.VITE_DEFAULT_ULB_ID;
 const AuthProvider = ({ children }) => {
 
     const inactivityTimerRef = useRef(null);
-    const INACTIVITY_LIMIT = 30 * 1000;
+    const INACTIVITY_LIMIT = 15 * 60 * 1000;
 
     const [user, setUser] = useState(() => {
         const storedUser = sessionStorage.getItem("user");
