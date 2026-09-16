@@ -57,6 +57,7 @@ function Input({ className, type = "text", accept = type === "file" ? DEFAULT_FI
       <input
         type={type}
         data-slot="input"
+         onChange={onChange}   
         className={cn(
           "h-4 w-4 cursor-pointer   accent-primary",
           "disabled:cursor-not-allowed disabled:opacity-50",

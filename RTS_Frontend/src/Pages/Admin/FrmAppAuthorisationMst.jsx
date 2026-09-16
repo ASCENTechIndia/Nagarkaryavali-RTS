@@ -1023,7 +1023,8 @@ const FrmAppAuthorisationMst = () => {
 
     if (
       authMode === "CK" &&
-      (Number(departId) === 7 || Number(departId) === 290) &&
+      // (Number(departId) === 7 || Number(departId) === 290) &&
+      (Number(departId) === 290) &&
       !manualCertificateGenerated
     ) {
       Swal.fire({
@@ -1081,7 +1082,8 @@ const FrmAppAuthorisationMst = () => {
       }
 
       // Generate Cerificate
-      if ((Number(departId) === 7 || Number(departId) === 290) && manualCertificateUrl) {
+      // if ((Number(departId) === 7 || Number(departId) === 290) && manualCertificateUrl) {
+        if ((Number(departId) === 290) && manualCertificateUrl) {
         try {
           console.log({ manualCertificateUrl })
           const pdfResponse = await fetch(manualCertificateUrl);
@@ -1121,7 +1123,8 @@ const FrmAppAuthorisationMst = () => {
         }
       }
 
-      if (authMode === "CK" && !(Number(departId) === 7 || Number(departId) === 290)) {
+      // if (authMode === "CK" && !(Number(departId) === 7 || Number(departId) === 290)) {
+      if (authMode === "CK" && !(Number(departId) === 290)) {
         const filesToUpload = Object.keys(uploadedFiles)
           .filter((key) => uploadedFiles[key]?.file)
           .map((key) => ({
@@ -2919,7 +2922,8 @@ const FrmAppAuthorisationMst = () => {
                 <ShadCNTable
                   headers={verifyHeaders}
                   data={verificationDocs.map((doc, index) => {
-                    const isAutoMode = Number(departId) === 7 || Number(departId) === 290;
+                    // const isAutoMode = Number(departId) === 7 || Number(departId) === 290;
+                    const isAutoMode = Number(departId) === 290;
                     return {
                       docName: (
                         <Input
