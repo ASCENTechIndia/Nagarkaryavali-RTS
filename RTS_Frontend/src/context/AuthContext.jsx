@@ -421,10 +421,7 @@ const AuthProvider = ({ children }) => {
             setToken(accessToken);
             setRefreshToken(newRefreshToken);
 
-            sessionStorage.setItem(
-                "user",
-                JSON.stringify(authenticatedUser)
-            );
+            sessionStorage.setItem( "user", JSON.stringify(authenticatedUser) );
 
             sessionStorage.setItem("accessToken", accessToken);
             sessionStorage.setItem("refreshToken", newRefreshToken);
@@ -435,10 +432,7 @@ const AuthProvider = ({ children }) => {
             startTokenSession(accessToken);
         } catch (error) {
             console.error("Login token error:", error);
-            logout(
-                "Unable to validate your login session. Please login again.",
-                true
-            );
+            logout( "Unable to validate your login session. Please login again.", true );
         }
     };
 
