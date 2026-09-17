@@ -3184,20 +3184,21 @@ const FrmAppAuthorisationMst = () => {
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row sm:items-start gap-2 mb-4">
-              <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                <Label required className="font-medium" text="Enter Remark" />
-                <span>:</span>
+            {authAction !== "Reject" && (
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 mb-4">
+                <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                  <Label required className="font-medium" text="Enter Remark" />
+                  <span>:</span>
+                </div>
+                <Input
+                  type="text"
+                  value={remark}
+                  onChange={(e) => setRemark(e.target.value)}
+                  className="w-full sm:w-64 h-9"
+                  placeholder="Enter remark..."
+                />
               </div>
-              <Input
-                type="text"
-                value={remark}
-                onChange={(e) => setRemark(e.target.value)}
-                className="w-full sm:w-64 h-9"
-                placeholder="Enter remark..."
-              />
-            </div>
-
+             )}
             <div className="flex flex-wrap items-center gap-6 mb-4">
               <div className="flex items-center space-x-2">
                 <Input
