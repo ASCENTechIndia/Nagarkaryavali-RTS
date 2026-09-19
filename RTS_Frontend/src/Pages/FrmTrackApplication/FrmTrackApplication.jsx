@@ -31,7 +31,7 @@ const FrmTrackApplication = () => {
   console.log(user);
 
   console.log("user", user);
-  
+
   const userId = user?.userId;
   const ulbId = user?.ulbId;
   const serviceUrl = user?.serviceUrl || "/";
@@ -108,15 +108,15 @@ const FrmTrackApplication = () => {
 
   const formatDateToIndian = (dateValue) => {
     if (!dateValue) return "-";
-    
+
     try {
       const date = new Date(dateValue);
       if (isNaN(date.getTime())) return "-";
-      
+
       const day = String(date.getDate()).padStart(2, "0");
       const month = String(date.getMonth() + 1).padStart(2, "0");
       const year = date.getFullYear();
-      
+
       return `${day}-${month}-${year}`;
     } catch (error) {
       return "-";
@@ -132,13 +132,13 @@ const FrmTrackApplication = () => {
     setLoading(true);
 
     Swal.fire({
-        title: "Loading Applications...",
-        text: "Please wait while we fetch your applications.",
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        didOpen: () => {
+      title: "Loading Applications...",
+      text: "Please wait while we fetch your applications.",
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => {
         Swal.showLoading();
-        },
+      },
     });
 
     try {
@@ -185,41 +185,41 @@ const FrmTrackApplication = () => {
   const fetchTrackingSteps = async (applino, ulbId, serviceId) => {
     setLoading(true);
     Swal.fire({
-        title: "Loading Application Details...",
-        text: "Please wait while we fetch your application data.",
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        didOpen: () => {
+      title: "Loading Application Details...",
+      text: "Please wait while we fetch your application data.",
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => {
         Swal.showLoading();
-        },
+      },
     });
-    
+
     try {
-        const response = await axios.post(
+      const response = await axios.post(
         `${BASE_URL}/api/FrmTrackApplication/getapplicationsteps`,
         { ulbId, applino, serviceId },
         {
-            headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
+          headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
         }
-        );
+      );
 
-        console.log("fetchTrackingSteps", response);
+      console.log("fetchTrackingSteps", response);
 
-        if (response.data.ok || response.data.data.success) {
+      if (response.data.ok || response.data.data.success) {
         const steps = response.data.data.data.steps.map((step, index) => ({
-            srNo: index + 1,
-            stageId: step.STAGEID,
-            step: step.STEP,
-            description: step.DESCRIPTION,
-            date: step.DATETIME,
-            status: step.STATUS || "Pending",
+          srNo: index + 1,
+          stageId: step.STAGEID,
+          step: step.STEP,
+          description: step.DESCRIPTION,
+          date: step.DATETIME,
+          status: step.STATUS || "Pending",
         }));
         setTrackingSteps(steps);
         setAppAuth(response.data.data.appAuth || "");
 
-        const departmentId = response.data.data.data?.departmentId || 
-                           response.data.data?.departmentId;
-      
+        const departmentId = response.data.data.data?.departmentId ||
+          response.data.data?.departmentId;
+
         setSelectedApp(prev => ({
           ...prev,
           departmentId: departmentId
@@ -227,20 +227,20 @@ const FrmTrackApplication = () => {
 
         const appealData = await getAppealDetails(applino);
         if (appealData) {
-            setAppealDetails(appealData);
+          setAppealDetails(appealData);
         }
 
         await fetchDocuments(applino);
         Swal.close();
-        }
+      }
     } catch (error) {
-        console.error("Error fetching tracking steps:", error);
-        Swal.fire({
+      console.error("Error fetching tracking steps:", error);
+      Swal.fire({
         text: error?.response?.data?.error || "Error fetching tracking details. Please try again.",
         confirmButtonColor: '#1e3a8a',
-        });
+      });
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -361,10 +361,10 @@ const FrmTrackApplication = () => {
       });
 
       console.log({
-          serviceId: serviceId,
-          appNo: applino,
-          ulbId: ulbId
-        });
+        serviceId: serviceId,
+        appNo: applino,
+        ulbId: ulbId
+      });
 
       const response = await axios.post(
         `${BASE_URL}/api/FrmTrackApplication/generate-certificate-report`,
@@ -384,12 +384,12 @@ const FrmTrackApplication = () => {
 
       if (response.data.success && response.data.pdfUrl) {
         window.open(response.data.pdfUrl, '_blank');
-        
+
         Swal.fire({
           text: "Certificate generated successfully!",
           confirmButtonColor: '#1e3a8a',
         });
-        
+
         return true;
       } else {
         Swal.fire({
@@ -405,11 +405,11 @@ const FrmTrackApplication = () => {
       console.log("Error Response:", error.response.data.message);
       Swal.close();
 
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error || 
-                          error.message || 
-                          "Error downloading certificate. Please try again.";
-      
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Error downloading certificate. Please try again.";
+
       Swal.fire({
         text: errorMessage,
         confirmButtonColor: '#1e3a8a',
@@ -430,7 +430,7 @@ const FrmTrackApplication = () => {
 
       if (response.data.success && response.data.data && response.data.data.length > 0) {
         const certData = response.data.data[0];
-        
+
         if (certData.fileBytes) {
           const byteCharacters = atob(certData.fileBytes);
           const byteNumbers = new Array(byteCharacters.length);
@@ -440,9 +440,9 @@ const FrmTrackApplication = () => {
           const byteArray = new Uint8Array(byteNumbers);
           const blob = new Blob([byteArray], { type: 'application/pdf' });
           const url = window.URL.createObjectURL(blob);
-          
+
           window.open(url, '_blank');
-          
+
           return true;
         }
       }
@@ -550,7 +550,7 @@ const FrmTrackApplication = () => {
         });
         return;
       }
-      
+
       if (action === "Second Appeal") {
         navigate("/app/FrmSecondAppeal", {
           state: {
@@ -639,7 +639,7 @@ const FrmTrackApplication = () => {
     //     }
     //     return;
     //   }
-      
+
     //   if (appAuth === "Rejected") {
     //     Swal.fire({
     //       text: "Application was rejected. Certificate cannot be generated.",
@@ -651,8 +651,8 @@ const FrmTrackApplication = () => {
 
     if (stepName === "Certificate Generated") {
       if (status === "Done" || appAuth === "Done") {
-        const departmentId = selectedApp?.departmentId ;
-        
+        const departmentId = selectedApp?.departmentId;
+
         if (departmentId === 7 || departmentId === 290) {
           Swal.fire({
             text: "Generating certificate...",
@@ -677,7 +677,7 @@ const FrmTrackApplication = () => {
               confirmButtonColor: '#1e3a8a',
             });
           }
-        } 
+        }
         else {
           Swal.fire({
             text: "Fetching certificate...",
@@ -705,7 +705,7 @@ const FrmTrackApplication = () => {
         }
         return;
       }
-    
+
       if (appAuth === "Rejected") {
         Swal.fire({
           text: "Application was rejected. Certificate cannot be generated.",
@@ -736,13 +736,19 @@ const FrmTrackApplication = () => {
 
     if (serviceDetails && serviceDetails.redirectUrl) {
       let cleanUrl = serviceDetails.redirectUrl;
-      cleanUrl = cleanUrl.replace(/^~\//, "").replace(/^~/, "");
+      cleanUrl = cleanUrl.replace(/^~\/?/, "");
+
+      // Remove .aspx extension
+      cleanUrl = cleanUrl.replace(/\.aspx(?=($|\?))/, "");
+
+      // Ensure URL starts with /
       if (!cleanUrl.startsWith("/")) {
-        cleanUrl = "/" + cleanUrl;
+        cleanUrl = `/${cleanUrl}`;
       }
 
       console.log("Original URL:", serviceDetails.redirectUrl);
       console.log("Cleaned URL:", cleanUrl);
+
 
       navigate(cleanUrl, {
         state: {
@@ -788,53 +794,53 @@ const FrmTrackApplication = () => {
 
   const getTransformedStepsData = () => {
 
-    const isAuthRejected = appAuth === "Rejected" || 
-    trackingSteps.some(s => s.step === "Application Authorization" && s.status === "Rejected");
+    const isAuthRejected = appAuth === "Rejected" ||
+      trackingSteps.some(s => s.step === "Application Authorization" && s.status === "Rejected");
 
     return trackingSteps.map(step => {
-        let actionElement = null;
-        const isPendingAfterRejection = isAuthRejected && step.status === "Pending";
+      let actionElement = null;
+      const isPendingAfterRejection = isAuthRejected && step.status === "Pending";
 
-        if (step.step === "Application Entry" && step.status === "Done") {
+      if (step.step === "Application Entry" && step.status === "Done") {
         const { firstAppealAvailable, secondAppealAvailable, firstAppealExists, secondAppealExists } = appealDetails;
-        
+
         let appealButtons = [];
-        
+
         if (firstAppealAvailable && !firstAppealExists) {
-            appealButtons.push(
+          appealButtons.push(
             <Button
-                key="first"
-                type="button"
-                className="bg-blue-900 hover:bg-blue-800 text-white text-xs px-2 py-0.5 h-7"
-                onClick={() => handleStepAction(step, "First Appeal")}
+              key="first"
+              type="button"
+              className="bg-blue-900 hover:bg-blue-800 text-white text-xs px-2 py-0.5 h-7"
+              onClick={() => handleStepAction(step, "First Appeal")}
             >
-                First Appeal
+              First Appeal
             </Button>
-            );
+          );
         }
         if (secondAppealAvailable && !secondAppealExists) {
-            appealButtons.push(
+          appealButtons.push(
             <Button
-                key="second"
-                type="button"
-                className="bg-green-700 hover:bg-green-800 text-white text-xs px-2 py-0.5 h-7"
-                onClick={() => handleStepAction(step, "Second Appeal")}
+              key="second"
+              type="button"
+              className="bg-green-700 hover:bg-green-800 text-white text-xs px-2 py-0.5 h-7"
+              onClick={() => handleStepAction(step, "Second Appeal")}
             >
-                Second Appeal
+              Second Appeal
             </Button>
-            );
+          );
         }
         if (appealButtons.length > 0) {
-            actionElement = (
+          actionElement = (
             <div className="flex flex-wrap items-center justify-center gap-1">
-                {appealButtons}
+              {appealButtons}
             </div>
-            );
+          );
         }
-        }
-        else if (step.step === "Payment Entry" && step.status !== "Done") {
+      }
+      else if (step.step === "Payment Entry" && step.status !== "Done") {
         actionElement = (
-            <Button
+          <Button
             type="button"
             disabled={isAuthRejected}
             className={
@@ -843,70 +849,70 @@ const FrmTrackApplication = () => {
                 : "bg-blue-900 hover:bg-blue-800 text-white text-xs px-3 py-1"
             }
             onClick={() => !isAuthRejected && handleStepAction(step, "Make Payment")}
-            >
+          >
             Make Payment
-            </Button>
+          </Button>
         );
-        }
-        else if (step.step === "Application Authorization" && step.status === "Rejected") {
+      }
+      else if (step.step === "Application Authorization" && step.status === "Rejected") {
         actionElement = (
-            <Button
+          <Button
             type="button"
             className="bg-gray-600 hover:bg-gray-700 text-white text-xs px-3 py-1"
             onClick={() => handleStepAction(step, "View")}
-            >
+          >
             View
-            </Button>
+          </Button>
         );
-        }
-        else if (step.step === "Certificate Generated") {
+      }
+      else if (step.step === "Certificate Generated") {
         if (step.status === "Done") {
-            actionElement = (
+          actionElement = (
             <Button
-                type="button"
-                className="bg-green-700 hover:bg-green-800 text-white text-xs px-3 py-1"
-                onClick={() => handleStepAction(step, "Certificate Download")}
+              type="button"
+              className="bg-green-700 hover:bg-green-800 text-white text-xs px-3 py-1"
+              onClick={() => handleStepAction(step, "Certificate Download")}
             >
-                Download Certificate
+              Download Certificate
             </Button>
-            );
+          );
         } else if (appAuth === "Done") {
-            actionElement = (
+          actionElement = (
             <Button
-                type="button"
-                className="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1"
-                onClick={() => handleStepAction(step, "Certificate Download")}
+              type="button"
+              className="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1"
+              onClick={() => handleStepAction(step, "Certificate Download")}
             >
-                Check Status
+              Check Status
             </Button>
-            );
+          );
         }
-        }
+      }
 
-        let statusBadgeClass = STATUS_COLORS[step.status] || STATUS_COLORS.Pending;
+      let statusBadgeClass = STATUS_COLORS[step.status] || STATUS_COLORS.Pending;
 
-        if (isPendingAfterRejection) {
-          statusBadgeClass = "bg-gray-300 text-gray-600";
-        }
+      if (isPendingAfterRejection) {
+        statusBadgeClass = "bg-gray-300 text-gray-600";
+      }
 
-        return {
+      return {
         ...step,
         action: actionElement,
         status: (
-            <span className={`px-2 py-1 rounded text-xs font-medium ${statusBadgeClass}`}>
+          <span className={`px-2 py-1 rounded text-xs font-medium ${statusBadgeClass}`}>
             {formatStatusLabel(step.status)}
-            </span>
+          </span>
         ),
         date: step.date ? new Date(step.date).toLocaleString('en-IN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
         }) : '-',
-        };
+      };
     });
   };
 
@@ -950,16 +956,16 @@ const FrmTrackApplication = () => {
     return (
       <div className="relative max-w-3xl mx-auto">
         <div className="absolute left-8 top-0 bottom-0 w-1 bg-blue-700"></div>
-        
+
         {filteredSteps.map((item, index) => {
           const isLast = index === filteredSteps.length - 1;
-          
+
           return (
             <div key={index} className={`relative flex items-start mb-10 ${isLast ? 'mb-0' : ''}`}>
               <div className="absolute left-[34px] transform -translate-x-1/2 flex items-center justify-center">
                 <div className={`w-6 h-6 rounded-full border-4 ${getStatusColor(item.status)} bg-white z-10 shadow-md`} />
               </div>
-              
+
               <div className="ml-16 w-full">
                 <div className={`p-4 rounded-lg shadow-md border ${getCardBgColor(item.status)}`}>
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
@@ -1000,7 +1006,7 @@ const FrmTrackApplication = () => {
     const appData = getTransformedAppData();
 
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="container mx-auto px-4 py-6">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className=" px-4 py-2">
         <Card className="border shadow-sm">
           <CardHeader className="border-b">
             <CardTitle className="text-lg font-semibold">
@@ -1008,7 +1014,7 @@ const FrmTrackApplication = () => {
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="p-4 sm:p-6 space-y-6">
+          <CardContent className="p-4 sm:p-6 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <div className="flex items-center gap-2">
                 <Label required text="Application No" className="font-medium whitespace-nowrap" />
@@ -1030,9 +1036,9 @@ const FrmTrackApplication = () => {
                 Back
               </Button>
             </div>
-            
+
             <div>
-              <h4 className="font-medium text-lg text-gray-800">Application Details</h4>
+              {/* <h4 className="font-medium text-lg text-gray-800">Application Details</h4> */}
             </div>
 
             <div className="overflow-x-auto">
