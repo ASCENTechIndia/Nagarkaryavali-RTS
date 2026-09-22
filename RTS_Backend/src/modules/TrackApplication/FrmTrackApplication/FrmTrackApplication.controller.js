@@ -110,7 +110,7 @@ const getApplicationCertificate = asyncHandler(async (req, res) => {
   });
 
   const result = await service.getApplicationCertificateService(applino);
-
+  console.log({result: result.data})
   if (!result.data || result.data.length === 0) {
     return res.status(404).json({
       success: false,
