@@ -152,31 +152,16 @@ const applicationAuthService = async ({ userId, applicationNo, status, reasonFor
   });
 };
 
-const saveApplicationVerificationDocumentService = async ({ ulbid, applino, userid, docname, docbyte }) => {
-  if (!ulbid) {
-    throw new Error("ULB ID is required.");
+const saveApplicationVerificationDocumentService = async ({ ulbid, applino, userid, documents }) => {
+  for (const document of documents) {
+    if (!document.docbyte) {
+      throw new Error(`Document is required for ${document.originalname || "file"}.`);
+    }
   }
 
-  if (!applino) {
-    throw new Error("Application number is required.");
-  }
-
-  if (!userid) {
-    throw new Error("User ID is required.");
-  }
-
-  if (!docbyte) {
-    throw new Error("Document is required.");
-  }
-
-  return await repo.saveApplicationVerificationDocumentRepo({
-    ulbid,
-    applino,
-    userid,
-    docname: docname || "CertificateORG",
-    docbyte,
-  });
+  return await repo.saveApplicationVerificationDocumentRepo({ ulbid, applino, userid, documents });
 };
+
 const getMenuDetailsService = async ({ serviceId, appNo, authMode }) => {
   if (!serviceId) {
     return {
