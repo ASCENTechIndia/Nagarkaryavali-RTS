@@ -457,7 +457,7 @@ const FrmTrackApplication = () => {
     try {
       console.log("doc: ", doc);
 
-      const base64Data = doc.fileBytes || doc.filebytes;
+      let base64Data = doc.fileBytes || doc.filebytes;
       const fileExtension = doc.fileExtension || doc.FileExtension;
       if (base64Data.includes("base64,")) {
         base64Data = base64Data.split("base64,")[1];
