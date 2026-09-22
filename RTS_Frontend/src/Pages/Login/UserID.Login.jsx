@@ -105,37 +105,35 @@ const Login = () => {
         }
 
         setLoading(true);
+
         try {
-            const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/auth/login-proc`,
-                {
-                    corpId: 10001,
-                    mobile: mobile,
-                    password,
-                    ulbId: Number(ulbId),
-                    logflag: "L"
-                }
-            );
+            const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/auth/login-proc`, { corpId: 10001, mobile, password, ulbId: Number(ulbId), logflag: "L" });
 
             const result = response.data;
 
-            if (!result?.ok || Number(result?.data?.errorCode) !== 9999) {
-                throw new Error(
-                    result?.data?.errorMsg ||
-                    result?.message ||
-                    "Login failed"
-                );
+            if (!result?.ok) {
+                throw new Error( result?.message || result?.data?.errorMsg || "Login failed" );
             }
 
-            const loginData = result.data;
+            const loginData = result?.data;
 
-            if (!loginData?.token || !loginData?.user) {
-                throw new Error("Login token was not returned");
+            if (Number(loginData?.errorCode) !== 9999) {
+                throw new Error(loginData?.errorMsg || "Invalid login credentials");
             }
 
-            login(loginData.user, loginData.token);
-            redirectAfterLogin(loginData.user);
+            const user = loginData?.user;
+            const accessToken = loginData?.token;
+            const newRefreshToken = loginData?.refreshToken;
+
+            if (!user || !accessToken || !newRefreshToken) {
+                throw new Error("User, access token or refresh token was not returned");
+            }
+
+            login(user, accessToken, newRefreshToken);
+            redirectAfterLogin(user);
         } catch (err) {
-            setError(err?.response?.data?.message || err?.response?.data?.error || err?.message || "Login failed");
+            console.error("Login error:", err);
+            setError( err?.response?.data?.message || err?.response?.data?.error || err?.message || "Login failed" );
             refreshCaptcha();
         } finally {
             setLoading(false);
@@ -160,7 +158,7 @@ const Login = () => {
                                         <div className="flex items-center gap-1">
                                             <UserIcon size={19} className="shrink-0 text-[#184aa6]" />
                                             <Label text="Mobile Number" required className="sm:w-36" />
-                                        <span>:</span>
+                                            <span>:</span>
                                         </div>
                                         <Input id="mobile" name="mobile" type="tel" value={values.mobile} onChange={(e) => { const value = e.target.value.replace(/\D/g, ""); handleChange({ target: { name: "mobile", value } }); }} placeholder="Enter mobile number" autoComplete="tel" maxLength={10} onCopy={blockClipboard} onPaste={blockClipboard} className="h-11 rounded-xl border-gray-300 bg-gray-50 focus-visible:border-[#184aa6] focus-visible:ring-[#184aa6]" />
                                     </div>
@@ -170,7 +168,7 @@ const Login = () => {
                                         <div className="flex items-center gap-1">
                                             <LockIcon size={19} className="shrink-0 text-[#184aa6]" />
                                             <Label text="Password" required className="sm:w-36" />
-                                        <span>:</span>
+                                            <span>:</span>
                                         </div>
                                         <Input id="in_password" name="in_password" type="password" value={values.in_password} onChange={handleChange} placeholder="Enter password" autoComplete="current-password" onCopy={blockClipboard} onPaste={blockClipboard} className="h-11 rounded-xl border-gray-300 bg-gray-50 focus-visible:border-[#184aa6] focus-visible:ring-[#184aa6]" />
                                     </div>
@@ -178,9 +176,9 @@ const Login = () => {
                                 <motion.div initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
                                     <div className="sm:flex grid items-center gap-2">
                                         <div className="flex items-center gap-1">
-                                        <ShieldCheckIcon size={19} className="shrink-0 text-[#184aa6]" />
-                                        <Label text="CAPTCHA" required className="sm:w-36" />
-                                        <span>:</span>
+                                            <ShieldCheckIcon size={19} className="shrink-0 text-[#184aa6]" />
+                                            <Label text="CAPTCHA" required className="sm:w-36" />
+                                            <span>:</span>
                                         </div>
                                         {/* <div className="flex flex-1 gap-2"> */}
                                         {/* <div className="flex h-11 flex-1 select-none items-center justify-center overflow-hidden rounded-xl border border-gray-300 bg-gray-100 font-mono text-lg font-bold tracking-[5px] text-[#184aa6]">{captchaValue}</div> */}

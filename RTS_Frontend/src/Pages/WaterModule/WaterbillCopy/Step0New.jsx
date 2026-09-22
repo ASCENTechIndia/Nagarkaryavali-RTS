@@ -570,8 +570,17 @@ const FrmWaterConnectionApplication = () => {
 
     if (!formData.email.trim()) {
       Swal.fire({
-
         text: "Please enter Email.",
+        confirmButtonColor: "#1e3a8a",
+      });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+    if (!emailRegex.test(formData.email.trim())) {
+      Swal.fire({
+        text: "Please enter a valid Email address.",
         confirmButtonColor: "#1e3a8a",
       });
       return;
@@ -1262,14 +1271,9 @@ const FrmWaterConnectionApplication = () => {
                 </div>
 
                 <Input
-                  value={
-                    formData.firstName
-                  }
+                  value={formData.firstName}
                   onChange={(e) =>
-                    handleChange(
-                      "firstName",
-                      e.target.value
-                    )
+                    handleChange("firstName", e.target.value.replace(/[^a-zA-Z]/g, ""))
                   }
                   placeholder="First Name"
                 />
@@ -1296,7 +1300,7 @@ const FrmWaterConnectionApplication = () => {
                   onChange={(e) =>
                     handleChange(
                       "middleName",
-                      e.target.value
+                      e.target.value.replace(/[^a-zA-Z]/g, "")
                     )
                   }
                   placeholder="Middle Name"
@@ -1326,7 +1330,7 @@ const FrmWaterConnectionApplication = () => {
                   onChange={(e) =>
                     handleChange(
                       "lastName",
-                      e.target.value
+                      e.target.value.replace(/[^a-zA-Z]/g, "")
                     )
                   }
                   placeholder="Last Name"
@@ -1355,7 +1359,7 @@ const FrmWaterConnectionApplication = () => {
                   onChange={(e) =>
                     handleChange(
                       "firstNameMarathi",
-                      e.target.value
+                      e.target.value.replace(/[^a-zA-Z]/g, "")
                     )
                   }
                   placeholder="प्रथम नाव"
@@ -1385,7 +1389,7 @@ const FrmWaterConnectionApplication = () => {
                   onChange={(e) =>
                     handleChange(
                       "middleNameMarathi",
-                      e.target.value
+                      e.target.value.replace(/[^a-zA-Z]/g, "")
                     )
                   }
                   placeholder="मधले नाव"
@@ -1413,7 +1417,7 @@ const FrmWaterConnectionApplication = () => {
                   onChange={(e) =>
                     handleChange(
                       "lastNameMarathi",
-                      e.target.value
+                      e.target.value.replace(/[^a-zA-Z]/g, "")
                     )
                   }
                   placeholder="आडनाव"

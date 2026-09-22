@@ -173,7 +173,7 @@ const getApplicationAuthListRepo = async ({ userId, authMode, prabhagList, deptL
     } else if (String(authMode) === "CK") {
       query += `
         AND CLERKAUTH IS NULL
-        AND status IN ('NW', 'DL')
+        AND status IN ('NW', 'DL', 'VP')
       `;
 
       // Original .NET special condition
@@ -189,7 +189,7 @@ const getApplicationAuthListRepo = async ({ userId, authMode, prabhagList, deptL
       query += `
         AND CLERKAUTH = 'CA'
         AND hoauth IS NULL
-        AND status IN ('NW', 'DL')
+        AND status IN ('NW', 'DL', 'VP')
       `;
     }
 

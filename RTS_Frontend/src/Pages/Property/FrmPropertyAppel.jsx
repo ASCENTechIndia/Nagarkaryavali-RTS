@@ -59,6 +59,7 @@ const FrmPropertyAppel = () => {
   const [documentDefs, setDocumentDefs] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [zones, setZones] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false); 
 
   const headers = ["Sr No.", "Document Name", "Image(jpg,png,pdf)"];
 
@@ -236,6 +237,7 @@ const FrmPropertyAppel = () => {
     }
 
     setIsLoading(true);
+     setHasSearched(true);
     try {
       setSearchError("");
       setPropertyFound(false);
@@ -258,6 +260,7 @@ const FrmPropertyAppel = () => {
             allowOutsideClick: false,
           }).then(() => {
             resetFormAfterSearch(setFieldValue, resetForm);
+            setHasSearched(false); 
           });
           setIsLoading(false);
           return;
@@ -292,10 +295,12 @@ const FrmPropertyAppel = () => {
           allowOutsideClick: false,
         }).then(() => {
           resetFormAfterSearch(setFieldValue, resetForm);
+          setHasSearched(false); 
         });
       }
     } catch (error) {
       console.error("Search Property Error:", error);
+      setHasSearched(false); 
       Swal.fire({
         text:
           error?.response?.data?.error ||
@@ -313,6 +318,7 @@ const FrmPropertyAppel = () => {
     resetForm();
     setPropertyFound(false);
     setSearchError("");
+    setHasSearched(false); 
   };
 
   const handleFileChange = (id, event) => {
@@ -770,7 +776,14 @@ const FrmPropertyAppel = () => {
                     <Input
                       name="ptn"
                       value={values.ptn}
-                      onChange={handleChange}
+                     // onChange={handleChange}
+                     onChange={(e) => {
+                      handleChange(e);
+                      if (propertyFound || hasSearched) {
+                        setPropertyFound(false);
+                        setHasSearched(false);
+                      }
+                    }}
                       className="w-full h-9"
                     />
                   </div>
@@ -1017,7 +1030,7 @@ const FrmPropertyAppel = () => {
                   <Button
                     type="submit"
                     className="bg-blue-900 hover:bg-blue-800 text-white"
-                    disabled={loading}
+                    disabled={loading || !propertyFound}
                   >
                     {loading ? "Submitting..." : "Submit"}
                   </Button>

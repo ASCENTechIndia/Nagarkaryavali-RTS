@@ -53,6 +53,8 @@ const FrmMarketLicenseUpdt = () => {
   const [uploadDocGrid, setUploadDocGrid] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+  const [tradeCategoryLoading, setTradeCategoryLoading] = useState(false);
+  const [tradeTypeLoading, setTradeTypeLoading] = useState(false);
   const ulbId = locationState.ulbId || user?.ulbId;
   const userId = locationState.userId || user?.userId;
   const zoneId = locationState.zoneId || user?.zoneId;
@@ -198,6 +200,8 @@ const FrmMarketLicenseUpdt = () => {
   };
 
   const fetchTradeCategory = async (jwalanshilstat, categoryType) => {
+    setTradeCategoryLoading(true);
+
     try {
       if (!jwalanshilstat || !categoryType) {
         setTradeCategory([]);
@@ -213,30 +217,36 @@ const FrmMarketLicenseUpdt = () => {
 
       const data = response.data?.data?.rows || response.data?.data || [];
       setTradeCategory(Array.isArray(data) ? data : []);
+
       return data;
     } catch (error) {
       console.error("Trade category fetch error:", error);
-
       setTradeCategory([]);
       return [];
+    } finally {
+      setTradeCategoryLoading(false);
     }
   };
 
   const fetchTradeTypes = async (categoryId, categoryType, jwalanshilstat) => {
+    setTradeTypeLoading(true);
+
     try {
       if (!categoryId || !categoryType) {
         setTradeType([]);
         return [];
       }
 
-      const payload = { categoryId: Number(categoryId), categoryType: String(categoryType) };
+      const payload = {
+        categoryId: Number(categoryId),
+        categoryType: String(categoryType),
+      };
 
-      //Jalanshil only for service 302 and 310
       if (Number(serviceid) === 302 || Number(serviceid) === 310) {
-        if (jwalanshilstat) { payload.jwalanshilstat = String(jwalanshilstat) }
+        if (jwalanshilstat) {
+          payload.jwalanshilstat = String(jwalanshilstat);
+        }
       }
-
-      console.log("Trade Types Payload:", payload);
 
       const response = await axios.post(`${BASE_URL}/api/FrmMarketLicenseupdt/trade-types-by-category`,
         payload,
@@ -247,11 +257,14 @@ const FrmMarketLicenseUpdt = () => {
 
       const data = response.data?.data?.rows || response.data?.data || [];
       setTradeType(Array.isArray(data) ? data : []);
+
       return data;
     } catch (error) {
       console.error("Trade Types fetch error:", error);
       setTradeType([]);
       return [];
+    } finally {
+      setTradeTypeLoading(false);
     }
   };
 
@@ -632,12 +645,7 @@ const FrmMarketLicenseUpdt = () => {
   };
 
   const handleAddCP = (values, setFieldValue) => {
-    if (
-      !values.newName ||
-      !values.cpAadhar ||
-      !values.cpAddr ||
-      !values.cpApplicant
-    ) {
+    if (!values.newName || !values.cpAadhar || !values.cpAddr || !values.cpApplicant) {
       Swal.fire({
         icon: "warning",
         text: "Please fill all required fields",
@@ -651,26 +659,10 @@ const FrmMarketLicenseUpdt = () => {
         id: Date.now(),
         existname: values.exeName || "",
         aadharno: values.cpAadhar,
-        gender:
-          values.rbdCPGender === "F"
-            ? "स्त्री"
-            : values.rbdCPGender === "M"
-              ? "पुरुष"
-              : "इतर",
+        gender: values.rbdCPGender === "F" ? "स्त्री" : values.rbdCPGender === "M" ? "पुरुष" : "इतर",
         address: values.cpAddr,
         applitypeid: values.cpApplicant,
-        applitypename:
-          cpApplicant.find(
-            (item) =>
-              String(item.APPLITYPE_ID || item.id) ===
-              String(values.cpApplicant)
-          )?.APPLITYPE_NAME ||
-          cpApplicant.find(
-            (item) =>
-              String(item.APPLITYPE_ID || item.id) ===
-              String(values.cpApplicant)
-          )?.name ||
-          "",
+        applitypename: cpApplicant.find((item) => String(item.APPLITYPE_ID || item.id) === String(values.cpApplicant))?.APPLITYPE_NAME || cpApplicant.find((item) => String(item.APPLITYPE_ID || item.id) === String(values.cpApplicant))?.name || "",
         newname: values.newName,
       },
     ]);
@@ -682,12 +674,7 @@ const FrmMarketLicenseUpdt = () => {
   };
 
   const handleTransferAdd = (values, setFieldValue) => {
-    if (
-      !values.newPartName ||
-      !values.trAadhar ||
-      !values.transRel ||
-      !values.transStat
-    ) {
+    if (!values.newPartName || !values.trAadhar || !values.transRel || !values.transStat) {
       Swal.fire({
         icon: "warning",
         text: "Please fill all required fields",
@@ -704,52 +691,14 @@ const FrmMarketLicenseUpdt = () => {
         newname: values.newPartName,
         mobileno: values.nMob || "",
         email: values.nEmail || "",
-        gender:
-          values.rbtnNDirectorGender === "F"
-            ? "स्त्री"
-            : values.rbtnNDirectorGender === "M"
-              ? "पुरुष"
-              : "इतर",
+        gender: values.rbtnNDirectorGender === "F" ? "स्त्री" : values.rbtnNDirectorGender === "M" ? "पुरुष" : "इतर",
         address: values.nResAdd || "",
         applitypeid: values.nAppliCat,
-        applitypename:
-          nAppliCat.find(
-            (item) =>
-              String(item.APPLITYPE_ID || item.id) ===
-              String(values.nAppliCat)
-          )?.APPLITYPE_NAME ||
-          nAppliCat.find(
-            (item) =>
-              String(item.APPLITYPE_ID || item.id) ===
-              String(values.nAppliCat)
-          )?.name ||
-          "",
+        applitypename: nAppliCat.find((item) => String(item.APPLITYPE_ID || item.id) === String(values.nAppliCat))?.APPLITYPE_NAME || nAppliCat.find((item) => String(item.APPLITYPE_ID || item.id) === String(values.nAppliCat))?.name || "",
         relationid: values.transRel,
-        relation:
-          transRel.find(
-            (item) =>
-              String(item.RELATION_ID || item.id) ===
-              String(values.transRel)
-          )?.RELATION_NAME ||
-          transRel.find(
-            (item) =>
-              String(item.RELATION_ID || item.id) ===
-              String(values.transRel)
-          )?.name ||
-          "",
+        relation: transRel.find((item) => String(item.RELATION_ID || item.id) === String(values.transRel))?.RELATION_NAME || transRel.find((item) => String(item.RELATION_ID || item.id) === String(values.transRel))?.name || "",
         applistatid: values.transStat,
-        applistat:
-          transStat.find(
-            (item) =>
-              String(item.STATUS_ID || item.id) ===
-              String(values.transStat)
-          )?.STATUS_NAME ||
-          transStat.find(
-            (item) =>
-              String(item.STATUS_ID || item.id) ===
-              String(values.transStat)
-          )?.name ||
-          "",
+        applistat: transStat.find((item) => String(item.STATUS_ID || item.id) === String(values.transStat))?.STATUS_NAME || transStat.find((item) => String(item.STATUS_ID || item.id) === String(values.transStat))?.name || "",
         image: values.nDirectorImage,
       },
     ]);
@@ -790,7 +739,7 @@ const FrmMarketLicenseUpdt = () => {
   //   });
   // };
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values, { resetForm }) => {
     if (!values.licno) {
       return Swal.fire({ icon: "warning", text: "Please enter License No" });
     }
@@ -822,8 +771,9 @@ const FrmMarketLicenseUpdt = () => {
       const partnerstr = partnerCorrGrid.map((item) => `${item.applitypeid || ""}$${item.newname || ""}$${item.aadharno || ""}$${item.address || ""}$${item.mobileno || ""}$${item.email || ""}$NEW$${item.gender || ""}`).join("#");
       const corrpartnerstr = partnerCorrGrid.map((item) => `${item.existname || ""}$${item.newname || ""}$${item.aadharno || ""}$${item.gender || ""}$${item.address || ""}$${item.applitypeid || ""}`).join("#");
       const tradeaddrstr = tradeAddrGrid.map((item) => `${item.TRADEADDR_ID || item.tradeaddrid || ""}$${item.TRADEADDR || item.tradeaddr || ""}`).join("#");
-
+      const businesstr = tradeTypeGrid.map((item) => `${item.tradetypeid || ""}$${item.rate || "0"}$${item.tradecategory_id || ""}`).join("#");
       const payload = {
+        userId,
         licenseno: values.licno || "",
         appfname: values.appliFname || "",
         appmname: values.appliMname || "",
@@ -843,7 +793,7 @@ const FrmMarketLicenseUpdt = () => {
         newcolname: "",
         ulbid: Number(ulbId),
         servicename: Number(serviceid),
-        businesstr: values.busitype || "",
+        businesstr,
         partnerstr,
         corrpartnerstr,
         appid: values.appid ? Number(values.appid) : 0,
@@ -854,7 +804,7 @@ const FrmMarketLicenseUpdt = () => {
         wardid: values.prabhag ? Number(values.prabhag) : 0,
         zoneid: zoneId ? Number(zoneId) : 0,
         Servid: Number(serviceid),
-        Source: "ONLINE",
+        Source: "RTS",
         amount: values.amount ? Number(values.amount) : 0,
         Gender: values.buisiGender || values.cancelGender || "",
         Jwalan: values.buisiJwalan || values.cancelJwalan || "",
@@ -944,6 +894,18 @@ const FrmMarketLicenseUpdt = () => {
         text: response.data?.message || submitData?.message || "Application submitted successfully.",
         confirmButtonText: "OK",
       });
+
+      resetForm();
+      setTradeCategory([]);
+      setTradeType([]);
+      setTradeTypeGrid([]);
+      setRemoveBusiGrid([]);
+      setDirectorGrid([]);
+      setPartnerCorrGrid([]);
+      setTransferGrid([]);
+      setTradeAddrGrid([]);
+      setFileUploadsGrid([]);
+      setUploadDocGrid([]);
     } catch (error) {
       Swal.close();
       await Swal.fire({
@@ -972,8 +934,8 @@ const FrmMarketLicenseUpdt = () => {
 
   const tradeTypeHeaders = [
     "काढा",
-    "tradetype id",
-    "Business CategoryId",
+    // "tradetype id",
+    // "Business CategoryId",
     "Business Category",
     "Business Type",
     // "Rate",
@@ -981,8 +943,8 @@ const FrmMarketLicenseUpdt = () => {
 
   const tradeTypeKeyMapping = {
     "काढा": "remove",
-    "tradetype id": "tradetypeid",
-    "Business CategoryId": "tradecategory_id",
+    // "tradetype id": "tradetypeid",
+    // "Business CategoryId": "tradecategory_id",
     "Business Category": "tradecategory",
     "Business Type": "tradetype",
     // Rate: "rate",
@@ -1076,7 +1038,7 @@ const FrmMarketLicenseUpdt = () => {
     "Doc Id",
     "Select",
     "Document Name",
-    "Image",
+    // "Image",
     "Document Upload",
     // "View",
   ];
@@ -1134,17 +1096,10 @@ const FrmMarketLicenseUpdt = () => {
         Delete
       </Button>
     ),
-    image: item.image ? (
-      <span>{item.image.name}</span>
-    ) : (
-      <span>No Image</span>
-    ),
+    image: item.image ? (<span>{item.image.name}</span>) : (<span>No Image</span>),
   }));
 
-  const transformedPartnerCorrGrid = partnerCorrGrid.map((item, index) => ({
-    ...item,
-    srNo: index + 1,
-  }));
+  const transformedPartnerCorrGrid = partnerCorrGrid.map((item, index) => ({ ...item, srNo: index + 1 }));
 
   const transformedTransferGrid = transferGrid.map((item, index) => ({
     ...item,
@@ -1158,11 +1113,7 @@ const FrmMarketLicenseUpdt = () => {
         Delete
       </Button>
     ),
-    image: item.image ? (
-      <span>{item.image.name}</span>
-    ) : (
-      <span>No Image</span>
-    ),
+    image: item.image ? (<span>{item.image.name}</span>) : (<span>No Image</span>),
   }));
 
   const transformedFileUploadsGrid = fileUploadsGrid.map((item) => ({
@@ -1171,25 +1122,17 @@ const FrmMarketLicenseUpdt = () => {
       <Checkbox
         checked={item.selected || false}
         onCheckedChange={(checked) => {
-          setFileUploadsGrid((previous) =>
-            previous.map((row) =>
-              row.id === item.id
-                ? { ...row, selected: checked }
-                : row
-            )
-          );
+          setFileUploadsGrid((previous) => previous.map((row) => row.id === item.id ? { ...row, selected: checked } : row));
         }}
       />
     ),
-    image: item.imageUrl ? (
-      <img
-        src={item.imageUrl}
-        alt="Doc"
-        className="h-8 w-12 object-contain"
-      />
-    ) : (
-      <span>No Image</span>
-    ),
+    // image: item.imageUrl ? (
+    //   <img
+    //     src={item.imageUrl}
+    //     alt="Doc"
+    //     className="h-8 w-12 object-contain"
+    //   />
+    // ) : (<span>No Image</span>),
     upload: (
       <Input
         type="file"
@@ -1421,7 +1364,10 @@ const FrmMarketLicenseUpdt = () => {
                     <Input
                       name="mobile"
                       value={values.mobile}
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, "");
+                        setFieldValue("mobile", value);
+                      }}
                       maxLength="10"
                       className="h-9 w-full sm:h-10"
                     />
@@ -1452,7 +1398,10 @@ const FrmMarketLicenseUpdt = () => {
                     <Input
                       name="aadhar"
                       value={values.aadhar}
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, "");
+                        setFieldValue("aadhar", value);
+                      }}
                       maxLength="12"
                       className="h-9 w-full sm:h-10"
                     />
@@ -1841,25 +1790,43 @@ const FrmMarketLicenseUpdt = () => {
                         <Select
                           value={values.tradeCategory || ""}
                           onValueChange={(value) =>
-                            handleTradeCategoryChange(value, values.licenseType, values.buisiJwalan, setFieldValue)
+                            handleTradeCategoryChange(
+                              value,
+                              values.licenseType,
+                              values.buisiJwalan,
+                              setFieldValue
+                            )
                           }
-                          disabled={!values.buisiJwalan || !values.licenseType}
+                          disabled={
+                            !values.buisiJwalan ||
+                            !values.licenseType ||
+                            tradeTypeLoading
+                          }
                         >
                           <SelectTrigger className="h-9 w-full sm:h-10">
-                            <SelectValue
-                              placeholder={!values.buisiJwalan ? "Select Business Jalanshil first" : !values.licenseType ? "Select License Type first" : !tradeCategory?.length ? "No Business Category available" : "-- Select --"}
-                            />
+                            {tradeTypeLoading ? (
+                              <div className="flex items-center gap-2">
+                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
+                                <span>Loading...</span>
+                              </div>
+                            ) : (
+                              <SelectValue placeholder="-- Select --" />
+                            )}
                           </SelectTrigger>
 
                           <SelectContent>
                             {tradeCategory?.map((item, index) => {
-                              const categoryId = item.CATEGORY_CATGRYID ?? item.id;
+                              const categoryId =
+                                item.CATEGORY_CATGRYID ?? item.id;
+
                               return (
                                 <SelectItem
                                   key={String(categoryId ?? index)}
                                   value={String(categoryId)}
                                 >
-                                  {item.TRADECATEGORY_NAME || item.name || item.TRADECATEGORY}
+                                  {item.TRADECATEGORY_NAME ||
+                                    item.name ||
+                                    item.TRADECATEGORY}
                                 </SelectItem>
                               );
                             })}
@@ -1913,12 +1880,13 @@ const FrmMarketLicenseUpdt = () => {
                     </div>
 
                     <div className="mb-4 overflow-auto">
-                      {transformedTradeTypeGrid.length > 0 && (<ShadCNTable
-                        headers={tradeTypeHeaders}
-                        data={transformedTradeTypeGrid}
-                        keyMapping={tradeTypeKeyMapping}
-                        pagination={false}
-                      />)}
+                      {transformedTradeTypeGrid.length > 0 && (
+                        <ShadCNTable
+                          headers={tradeTypeHeaders}
+                          data={transformedTradeTypeGrid}
+                          keyMapping={tradeTypeKeyMapping}
+                          pagination={false}
+                        />)}
                     </div>
                   </div>
                 )}

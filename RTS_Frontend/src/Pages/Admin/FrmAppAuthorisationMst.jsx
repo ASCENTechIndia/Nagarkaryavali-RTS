@@ -589,45 +589,107 @@ const FrmAppAuthorisationMst = () => {
     }
   };
 
+  // const previewDocument = (doc) => {
+  //   const fileBytes = doc.fileBytes || doc.FileByts;
+  //   const fileExtension = doc.fileExtension || doc.FileExtension;
+  //   if (fileBytes) {
+  //     try {
+  //       let byteString = fileBytes;
+  //       if (byteString.includes("base64,")) {
+  //         byteString = byteString.split("base64,")[1];
+  //       }
+
+  //       const byteCharacters = atob(byteString);
+  //       const byteNumbers = new Array(byteCharacters.length);
+  //       for (let i = 0; i < byteCharacters.length; i++) {
+  //         byteNumbers[i] = byteCharacters.charCodeAt(i);
+  //       }
+  //       const byteArray = new Uint8Array(byteNumbers);
+
+  //       let mimeType = "application/pdf";
+  //       if (fileExtension?.toLowerCase() === ".jpg" || fileExtension?.toLowerCase() === ".jpeg") {
+  //         mimeType = "image/jpeg";
+  //       } else if (fileExtension?.toLowerCase() === ".png") {
+  //         mimeType = "image/png";
+  //       }
+
+  //       const blob = new Blob([byteArray], { type: mimeType });
+  //       const url = URL.createObjectURL(blob);
+  //       window.open(url, "_blank");
+  //     } catch (error) {
+  //       console.error("Error previewing document:", error);
+  //       Swal.fire({
+  //         text: "Error previewing document",
+  //         confirmButtonColor: "#1e3a8a",
+  //       });
+  //     }
+  //   } else {
+  //     Swal.fire({
+  //       text: "No document uploaded",
+  //       confirmButtonColor: "#1e3a8a",
+  //     });
+  //   }
+  // };
+
+
   const previewDocument = (doc) => {
     const fileBytes = doc.fileBytes || doc.FileByts;
     const fileExtension = doc.fileExtension || doc.FileExtension;
-    if (fileBytes) {
-      try {
-        let byteString = fileBytes;
-        if (byteString.includes("base64,")) {
-          byteString = byteString.split("base64,")[1];
-        }
 
-        const byteCharacters = atob(byteString);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
+    if (!fileBytes) {
+      Swal.fire({ text: "No document uploaded", confirmButtonColor: "#1e3a8a" });
+      return;
+    }
 
-        let mimeType = "application/pdf";
-        if (fileExtension?.toLowerCase() === ".jpg" || fileExtension?.toLowerCase() === ".jpeg") {
-          mimeType = "image/jpeg";
-        } else if (fileExtension?.toLowerCase() === ".png") {
-          mimeType = "image/png";
-        }
+    try {
+      let byteString = fileBytes;
+      if (byteString.includes("base64,")) {
+        byteString = byteString.split("base64,")[1];
+      }
 
-        const blob = new Blob([byteArray], { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        window.open(url, "_blank");
-      } catch (error) {
-        console.error("Error previewing document:", error);
+      const binary = atob(byteString);
+      const byteNumbers = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        byteNumbers[i] = binary.charCodeAt(i);
+      }
+
+      let mimeType = "application/octet-stream";
+      const b = byteNumbers;
+
+      if (b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46) {
+        mimeType = "application/pdf";
+      } else if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) {
+        mimeType = "image/png";
+      } else if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) {
+        mimeType = "image/jpeg";
+      } else if (b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46) {
+        mimeType = "image/gif";
+      } else if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46) {
+        mimeType = "image/webp";
+      } else {
+        const ext = (fileExtension || "").toLowerCase();
+        if (ext === ".jpg" || ext === ".jpeg") mimeType = "image/jpeg";
+        else if (ext === ".png") mimeType = "image/png";
+        else if (ext === ".pdf") mimeType = "application/pdf";
+      }
+
+      console.log("Detected MIME:", mimeType, "ext:", fileExtension);
+
+      const blob = new Blob([byteNumbers], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+
+      const win = window.open(url, "_blank");
+      if (!win) {
         Swal.fire({
-          text: "Error previewing document",
+          text: "Popup blocked. Please allow popups for this site.",
           confirmButtonColor: "#1e3a8a",
         });
       }
-    } else {
-      Swal.fire({
-        text: "No document uploaded",
-        confirmButtonColor: "#1e3a8a",
-      });
+
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (error) {
+      console.error("Error previewing document:", error);
+      Swal.fire({ text: "Error previewing document", confirmButtonColor: "#1e3a8a" });
     }
   };
 
@@ -812,8 +874,8 @@ const FrmAppAuthorisationMst = () => {
         window.open(certResponse.data.pdfUrl, "_blank");
 
         Swal.fire({
-          text: response.data.message || "Certificate generated successfully!",
           icon: "success",
+          text: response.data.message || "Certificate generated successfully!",
           confirmButtonColor: "#1e3a8a",
           timer: 1500,
           showConfirmButton: false,
@@ -961,7 +1023,8 @@ const FrmAppAuthorisationMst = () => {
 
     if (
       authMode === "CK" &&
-      (Number(departId) === 7 || Number(departId) === 290) &&
+      // (Number(departId) === 7 || Number(departId) === 290) &&
+      (Number(departId) === 290) &&
       !manualCertificateGenerated
     ) {
       Swal.fire({
@@ -1019,7 +1082,8 @@ const FrmAppAuthorisationMst = () => {
       }
 
       // Generate Cerificate
-      if ((Number(departId) === 7 || Number(departId) === 290) && manualCertificateUrl) {
+      // if ((Number(departId) === 7 || Number(departId) === 290) && manualCertificateUrl) {
+      if ((Number(departId) === 290) && manualCertificateUrl) {
         try {
           console.log({ manualCertificateUrl })
           const pdfResponse = await fetch(manualCertificateUrl);
@@ -1059,7 +1123,8 @@ const FrmAppAuthorisationMst = () => {
         }
       }
 
-      if (authMode === "CK" && !(Number(departId) === 7 || Number(departId) === 290)) {
+      // if (authMode === "CK" && !(Number(departId) === 7 || Number(departId) === 290)) {
+      if (authMode === "CK" && !(Number(departId) === 290)) {
         const filesToUpload = Object.keys(uploadedFiles)
           .filter((key) => uploadedFiles[key]?.file)
           .map((key) => ({
@@ -2857,7 +2922,8 @@ const FrmAppAuthorisationMst = () => {
                 <ShadCNTable
                   headers={verifyHeaders}
                   data={verificationDocs.map((doc, index) => {
-                    const isAutoMode = Number(departId) === 7 || Number(departId) === 290;
+                    // const isAutoMode = Number(departId) === 7 || Number(departId) === 290;
+                    const isAutoMode = Number(departId) === 290;
                     return {
                       docName: (
                         <Input
@@ -2920,8 +2986,8 @@ const FrmAppAuthorisationMst = () => {
                             variant="link"
                             size="sm"
                             className={`px-0 ${(isAutoMode && index === 0) || (index === 0 && doc.docName === "CertificateORG")
-                                ? 'text-gray-400 cursor-not-allowed'
-                                : 'text-red-600 hover:text-red-800'
+                              ? 'text-gray-400 cursor-not-allowed'
+                              : 'text-red-600 hover:text-red-800'
                               }`}
                             onClick={() => {
                               if (isAutoMode && index === 0) return;
@@ -2940,8 +3006,8 @@ const FrmAppAuthorisationMst = () => {
                               variant="link"
                               size="sm"
                               className={`px-0 ${manualCertificateGenerated
-                                  ? 'text-blue-700 hover:text-blue-900'
-                                  : 'text-gray-400 cursor-not-allowed'
+                                ? 'text-blue-700 hover:text-blue-900'
+                                : 'text-gray-400 cursor-not-allowed'
                                 }`}
                               onClick={viewManualCertificate}
                               disabled={!manualCertificateGenerated}
@@ -3118,19 +3184,22 @@ const FrmAppAuthorisationMst = () => {
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row sm:items-start gap-2 mb-4">
-              <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                <Label required className="font-medium" text="Enter Remark" />
-                <span>:</span>
+            {authAction === "Accept" && (
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2 mb-4">
+                <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                  <Label required className="font-medium" text="Enter Remark" />
+                  <span>:</span>
+                </div>
+                <Input
+                  type="text"
+                  value={remark}
+                  onChange={(e) => setRemark(e.target.value)}
+                  className="w-full sm:w-64 h-9"
+                  placeholder="Enter remark..."
+                />
               </div>
-              <Input
-                type="text"
-                value={remark}
-                onChange={(e) => setRemark(e.target.value)}
-                className="w-full sm:w-64 h-9"
-                placeholder="Enter remark..."
-              />
-            </div>
+            )}
+
 
             <div className="flex flex-wrap items-center gap-6 mb-4">
               <div className="flex items-center space-x-2">

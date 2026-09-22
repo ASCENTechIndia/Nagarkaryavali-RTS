@@ -72,6 +72,7 @@ const FrmAssessmentCerti = () => {
   const [propertyFound, setPropertyFound] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [zoneList, setZoneList] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false); 
 
   const originalDocumentDefs = useRef([]);
 
@@ -309,6 +310,7 @@ const FrmAssessmentCerti = () => {
     }
 
     setIsLoading(true);
+     setHasSearched(true);
     try {
       setSearchError("");
       setPropertyFound(false);
@@ -331,6 +333,7 @@ const FrmAssessmentCerti = () => {
             allowOutsideClick: false,
           }).then(() => {
             resetFormAfterSearch(setFieldValue, resetForm);
+            setHasSearched(false);
           });
           setIsLoading(false);
           return;
@@ -369,6 +372,7 @@ const FrmAssessmentCerti = () => {
       }
     } catch (error) {
       console.error("Search Property Error:", error);
+      setHasSearched(false); 
       Swal.fire({
         text: error?.response?.data?.error || "Error searching property. Please try again.",
         confirmButtonColor: '#1e3a8a',
@@ -385,6 +389,8 @@ const FrmAssessmentCerti = () => {
     
     setPropertyFound(false);
     setSearchError("");
+
+     setHasSearched(false);  
 
     setFieldValue("zoneId", "");
     
@@ -581,7 +587,14 @@ const FrmAssessmentCerti = () => {
                     <Input
                       name="ptn"
                       value={values.ptn}
-                      onChange={handleChange}
+                      // onChange={handleChange}
+                      onChange={(e) => {
+                        handleChange(e);
+                        if (propertyFound) {
+                          setPropertyFound(false);
+                          setHasSearched(false);
+                        }
+                      }}
                       className="w-full h-9"
                       placeholder="Enter Property Number"
                     />
@@ -824,10 +837,18 @@ const FrmAssessmentCerti = () => {
                 )}
 
                 <div className="flex justify-center items-center gap-3 pt-4">
-                  <Button
+                  {/* <Button
                     type="submit"
                     className="bg-blue-900 hover:bg-blue-800 text-white"
                     disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Submitting..." : "Submit"}
+                  </Button> */}
+
+                  <Button
+                    type="submit"
+                    className="bg-blue-900 hover:bg-blue-800 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isSubmitting || !propertyFound}
                   >
                     {isSubmitting ? "Submitting..." : "Submit"}
                   </Button>

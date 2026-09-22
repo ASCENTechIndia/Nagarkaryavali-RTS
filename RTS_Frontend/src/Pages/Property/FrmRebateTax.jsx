@@ -74,6 +74,8 @@ const FrmRebateTax = () => {
   const [zone, setZone] = useState("");
   const [wardno, setWardno] = useState("");
   const [zoneList, setZoneList] = useState([]);
+  const [propertyFound, setPropertyFound] = useState(false);  
+  const [hasSearched, setHasSearched] = useState(false); 
 
   const originalDocumentDefs = useRef([]);
 
@@ -302,6 +304,8 @@ const FrmRebateTax = () => {
     }
 
     setIsSearching(true);
+     setHasSearched(true);
+
     try {
       let fullPropNo = values.ptn;
       if (values.subcode && values.subcode.trim() !== "") {
@@ -321,6 +325,8 @@ const FrmRebateTax = () => {
             allowOutsideClick: false,
           }).then(() => {
             resetFormAfterSearch(setFieldValue, resetForm);
+            setHasSearched(false); 
+            setPropertyFound(false);   
           });
           setIsSearching(false);
           return;
@@ -338,6 +344,8 @@ const FrmRebateTax = () => {
         setZone(propData.zonename || "");
         setWardno(propData.wardname || "");
 
+        setPropertyFound(true);   
+
         Swal.fire({
           text: "Property details fetched successfully!",
           confirmButtonColor: '#1e3a8a',
@@ -352,10 +360,14 @@ const FrmRebateTax = () => {
           allowOutsideClick: false,
         }).then(() => {
           resetFormAfterSearch(setFieldValue, resetForm);
+          setHasSearched(false); 
+            setPropertyFound(false);   
         });
       }
     } catch (error) {
       console.error("Error fetching property details:", error);
+      setHasSearched(false); 
+      setPropertyFound(false);   
       Swal.fire({
         text: error?.response?.data?.error || "Error fetching property details. Please try again.",
         confirmButtonColor: '#1e3a8a',
@@ -369,6 +381,8 @@ const FrmRebateTax = () => {
   
   const resetFormAfterSearch = (setFieldValue, resetForm) => {
     resetForm();
+    setHasSearched(false); 
+    setPropertyFound(false);   
     
     setFieldValue("ptn", "");
     setFieldValue("subcode", "");
@@ -766,7 +780,14 @@ const FrmRebateTax = () => {
                     <Input
                       name="ptn"
                       value={values.ptn}
-                      onChange={handleChange}
+                     // onChange={handleChange}
+                     onChange={(e) => {
+                      handleChange(e);
+                      if (propertyFound || hasSearched) {
+                        setPropertyFound(false);
+                        setHasSearched(false);
+                      }
+                    }}
                       className="w-full h-9"
                     />
                   </div>
@@ -1033,7 +1054,7 @@ const FrmRebateTax = () => {
                   <Button
                     type="submit"
                     className="bg-blue-900 hover:bg-blue-800 text-white"
-                    disabled={loading}
+                    disabled={loading || !propertyFound}
                   >
                     {loading ? "Submitting..." : "Submit"}
                   </Button>

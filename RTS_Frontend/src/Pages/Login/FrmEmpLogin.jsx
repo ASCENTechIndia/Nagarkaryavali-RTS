@@ -65,13 +65,13 @@ const FrmEmpLogin = () => {
             if (!loginData?.success || Number(loginData?.errCode) !== 9999) {
                 throw new Error(loginData?.message || "Invalid User ID or Password");
             }
-            if (!loginData?.token || !loginData?.user) {
+            if (!loginData?.token || !loginData?.user || !loginData?.refreshToken) {
                 throw new Error("Login token or user information was not returned");
             }
 
             Swal.close();
 
-            login(loginData.user, loginData.token);
+            login(loginData.user, loginData.token, loginData?.refreshToken);
 
             // if (String(loginData.user?.otpValidate).toUpperCase() === "Y") {
             //     navigate("/FrmVerifyOTP");
