@@ -34,8 +34,8 @@ const initialFormValues = {
 };
 
 const FrmAppoints = () => {
-  const { user } = useAuth();
-  const token = user?.token;
+  const { user, token } = useAuth();
+  // const token = user?.token;
 
   const location = useLocation();
   const locationState = location.state || {};
