@@ -616,7 +616,7 @@ const generateCertificateReport = asyncHandler(async (req, res) => {
     pdf = await FrmServiceCertificatePdfHelper({
       rows: reportData,
       corporationName: corporationName || "",
-      ulbLogo: ulbLogo || "",
+      ulbLogo: ulbLogo || path.join(process.cwd(), "public", "tmclogo.jpg"),
       serviceId: filters.serviceId,
       appNo: filters.appNo,
       ulbId: filters.ulbId,
@@ -625,7 +625,7 @@ const generateCertificateReport = asyncHandler(async (req, res) => {
     pdf = await ExtractOfPropertyReportHelper({
       rows: reportData,
       corporationName: corporationName || "",
-      ulbLogo: ulbLogo || "",
+      ulbLogo: ulbLogo || path.join(process.cwd(), "public", "tmclogo.jpg"),
       reportName: "मालमत्ता कर उतारा",
       serviceId: filters.serviceId,
       appNo: filters.appNo,
