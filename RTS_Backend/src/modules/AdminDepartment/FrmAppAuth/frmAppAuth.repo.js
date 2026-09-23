@@ -143,7 +143,7 @@ const getApplicationAuthListRepo = async ({ userId, authMode, prabhagList, deptL
     // AUTH MODE CONDITIONS
     // ========================================================
 
-    if (String(authMode) === "HODV") {
+    if (String(authMode) === "HODV"  || String(authMode) === "HO") {
       query = `
         SELECT
           DEPTID,
