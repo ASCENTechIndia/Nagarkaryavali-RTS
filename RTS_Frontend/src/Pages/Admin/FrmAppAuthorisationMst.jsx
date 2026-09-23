@@ -1051,7 +1051,8 @@ const FrmAppAuthorisationMst = () => {
         status: authAction,
         reasonForReject: authAction === "Reject" ? rejectReason : remark,
         amount: parseInt(amount) || 0,
-        mode: authMode,
+        // mode: authMode,
+        mode: authMode === "HO" ? "HODV" : authMode,
         clerkId: authMode === "HODV" && authAction === "Accept" ? selectedClerk : null,
         // tinyUrl: authMode === "CKV" ? generateTinyUrl(selectedData.applino) : "",
       };
@@ -1178,7 +1179,7 @@ const FrmAppAuthorisationMst = () => {
 }
 
       // if (authMode === "CK" && !(Number(departId) === 7 || Number(departId) === 290)) {
-      if (authMode === "CK" && !(Number(departId) === 290)) {
+      if (authMode === "CK") {
         const filesToUpload = Object.keys(uploadedFiles)
           .filter((key) => uploadedFiles[key]?.file)
           .map((key) => ({
