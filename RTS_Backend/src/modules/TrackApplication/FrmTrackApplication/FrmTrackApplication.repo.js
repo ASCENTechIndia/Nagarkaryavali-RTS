@@ -608,7 +608,7 @@ const getCertificateDataRepo = async (serviceId, appNo, ulbId) => {
     query = " SELECT var_service_eng_name || '/' || var_service_mar_name servid, ";
     query += " zonename zoneid, wardname, var_propappeal_appno appno,";
     query += " var_propappeal_appliname appliname, dat_propappeal_insdate appdate,";
-    query += " var_propappeal_address address, dat_applitrack_insdt authdate, VAR_PROPAPPEAL_JAVAKNO outno FROM aorts_propertyappeal_mas";
+    query += " var_propappeal_address address, dat_applitrack_insdt authdate, VAR_PROPAPPEAL_JAVAKNO outno FROM aorts_tmcpropertyappeal_mas";
     query += " INNER JOIN aorts_tmcservice_def ON num_service_serviceid = num_propappeal_servid";
     query += " INNER JOIN prop.vw_zonemas ON num_propappeal_zoneid = zoneid inner join aorts_applitracking_det on var_applitrack_applno=var_propappeal_appno and num_applitrack_stageid=3 ";
     query += " where var_propappeal_appno = '" + appNo + "' and ulbid = '" + ulbId + "' ";
