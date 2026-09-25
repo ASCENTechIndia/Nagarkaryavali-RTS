@@ -143,7 +143,7 @@ const getApplicationAuthListRepo = async ({ userId, authMode, prabhagList, deptL
     // AUTH MODE CONDITIONS
     // ========================================================
 
-    if (String(authMode) === "HODV"  || String(authMode) === "HO") {
+    if (String(authMode) === "HODV") {
       query = `
         SELECT
           DEPTID,
@@ -216,16 +216,16 @@ const getApplicationAuthListRepo = async ({ userId, authMode, prabhagList, deptL
       // SECTOR FILTER
       // ======================================================
 
-      if (String(authMode) !== "HODV") {
-        if (sectorList) {
-          query += `
-            AND (
-              DEPTID != 23
-              OR sectorid IN (${sectorList})
-            )
-          `;
-        }
-      }
+      // if (String(authMode) !== "HODV") {
+      //   if (sectorList) {
+      //     query += `
+      //       AND (
+      //         DEPTID != 23
+      //         OR sectorid IN (${sectorList})
+      //       )
+      //     `;
+      //   }
+      // }
     }
 
     console.log("================================================");
