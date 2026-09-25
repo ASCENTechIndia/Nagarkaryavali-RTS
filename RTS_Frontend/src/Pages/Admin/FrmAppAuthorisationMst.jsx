@@ -1084,45 +1084,99 @@ const FrmAppAuthorisationMst = () => {
 
       // Generate Cerificate
       // if ((Number(departId) === 7 || Number(departId) === 290) && manualCertificateUrl) {
-      if ((Number(departId) === 290) && manualCertificateUrl) {
-        try {
-          console.log({ manualCertificateUrl })
-          const pdfResponse = await fetch(manualCertificateUrl);
-          console.log({ pdfResponse })
+      if (Number(departId) === 290 && manualCertificateUrl) {
+  try {
+    console.log({ manualCertificateUrl });
 
-          const pdfBlob = await pdfResponse.blob();
-          console.log({ pdfBlob })
-          const pdfFile = new File([pdfBlob], `Certificate_${selectedData.applino}.pdf`, {
-            type: "application/pdf"
-          });
-          console.log({ pdfFile })
-          const formData = new FormData();
-          formData.append("ulbid", ulbId);
-          formData.append("applino", selectedData.applino);
-          formData.append("userid", user?.userId);
-          formData.append("docname", "CertificateORG");
-          formData.append("document", pdfFile);
+    const pdfResponse = await fetch(manualCertificateUrl);
 
-          const uploadResponse = await axios.post(
-            `${BASE_URL}/api/frmAppAuth/application-verification-document`,
-            formData,
-            {
-              headers: {
-                Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-                "Content-Type": "multipart/form-data",
-              },
-            },
-          );
+    if (!pdfResponse.ok) {
+      throw new Error("Failed to fetch certificate PDF");
+    }
 
-          if (!uploadResponse.data.ok) {
-            console.error("Failed to upload certificate:", uploadResponse.data);
-          } else {
-            console.log("Certificate uploaded successfully");
-          }
-        } catch (uploadError) {
-          console.error("Error uploading certificate:", uploadError);
-        }
+    const pdfBlob = await pdfResponse.blob();
+
+    const pdfFile = new File(
+      [pdfBlob],
+      `Certificate_${selectedData.applino}.pdf`,
+      { type: "application/pdf" }
+    );
+
+    const filesToUpload = [
+      {
+        docName: "CertificateORG",
+        file: pdfFile,
+      },
+    ];
+
+    Object.keys(uploadedFiles)
+      .filter((key) => {
+        const index = parseInt(key);
+        return index > 0 && uploadedFiles[key]?.file;
+      })
+      .forEach((key) => {
+        const index = parseInt(key);
+
+        filesToUpload.push({
+          docName:
+            verificationDocs[index]?.docName || `Document_${index}`,
+          file: uploadedFiles[key].file,
+        });
+      });
+
+    const formData = new FormData();
+
+    formData.append("ulbid", ulbId);
+    formData.append("applino", selectedData.applino);
+    formData.append("userid", user?.userId);
+
+    filesToUpload.forEach((fileData) => {
+      formData.append("docnames", fileData.docName);
+      formData.append("documents", fileData.file);
+    });
+
+    console.log(
+      "Documents being uploaded:",
+      filesToUpload.map((item) => ({
+        docName: item.docName,
+        fileName: item.file.name,
+      }))
+    );
+
+    const uploadResponse = await axios.post(
+      `${BASE_URL}/api/frmAppAuth/application-verification-document`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${
+            token || localStorage.getItem("token")
+          }`,
+        },
       }
+    );
+
+    console.log(
+      "Certificate and verification documents upload response:",
+      uploadResponse.data
+    );
+
+    if (!uploadResponse.data.ok) {
+      throw new Error(
+        uploadResponse.data.message ||
+          "Failed to upload certificate and verification documents"
+      );
+    }
+
+    console.log(
+      "Certificate and verification documents uploaded successfully"
+    );
+  } catch (uploadError) {
+    console.error(
+      "Error uploading certificate and verification documents:",
+      uploadError
+    );
+  }
+}
 
       // if (authMode === "CK" && !(Number(departId) === 7 || Number(departId) === 290)) {
       if (authMode === "CK") {
@@ -1174,38 +1228,47 @@ const FrmAppAuthorisationMst = () => {
 
   const uploadVerificationDocuments = async (files) => {
     try {
+      const formData = new FormData();
 
-      for (const fileData of files) {
-        const formData = new FormData();
-        formData.append("ulbid", ulbId);
-        formData.append("applino", selectedData.applino);
-        formData.append("userid", user?.userId);
-        formData.append("docname", fileData.docName);
-        formData.append("document", fileData.file);
+      formData.append("ulbid", ulbId);
+      formData.append("applino", selectedData.applino);
+      formData.append("userid", user?.userId);
 
-        const response = await axios.post(
-          `${BASE_URL}/api/frmAppAuth/application-verification-document`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-              "Content-Type": "multipart/form-data",
-            },
-          },
+      files.forEach((fileData, index) => {
+        const documentName = index === 0 && fileData.docName === "CertificateORG" ? "CertificateORG" : fileData.docName;
+        formData.append("docnames", documentName);
+        formData.append("documents", fileData.file);
+      });
+
+      const response = await axios.post(`${BASE_URL}/api/frmAppAuth/application-verification-document`,
+        formData,
+        { headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` } }
+      );
+
+      if (!response.data.ok) {
+        throw new Error(
+          response.data.message || "Failed to upload documents"
         );
-
-        if (!response.data.ok) {
-          throw new Error(response.data.message || "Failed to upload document");
-        }
       }
+
+      console.log(
+        "Verification documents uploaded successfully:",
+        response.data
+      );
 
       return true;
     } catch (error) {
       console.error("Error uploading verification documents:", error);
+
       Swal.fire({
-        text: error?.response?.data?.error || "Error uploading documents.",
+        text:
+          error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Error uploading documents.",
         confirmButtonColor: "#1e3a8a",
       });
+
       return false;
     }
   };
@@ -3185,7 +3248,7 @@ const FrmAppAuthorisationMst = () => {
               </div>
             )}
 
-            {authAction === "Accept" && (
+            {(authAction === "Accept" || authAction === "Return") && (
               <div className="flex flex-col sm:flex-row sm:items-start gap-2 mb-4">
                 <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
                   <Label required className="font-medium" text="Enter Remark" />

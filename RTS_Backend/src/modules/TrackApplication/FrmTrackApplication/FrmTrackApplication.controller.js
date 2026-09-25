@@ -110,7 +110,7 @@ const getApplicationCertificate = asyncHandler(async (req, res) => {
   });
 
   const result = await service.getApplicationCertificateService(applino);
-
+  console.log({result: result.data})
   if (!result.data || result.data.length === 0) {
     return res.status(404).json({
       success: false,
@@ -616,7 +616,7 @@ const generateCertificateReport = asyncHandler(async (req, res) => {
     pdf = await FrmServiceCertificatePdfHelper({
       rows: reportData,
       corporationName: corporationName || "",
-      ulbLogo: ulbLogo || "",
+      ulbLogo: ulbLogo || path.join(process.cwd(), "public", "tmclogo.jpg"),
       serviceId: filters.serviceId,
       appNo: filters.appNo,
       ulbId: filters.ulbId,
@@ -625,7 +625,7 @@ const generateCertificateReport = asyncHandler(async (req, res) => {
     pdf = await ExtractOfPropertyReportHelper({
       rows: reportData,
       corporationName: corporationName || "",
-      ulbLogo: ulbLogo || "",
+      ulbLogo: ulbLogo || path.join(process.cwd(), "public", "tmclogo.jpg"),
       reportName: "मालमत्ता कर उतारा",
       serviceId: filters.serviceId,
       appNo: filters.appNo,

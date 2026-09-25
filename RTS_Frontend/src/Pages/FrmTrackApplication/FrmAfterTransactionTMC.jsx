@@ -105,7 +105,19 @@ const FrmAfterTransactionTMC = () => {
     }, [location.search, token, user?.ulbId]);
 
     useEffect(() => {
-        if (loading || processingPayment || paymentProcessed || !appNo || !amount || !paymentResponse) {
+        if (loading || processingPayment || paymentProcessed || !appNo || !amount || !paymentResponse || !transactionId || !ulbId) {
+            return;
+        }
+
+        const paymentProcessKey = `paymentProcessed_${ulbId}_${appNo}_${transactionId}`;
+        const alreadyProcessed = localStorage.getItem(paymentProcessKey);
+
+        if (alreadyProcessed === "true") {
+            console.log("Payment already processed:", { ulbId, appNo, transactionId });
+            setPaymentProcessed(true);
+            setProcessingPayment(false);
+            setPaymentStatus("Payment Successful");
+
             return;
         }
 
@@ -122,13 +134,10 @@ const FrmAfterTransactionTMC = () => {
                 );
 
                 const paymentInsResult = paymentInsResponse?.data?.data;
-                console.log({ paymentInsResult })
-                // if (!paymentInsResult?.success || Number(paymentInsResult?.errorCode) !== 9999) {
-                //     throw new Error(paymentInsResult?.message || paymentInsResponse?.data?.data?.error || "Payment processing failed.");
-                // }
 
                 if (!paymentInsResult?.success || Number(paymentInsResult?.errorCode) !== 9999) {
                     setProcessingPayment(false);
+
                     await Swal.fire({
                         icon: "error",
                         title: "Payment Processing Failed",
@@ -136,21 +145,20 @@ const FrmAfterTransactionTMC = () => {
                         confirmButtonText: "OK",
                     });
 
-                    return; // STOPS HERE — no receipt api certificate API will execute
+                    return;
                 }
 
-                setPaymentProcessed(true);
-
+                localStorage.setItem(paymentProcessKey, "true");
                 setPaymentProcessed(true);
 
                 if (currentPaymentStatus !== "S") {
                     setProcessingPayment(false);
+
                     await Swal.fire({
-                        // icon: "error",
-                        // title: "Payment Failed",
                         text: paymentInsResult?.message || "Bank response indicates that the payment was not successful.",
-                        confirmButtonText: "OK"
+                        confirmButtonText: "OK",
                     });
+
                     return;
                 }
 
@@ -159,10 +167,9 @@ const FrmAfterTransactionTMC = () => {
 
                 await Swal.fire({
                     icon: "success",
-                    // title: "Payment Successful",
                     text: "Payment has been successfully processed.",
                     confirmButtonText: "OK",
-                    allowOutsideClick: false
+                    allowOutsideClick: false,
                 });
 
                 setReceiptUrl("");
@@ -172,36 +179,32 @@ const FrmAfterTransactionTMC = () => {
                 let certificateGenerated = false;
 
                 Swal.fire({
-                    // title: "Generating Receipt...",
                     text: "Please wait while your payment receipt is being generated.",
                     allowOutsideClick: false,
                     allowEscapeKey: false,
                     showConfirmButton: false,
                     didOpen: () => {
                         Swal.showLoading();
-                    }
+                    },
                 });
 
                 try {
                     const receiptResponse = await axios.post(`${baseUrl}/api/FrmAfterTransactionTMC/paymentacknowledgement`,
-                        {serviceId: String(serviceId), appNo: String(appNo), ulbId: String(ulbId)},
-                        {headers: {Authorization: `Bearer ${token}`}}
+                        { serviceId: String(serviceId), appNo: String(appNo), ulbId: String(ulbId) },
+                        {
+                            headers: { Authorization: `Bearer ${token}` },
+                        }
                     );
 
                     const receiptResult = receiptResponse?.data;
-
                     console.log({ receiptResult });
 
                     if (!receiptResult?.success || !receiptResult?.pdfUrl) {
                         throw new Error(receiptResult?.message || "Unable to generate payment acknowledgement PDF.");
                     }
 
-                    // Open PDF in a new tab
                     window.open(receiptResult.pdfUrl, "_blank", "noopener,noreferrer");
-
-                    // Optional: save URL in state
                     setReceiptUrl(receiptResult.pdfUrl);
-
                     receiptGenerated = true;
                 } catch (error) {
                     let errorMessage = "Unable to generate payment receipt.";
@@ -217,39 +220,21 @@ const FrmAfterTransactionTMC = () => {
                     } else {
                         errorMessage = error?.response?.data?.message || error?.message || errorMessage;
                     }
-
                     console.error("Receipt generation error:", error);
-
                     Swal.close();
-
                     await Swal.fire({
-                        // icon: "error",
-                        // title: "Receipt Generation Failed",
                         text: errorMessage,
                         confirmButtonText: "OK",
-                        allowOutsideClick: false
+                        allowOutsideClick: false,
                     });
                 }
 
-                // Swal.fire({
-                //     // title: "Generating Certificate...",
-                //     text: "Please wait while your certificate is being generated.",
-                //     allowOutsideClick: false,
-                //     allowEscapeKey: false,
-                //     showConfirmButton: false,
-                //     didOpen: () => {
-                //         Swal.showLoading();
-                //     }
-                // });
-
                 try {
                     const certificateResponse = await axios.post(`${baseUrl}/api/FrmTrackApplication/generate-certificate-report`,
-                        {
-                            serviceId: String(serviceId), appNo: String(appNo), ulbId: String(ulbId)
-                        },
+                        { serviceId: String(serviceId), appNo: String(appNo), ulbId: String(ulbId) },
                         {
                             headers: { Authorization: `Bearer ${token}` },
-                            responseType: "blob"
+                            responseType: "blob",
                         }
                     );
 
@@ -267,24 +252,11 @@ const FrmAfterTransactionTMC = () => {
                                 errorMessage = errorText;
                             }
                         }
-
-                        // Swal.close();
-
-                        // await Swal.fire({
-                        //     // icon: "error",
-                        //     // title: "Certificate Generation Failed",
-                        //     text: errorMessage,
-                        //     confirmButtonText: "OK",
-                        //     allowOutsideClick: false
-                        // });
                     } else {
                         const certificateBlob = new Blob([certificateResponse.data], { type: "application/pdf" });
                         const generatedCertificateUrl = window.URL.createObjectURL(certificateBlob);
-
                         setCertificateUrl(generatedCertificateUrl);
                         certificateGenerated = true;
-
-                        // Swal.close();
                     }
                 } catch (error) {
                     let errorMessage = "Unable to generate certificate.";
@@ -293,7 +265,6 @@ const FrmAfterTransactionTMC = () => {
                         try {
                             const errorText = await error.response.data.text();
                             const errorData = JSON.parse(errorText);
-
                             errorMessage = errorData?.message || errorData?.data?.message || errorMessage;
                         } catch {
                             errorMessage = "Unable to generate certificate.";
@@ -304,39 +275,25 @@ const FrmAfterTransactionTMC = () => {
 
                     console.error("Certificate generation error:", error);
                     Swal.close();
-
-                    // await Swal.fire({
-                    //     // icon: "error",
-                    //     // title: "Certificate Generation Failed",
-                    //     text: errorMessage,
-                    //     confirmButtonText: "OK",
-                    //     allowOutsideClick: false
-                    // });
                 }
 
                 if (receiptGenerated && certificateGenerated) {
                     await Swal.fire({
-                        // icon: "success",
-                        // title: "Documents Generated",
                         text: "Receipt and certificate generated successfully.",
                         confirmButtonText: "OK",
-                        allowOutsideClick: false
+                        allowOutsideClick: false,
                     });
                 } else if (receiptGenerated) {
                     await Swal.fire({
-                        // icon: "success",
-                        // title: "Receipt Generated",
                         text: "Payment receipt generated successfully.",
                         confirmButtonText: "OK",
-                        allowOutsideClick: false
+                        allowOutsideClick: false,
                     });
                 } else if (certificateGenerated) {
                     await Swal.fire({
-                        // icon: "success",
-                        // title: "Certificate Generated",
                         text: "Certificate generated successfully.",
                         confirmButtonText: "OK",
-                        allowOutsideClick: false
+                        allowOutsideClick: false,
                     });
                 }
             } catch (error) {
@@ -345,16 +302,16 @@ const FrmAfterTransactionTMC = () => {
                 setProcessingPayment(false);
 
                 await Swal.fire({
-                    // icon: "error",
+                    icon: "error",
                     title: "Payment Processing Failed",
                     text: error?.response?.data?.message || error?.message || "Unable to complete payment processing.",
-                    confirmButtonText: "OK"
+                    confirmButtonText: "OK",
                 });
             }
         };
 
         processPayment();
-    }, [loading, appNo, amount, serviceId, ulbId, paymentResponse, paymentProcessed, processingPayment, token]);
+    }, [loading, appNo, amount, serviceId, ulbId, paymentResponse, paymentProcessed, processingPayment, transactionId, token]);
 
     const handleViewReceipt = () => {
         if (!receiptUrl) {

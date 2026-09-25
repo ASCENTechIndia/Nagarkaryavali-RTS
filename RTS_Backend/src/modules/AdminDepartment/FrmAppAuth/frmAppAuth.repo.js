@@ -960,7 +960,7 @@ const applicationAuthRepo = async ({ userId, applicationNo, status, reasonForRej
   }
 };
 
-const saveApplicationVerificationDocumentRepo = async ({ ulbid, applino, userid, docname, docbyte }) => {
+const saveApplicationVerificationDocumentRepo = async ({ulbid, applino, userid, documents}) => {
   try {
     const result = await withTxTMC(async (connection) => {
       const deleteQuery = `
@@ -970,73 +970,46 @@ const saveApplicationVerificationDocumentRepo = async ({ ulbid, applino, userid,
           AND var_appVerifdoc_docname = 'CertificateORG'
       `;
 
-      const deleteResult = await connection.execute(
-        deleteQuery,
-        {
-          ulbid: String(ulbid),
-          applino: String(applino),
-        },
-        {
-          autoCommit: false,
-        },
-      );
+      const deleteResult = await connection.execute(deleteQuery, {ulbid: String(ulbid), applino: String(applino)}, {autoCommit: false});
+      const deletedRows = deleteResult.rowsAffected || 0;
 
-      console.log("Existing CertificateORG documents deleted:", deleteResult.rowsAffected);
+      console.log("Existing CertificateORG documents deleted:",deletedRows);
 
-      const insertQuery = `
-        INSERT INTO aorts_appverifdoc_det
-        (
-          num_appVerifdoc_ulbid,
-          var_appVerifdoc_appliNo,
-          var_appVerifdoc_docname,
-          blob_appVerifdoc_documentimg,
-          var_appVerifdoc_instby,
-          dat_appVerifdoc_instdt
-        )
-        VALUES
-        (
-          :ulbid,
-          :applino,
-          :docname,
-          :docbyte,
-          :userid,
-          SYSDATE
-        )
-      `;
+      let insertedRows = 0;
 
-      const insertResult = await connection.execute(
-        insertQuery,
-        {
-          ulbid: String(ulbid),
-          applino: String(applino),
-          docname: docname || "CertificateORG",
-          docbyte: {
-            val: docbyte,
-            type: oracledb.BLOB,
+      for (const document of documents) {
+        const insertQuery = `
+          INSERT INTO aorts_appverifdoc_det(num_appVerifdoc_ulbid, var_appVerifdoc_appliNo, var_appVerifdoc_docname, blob_appVerifdoc_documentimg, var_appVerifdoc_instby, dat_appVerifdoc_instdt)
+          VALUES(:ulbid, :applino, :docname, :docbyte, :userid, SYSDATE)
+        `;
+
+        const insertResult = await connection.execute(insertQuery,
+          {
+            ulbid: String(ulbid),
+            applino: String(applino),
+            docname: document.docname,
+            docbyte: {val: document.docbyte, type: oracledb.BLOB},
+            userid: String(userid),
           },
-          userid: String(userid),
-        },
-        {
-          autoCommit: false,
-        },
-      );
+          {
+            autoCommit: false,
+          }
+        );
 
-      console.log("Application verification document inserted:", insertResult.rowsAffected);
+        insertedRows += insertResult.rowsAffected || 0;
+        console.log(`Document ${document.originalname} inserted:`,insertResult.rowsAffected);
+      }
 
-      return {
-        deletedRows: deleteResult.rowsAffected || 0,
-        insertedRows: insertResult.rowsAffected || 0,
-      };
+      return {deletedRows, insertedRows,};
     });
 
     return {
       success: true,
-      message: "Application verification document saved successfully.",
+      message: "Application verification documents saved successfully.",
       ...result,
     };
   } catch (error) {
-    console.error("SAVE APPLICATION VERIFICATION DOCUMENT REPO ERROR:", error);
-
+    console.error("SAVE APPLICATION VERIFICATION DOCUMENT REPO ERROR:",error);
     return {
       success: false,
       error: error.message,

@@ -457,7 +457,11 @@ const FrmTrackApplication = () => {
     try {
       console.log("doc: ", doc);
 
-      const base64Data = doc.fileBytes || doc.filebytes;
+      let base64Data = doc.fileBytes || doc.filebytes;
+      const fileExtension = doc.fileExtension || doc.FileExtension;
+      if (base64Data.includes("base64,")) {
+        base64Data = base64Data.split("base64,")[1];
+      }
 
       if (!base64Data) {
         Swal.fire({
@@ -468,13 +472,34 @@ const FrmTrackApplication = () => {
       }
 
       const byteCharacters = atob(base64Data);
-      const byteNumbers = new Array(byteCharacters.length);
+      const byteNumbers = new Uint8Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
+
+      let mimeType = "application/octet-stream";
+      const b = byteNumbers;
+
+      if (b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46) {
+        mimeType = "application/pdf";
+      } else if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) {
+        mimeType = "image/png";
+      } else if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) {
+        mimeType = "image/jpeg";
+      } else if (b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46) {
+        mimeType = "image/gif";
+      } else if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46) {
+        mimeType = "image/webp";
+      } else {
+        const ext = (fileExtension || "").toLowerCase();
+        if (ext === ".jpg" || ext === ".jpeg") mimeType = "image/jpeg";
+        else if (ext === ".png") mimeType = "image/png";
+        else if (ext === ".pdf") mimeType = "application/pdf";
+      }
+
       const byteArray = new Uint8Array(byteNumbers);
 
-      const blob = new Blob([byteArray], { type: 'application/pdf' });
+      const blob = new Blob([byteNumbers], { type: mimeType });
       const url = window.URL.createObjectURL(blob);
 
       window.open(url, '_blank');
