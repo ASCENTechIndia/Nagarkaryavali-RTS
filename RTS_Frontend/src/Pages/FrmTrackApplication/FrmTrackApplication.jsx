@@ -94,14 +94,14 @@ const FrmTrackApplication = () => {
 
   const docHeaders = [
     "Document Name",
-    "File Type",
+    // "File Type",
     "Uploaded Date",
     "Download",
   ];
 
   const docKeyMapping = {
     "Document Name": "documentName",
-    "File Type": "fileType",
+    // "File Type": "fileType",
     "Uploaded Date": "uploadedDate",
     "Download": "download",
   };
@@ -259,8 +259,8 @@ const FrmTrackApplication = () => {
           srNo: index + 1,
           docId: doc.DOCID,
           documentName: doc.DOCNAME,
-          fileType: doc.FILETYPE || "PDF",
-          uploadedDate: doc.UPLOADEDDATE || "-",
+          fileType: doc.FILETYPE || "-",
+          uploadedDate: formatDateToIndian(doc.DOCDATE) || "-",
           fileBytes: doc.filebytes,
         }));
         setDocuments(docs);
@@ -432,16 +432,38 @@ const FrmTrackApplication = () => {
         const certData = response.data.data[0];
 
         if (certData.fileBytes) {
-          const byteCharacters = atob(certData.fileBytes);
-          const byteNumbers = new Array(byteCharacters.length);
+          let base64Data = certData.fileBytes;
+          if (base64Data.includes("base64,")) {
+            base64Data = base64Data.split("base64,")[1];
+          }
+
+          const byteCharacters = atob(base64Data);
+          const byteNumbers = new Uint8Array(byteCharacters.length);
           for (let i = 0; i < byteCharacters.length; i++) {
             byteNumbers[i] = byteCharacters.charCodeAt(i);
           }
-          const byteArray = new Uint8Array(byteNumbers);
-          const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+          let mimeType = "application/octet-stream";
+          const b = byteNumbers;
+
+          if (b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46) {
+            mimeType = "application/pdf";
+          } else if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) {
+            mimeType = "image/png";
+          } else if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) {
+            mimeType = "image/jpeg";
+          } else if (b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46) {
+            mimeType = "image/gif";
+          } else if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46) {
+            mimeType = "image/webp";
+          }
+
+          const blob = new Blob([byteNumbers], { type: mimeType });
           const url = window.URL.createObjectURL(blob);
 
           window.open(url, '_blank');
+
+          setTimeout(() => window.URL.revokeObjectURL(url), 5000);
 
           return true;
         }

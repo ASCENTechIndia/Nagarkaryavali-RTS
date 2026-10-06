@@ -47,6 +47,7 @@ const getApplicationDocumentsRepo = async (applino) => {
         ROWNUM AS docId,
         var_appverifdoc_applino AS applino,
         var_appverifdoc_docname AS docname,
+        dat_appverifdoc_instdt AS docdate,
         blob_appverifdoc_documentimg AS filebytes
       FROM prop.aoms_appverifdoc_det
       WHERE var_appverifdoc_applino = :applino
@@ -57,6 +58,7 @@ const getApplicationDocumentsRepo = async (applino) => {
         ROWNUM AS docId,
         var_appverifdoc_applino AS applino,
         var_appverifdoc_docname AS docname,
+        dat_appverifdoc_instdt AS docdate,
         blob_appverifdoc_documentimg AS filebytes
       FROM aorts_appverifdoc_det
       WHERE var_appverifdoc_applino = :applino

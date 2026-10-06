@@ -977,7 +977,7 @@ const FrmAppAuthorisationMst = () => {
     }
 
     if (authMode === "CKV") {
-      if (amount === "0" || amount === "") {
+      if ((amount === "0" || amount === "") && authAction !== "Reject") {
         Swal.fire({
           text: "Please Enter Amount",
           confirmButtonColor: "#1e3a8a",
