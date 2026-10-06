@@ -448,7 +448,7 @@ const FrmNewTaxAssesment = () => {
                     <div className="w-full md:w-40 lg:w-44 shrink-0 flex items-center justify-between">
                       <Label
                         className="text-sm sm:text-base"
-                        text="अर्जदाराचे पत्ता"
+                        text="अर्जदाराचा पत्ता"
                       />
                       <span className="hidden md:block">:</span>
                     </div>
