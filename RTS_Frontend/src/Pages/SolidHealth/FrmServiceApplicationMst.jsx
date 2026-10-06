@@ -341,7 +341,7 @@ const fetchVillages = async (sectorId) => {
     
     if (!emailRegex.test(values.emailId)) {
       Swal.fire({
-        text: "Invalid Email Address",
+        text: "Please Enter Valid Email ID",
         confirmButtonColor: '#1e3a8a',
       });
       return false;
@@ -350,7 +350,7 @@ const fetchVillages = async (sectorId) => {
     if (values.aadharNo && values.aadharNo.trim() !== "") {
       if (values.aadharNo.length !== 12 || !/^\d+$/.test(values.aadharNo)) {
         Swal.fire({
-          text: "Invalid Aadhar No - must be 12 digits",
+          text: "Please Enter Valid Aadhar No.",
           confirmButtonColor: '#1e3a8a',
         });
         return false;
