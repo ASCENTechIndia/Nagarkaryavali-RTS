@@ -1,5 +1,5 @@
 const repo = require("./FrmNewTaxAssesment.repo");
-const AppError = require("../../../libs/errors");
+const { AppError } = require("../../../libs/errors");
 
 async function submitNewTaxAssessmentService(payload) {
   const {

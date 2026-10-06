@@ -3200,7 +3200,7 @@ const FrmAppAuthorisationMst = () => {
             {hoRejectRemark && (
               <div className="flex flex-col sm:flex-row sm:items-start gap-2 mb-4">
                 <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                  <Label className="font-medium" text="HO Returned Remark" />
+                  <Label className="font-medium" text="HOD Returned Remark" />
                   <span>:</span>
                 </div>
                 <span className="font-medium">{hoRejectRemark}</span>

@@ -201,16 +201,16 @@ const FrmNewTaxAssesment = () => {
       return Swal.fire({text: "Please enter Applicant Name (अर्जदाराचे नाव)"});
     }
     if (!values.applicantAddress.trim()) {
-      return Swal.fire({text:"Please enter Applicant Address (अर्जदाराचे पत्ता)"});
+      return Swal.fire({text:"Please enter Applicant Address (अर्जदाराचा पत्ता)"});
     }
     if (
       values.constructionPermission === "yes" &&
       !values.constructionCertificateNo.trim()
     ) {
-      return Swal.fire({text:"Please enter Construction Permission Certificate No."});
+      return Swal.fire({text:"Please enter Construction Permission Certificate No (मालमत्ता बांधकामास परवानगी)."});
     }
     if (values.usePermission === "yes" && !values.useCertificateNo.trim()) {
-      return Swal.fire({text:"Please enter Use Permission Certificate No."});
+      return Swal.fire({text:"Please enter Use Permission Certificate No (मालमत्ता वापर परवानगी)."});
     }
     if (!values.certificateDate) {
       return Swal.fire({text:"Please select Certificate Date (प्रमाणपत्र दिनांक)"});
@@ -592,7 +592,6 @@ const FrmNewTaxAssesment = () => {
                         onChange={(date) =>
                           setFieldValue("certificateDate", date)
                         }
-                        disabled={values.usePermission === "no"}
                         className="w-full h-9 sm:h-10"
                       />
                     </div>
