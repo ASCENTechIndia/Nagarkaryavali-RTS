@@ -17,5 +17,6 @@ module.exports = {
   // DB_CONNECT_STRING_ANCL: must("DB_CONNECT_STRING_ANCL"),
 
   JWT_SECRET: must("JWT_SECRET"),
+  JWT_REFRESH_SECRET : must("JWT_REFRESH_SECRET"),
   NODE_ENV: process.env.NODE_ENV || "development",
 };

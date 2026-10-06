@@ -14,5 +14,6 @@ router.post("/change-password",  controller.changePassword);
 router.get("/me",  isValidToken, controller.me);
 router.post("/citizen-details",  controller.getCitizenDetailsByMobile);
 router.post("/employee-login",  controller.employeeLoginController);
+router.post("/refresh-token",  controller.refreshToken);
 
 module.exports = router;

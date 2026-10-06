@@ -34,8 +34,8 @@ const initialFormValues = {
 };
 
 const FrmAppoints = () => {
-  const { user } = useAuth();
-  const token = user?.token;
+  const { user, token } = useAuth();
+  // const token = user?.token;
 
   const location = useLocation();
   const locationState = location.state || {};
@@ -412,7 +412,8 @@ const FrmAppoints = () => {
           confirmButtonColor: "#1e3a8a",
         });
 
-        navigate("/app/FrmAppoint");
+        // navigate("/app/FrmAppoint");
+        navigate("/app/FrmTrackApplication", { state: { applicationNo: applicationNo } });
       } else {
         Swal.fire({
           title: "Failed",

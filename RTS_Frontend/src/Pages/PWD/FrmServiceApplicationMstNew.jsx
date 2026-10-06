@@ -105,12 +105,12 @@ const FrmServiceApplicationMstNew = () => {
   };
 
   useEffect(() => {
-    if (!token || !ulbId || !serviceId) {
+    if ( !ulbId || !serviceId) {
       return;
     }
 
     loadInitialData();
-  }, [token, ulbId, serviceId]);
+  }, [ ulbId, serviceId]);
 
   const getHeaders = () => ({
     headers: {

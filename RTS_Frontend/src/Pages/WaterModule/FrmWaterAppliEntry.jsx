@@ -807,12 +807,19 @@ function FrmWaterAppliEntry() {
                         className="text-black !w-full whitespace-nowrap"
                         required
                       />
-
                       <Input
                         name="mobileNumber"
+                        type="tel"
+                        inputMode="numeric"
+                        maxLength={10}
                         placeholder="Enter Mobile Number"
                         value={values.mobileNumber}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                          const value = e.target.value
+                            .replace(/\D/g, "")
+                            .slice(0, 10);
+                          setFieldValue("mobileNumber", value);
+                        }}
                       />
                     </div>
 
@@ -842,9 +849,17 @@ function FrmWaterAppliEntry() {
 
                       <Input
                         name="aadharCardNo"
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={12}
                         placeholder="Enter Aadhar Card Number"
                         value={values.aadharCardNo}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                          const value = e.target.value
+                            .replace(/\D/g, "")
+                            .slice(0, 12);
+                          setFieldValue("aadharCardNo", value);
+                        }}
                       />
                     </div>
 
@@ -1015,9 +1030,17 @@ function FrmWaterAppliEntry() {
 
                       <Input
                         name="consumerMobileNumber"
+                        type="tel"
+                        inputMode="numeric"
+                        maxLength={10}
                         placeholder="Enter Consumer Mobile Number"
                         value={values.consumerMobileNumber}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                          const value = e.target.value
+                            .replace(/\D/g, "")
+                            .slice(0, 10);
+                          setFieldValue("consumerMobileNumber", value);
+                        }}
                       />
                     </div>
 
@@ -1047,9 +1070,17 @@ function FrmWaterAppliEntry() {
 
                       <Input
                         name="consumerAadharCardNo"
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={12}
                         placeholder="Enter Consumer Aadhar Card Number"
                         value={values.consumerAadharCardNo}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                          const value = e.target.value
+                            .replace(/\D/g, "")
+                            .slice(0, 12);
+                          setFieldValue("consumerAadharCardNo", value);
+                        }}
                       />
                     </div>
 

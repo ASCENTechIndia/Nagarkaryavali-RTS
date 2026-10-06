@@ -592,13 +592,13 @@ const FrmAppliFee = () => {
                                     <Input value={values.receiptRefNo} readOnly className="w-full bg-gray-50" />
                                 </div>
 
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                {/* <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                                     <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
                                         <Label text="Application Source/ अर्ज स्त्रोत" className="min-w-fit" />
                                         <span>:</span>
                                     </div>
                                     <Input value={applicationSource?.APPSOURCE || ""} readOnly className="w-full bg-gray-50" />
-                                </div>
+                                </div> */}
                             </div>
 
                             {serviceId === 2 && assessment && (

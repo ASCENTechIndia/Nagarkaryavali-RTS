@@ -631,68 +631,68 @@ const FrmAppAuthorisationMst = () => {
   //   }
   // };
 
-  
+
   const previewDocument = (doc) => {
-  const fileBytes = doc.fileBytes || doc.FileByts;
-  const fileExtension = doc.fileExtension || doc.FileExtension;
+    const fileBytes = doc.fileBytes || doc.FileByts;
+    const fileExtension = doc.fileExtension || doc.FileExtension;
 
-  if (!fileBytes) {
-    Swal.fire({ text: "No document uploaded", confirmButtonColor: "#1e3a8a" });
-    return;
-  }
-
-  try {
-    let byteString = fileBytes;
-    if (byteString.includes("base64,")) {
-      byteString = byteString.split("base64,")[1];
+    if (!fileBytes) {
+      Swal.fire({ text: "No document uploaded", confirmButtonColor: "#1e3a8a" });
+      return;
     }
 
-    const binary = atob(byteString);
-    const byteNumbers = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-      byteNumbers[i] = binary.charCodeAt(i);
+    try {
+      let byteString = fileBytes;
+      if (byteString.includes("base64,")) {
+        byteString = byteString.split("base64,")[1];
+      }
+
+      const binary = atob(byteString);
+      const byteNumbers = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        byteNumbers[i] = binary.charCodeAt(i);
+      }
+
+      let mimeType = "application/octet-stream";
+      const b = byteNumbers;
+
+      if (b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46) {
+        mimeType = "application/pdf";
+      } else if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) {
+        mimeType = "image/png";
+      } else if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) {
+        mimeType = "image/jpeg";
+      } else if (b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46) {
+        mimeType = "image/gif";
+      } else if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46) {
+        mimeType = "image/webp";
+      } else {
+        const ext = (fileExtension || "").toLowerCase();
+        if (ext === ".jpg" || ext === ".jpeg") mimeType = "image/jpeg";
+        else if (ext === ".png") mimeType = "image/png";
+        else if (ext === ".pdf") mimeType = "application/pdf";
+      }
+
+      console.log("Detected MIME:", mimeType, "ext:", fileExtension);
+
+      const blob = new Blob([byteNumbers], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+
+      const win = window.open(url, "_blank");
+      if (!win) {
+        Swal.fire({
+          text: "Popup blocked. Please allow popups for this site.",
+          confirmButtonColor: "#1e3a8a",
+        });
+      }
+
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (error) {
+      console.error("Error previewing document:", error);
+      Swal.fire({ text: "Error previewing document", confirmButtonColor: "#1e3a8a" });
     }
+  };
 
-    let mimeType = "application/octet-stream";
-    const b = byteNumbers;
-
-    if (b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46) {
-      mimeType = "application/pdf";
-    } else if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) {
-      mimeType = "image/png";
-    } else if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) {
-      mimeType = "image/jpeg";
-    } else if (b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46) {
-      mimeType = "image/gif";
-    } else if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46) {
-      mimeType = "image/webp";
-    } else {
-      const ext = (fileExtension || "").toLowerCase();
-      if (ext === ".jpg" || ext === ".jpeg") mimeType = "image/jpeg";
-      else if (ext === ".png") mimeType = "image/png";
-      else if (ext === ".pdf") mimeType = "application/pdf";
-    }
-
-    console.log("Detected MIME:", mimeType, "ext:", fileExtension);
-
-    const blob = new Blob([byteNumbers], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-
-    const win = window.open(url, "_blank");
-    if (!win) {
-      Swal.fire({
-        text: "Popup blocked. Please allow popups for this site.",
-        confirmButtonColor: "#1e3a8a",
-      });
-    }
-
-    setTimeout(() => URL.revokeObjectURL(url), 60_000);
-  } catch (error) {
-    console.error("Error previewing document:", error);
-    Swal.fire({ text: "Error previewing document", confirmButtonColor: "#1e3a8a" });
-  }
-};
-  
   const viewDocument = async (doc) => {
     if (authMode === "CKV") {
       try {
@@ -874,8 +874,8 @@ const FrmAppAuthorisationMst = () => {
         window.open(certResponse.data.pdfUrl, "_blank");
 
         Swal.fire({
-          text: response.data.message || "Certificate generated successfully!",
           icon: "success",
+          text: response.data.message || "Certificate generated successfully!",
           confirmButtonColor: "#1e3a8a",
           timer: 1500,
           showConfirmButton: false,
@@ -1052,6 +1052,7 @@ const FrmAppAuthorisationMst = () => {
         reasonForReject: authAction === "Reject" ? rejectReason : remark,
         amount: parseInt(amount) || 0,
         mode: authMode,
+        // mode: authMode === "HO" ? "HODV" : authMode,
         clerkId: authMode === "HODV" && authAction === "Accept" ? selectedClerk : null,
         // tinyUrl: authMode === "CKV" ? generateTinyUrl(selectedData.applino) : "",
       };
@@ -1083,48 +1084,102 @@ const FrmAppAuthorisationMst = () => {
 
       // Generate Cerificate
       // if ((Number(departId) === 7 || Number(departId) === 290) && manualCertificateUrl) {
-        if ((Number(departId) === 290) && manualCertificateUrl) {
-        try {
-          console.log({ manualCertificateUrl })
-          const pdfResponse = await fetch(manualCertificateUrl);
-          console.log({ pdfResponse })
+      if (Number(departId) === 290 && manualCertificateUrl) {
+  try {
+    console.log({ manualCertificateUrl });
 
-          const pdfBlob = await pdfResponse.blob();
-          console.log({ pdfBlob })
-          const pdfFile = new File([pdfBlob], `Certificate_${selectedData.applino}.pdf`, {
-            type: "application/pdf"
-          });
-          console.log({ pdfFile })
-          const formData = new FormData();
-          formData.append("ulbid", ulbId);
-          formData.append("applino", selectedData.applino);
-          formData.append("userid", user?.userId);
-          formData.append("docname", "CertificateORG");
-          formData.append("document", pdfFile);
+    const pdfResponse = await fetch(manualCertificateUrl);
 
-          const uploadResponse = await axios.post(
-            `${BASE_URL}/api/frmAppAuth/application-verification-document`,
-            formData,
-            {
-              headers: {
-                Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-                "Content-Type": "multipart/form-data",
-              },
-            },
-          );
+    if (!pdfResponse.ok) {
+      throw new Error("Failed to fetch certificate PDF");
+    }
 
-          if (!uploadResponse.data.ok) {
-            console.error("Failed to upload certificate:", uploadResponse.data);
-          } else {
-            console.log("Certificate uploaded successfully");
-          }
-        } catch (uploadError) {
-          console.error("Error uploading certificate:", uploadError);
-        }
+    const pdfBlob = await pdfResponse.blob();
+
+    const pdfFile = new File(
+      [pdfBlob],
+      `Certificate_${selectedData.applino}.pdf`,
+      { type: "application/pdf" }
+    );
+
+    const filesToUpload = [
+      {
+        docName: "CertificateORG",
+        file: pdfFile,
+      },
+    ];
+
+    Object.keys(uploadedFiles)
+      .filter((key) => {
+        const index = parseInt(key);
+        return index > 0 && uploadedFiles[key]?.file;
+      })
+      .forEach((key) => {
+        const index = parseInt(key);
+
+        filesToUpload.push({
+          docName:
+            verificationDocs[index]?.docName || `Document_${index}`,
+          file: uploadedFiles[key].file,
+        });
+      });
+
+    const formData = new FormData();
+
+    formData.append("ulbid", ulbId);
+    formData.append("applino", selectedData.applino);
+    formData.append("userid", user?.userId);
+
+    filesToUpload.forEach((fileData) => {
+      formData.append("docnames", fileData.docName);
+      formData.append("documents", fileData.file);
+    });
+
+    console.log(
+      "Documents being uploaded:",
+      filesToUpload.map((item) => ({
+        docName: item.docName,
+        fileName: item.file.name,
+      }))
+    );
+
+    const uploadResponse = await axios.post(
+      `${BASE_URL}/api/frmAppAuth/application-verification-document`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${
+            token || localStorage.getItem("token")
+          }`,
+        },
       }
+    );
+
+    console.log(
+      "Certificate and verification documents upload response:",
+      uploadResponse.data
+    );
+
+    if (!uploadResponse.data.ok) {
+      throw new Error(
+        uploadResponse.data.message ||
+          "Failed to upload certificate and verification documents"
+      );
+    }
+
+    console.log(
+      "Certificate and verification documents uploaded successfully"
+    );
+  } catch (uploadError) {
+    console.error(
+      "Error uploading certificate and verification documents:",
+      uploadError
+    );
+  }
+}
 
       // if (authMode === "CK" && !(Number(departId) === 7 || Number(departId) === 290)) {
-      if (authMode === "CK" && !(Number(departId) === 290)) {
+      if (authMode === "CK") {
         const filesToUpload = Object.keys(uploadedFiles)
           .filter((key) => uploadedFiles[key]?.file)
           .map((key) => ({
@@ -1173,38 +1228,47 @@ const FrmAppAuthorisationMst = () => {
 
   const uploadVerificationDocuments = async (files) => {
     try {
+      const formData = new FormData();
 
-      for (const fileData of files) {
-        const formData = new FormData();
-        formData.append("ulbid", ulbId);
-        formData.append("applino", selectedData.applino);
-        formData.append("userid", user?.userId);
-        formData.append("docname", fileData.docName);
-        formData.append("document", fileData.file);
+      formData.append("ulbid", ulbId);
+      formData.append("applino", selectedData.applino);
+      formData.append("userid", user?.userId);
 
-        const response = await axios.post(
-          `${BASE_URL}/api/frmAppAuth/application-verification-document`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-              "Content-Type": "multipart/form-data",
-            },
-          },
+      files.forEach((fileData, index) => {
+        const documentName = index === 0 && fileData.docName === "CertificateORG" ? "CertificateORG" : fileData.docName;
+        formData.append("docnames", documentName);
+        formData.append("documents", fileData.file);
+      });
+
+      const response = await axios.post(`${BASE_URL}/api/frmAppAuth/application-verification-document`,
+        formData,
+        { headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` } }
+      );
+
+      if (!response.data.ok) {
+        throw new Error(
+          response.data.message || "Failed to upload documents"
         );
-
-        if (!response.data.ok) {
-          throw new Error(response.data.message || "Failed to upload document");
-        }
       }
+
+      console.log(
+        "Verification documents uploaded successfully:",
+        response.data
+      );
 
       return true;
     } catch (error) {
       console.error("Error uploading verification documents:", error);
+
       Swal.fire({
-        text: error?.response?.data?.error || "Error uploading documents.",
+        text:
+          error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Error uploading documents.",
         confirmButtonColor: "#1e3a8a",
       });
+
       return false;
     }
   };
@@ -2986,8 +3050,8 @@ const FrmAppAuthorisationMst = () => {
                             variant="link"
                             size="sm"
                             className={`px-0 ${(isAutoMode && index === 0) || (index === 0 && doc.docName === "CertificateORG")
-                                ? 'text-gray-400 cursor-not-allowed'
-                                : 'text-red-600 hover:text-red-800'
+                              ? 'text-gray-400 cursor-not-allowed'
+                              : 'text-red-600 hover:text-red-800'
                               }`}
                             onClick={() => {
                               if (isAutoMode && index === 0) return;
@@ -3006,8 +3070,8 @@ const FrmAppAuthorisationMst = () => {
                               variant="link"
                               size="sm"
                               className={`px-0 ${manualCertificateGenerated
-                                  ? 'text-blue-700 hover:text-blue-900'
-                                  : 'text-gray-400 cursor-not-allowed'
+                                ? 'text-blue-700 hover:text-blue-900'
+                                : 'text-gray-400 cursor-not-allowed'
                                 }`}
                               onClick={viewManualCertificate}
                               disabled={!manualCertificateGenerated}
@@ -3184,7 +3248,7 @@ const FrmAppAuthorisationMst = () => {
               </div>
             )}
 
-            {authAction !== "Reject" && (
+            {(authAction === "Accept" || authAction === "Return") && (
               <div className="flex flex-col sm:flex-row sm:items-start gap-2 mb-4">
                 <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
                   <Label required className="font-medium" text="Enter Remark" />
@@ -3198,7 +3262,9 @@ const FrmAppAuthorisationMst = () => {
                   placeholder="Enter remark..."
                 />
               </div>
-             )}
+            )}
+
+
             <div className="flex flex-wrap items-center gap-6 mb-4">
               <div className="flex items-center space-x-2">
                 <Input

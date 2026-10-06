@@ -249,7 +249,7 @@ const OTPLogin = () => {
                 throw new Error("Login token was not returned");
             }
 
-            login(data.user, data.token);
+            login(data.user, data.token, data?.refreshToken);
 
             await Swal.fire({
                 text: "OTP verified successfully.",

@@ -75,7 +75,6 @@ exports.getCitizenDetailsByMobile = asyncHandler(async (req, res) => {
   return ok(res, data, "Citizen details fetched successfully");
 });
 
-
 exports.employeeLoginController = asyncHandler(async (req, res) => {
   const data = await service.employeeLoginService({
     corpId : req.body.corpId,
@@ -84,4 +83,10 @@ exports.employeeLoginController = asyncHandler(async (req, res) => {
   });
 
   return ok(res, data, " login success");
+});
+
+exports.refreshToken = asyncHandler(async (req, res) => {
+  const refreshToken = req.body.refreshToken || req.cookies?.refreshToken || req.headers["x-refresh-token"];
+  const data = await service.refreshAccessToken(refreshToken);
+  return ok(res, data, "Access token refreshed successfully");
 });

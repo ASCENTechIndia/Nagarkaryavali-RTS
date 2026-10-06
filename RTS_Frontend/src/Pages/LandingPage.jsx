@@ -475,7 +475,7 @@ const LandingPage = () => {
                             </CardContent>
                         </Card>
 
-                        {selectedService && downloadDocs.length > 0 && (
+                        {/*   {selectedService && downloadDocs.length > 0 && (
                             <Card className="border-gray-200 shadow-sm">
                                 <CardHeader className="pb-2">
                                     <CardTitle className="text-sm">
@@ -511,7 +511,7 @@ const LandingPage = () => {
                                     </div>
                                 </CardContent>
                             </Card>
-                        )}
+                        )} */}
 
 
                         <div className="flex flex-wrap gap-2">
@@ -532,7 +532,7 @@ const LandingPage = () => {
                                             </PopoverTitle>
                                         </PopoverHeader>
 
-                                        <div className="max-h-[60vh] overflow-y-auto px-4 py-3">
+                                        <div className="max-h-[60vh] max-w-4xl overflow-y-auto px-4 py-3">
                                             <div
                                                 className="text-sm leading-6 text-gray-700 [&_p]:mb-2 [&_p:last-child]:mb-0"
                                                 dangerouslySetInnerHTML={{ __html: `<p>${formatInstruction(instruction)}</p>`, }}

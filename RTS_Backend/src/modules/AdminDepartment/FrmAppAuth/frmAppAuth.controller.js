@@ -16,11 +16,11 @@ const encryptString = (plainText) => {
   try {
     const key = Buffer.from(ENCRYPTION_KEY, "utf8");
     const iv = Buffer.alloc(16, 0);
-    
+
     const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
     let encrypted = cipher.update(plainText, "utf8", "hex");
     encrypted += cipher.final("hex");
-    
+
     return encrypted.toUpperCase();
   } catch (error) {
     console.error("Encryption error:", error);
@@ -289,55 +289,37 @@ const applicationAuth = asyncHandler(async (req, res) => {
 
 const saveApplicationVerificationDocument = asyncHandler(
   async (req, res) => {
-    console.log("================================================");
-    console.log("Request: Save Application Verification Document");
-    console.log("Request Body:", req.body);
-    console.log("Uploaded File:", req.file?.originalname);
-    console.log("================================================");
+    console.log("Request: Save Application Verification Documents", req.body);
 
-    const {
-      ulbid,
-      applino,
-      userid,
-      docname,
-    } = req.body;
+    const { ulbid, applino, userid, docname } = req.body;
 
-    const file = req.file;
-
-  
+    const files = req.files;
 
     if (!ulbid) {
       throw new AppError("ulbid is required", 400);
     }
-
     if (!applino) {
       throw new AppError("applino is required", 400);
     }
-
     if (!userid) {
       throw new AppError("userid is required", 400);
     }
-
-    if (!file) {
-      throw new AppError("Document file is required", 400);
+    if (!files || files.length === 0) {
+      throw new AppError("At least one document file is required", 400);
     }
 
+    const docnames = Array.isArray(req.body.docnames) ? req.body.docnames : [req.body.docnames];
 
-    const result =
-      await service.saveApplicationVerificationDocumentService({
-        ulbid,
-        applino,
-        userid,
-        docname: docname || "CertificateORG",
-        docbyte: file.buffer,
-      });
+    const documents = files.map((file, index) => ({
+      docname: docnames[index],
+      docbyte: file.buffer,
+      originalname: file.originalname,
+    }));
+
+    const result = await service.saveApplicationVerificationDocumentService({ ulbid, applino, userid, documents });
 
     if (!result.success) {
-      throw new AppError(
-        result.error ||
-          "Failed to save application verification document.",
-        500
-      );
+      throw new AppError(result.error || "Failed to save application verification documents.", 500);
     }
 
     return ok(res, {

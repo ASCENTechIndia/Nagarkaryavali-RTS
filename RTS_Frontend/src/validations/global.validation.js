@@ -762,127 +762,164 @@ export const waterApplicationValidationSchema = z
     applicantFirstName: z
       .string()
       .trim()
-      .min(1, "Applicant First Name is required"),
+      .min(1, "Applicant First Name is required")
+      .max(100, "Applicant First Name cannot exceed 100 characters")
+      .regex(/^[A-Za-z ]+$/, "Applicant First Name can contain only letters"),
 
     applicantMiddleName: z
       .string()
       .trim()
-      .min(1, "Applicant Middle Name is required"),
+      .min(1, "Applicant Middle Name is required")
+      .max(100, "Applicant Middle Name cannot exceed 100 characters")
+      .regex(/^[A-Za-z ]+$/, "Applicant Middle Name can contain only letters"),
 
     applicantLastName: z
       .string()
       .trim()
-      .min(1, "Applicant Last Name is required"),
+      .min(1, "Applicant Last Name is required")
+      .max(100, "Applicant Last Name cannot exceed 100 characters")
+      .regex(/^[A-Za-z ]+$/, "Applicant Last Name can contain only letters"),
 
-    mobileNumber: commonValidationSchema.mobile,
+    applicantFirstNameMarathi: z
+      .string()
+      .trim()
+      .min(1, "Applicant First Name in Marathi is required")
+      .max(100, "Applicant First Name in Marathi cannot exceed 100 characters"),
+
+    applicantMiddleNameMarathi: z
+      .string()
+      .trim()
+      .min(1, "Applicant Middle Name in Marathi is required")
+      .max(100, "Applicant Middle Name in Marathi cannot exceed 100 characters"),
+
+    applicantLastNameMarathi: z
+      .string()
+      .trim()
+      .min(1, "Applicant Last Name in Marathi is required")
+      .max(100, "Applicant Last Name in Marathi cannot exceed 100 characters"),
+
+    mobileNumber: z
+      .string()
+      .trim()
+      .min(1, "Mobile Number is required")
+      .length(10, "Mobile Number must be exactly 10 digits")
+      .regex(/^[6-9]\d{9}$/, "Please enter a valid 10 digit mobile number"),
 
     email: z
       .string()
       .trim()
       .min(1, "Email ID is required")
-      .regex(emailRegex, "Invalid Email Address"),
+      .max(254, "Email ID cannot exceed 254 characters")
+      .regex(emailRegex, "Please enter a valid Email Address"),
 
     aadharCardNo: z
       .string()
       .trim()
       .min(1, "Aadhar Card Number is required")
-      .regex(aadharRegex, "Aadhar Card Number must be 12 digits"),
+      .length(12, "Aadhar Card Number must be exactly 12 digits")
+      .regex(/^\d{12}$/, "Aadhar Card Number must contain only 12 digits"),
 
     propertyNumber: z
       .string()
       .trim()
-      .min(1, "Property Number is required"),
+      .min(1, "Property Number is required")
+      .max(50, "Property Number cannot exceed 50 characters"),
 
     residentialNumber: z
       .string()
       .trim()
-      .min(1, "Residential Number is required"),
+      .min(1, "Residential Number is required")
+      .max(50, "Residential Number cannot exceed 50 characters"),
 
     address: z
       .string()
       .trim()
-      .min(1, "Address is required"),
-
-    applicantFirstNameMarathi: z
-      .string()
-      .trim()
-      .min(1, "Applicant First Name in Marathi is required"),
-
-    applicantMiddleNameMarathi: z
-      .string()
-      .trim()
-      .min(1, "Applicant Middle Name in Marathi is required"),
-
-    applicantLastNameMarathi: z
-      .string()
-      .trim()
-      .min(1, "Applicant Last Name in Marathi is required"),
+      .min(1, "Address is required")
+      .max(500, "Address cannot exceed 500 characters"),
 
     addressMarathi: z
       .string()
       .trim()
-      .min(1, "Address in Marathi is required"),
+      .min(1, "Address in Marathi is required")
+      .max(500, "Address in Marathi cannot exceed 500 characters"),
 
     consumerFirstName: z
       .string()
       .trim()
-      .min(1, "Consumer First Name is required"),
+      .min(1, "Consumer First Name is required")
+      .max(100, "Consumer First Name cannot exceed 100 characters")
+      .regex(/^[A-Za-z ]+$/, "Consumer First Name can contain only letters"),
 
     consumerMiddleName: z
       .string()
       .trim()
-      .min(1, "Consumer Middle Name is required"),
+      .min(1, "Consumer Middle Name is required")
+      .max(100, "Consumer Middle Name cannot exceed 100 characters")
+      .regex(/^[A-Za-z ]+$/, "Consumer Middle Name can contain only letters"),
 
     consumerLastName: z
       .string()
       .trim()
-      .min(1, "Consumer Last Name is required"),
+      .min(1, "Consumer Last Name is required")
+      .max(100, "Consumer Last Name cannot exceed 100 characters")
+      .regex(/^[A-Za-z ]+$/, "Consumer Last Name can contain only letters"),
+
+    consumerFirstNameMarathi: z
+      .string()
+      .trim()
+      .min(1, "Consumer First Name in Marathi is required")
+      .max(100, "Consumer First Name in Marathi cannot exceed 100 characters"),
+
+    consumerMiddleNameMarathi: z
+      .string()
+      .trim()
+      .min(1, "Consumer Middle Name in Marathi is required")
+      .max(100, "Consumer Middle Name in Marathi cannot exceed 100 characters"),
+
+    consumerLastNameMarathi: z
+      .string()
+      .trim()
+      .min(1, "Consumer Last Name in Marathi is required")
+      .max(100, "Consumer Last Name in Marathi cannot exceed 100 characters"),
 
     consumerMobileNumber: z
       .string()
       .trim()
       .min(1, "Consumer Mobile Number is required")
-      .regex(mobileRegex, "Consumer Mobile Number must be 10 digits"),
+      .length(10, "Consumer Mobile Number must be exactly 10 digits")
+      .regex(
+        /^[6-9]\d{9}$/,
+        "Please enter a valid 10 digit Consumer Mobile Number",
+      ),
 
     consumerEmail: z
       .string()
       .trim()
       .min(1, "Consumer Email ID is required")
-      .regex(emailRegex, "Invalid Consumer Email Address"),
+      .max(254, "Consumer Email ID cannot exceed 254 characters")
+      .regex(emailRegex, "Please enter a valid Consumer Email Address"),
 
     consumerAadharCardNo: z
       .string()
       .trim()
       .min(1, "Consumer Aadhar Card Number is required")
+      .length(12, "Consumer Aadhar Card Number must be exactly 12 digits")
       .regex(
-        aadharRegex,
-        "Consumer Aadhar Card Number must be 12 digits",
+        /^\d{12}$/,
+        "Consumer Aadhar Card Number must contain only 12 digits",
       ),
 
     consumerPropertyNumber: z
       .string()
       .trim()
-      .min(1, "Consumer Property Number is required"),
+      .min(1, "Consumer Property Number is required")
+      .max(50, "Consumer Property Number cannot exceed 50 characters"),
 
     consumerResidentialNumber: z
       .string()
       .trim()
-      .min(1, "Consumer Residential Number is required"),
-
-    consumerFirstNameMarathi: z
-      .string()
-      .trim()
-      .min(1, "Consumer First Name in Marathi is required"),
-
-    consumerMiddleNameMarathi: z
-      .string()
-      .trim()
-      .min(1, "Consumer Middle Name in Marathi is required"),
-
-    consumerLastNameMarathi: z
-      .string()
-      .trim()
-      .min(1, "Consumer Last Name in Marathi is required"),
+      .min(1, "Consumer Residential Number is required")
+      .max(50, "Consumer Residential Number cannot exceed 50 characters"),
 
     includeCoOwner: z
       .string()
@@ -892,21 +929,45 @@ export const waterApplicationValidationSchema = z
         "Please select Yes or No",
       ),
 
-    coOwnerFirstName: z.string().optional().default(""),
+    coOwnerFirstName: z.string().trim().max(
+      100,
+      "Co-Owner First Name cannot exceed 100 characters",
+    ),
 
-    coOwnerMiddleName: z.string().optional().default(""),
+    coOwnerMiddleName: z.string().trim().max(
+      100,
+      "Co-Owner Middle Name cannot exceed 100 characters",
+    ),
 
-    coOwnerLastName: z.string().optional().default(""),
+    coOwnerLastName: z.string().trim().max(
+      100,
+      "Co-Owner Last Name cannot exceed 100 characters",
+    ),
 
-    coOwnerFirstNameMarathi: z.string().optional().default(""),
+    coOwnerFirstNameMarathi: z.string().trim().max(
+      100,
+      "Co-Owner First Name in Marathi cannot exceed 100 characters",
+    ),
 
-    coOwnerMiddleNameMarathi: z.string().optional().default(""),
+    coOwnerMiddleNameMarathi: z.string().trim().max(
+      100,
+      "Co-Owner Middle Name in Marathi cannot exceed 100 characters",
+    ),
 
-    coOwnerLastNameMarathi: z.string().optional().default(""),
+    coOwnerLastNameMarathi: z.string().trim().max(
+      100,
+      "Co-Owner Last Name in Marathi cannot exceed 100 characters",
+    ),
 
-    coOwnerAddress: z.string().optional().default(""),
+    coOwnerAddress: z.string().trim().max(
+      500,
+      "Co-Owner Address cannot exceed 500 characters",
+    ),
 
-    coOwnerAddressMarathi: z.string().optional().default(""),
+    coOwnerAddressMarathi: z.string().trim().max(
+      500,
+      "Co-Owner Address in Marathi cannot exceed 500 characters",
+    ),
 
     connectionType: commonValidationSchema.selectOption,
 
@@ -918,35 +979,44 @@ export const waterApplicationValidationSchema = z
 
     noOfPerson: z
       .union([z.string(), z.number()])
-      .transform((value) => String(value))
+      .transform((value) => String(value).trim())
+      .refine((value) => /^\d+$/.test(value), "Number of Person must be a number")
       .refine(
-        (value) =>
-          value.trim() !== "" &&
-          /^\d+$/.test(value) &&
-          Number(value) > 0,
+        (value) => Number(value) > 0,
         "Number of Person must be greater than 0",
+      )
+      .refine(
+        (value) => Number(value) <= 99999,
+        "Number of Person cannot exceed 99999",
       ),
 
     noOfFamily: z
       .union([z.string(), z.number()])
-      .transform((value) => String(value))
+      .transform((value) => String(value).trim())
+      .refine((value) => /^\d+$/.test(value), "Number of Family must be a number")
       .refine(
-        (value) =>
-          value.trim() !== "" &&
-          /^\d+$/.test(value) &&
-          Number(value) > 0,
+        (value) => Number(value) > 0,
         "Number of Family must be greater than 0",
+      )
+      .refine(
+        (value) => Number(value) <= 99999,
+        "Number of Family cannot exceed 99999",
       ),
 
     noOfConnection: z
       .union([z.string(), z.number()])
-      .transform((value) => String(value))
+      .transform((value) => String(value).trim())
       .refine(
-        (value) =>
-          value.trim() !== "" &&
-          /^\d+$/.test(value) &&
-          Number(value) > 0,
+        (value) => /^\d+$/.test(value),
+        "Number of Connection must be a number",
+      )
+      .refine(
+        (value) => Number(value) > 0,
         "Number of Connection must be greater than 0",
+      )
+      .refine(
+        (value) => Number(value) <= 99999,
+        "Number of Connection cannot exceed 99999",
       ),
 
     connectionStatus: commonValidationSchema.selectOption,
@@ -969,12 +1039,14 @@ export const waterApplicationValidationSchema = z
     remark: z
       .string()
       .trim()
-      .min(1, "Remark is required"),
+      .min(1, "Remark is required")
+      .max(500, "Remark cannot exceed 500 characters"),
 
     reason: z
       .string()
       .trim()
-      .min(1, "Reason is required"),
+      .min(1, "Reason is required")
+      .max(500, "Reason cannot exceed 500 characters"),
   })
   .superRefine((values, ctx) => {
     if (values.includeCoOwner === "Yes") {
@@ -1043,7 +1115,6 @@ export const waterApplicationValidationSchema = z
       }
     }
   });
-
 
 // export const toursAndTravelsValidationSchema = z.object({
 //   firstName: z.string()
