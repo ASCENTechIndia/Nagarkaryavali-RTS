@@ -102,6 +102,7 @@ const FrmPlumberLicense = () => {
                 const educationData = educationResult.status === "fulfilled" ? educationResult.value?.data?.data?.data || [] : [];
                 const documentData = documentResult.status === "fulfilled" ? documentResult.value?.data?.data?.data || [] : [];
 
+                console.log("zoneData: ", zoneData);
                 setZones(zoneData);
                 setEducationList(educationData);
 
@@ -594,6 +595,30 @@ const FrmPlumberLicense = () => {
                                         />
                                     </div>
 
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                        <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
+                                            <Label required text="Zone" />
+                                            <span>:</span>
+                                        </div>
+                                        <Select
+                                            value={values.zoneId}
+                                            onValueChange={(value) => {
+                                            setFieldValue("zoneId", value);
+                                            }}
+                                        >
+                                            <SelectTrigger className="w-full h-9">
+                                            <SelectValue placeholder="-- Select Zone --" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                            {zones.map((zone) => (
+                                                <SelectItem key={zone.WARDID} value={String(zone.WARDID)}>
+                                                {zone.WARDNAME}
+                                                </SelectItem>
+                                            ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
                                     <div className="flex flex-col gap-2 sm:col-span-2 sm:flex-row sm:items-center sm:gap-4">
                                         <div className="flex shrink-0 items-center sm:w-48 sm:justify-between">
                                             <Label text="Applicant Name" required />
@@ -652,7 +677,7 @@ const FrmPlumberLicense = () => {
 
                                         <Input
                                             type="email"
-                                            maxLength={20}
+                                            maxLength={40}
                                             value={values.email}
                                             onChange={(e) =>
                                                 setFieldValue("email", e.target.value)

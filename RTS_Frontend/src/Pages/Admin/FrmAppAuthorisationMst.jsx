@@ -3239,11 +3239,19 @@ const FrmAppAuthorisationMst = () => {
                   <span>:</span>
                 </div>
                 <Input
-                  type="number"
+                  // type="number"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  // onChange={(e) => setAmount(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value
+                      .replace(/\D/g, "")
+                      .slice(0, 10);
+
+                    setAmount(value);
+                  }}
                   className="w-full sm:w-64 h-9"
                   min="0"
+                  maxLength={10}
                 />
               </div>
             )}
