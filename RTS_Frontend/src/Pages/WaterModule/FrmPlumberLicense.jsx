@@ -581,7 +581,7 @@ const FrmPlumberLicense = () => {
                                 <div className="grid grid-cols-1 gap-x-12 gap-y-4 md:grid-cols-2">
                                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                                         <div className="flex shrink-0 items-center sm:w-48 sm:justify-between">
-                                            <Label text="Aadhar" required />
+                                            <Label text="Aadhar No." required />
                                             <span>:</span>
                                         </div>
 
