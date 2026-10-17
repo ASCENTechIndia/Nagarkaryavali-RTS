@@ -362,11 +362,11 @@ async function submitMarriageRegistrationService(payload) {
   //   throw new AppError("Please Select Previous Status", 400);
   // }
   if (!hbirthreligion || hbirthreligion === "0") {
-    throw new AppError("Please Select Religion by birth", 400);
+    throw new AppError("Husband: Please Select Religion by birth", 400);
   }
-  if (!hadopreligion || hadopreligion === "0") {
-    throw new AppError("Please Select Religion by adoption", 400);
-  }
+  // if (!hadopreligion || hadopreligion === "0") {
+  //   throw new AppError("Please Select Religion by adoption", 400);
+  // }
   if (!hiddoc || hiddoc === "0") {
     throw new AppError("Please Select ID Document", 400);
   }
@@ -415,11 +415,11 @@ async function submitMarriageRegistrationService(payload) {
   //   throw new AppError("Please Select Previous Status", 400);
   // }
   if (!wbirthreligion || wbirthreligion === "0") {
-    throw new AppError("Please Select Religion by birth", 400);
+    throw new AppError("Wife: Please Select Religion by birth", 400);
   }
-  if (!wadopreligion || wadopreligion === "0") {
-    throw new AppError("Please Select Religion by adoption", 400);
-  }
+  // if (!wadopreligion || wadopreligion === "0") {
+  //   throw new AppError("Please Select Religion by adoption", 400);
+  // }
   if (!widdoc || widdoc === "0") {
     throw new AppError("Please Select ID Document", 400);
   }
@@ -452,11 +452,11 @@ async function submitMarriageRegistrationService(payload) {
   if (!w1mlname) {
     throw new AppError("Last Name in Marathi cannot be blank", 400);
   }
-  if (!w1docid || w1docid === "0") {
-    throw new AppError("Please select Document", 400);
-  }
+  // if (!w1docid || w1docid === "0") {
+  //   throw new AppError("Please select Document", 400);
+  // }
   if (!w1relationid || w1relationid === "0") {
-    throw new AppError("Please select Relation", 400);
+    throw new AppError("Witness 1: Please select Relation", 400);
   }
   if (!w1mobileno) {
     throw new AppError("Mobile Number cannot be blank", 400);
@@ -493,11 +493,11 @@ async function submitMarriageRegistrationService(payload) {
   if (!w2mlname) {
     throw new AppError("Last Name in Marathi cannot be blank", 400);
   }
-  if (!w2docid || w2docid === "0") {
-    throw new AppError("Please select Document", 400);
-  }
+  // if (!w2docid || w2docid === "0") {
+  //   throw new AppError("Please select Document", 400);
+  // }
   if (!w2relationid || w2relationid === "0") {
-    throw new AppError("Please select Relation", 400);
+    throw new AppError("Witness 2: Please select Relation", 400);
   }
   if (!w2mobileno) {
     throw new AppError("Mobile Number cannot be blank", 400);
@@ -534,11 +534,11 @@ async function submitMarriageRegistrationService(payload) {
   if (!w3mlname) {
     throw new AppError("Last Name in Marathi cannot be blank", 400);
   }
-  if (!w3docid || w3docid === "0") {
-    throw new AppError("Please select Document", 400);
-  }
+  // if (!w3docid || w3docid === "0") {
+  //   throw new AppError("Please select Document", 400);
+  // }
   if (!w3relationid || w3relationid === "0") {
-    throw new AppError("Please select Relation", 400);
+    throw new AppError("Witness 3: Please select Relation", 400);
   }
   if (!w3mobileno) {
     throw new AppError("Mobile Number cannot be blank", 400);
