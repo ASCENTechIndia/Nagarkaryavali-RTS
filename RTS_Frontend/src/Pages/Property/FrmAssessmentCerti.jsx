@@ -396,16 +396,43 @@ const FrmAssessmentCerti = () => {
     
     if (originalDocumentDefs.current && originalDocumentDefs.current.length > 0) {
       const resetTableData = originalDocumentDefs.current.map((doc, index) => ({
-        id: doc.DocId,
+        id: doc.DOCID || index + 1,
         srNo: index + 1,
-        documentName: doc.DocName || doc.engdocdesc || "",
-        docId: doc.DocId,
-        docType: doc.DocType || "",
+        documentName: doc.DOCNAME || doc.ENGDOCDESC || "",
+        docId: doc.DOCID,
+        docType: doc.DOCTYPE || "PDF",
         file: null,
         fileName: "No file chosen",
         fileBuffer: null,
       }));
       setTableData(resetTableData);
+    }
+  };
+
+  const uploadDocument = async (applicationNo, doc) => {
+    const formData = new FormData();
+    formData.append("corpId", user.corpId);
+    formData.append("serviceId", serviceId);
+    formData.append("appNo", applicationNo);
+    formData.append("docType", doc.docType || "PDF");
+    formData.append("documentId", String(doc.docId));
+    formData.append("document", doc.file);
+
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/api/FrmAssessmentCerti/upload-document`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data.ok === true;
+    } catch (error) {
+      console.error("Error uploading document:", error);
+      return false;
     }
   };
 
@@ -447,12 +474,12 @@ const FrmAssessmentCerti = () => {
 
     const documents = [];
     for (const row of tableData) {
-      if (row.fileBuffer) {
+      if (row.file) {
         documents.push({
           docId: row.docId,
           docName: row.documentName,
-          docType: row.docType,
-          fileBuffer: row.fileBuffer,
+          docType: row.docType || "PDF",
+          file: row.file,
         });
       }
     }
@@ -506,7 +533,7 @@ const FrmAssessmentCerti = () => {
       // email: values.emailId,
       email: normalizedEmail,
       appSource: config.source,
-      documents: documents,
+      // documents: documents,
       // mahaData: {
       //   ulbId: ulbId,
       //   mahaUlbId: user?.mahaUlbId || ulbId,
@@ -530,6 +557,20 @@ const FrmAssessmentCerti = () => {
       
       if (response?.data?.ok && response?.data?.data?.success) {
         const data = response.data.data;
+        const applicationNo = data.applicationNo;
+
+        for (const doc of documents) {
+          const success = await uploadDocument(applicationNo, doc);
+          if (!success) {
+            loader.close();
+            Swal.fire({
+              text: `Failed to upload document: ${doc.docName}`,
+              confirmButtonColor: '#1e3a8a',
+            });
+            setIsSubmitting(false);
+            return;
+          }
+        }
 
         Swal.fire({
           text: data.message || "Application submitted successfully!",
