@@ -1473,7 +1473,7 @@ function PersonTab({
 
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                   <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
-                    <Label text="नाते संबंध" />
+                    <Label required text="नाते संबंध" />
                     <span>:</span>
                   </div>
                   <Select
@@ -1696,7 +1696,7 @@ function PersonTab({
               <>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                   <div className="sm:w-32 shrink-0 flex justify-start sm:justify-between items-center">
-                    <Label text="जन्माने धर्म" />
+                    <Label required text="जन्माने धर्म" />
                     <span>:</span>
                   </div>
                   <Select

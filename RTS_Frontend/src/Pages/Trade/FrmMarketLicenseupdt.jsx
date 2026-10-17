@@ -28,6 +28,7 @@ const FrmMarketLicenseUpdt = () => {
   const locationState = location.state || {};
 
   const [wards, setWards] = useState([]);
+  const [zones, setZones] = useState([]); 
   const [tradeCategory, setTradeCategory] = useState([]);
   const [tradeType, setTradeType] = useState([]);
   const [cancelGender, setCancelGender] = useState([]);
@@ -85,6 +86,7 @@ const FrmMarketLicenseUpdt = () => {
     licenseType: "T",
     licno: locationState.licenseNo || "",
     prabhag: "",
+    zoneId: "",  
     appliFname: "",
     appliMname: "",
     appliLname: "",
@@ -139,6 +141,7 @@ const FrmMarketLicenseUpdt = () => {
     nResAdd: "",
     nAppliCat: "",
     nDirectorImage: null,
+    declarations: [],
   };
 
   useEffect(() => {
@@ -165,6 +168,7 @@ const FrmMarketLicenseUpdt = () => {
     try {
       const results = await Promise.allSettled([
         fetchWards(),
+        fetchZones(),
         fetchCancelGender(),
         fetchCancelRelation(),
         fetchCancelLicType(),
@@ -200,6 +204,20 @@ const FrmMarketLicenseUpdt = () => {
 
     const data = response.data?.data?.rows || response.data?.data || [];
     setWards(data);
+    return data;
+  };
+
+  const fetchZones = async () => {
+    const response = await axios.get(
+      `${BASE_URL}/api/FrmWaterRegister/ward-dropdown?ulbid=${ulbId}`,
+      {
+        headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
+      }
+    );
+
+    if (response?.data?.ok && response?.data?.data?.data) {
+      setZones(response.data.data.data);
+    }
     return data;
   };
 
@@ -292,6 +310,7 @@ const FrmMarketLicenseUpdt = () => {
       });
 
     const data = response.data?.data?.rows || response.data?.data || [];
+    console.log("fetchCancelRelation: ", data)
     setCancelRelation(data);
     setTransRel(data);
     return data;
@@ -304,6 +323,7 @@ const FrmMarketLicenseUpdt = () => {
       });
 
     const data = response.data?.data?.rows || response.data?.data || [];
+    console.log("fetchCancelLicType: ", data)
     setCancelLicType(data);
     return data;
   };
@@ -338,6 +358,7 @@ const FrmMarketLicenseUpdt = () => {
       });
 
     const data = response.data?.data?.rows || response.data?.data || [];
+    console.log("fetchCancelTrade: ", data)
     setCancelTrade(data);
     setTransStat(data);
     return data;
@@ -583,8 +604,10 @@ const FrmMarketLicenseUpdt = () => {
 
     const updated = [...tradeTypeGrid, newEntry];
     setTradeTypeGrid(updated);
+    setFieldValue("tradeCategory", "");
     setFieldValue("rate", "0");
     setFieldValue("tradeType", "");
+    setTradeType([]);
   };
 
   const handleRemoveFromGrid = (gridSetter, index) => {
@@ -750,6 +773,9 @@ const FrmMarketLicenseUpdt = () => {
     if (!values.prabhag) {
       return Swal.fire({ text: "Please select Prabhag" });
     }
+    if (!values.zoneId) {
+      return Swal.fire({ text: "Please select Zone" });
+    }
     if (!values.appliFname) {
       return Swal.fire({ text: "Please enter Applicant First Name" });
     }
@@ -810,12 +836,12 @@ const FrmMarketLicenseUpdt = () => {
       if (!values.buisiJwalan) {
         return Swal.fire({ text: "Please select ज्वलनशील पदार्थांचा / इंधनाचा वापर व साठवणूक करीत आहे?" });
       }
-      if (!values.tradeCategory) {
-        return Swal.fire({ text: "Please select Business Category" });
-      }
-      if (!values.tradeType) {
-        return Swal.fire({ text: "Please select Business Type" });
-      }
+      // if (!values.tradeCategory) {
+      //   return Swal.fire({ text: "Please select Business Category" });
+      // }
+      // if (!values.tradeType) {
+      //   return Swal.fire({ text: "Please select Business Type" });
+      // }
       if (!tradeTypeGrid.length) {
         return Swal.fire({ text: "Please add at least one Business Type" });
       }
@@ -840,110 +866,121 @@ const FrmMarketLicenseUpdt = () => {
     }
 
     if (showAddOwnerPanel) {
-      if (!values.directorAdharno) {
-        return Swal.fire({ text: "Please enter Director Aadhar Number" });
-      }
-      if (!aadharRegex.test(values.directorAdharno)) {
-        return Swal.fire({ text: "Director Aadhar Number must be 12 digits" });
-      }
-      if (!values.directorName) {
-        return Swal.fire({ text: "Please enter Director Name" });
-      }
-      if (!values.directorMob) {
-        return Swal.fire({ text: "Please enter Contact Number" });
-      }
-      if (!mobileRegex.test(values.directorMob)) {
-        return Swal.fire({ text: "Contact Number must be 10 digits" });
-      }
-      if (values.directorEmail && !emailRegex.test(values.directorEmail)) {
-        return Swal.fire({ text: "Please enter a valid Email" });
-      }
-      if (!values.directorGender) {
-        return Swal.fire({ text: "Please select लिंग" });
-      }
-      if (!values.directorAddress) {
-        return Swal.fire({ text: "Please enter Address" });
-      }
-      if (!values.applicantType) {
-        return Swal.fire({ text: "Please select Applicant Type" });
-      }
-      if (!values.directorImage) {
-        return Swal.fire({ text: "Please upload Director Photo" });
-      }
+      // if (!values.directorAdharno) {
+      //   return Swal.fire({ text: "Please enter Director Aadhar Number" });
+      // }
+      // if (!aadharRegex.test(values.directorAdharno)) {
+      //   return Swal.fire({ text: "Director Aadhar Number must be 12 digits" });
+      // }
+      // if (!values.directorName) {
+      //   return Swal.fire({ text: "Please enter Director Name" });
+      // }
+      // if (!values.directorMob) {
+      //   return Swal.fire({ text: "Please enter Contact Number" });
+      // }
+      // if (!mobileRegex.test(values.directorMob)) {
+      //   return Swal.fire({ text: "Contact Number must be 10 digits" });
+      // }
+      // if (values.directorEmail && !emailRegex.test(values.directorEmail)) {
+      //   return Swal.fire({ text: "Please enter a valid Email" });
+      // }
+      // if (!values.directorGender) {
+      //   return Swal.fire({ text: "Please select लिंग" });
+      // }
+      // if (!values.directorAddress) {
+      //   return Swal.fire({ text: "Please enter Address" });
+      // }
+      // if (!values.applicantType) {
+      //   return Swal.fire({ text: "Please select Applicant Type" });
+      // }
+      // if (!values.directorImage) {
+      //   return Swal.fire({ text: "Please upload Director Photo" });
+      // }
       if (!directorGrid.length) {
         return Swal.fire({ text: "Please add at least one Director" });
       }
     }
 
     if (showPartnernamecorrPanel) {
-      if (!values.exeName) {
-        return Swal.fire({ text: "Please enter Existing License Holder / Partner Name" });
-      }
-      if (!values.newName) {
-        return Swal.fire({ text: "Please enter New License Holder / Partner Name" });
-      }
-      if (!values.cpAadhar) {
-        return Swal.fire({ text: "Please enter Aadhar Number" });
-      }
-      if (!aadharRegex.test(values.cpAadhar)) {
-        return Swal.fire({ text: "Aadhar Number must be 12 digits" });
-      }
-      if (!values.rbdCPGender) {
-        return Swal.fire({ text: "Please select लिंग" });
-      }
-      if (!values.cpAddr) {
-        return Swal.fire({ text: "Please enter Address" });
-      }
-      if (!values.cpApplicant) {
-        return Swal.fire({ text: "Please select Applicant Type" });
-      }
+      // if (!values.exeName) {
+      //   return Swal.fire({ text: "Please enter Existing License Holder / Partner Name" });
+      // }
+      // if (!values.newName) {
+      //   return Swal.fire({ text: "Please enter New License Holder / Partner Name" });
+      // }
+      // if (!values.cpAadhar) {
+      //   return Swal.fire({ text: "Please enter Aadhar Number" });
+      // }
+      // if (!aadharRegex.test(values.cpAadhar)) {
+      //   return Swal.fire({ text: "Aadhar Number must be 12 digits" });
+      // }
+      // if (!values.rbdCPGender) {
+      //   return Swal.fire({ text: "Please select लिंग" });
+      // }
+      // if (!values.cpAddr) {
+      //   return Swal.fire({ text: "Please enter Address" });
+      // }
+      // if (!values.cpApplicant) {
+      //   return Swal.fire({ text: "Please select Applicant Type" });
+      // }
       if (!partnerCorrGrid.length) {
         return Swal.fire({ text: "Please add at least one record" });
       }
     }
 
     if (showTransferPanel) {
-      if (!values.trOPartner) {
-        return Swal.fire({ text: "Please enter Existing License Holder / Partner Name" });
-      }
-      if (!values.newPartName) {
-        return Swal.fire({ text: "Please enter New License Holder / Partner Name" });
-      }
-      if (!values.trAadhar) {
-        return Swal.fire({ text: "Please enter Aadhar Number" });
-      }
-      if (!aadharRegex.test(values.trAadhar)) {
-        return Swal.fire({ text: "Aadhar Number must be 12 digits" });
-      }
-      if (!values.transRel) {
-        return Swal.fire({ text: "Please select Relation" });
-      }
-      if (!values.transStat) {
-        return Swal.fire({ text: "Please select Applicant / Business Owner Current Status" });
-      }
-      if (!values.nMob) {
-        return Swal.fire({ text: "Please enter Mobile Number" });
-      }
-      if (!mobileRegex.test(values.nMob)) {
-        return Swal.fire({ text: "Mobile Number must be 10 digits" });
-      }
-      if (!values.nEmail) {
-        return Swal.fire({ text: "Please enter Email" });
-      }
-      if (!emailRegex.test(values.nEmail)) {
-        return Swal.fire({ text: "Please enter a valid Email" });
-      }
-      if (!values.rbtnNDirectorGender) {
-        return Swal.fire({ text: "Please select लिंग" });
-      }
-      if (!values.nResAdd) {
-        return Swal.fire({ text: "Please enter Address" });
-      }
-      if (!values.nAppliCat) {
-        return Swal.fire({ text: "Please select Applicant Type" });
-      }
+      // if (!values.trOPartner) {
+      //   return Swal.fire({ text: "Please enter Existing License Holder / Partner Name" });
+      // }
+      // if (!values.newPartName) {
+      //   return Swal.fire({ text: "Please enter New License Holder / Partner Name" });
+      // }
+      // if (!values.trAadhar) {
+      //   return Swal.fire({ text: "Please enter Aadhar Number" });
+      // }
+      // if (!aadharRegex.test(values.trAadhar)) {
+      //   return Swal.fire({ text: "Aadhar Number must be 12 digits" });
+      // }
+      // if (!values.transRel) {
+      //   return Swal.fire({ text: "Please select Relation" });
+      // }
+      // if (!values.transStat) {
+      //   return Swal.fire({ text: "Please select Applicant / Business Owner Current Status" });
+      // }
+      // if (!values.nMob) {
+      //   return Swal.fire({ text: "Please enter Mobile Number" });
+      // }
+      // if (!mobileRegex.test(values.nMob)) {
+      //   return Swal.fire({ text: "Mobile Number must be 10 digits" });
+      // }
+      // if (!values.nEmail) {
+      //   return Swal.fire({ text: "Please enter Email" });
+      // }
+      // if (!emailRegex.test(values.nEmail)) {
+      //   return Swal.fire({ text: "Please enter a valid Email" });
+      // }
+      // if (!values.rbtnNDirectorGender) {
+      //   return Swal.fire({ text: "Please select लिंग" });
+      // }
+      // if (!values.nResAdd) {
+      //   return Swal.fire({ text: "Please enter Address" });
+      // }
+      // if (!values.nAppliCat) {
+      //   return Swal.fire({ text: "Please select Applicant Type" });
+      // }
       if (!transferGrid.length) {
         return Swal.fire({ text: "Please add at least one record" });
+      }
+    }
+
+    if (showSelfPanel && declarations.length > 0) {
+      const accepted = values.declarations || [];
+      const allAccepted = declarations.every((_, index) => accepted[index]);
+
+      if (!allAccepted) {
+        return Swal.fire({
+          text: "Please accept the self-declarations before submitting.",
+        });
       }
     }
 
@@ -991,7 +1028,7 @@ const FrmMarketLicenseUpdt = () => {
         directorstr,
         rate: 0,
         wardid: values.prabhag ? Number(values.prabhag) : 0,
-        zoneid: zoneId ? Number(zoneId) : 0,
+        zoneid: values.zoneId ? Number(values.zoneId) : (zoneId ? Number(zoneId) : 0),
         Servid: Number(serviceid),
         Source: "RTS",
         amount: values.amount ? Number(values.amount) : 0,
@@ -1146,7 +1183,7 @@ const FrmMarketLicenseUpdt = () => {
     "ईमेल",
     "लिंग",
     "पत्ता",
-    "ApplicantTypeId",
+    // "ApplicantTypeId",
     "अर्जदाराचा प्रकार",
     "संचालकांचे छायाचित्र",
     "काढा",
@@ -1159,7 +1196,7 @@ const FrmMarketLicenseUpdt = () => {
     ईमेल: "email",
     लिंग: "gender",
     पत्ता: "address",
-    ApplicantTypeId: "applitypeid",
+    // ApplicantTypeId: "applitypeid",
     "अर्जदाराचा प्रकार": "applitypename",
     "संचालकांचे छायाचित्र": "image",
     "काढा": "delete",
@@ -1171,7 +1208,7 @@ const FrmMarketLicenseUpdt = () => {
     "आधार क्रमांक",
     "लिंग",
     "पत्ता",
-    "ApplicantTypeId",
+    // "ApplicantTypeId",
     "अर्जदार प्रकार",
     "नवीन परवानाधारक / भागिदाराचे नाव",
   ];
@@ -1182,7 +1219,7 @@ const FrmMarketLicenseUpdt = () => {
     "आधार क्रमांक": "aadharno",
     लिंग: "gender",
     पत्ता: "address",
-    ApplicantTypeId: "applitypeid",
+    // ApplicantTypeId: "applitypeid",
     "अर्जदार प्रकार": "applitypename",
     "नवीन परवानाधारक / भागिदाराचे नाव": "newname",
   };
@@ -1508,6 +1545,29 @@ const FrmMarketLicenseUpdt = () => {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
+                    <Label
+                      className="w-32 shrink-0 md:w-40"
+                      text="Zone"
+                      required
+                    />
+                    <Select
+                      value={values.zoneId || ""}
+                      onValueChange={(value) => setFieldValue("zoneId", value)}
+                    >
+                      <SelectTrigger className="h-9 w-full sm:h-10">
+                        <SelectValue placeholder="-- Select Zone --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {zones.map((zone, index) => (
+                          <SelectItem key={zone.WARDID} value={String(zone.WARDID)}>
+                            {zone.WARDNAME}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -1680,14 +1740,12 @@ const FrmMarketLicenseUpdt = () => {
                                 <SelectValue placeholder="-- Select --" />
                               </SelectTrigger>
                               <SelectContent>
-                                {cancelRelation.map((item, index) => (
+                                {cancelRelation.map((item) => (
                                   <SelectItem
-                                    key={item.id || index}
-                                    value={String(item.id)}
+                                    key={String(item.RELATION_ID)}
+                                    value={String(item.RELATION_ID)}
                                   >
-                                    {item.name ||
-                                      item.RELATION_NAME ||
-                                      item.RELATION}
+                                    {item.RELATION_NAME}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -1712,14 +1770,12 @@ const FrmMarketLicenseUpdt = () => {
                                 <SelectValue placeholder="-- Select --" />
                               </SelectTrigger>
                               <SelectContent>
-                                {cancelLicType.map((item, index) => (
+                                {cancelLicType.map((item) => (
                                   <SelectItem
-                                    key={item.id || index}
-                                    value={String(item.id)}
+                                    key={String(item.LICENSETYPE_ID)}
+                                    value={String(item.LICENSETYPE_ID)}
                                   >
-                                    {item.name ||
-                                      item.LICENSE_TYPE_NAME ||
-                                      item.LICENSETYPE_NAME}
+                                    {item.LICENSETYPE_NAME}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -1735,7 +1791,7 @@ const FrmMarketLicenseUpdt = () => {
                             <Select
                               value={values.cancelJwalan}
                               onValueChange={async (value) => {
-                                setFieldValue("buisiJwalan", value);
+                                setFieldValue("cancelJwalan", value);
                                 setFieldValue("tradeCategory", "");
                                 setFieldValue("tradeType", "");
                                 setFieldValue("rate", "0");
@@ -1780,14 +1836,12 @@ const FrmMarketLicenseUpdt = () => {
                                 <SelectValue placeholder="-- Select --" />
                               </SelectTrigger>
                               <SelectContent>
-                                {cancelAdhikrutta.map((item, index) => (
+                                {cancelAdhikrutta.map((item) => (
                                   <SelectItem
-                                    key={item.id || index}
-                                    value={String(item.id)}
+                                    key={String(item.ADHIKRUTTA_ID || item.ADHIKRTUTTA_ID)}
+                                    value={String(item.ADHIKRUTTA_ID || item.ADHIKRTUTTA_ID)}
                                   >
-                                    {item.name ||
-                                      item.ADHIKRTUTTA_NAME ||
-                                      item.ADHIKRUTTA_NAME}
+                                    {item.ADHIKRUTTA_NAME || item.ADHIKRTUTTA_NAME}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -1822,20 +1876,22 @@ const FrmMarketLicenseUpdt = () => {
                             </Select>
                           </div>
                         </div>
-
-                        <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
-                          <Label
-                            className="w-32 shrink-0 md:w-40"
-                            text="आस्थापना / व्यवसाय बंद केल्याचा दिनांक"
-                            required
-                          />
-                          <DatePicker
-                            value={values.closeDt}
-                            onChange={(date) =>
-                              setFieldValue("closeDt", date)
-                            }
-                            className="h-9 w-full md:w-auto sm:h-10"
-                          />
+                        
+                        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+                          <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
+                            <Label
+                              className="w-32 shrink-0 md:w-40"
+                              text="आस्थापना / व्यवसाय बंद केल्याचा दिनांक"
+                              required
+                            />
+                            <DatePicker
+                              value={values.closeDt}
+                              onChange={(date) =>
+                                setFieldValue("closeDt", date)
+                              }
+                              className="h-9"
+                            />
+                          </div>
                         </div>
                       </div>
                     )}
@@ -1858,14 +1914,12 @@ const FrmMarketLicenseUpdt = () => {
                               <SelectValue placeholder="-- Select --" />
                             </SelectTrigger>
                             <SelectContent>
-                              {cancelRelation.map((item, index) => (
+                              {cancelRelation.map((item) => (
                                 <SelectItem
-                                  key={item.id || index}
-                                  value={String(item.id)}
+                                  key={String(item.RELATION_ID)}
+                                  value={String(item.RELATION_ID)}
                                 >
-                                  {item.name ||
-                                    item.RELATION_NAME ||
-                                    item.RELATION}
+                                  {item.RELATION_NAME}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -2819,18 +2873,30 @@ const FrmMarketLicenseUpdt = () => {
                 {showSelfPanel && (
                   <div className="mb-4">
                     <div className="flex flex-col items-center">
-                      {declarations.map((item, index) => (
-                        <div
-                          key={item.ID || item.id || index}
-                          className="mb-2 flex w-full max-w-3xl items-start gap-2"
-                        >
-                          <Checkbox
-                            id={`decl-${index}`}
-                            className="mt-1"
-                          />
-                          {item.MESSAGE || item.Message || item.message}
-                        </div>
-                      ))}
+                      {declarations.map((item, index) => {
+                        const key = item.ID || item.id || index;
+
+                        return (
+                          <div
+                            key={key}
+                            className="mb-2 flex w-full max-w-3xl items-start gap-2"
+                          >
+                            <Checkbox
+                              id={`decl-${index}`}
+                              className="mt-1"
+                              checked={!!values.declarations?.[index]}
+                              onCheckedChange={(checked) => {
+                                const next = [...(values.declarations || [])];
+                                next[index] = Boolean(checked);
+                                setFieldValue("declarations", next);
+                              }}
+                            />
+                            <label htmlFor={`decl-${index}`} className="cursor-pointer">
+                              {item.MESSAGE || item.Message || item.message}
+                            </label>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
