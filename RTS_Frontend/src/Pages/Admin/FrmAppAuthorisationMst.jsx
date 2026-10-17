@@ -1032,6 +1032,7 @@ const FrmAppAuthorisationMst = () => {
       authMode === "CK" &&
       // (Number(departId) === 7 || Number(departId) === 290) &&
       (Number(departId) === 290) &&
+      authAction !== "Reject" &&
       !manualCertificateGenerated
     ) {
       Swal.fire({
