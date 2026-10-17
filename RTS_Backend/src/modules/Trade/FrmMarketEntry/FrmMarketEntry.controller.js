@@ -718,25 +718,46 @@ const documentInsert = asyncHandler(async (req, res) => {
 // ============================================================
 // GET TRADE TYPES BY CATEGORY
 // ============================================================
-// const getTradeTypesByCategory = asyncHandler(async (req, res) => {
-//   const { categoryId, type } = req.body;
+const getTradeTypesByCategory = async (req, res, next) => {
+  try {
+    const { ulbId, tradeCategoryId, type } = req.body;
 
-//   console.log("📥 Get Trade Types By Category", {
-//     categoryId,
-//     type,
-//   });
+    if (!ulbId) {
+      return res.status(400).json({
+        ok: false,
+        message: "ULB ID is required",
+      });
+    }
 
-//   const data = await service.getTradeTypesByCategoryService(
-//     categoryId,
-//     type
-//   );
+    if (!tradeCategoryId) {
+      return res.status(400).json({
+        ok: false,
+        message: "Trade Category ID is required",
+      });
+    }
 
-//   return res.status(200).json({
-//     success: true,
-//     message: "Trade types fetched successfully.",
-//     data,
-//   });
-// });
+    if (!type) {
+      return res.status(400).json({
+        ok: false,
+        message: "Type is required (T or S)",
+      });
+    }
+
+    const data = await service.getTradeTypesByCategoryService(
+      ulbId,
+      tradeCategoryId,
+      type,
+    );
+
+    return res.status(200).json({
+      ok: true,
+      message: "Trade Types fetched successfully",
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 
 // ============================================================
@@ -872,4 +893,5 @@ module.exports = {
   updateDirectorImages,
   documentInsert,
   getTradeCategoryByJwalan,
+  getTradeTypesByCategory,
 };

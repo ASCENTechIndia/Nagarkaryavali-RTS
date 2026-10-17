@@ -17,20 +17,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import ShadCNTable from "@/components/ui/table";
 import getIPAddress from "@/utils/ipHelper";
 import config from "@/utils/config";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 const validateEmail = (email) => {
   const value = email?.trim() || "";
 
@@ -40,6 +34,43 @@ const validateEmail = (email) => {
     value,
   );
 };
+
+const fileToDataUrl = (file) =>
+  new Promise((resolve, reject) => {
+    if (!file) return resolve(null);
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+const dataURLtoFile = (dataURL, filename, fallbackMime = "image/png") => {
+  if (!dataURL) return null;
+  const arr = dataURL.split(",");
+  const mime = arr[0].match(/:(.*?);/)?.[1] || fallbackMime;
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) u8arr[n] = bstr.charCodeAt(n);
+  return new File([u8arr], filename, { type: mime });
+};
+
+const mimeFromExtension = (ext) => {
+  const e = String(ext || "").toLowerCase().replace(/^\./, "");
+  switch (e) {
+    case "png": return "image/png";
+    case "jpg":
+    case "jpeg": return "image/jpeg";
+    case "pdf": return "application/pdf";
+    case "docx":
+      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    case "xlsx":
+      return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    case "xls": return "application/vnd.ms-excel";
+    default: return "application/octet-stream";
+  }
+};
+
 const initialValues = {
   oldLicenseNo: "",
   tradeBusinessType: "T",
@@ -57,8 +88,8 @@ const initialValues = {
   fromDate: "",
   toDate: "",
 
-  usedArea: "0",
-  amount: "0",
+  usedArea: "",
+  amount: "",
 
   jalanShil: "",
   illegalType: "",
@@ -121,14 +152,6 @@ const FrmMarketEntry = () => {
       locationState.mode ??
       1,
   );
-
-  // const applicationId = locationState.applicationId ??
-  //   locationState.appId ??
-  //   searchParams.get("applicationId") ??
-  //   searchParams.get("appid") ??
-  //   sessionStorage.getItem("applicationId") ??
-  //   sessionStorage.getItem("appid") ??
-  //   "";
 
   const [activeTab, setActiveTab] = useState("primary");
   const [tradeCategoryOptions, setTradeCategoryOptions] = useState([]);
@@ -334,26 +357,33 @@ const FrmMarketEntry = () => {
     }
   };
 
-  const getTradeDetails = async () => {
-    if (!ulbId) return;
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/api/FrmMarketEntry/gettradedetails`,
-        { ulbId },
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
-      );
-      const data = response.data?.data || [];
-      setTradeTypeOptions(
-        data.map((item) => ({
-          value: String(item.TRADEID),
-          label: item.TRADENAME || "",
-        })),
-      );
-    } catch (error) {
-      console.error("Trade Details Error:", error);
-      setTradeTypeOptions([]);
-    }
-  };
+  const getTradeTypesByCategory = async (tradeCategoryId, type) => {
+  if (!tradeCategoryId) {
+    setTradeTypeOptions([]);
+    return;
+  }
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/api/FrmMarketEntry/gettradetypesbycategory`,
+      {
+        ulbId: Number(ulbId),
+        tradeCategoryId: Number(tradeCategoryId),
+        type: type,
+      },
+      { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
+    );
+    const data = response.data?.data || [];
+    setTradeTypeOptions(
+      data.map((item) => ({
+        value: String(item.NUM_TRADETYPE_ID),
+        label: item.VAR_TRADETYPE_NAME || "",
+      })),
+    );
+  } catch (error) {
+    console.error("Trade Types By Category Error:", error);
+    setTradeTypeOptions([]);
+  }
+};
 
   const getDocumentDetails = async () => {
     if (!ulbId || !serviceId) return;
@@ -476,9 +506,11 @@ const FrmMarketEntry = () => {
           getLicenseType(),
           getApplicantType(),
           getWard(),
-          getTradeDetails(),
+          //getTradeDetails(),
           getDocumentDetails(),
           getSelfDeclare(),
+          getTradeTypesByCategory(),
+
         ]);
 
         if (mode === 1) {
@@ -510,13 +542,15 @@ const FrmMarketEntry = () => {
     setFieldValue("jalanShil", value);
     setFieldValue("tradeCategory", "");
     setFieldValue("tradeType", "");
+    setTradeTypeOptions([]);
     await loadTradeCategory(values.tradeBusinessType || "T", value);
   };
 
-  const handleTradeCategoryChange = (value, setFieldValue) => {
+  const handleTradeCategoryChange = async (value, setFieldValue, values) => {
     setFieldValue("tradeCategory", value);
     setFieldValue("tradeType", "");
     setFieldValue("rate", "");
+    await getTradeTypesByCategory(value, values.tradeBusinessType || "T");
   };
 
   const handleTradeBusinessTypeChange = async (
@@ -527,7 +561,7 @@ const FrmMarketEntry = () => {
     setFieldValue("tradeBusinessType", value);
     setFieldValue("tradeCategory", "");
     setFieldValue("tradeType", "");
-
+    setTradeTypeOptions([]);
     const effectiveJalanShil = values.jalanShil || (mode === 1 ? "Y" : "");
     if (effectiveJalanShil) {
       await loadTradeCategory(value, effectiveJalanShil);
@@ -537,10 +571,6 @@ const FrmMarketEntry = () => {
   const addTradeType = async (values, setFieldValue) => {
     if (!values.tradeCategory) {
       Swal.fire({ text: "Please select Trade Category" });
-      return;
-    }
-    if (!values.tradeType) {
-      Swal.fire({ text: "Please select Trade Type" });
       return;
     }
 
@@ -587,7 +617,7 @@ const FrmMarketEntry = () => {
     setTradeTypeRateRows((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const addDirector = (values, setFieldValue) => {
+  const addDirector = async (values, setFieldValue) => {
     if (!values.directorName) {
       Swal.fire({ text: "Please enter Director Name." });
       return;
@@ -611,6 +641,10 @@ const FrmMarketEntry = () => {
 
     const nextId = directorRows.length + 1;
 
+    const previewUrl = values.directorImage
+      ? await fileToDataUrl(values.directorImage)
+      : null;
+
     setDirectorRows((prev) => [
       ...prev,
       {
@@ -625,6 +659,7 @@ const FrmMarketEntry = () => {
         applicantTypeId: values.directorApplicantType,
         applicantType: applicantType?.label || "",
         image: values.directorImage,
+        imagePreviewUrl: previewUrl,
       },
     ]);
 
@@ -642,12 +677,21 @@ const FrmMarketEntry = () => {
     setDirectorRows((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const handleDocumentFile = (id, file) => {
+  const handleDocumentFile = async (id, file) => {
     if (!file) return;
+    const isImage = file.type.startsWith("image/");
+    const previewUrl = isImage ? await fileToDataUrl(file) : null;
+
     setDocumentRows((prev) =>
       prev.map((item) =>
         String(item.id) === String(id)
-          ? { ...item, file, fileName: file.name }
+          ? {
+              ...item,
+              file,
+              fileName: file.name,
+              fileMime: file.type || mimeFromExtension(file.name.split(".").pop()),
+              filePreviewUrl: previewUrl,
+            }
           : item,
       ),
     );
@@ -686,7 +730,6 @@ const FrmMarketEntry = () => {
 
     if (!oldLicenseNo) {
       Swal.fire({
-        icon: "warning",
         text: "Please enter License Number",
       });
       return;
@@ -706,7 +749,6 @@ const FrmMarketEntry = () => {
       if (isCancelled) {
         Swal.close();
         Swal.fire({
-          icon: "error",
           text: "License is Cancelled",
         });
         return;
@@ -717,7 +759,6 @@ const FrmMarketEntry = () => {
 
       if (!result || !result.found) {
         Swal.fire({
-          icon: "error",
           text: "No Licence Found",
         });
         setFieldValue("oldLicenseNo", "");
@@ -813,19 +854,26 @@ const FrmMarketEntry = () => {
       }
 
       if (directorDetails.length > 0) {
-        const directorRowsData = directorDetails.map((item, index) => ({
-          id: index + 1,
-          aadharNo: item.ADHARNO?.toString() || "",
-          directorName: item.DIRCTORNAME || "",
-          mobileNo: item.MOBILENO?.toString() || "",
-          voterId: item.VOTERID?.toString() || "",
-          email: item.EMAIL || "",
-          gender: item.GENDER || "F",
-          address: item.ADDRESS || "",
-          applicantTypeId: item.APPLITYPEID?.toString() || "",
-          applicantType: item.APPLITYPENAME || "",
-          image: item.imgDirectorImage || null,
-        }));
+        const directorRowsData = directorDetails.map((item, index) => {
+          const base64 = item.imgDirectorImage || null;
+          return {
+            id: index + 1,
+            aadharNo: item.ADHARNO?.toString() || "",
+            directorName: item.DIRCTORNAME || "",
+            mobileNo: item.MOBILENO?.toString() || "",
+            voterId: item.VOTERID?.toString() || "",
+            email: item.EMAIL || "",
+            gender: item.GENDER || "F",
+            address: item.ADDRESS || "",
+            applicantTypeId: item.APPLITYPEID?.toString() || "",
+            applicantType: item.APPLITYPENAME || "",
+            image: base64
+              ? dataURLtoFile(`data:image/png;base64,${base64}`, `director_${index + 1}.png`)
+              : null,
+            imagePreviewUrl: base64 ? `data:image/png;base64,${base64}` : null,
+            imageMime: base64 ? "image/png" : null,
+          };
+        });
         setDirectorRows(directorRowsData);
       }
 
@@ -839,6 +887,10 @@ const FrmMarketEntry = () => {
               return {
                 ...item,
                 fileName: existing.FileType || "",
+                fileMime: mimeFromExtension(existing.FileType),
+                filePreviewUrl: isImage
+                  ? `data:${mimeFromExtension(existing.FileType)};base64,${existing.filebyte}`
+                  : null,
               };
             }
             return item;
@@ -847,7 +899,6 @@ const FrmMarketEntry = () => {
       }
 
       Swal.fire({
-        icon: "success",
         title: "License Found",
         text: "Application details loaded successfully.",
       });
@@ -857,7 +908,6 @@ const FrmMarketEntry = () => {
       Swal.close();
       console.error("Search License Error:", error);
       Swal.fire({
-        icon: "error",
         text: "Error fetching license details. Please try again.",
       });
     }
@@ -865,74 +915,109 @@ const FrmMarketEntry = () => {
 
   const submitApplication = async (values, { setSubmitting, resetForm }) => {
     try {
-      if (values.email && !validateEmail(values.email)) {
-        Swal.fire({
-          icon: "warning",
-          text: "Please enter a valid email address.",
-        });
+      const fail = async (text, tab = "primary") => {
+        setActiveTab(tab);
+        await Swal.fire({ text });
+      };
 
-        setActiveTab("primary");
+      if (values.email && !validateEmail(values.email)) {
+        await fail("Please enter a valid ई-मेल.", "primary");
         return;
       }
 
       if (!values.shopNameEnglish?.trim()) {
-        Swal.fire({ text: "Please Enter Shop Name English" });
-        setActiveTab("primary");
+        await fail("Please Enter दुकानाचे नाव इंग्रजी", "primary");
         return;
       }
 
       if (!values.shopNameMarathi?.trim()) {
-        Swal.fire({ text: "Please Enter Shop Name Marathi" });
-        setActiveTab("primary");
+        await fail("Please Enter दुकानाचे नाव मराठी", "primary");
         return;
       }
 
       if (!values.contactNo?.trim()) {
-        Swal.fire({ text: "Please Enter Mobile No" });
-        setActiveTab("primary");
+        await fail("Please Enter संपर्क क्र.", "primary");
         return;
       }
 
       if (!values.shopAddress?.trim()) {
-        Swal.fire({ text: "Please Enter Address" });
-        setActiveTab("primary");
+        await fail("Please Enter दुकानाचा पत्ता", "primary");
         return;
       }
 
       if (!values.wardNo) {
-        Swal.fire({ text: "Please Select Ward" });
-        setActiveTab("primary");
+        await fail("Please Select प्रभाग समिती.", "primary");
         return;
       }
 
-      if (tradeTypeRateRows.length === 0) {
-        Swal.fire({ text: "Please Add At Least One Trade Type" });
-        setActiveTab("primary");
+      if (!values.fromDate) {
+        await fail("Please Select दिनांका पासून", "primary");
         return;
       }
 
-      if (!values.applicantName?.trim()) {
-        Swal.fire({ text: "Please Enter Place Owner Name" });
-        setActiveTab("primary");
+      if (!values.toDate) {
+        await fail("Please Select दिनांका पर्यंत", "primary");
         return;
       }
 
-      if (!values.applicantAddress?.trim()) {
-        Swal.fire({ text: "Please Enter Place Owner Address" });
-        setActiveTab("primary");
+      if (!values.usedArea) {
+        await fail("Please Enter Area in Sq.ft", "primary");
         return;
       }
 
       if (mode === 2) {
         if (!values.jalanShil) {
-          Swal.fire({ text: "Please Select Jwalan Padhartha" });
-          setActiveTab("primary");
+          await fail("Please Select Jwalan Padhartha", "primary");
           return;
         }
 
         if (!values.illegalType) {
-          Swal.fire({ text: "Please Select Illegal Property" });
-          setActiveTab("primary");
+          await fail("Please Select Illegal Property", "primary");
+          return;
+        }
+
+        if (!values.propNo?.trim()) {
+          await fail("Please Enter Property No", "primary");
+          return;
+        }
+      }
+
+        if (!values.tradeCategory) {
+          await fail("Please Select Trade Category", "primary");
+          return;
+        }
+
+        if (tradeTypeRateRows.length === 0) {
+          await fail("Please Add Trade Type", "primary");
+          return;
+        }
+
+        if (!values.businessPlace) {
+          await fail("Please Select व्यवसाय ची जागा", "primary");
+          return;
+        }
+
+        if (
+          serviceId &&
+          ["304", "501"].includes(String(serviceId)) &&
+          !values.businessNature?.trim()
+        ) {
+          await fail("Please Enter व्यवसायाचे स्वरूप", "primary");
+          return;
+        }
+
+        if (!values.applicantName?.trim()) {
+          await fail("Please Enter अर्जदाराचे नाव", "primary");
+          return;
+        }
+
+        if (!values.applicantAddress?.trim()) {
+          await fail("Please Enter अर्जदाराचे पत्ता", "primary");
+          return;
+        }
+
+        if (directorRows.length === 0) {
+          await fail("Please Add At Least One Director", "director");
           return;
         }
 
@@ -943,202 +1028,184 @@ const FrmMarketEntry = () => {
 
           if (missingDocuments.length > 0) {
             setActiveTab("documents");
-
             await Swal.fire({
-              icon: "warning",
               title: "Documents Required",
               html: `
-        <div style="text-align: left;">
-          <p>Please upload all required documents.</p>
-          <ul style="margin-top: 10px;">
-            ${missingDocuments
-              .map((doc) => `<li>${doc.documentName}</li>`)
-              .join("")}
-          </ul>
-        </div>
-      `,
+                <div style="text-align: left;">
+                  <p>Please upload all required documents.</p>
+                  <ul style="margin-top: 10px;">
+                    ${missingDocuments
+                      .map((doc) => `<li>${doc.documentName}</li>`)
+                      .join("")}
+                  </ul>
+                </div>
+              `,
             });
-
             return;
           }
         }
-      }
 
-      if (directorRows.length === 0) {
-        Swal.fire({ text: "Please Add At Least One Director" });
-        setActiveTab("director");
-        return;
-      }
+        if (selfDeclareRows.length > 0 && !values.declarationAccepted) {
+          await fail(
+            "Please accept the self declaration before submitting.",
+            "documents",
+          );
+          return;
+        }
 
-      if (selfDeclareRows.length > 0 && !values.declarationAccepted) {
+        const directorString = buildDirectorString();
+        const tradeTypeString = buildTradeTypeString();
+
+        const buildTradeString = () => {
+          const tradeIds = [
+            ...new Set(tradeTypeRateRows.map((item) => item.tradeCategoryId)),
+          ];
+          return tradeIds.filter((id) => id).join("#");
+        };
+
+        const totalAmount = tradeTypeRateRows.reduce(
+          (total, item) => total + Number(item.rate || 0),
+          0,
+        );
+
+        const ipAddress = await getIPAddress();
+
+        const payload = {
+          userId: String(userId || ""),
+          ulbId: Number(ulbId),
+          corpId: Number(corpId || 0),
+          serviceId: Number(serviceId),
+
+          appid: Number(applicationId || 0),
+          appliNo: applicationNo || "0",
+          mode: Number(mode),
+
+          oldLicencNo: mode === 2 ? values.oldLicenseNo?.trim() || null : null,
+
+          shopName: values.shopNameEnglish?.trim() || "",
+          shopNameMar: values.shopNameMarathi?.trim() || "",
+          panNo: values.panCardNo?.trim() || "",
+          contactNo: values.contactNo ? Number(values.contactNo) : null,
+          email: values.email?.trim() || "",
+          address: values.shopAddress?.trim() || "",
+
+          zoneId: values.zoneNo ? Number(values.zoneNo) : Number(zoneId || 0),
+          wardId: values.wardNo ? Number(values.wardNo) : 0,
+
+          isProd: values.isManufactured === "Y" ? "Y" : "N",
+          ownSpace: values.isOwnerDoingBusiness === "Y" ? "Y" : "N",
+          agrmentWith: values.rentAgreementWithWhom || "",
+          area: values.usedArea ? Number(values.usedArea) : 0,
+          isCorpNOC: values.corporationNoc === "Y" ? "Y" : "N",
+          busStartYr: values.businessStartYear
+            ? Number(values.businessStartYear)
+            : 0,
+          shopActNo: values.shopActRegistrationNo || "",
+          foodlicno: values.otherAdministrationRegistrationNo || "",
+          licDays: null,
+
+          placeOwnerName: values.applicantName?.trim() || "",
+          placeOwnerAddress: values.applicantAddress?.trim() || "",
+
+          fromDate: values.fromDate || null,
+          toDate: values.toDate || null,
+
+          amount: Number(totalAmount || 0),
+          applitradeStr: buildTradeString(),
+          applitradetypeStr: tradeTypeString,
+          applidirectorStr: directorString,
+
+          licType: String(mode === 2 ? "R" : "N"),
+          licenseTypeId: values.licenseType ? Number(values.licenseType) : 0,
+          propNo: values.propNo || "",
+          marketPropNo: "",
+
+          source: config.source || "WEB",
+          ipAddress: ipAddress || "127.0.0.1",
+          cfcRecno: "",
+
+          jwalan: values.jalanShil || (mode === 1 ? "N" : ""),
+          illegal: values.illegalType ? Number(values.illegalType) : 0,
+          category: values.tradeBusinessType || "T",
+          trdBusinessType: values.businessNature || "",
+          businessPlace: values.businessPlace ? Number(values.businessPlace) : 0,
+          arrearsAmount: 0,
+        };
+
         Swal.fire({
-          icon: "warning",
-          text: "Please accept the self declaration before submitting.",
-        });
-        setActiveTab("documents");
-        return;
-      }
-
-      const directorString = buildDirectorString();
-      const tradeTypeString = buildTradeTypeString();
-
-      const buildTradeString = () => {
-        const tradeIds = [
-          ...new Set(tradeTypeRateRows.map((item) => item.tradeCategoryId)),
-        ];
-        return tradeIds.filter((id) => id).join("#");
-      };
-
-      const totalAmount = tradeTypeRateRows.reduce(
-        (total, item) => total + Number(item.rate || 0),
-        0,
-      );
-
-      const ipAddress = await getIPAddress();
-
-      const payload = {
-        userId: String(userId || ""),
-        ulbId: Number(ulbId),
-        corpId: Number(corpId || 0),
-        serviceId: Number(serviceId),
-
-        appid: Number(applicationId || 0),
-        appliNo: applicationNo || "0",
-        mode: Number(mode),
-
-        oldLicencNo: mode === 2 ? values.oldLicenseNo?.trim() || null : null,
-
-        shopName: values.shopNameEnglish?.trim() || "",
-        shopNameMar: values.shopNameMarathi?.trim() || "",
-        panNo: values.panCardNo?.trim() || "",
-        contactNo: values.contactNo ? Number(values.contactNo) : null,
-        email: values.email?.trim() || "",
-        address: values.shopAddress?.trim() || "",
-
-        zoneId: values.zoneNo ? Number(values.zoneNo) : Number(zoneId || 0),
-        wardId: values.wardNo ? Number(values.wardNo) : 0,
-
-        isProd: values.isManufactured === "Y" ? "Y" : "N",
-        ownSpace: values.isOwnerDoingBusiness === "Y" ? "Y" : "N",
-        agrmentWith: values.rentAgreementWithWhom || "",
-        area: values.usedArea ? Number(values.usedArea) : 0,
-        isCorpNOC: values.corporationNoc === "Y" ? "Y" : "N",
-        busStartYr: values.businessStartYear
-          ? Number(values.businessStartYear)
-          : 0,
-        shopActNo: values.shopActRegistrationNo || "",
-        foodlicno: values.otherAdministrationRegistrationNo || "",
-        licDays: null,
-
-        placeOwnerName: values.applicantName?.trim() || "",
-        placeOwnerAddress: values.applicantAddress?.trim() || "",
-
-        fromDate: values.fromDate || null,
-        toDate: values.toDate || null,
-
-        amount: Number(totalAmount || 0),
-        applitradeStr: buildTradeString(),
-        applitradetypeStr: tradeTypeString,
-        applidirectorStr: directorString,
-
-        licType: String(mode === 2 ? "R" : "N"),
-        licenseTypeId: values.licenseType ? Number(values.licenseType) : 0,
-        propNo: values.propNo || "",
-        marketPropNo: "",
-
-        source: config.source || "WEB",
-        ipAddress: ipAddress || "127.0.0.1",
-        cfcRecno: "",
-
-        jwalan: values.jalanShil || (mode === 1 ? "N" : ""),
-        illegal: values.illegalType ? Number(values.illegalType) : 0,
-        category: values.tradeBusinessType || "T",
-        trdBusinessType: values.businessNature || "",
-        businessPlace: values.businessPlace ? Number(values.businessPlace) : 0,
-        arrearsAmount: 0,
-      };
-
-      console.log("========== APPLICATION ENTRY PAYLOAD ==========");
-      console.log(JSON.stringify(payload, null, 2));
-      console.log("================================================");
-
-      Swal.fire({
-        title: "Saving...",
-        text: "Submitting application",
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        showConfirmButton: false,
-        didOpen: () => Swal.showLoading(),
-      });
-
-      const response = await axios.post(
-        `${BASE_URL}/api/FrmMarketEntry/applicationentry`,
-        payload,
-        { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
-      );
-
-      Swal.close();
-
-      console.log("APPLICATION ENTRY RESPONSE:", response.data);
-
-      const responseData = response.data?.data || {};
-      const backendMessage =
-        response.data?.message || "Application entry failed.";
-      const errorCode = Number(responseData?.errorCode ?? 0);
-      const newAppId = responseData?.appId ?? responseData?.appid ?? 0;
-      const appNo = responseData?.appliNo || responseData?.appNo || "";
-
-      const isSuccess =
-        response.data?.ok === true &&
-        String(response.data?.status || "").toUpperCase() === "SUCCESS";
-
-      if (!isSuccess) {
-        await Swal.fire({
-          icon: "error",
-          title: "Application Entry Failed",
-          text: `${backendMessage}${errorCode ? ` (Error Code: ${errorCode})` : ""}`,
-        });
-        return;
-      }
-
-      if (!appNo || appNo === "MK0" || appNo === "0") {
-        throw new Error(backendMessage || "Invalid Application No returned.");
-      }
-
-      const selectedDocuments = documentRows.filter(
-        (item) => item?.file && item.active === "Y",
-      );
-
-      if (selectedDocuments.length > 0) {
-        Swal.fire({
-          title: "Uploading...",
-          text: "Uploading documents",
+          title: "Saving...",
+          text: "Submitting application",
           allowOutsideClick: false,
           allowEscapeKey: false,
           showConfirmButton: false,
           didOpen: () => Swal.showLoading(),
         });
 
-        for (const doc of selectedDocuments) {
-          const formData = new FormData();
-          formData.append("corpId", String(corpId || 10001));
-          formData.append("serviceId", String(serviceId));
-          formData.append("appno", String(appNo));
-          formData.append("doctype", String(doc.documentType || ""));
-          formData.append("documentid", String(doc.docId || ""));
-          formData.append("document", doc.file);
+        const response = await axios.post(
+          `${BASE_URL}/api/FrmMarketEntry/applicationentry`,
+          payload,
+          { headers: { Authorization: authToken ? `Bearer ${authToken}` : "" } },
+        );
 
-          await axios.post(
-            `${BASE_URL}/api/FrmMarketEntry/documentinsert`,
-            formData,
-            {
-              headers: {
-                Authorization: authToken ? `Bearer ${authToken}` : "",
-                "Content-Type": "multipart/form-data",
-              },
-            },
-          );
+        Swal.close();
+
+        const responseData = response.data?.data || {};
+        const backendMessage =
+          response.data?.message || "Application entry failed.";
+        const errorCode = Number(responseData?.errorCode ?? 0);
+        const newAppId = responseData?.appId ?? responseData?.appid ?? 0;
+        const appNo = responseData?.appliNo || responseData?.appNo || "";
+
+        const isSuccess =
+          response.data?.ok === true &&
+          String(response.data?.status || "").toUpperCase() === "SUCCESS";
+
+        if (!isSuccess) {
+          await Swal.fire({
+            title: "Application Entry Failed",
+            text: `${backendMessage}${errorCode ? ` (Error Code: ${errorCode})` : ""}`,
+          });
+          return;
         }
+
+        if (!appNo || appNo === "MK0" || appNo === "0") {
+          throw new Error(backendMessage || "Invalid Application No returned.");
+        }
+
+        const selectedDocuments = documentRows.filter(
+          (item) => item?.file && item.active === "Y",
+        );
+
+        if (selectedDocuments.length > 0) {
+          Swal.fire({
+            title: "Uploading...",
+            text: "Uploading documents",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => Swal.showLoading(),
+          });
+
+          for (const doc of selectedDocuments) {
+            const formData = new FormData();
+            formData.append("corpId", String(corpId || 10001));
+            formData.append("serviceId", String(serviceId));
+            formData.append("appno", String(appNo));
+            formData.append("doctype", String(doc.documentType || ""));
+            formData.append("documentid", String(doc.docId || ""));
+            formData.append("document", doc.file);
+
+            await axios.post(
+              `${BASE_URL}/api/FrmMarketEntry/documentinsert`,
+              formData,
+              {
+                headers: {
+                  Authorization: authToken ? `Bearer ${authToken}` : "",
+                  "Content-Type": "multipart/form-data",
+                },
+              },
+            );
+          }
       }
 
       const directorsWithImages = directorRows.filter((item) => item?.image);
@@ -1176,7 +1243,6 @@ const FrmMarketEntry = () => {
       Swal.close();
 
       await Swal.fire({
-        icon: "success",
         title: "Success",
         text: backendMessage || "Application submitted successfully.",
       });
@@ -1194,7 +1260,6 @@ const FrmMarketEntry = () => {
         errorResponse?.message || error?.message || "Application entry failed.";
 
       await Swal.fire({
-        icon: "error",
         title: "Application Entry Failed",
         text: errorMessage,
       });
@@ -1218,6 +1283,80 @@ const FrmMarketEntry = () => {
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
+
+  const tradeTypeDisplayRows = tradeTypeRateRows.map((item) => ({
+    ...item,
+    tradeType: item.tradeType,
+    tradeCategory: item.tradeCategory,
+  }));
+
+  const directorDisplayRows = directorRows.map((item) => ({
+    ...item,
+    imageCell: item.imagePreviewUrl ? (
+      <img
+        src={item.imagePreviewUrl}
+        alt="Director"
+        className="h-10 w-auto object-contain mx-auto"
+      />
+    ) : (
+      <span className="text-gray-400 text-xs">
+        {item.image?.name || "No image"}
+      </span>
+    ),
+    removeAction: (
+      <Button
+        type="button"
+        variant="destructive"
+        size="sm"
+        onClick={() => removeDirector(item.id)}
+      >
+        Remove
+      </Button>
+    ),
+  }));
+
+  const documentDisplayRows = documentRows.map((item) => ({
+    ...item,
+    documentName: item.documentName,
+    remarkInput: (
+      <Input
+        value={item.remark || ""}
+        onChange={(e) =>
+          setDocumentRows((prev) =>
+            prev.map((row) =>
+              String(row.id) === String(item.id)
+                ? { ...row, remark: e.target.value }
+                : row,
+            ),
+          )
+        }
+        className="h-9 w-full"
+      />
+    ),
+    fileInput: 
+    (
+      <div className="flex flex-col gap-2">
+        <Input
+          type="file"
+          disabled={item.active !== "Y"}
+          accept=".jpg,.jpeg,.png,.pdf,.docx,.xlsx,.xls"
+          onChange={(e) => handleDocumentFile(item.id, e.currentTarget.files?.[0])}
+          className="h-9 w-full"
+        />
+        {item.filePreviewUrl ? (
+          <img
+            src={item.filePreviewUrl}
+            alt={item.fileName || "preview"}
+            className="h-14 w-auto object-contain border rounded p-1"
+          />
+        ) : item.fileName ? (
+          <span className="text-xs text-gray-600 break-all">
+            {item.fileName}
+          </span>
+        ) : null}
+      </div>
+    ),
+  }));
 
   return (
     <Formik
@@ -1245,30 +1384,30 @@ const FrmMarketEntry = () => {
                     <TabsTrigger
                       value="primary"
                       className="
-        rounded-none
-        border-0
-        border-b-2
-        border-transparent
-        bg-transparent
-        px-2
-        pb-3
-        pt-1
-        text-sm
-        font-medium
-        text-gray-600
-        shadow-none
-        outline-none
-        ring-0
-        transition-colors
-        hover:bg-transparent
-        hover:text-primary
-        focus-visible:outline-none
-        focus-visible:ring-0
-        data-[state=active]:border-primary
-        data-[state=active]:bg-transparent
-        data-[state=active]:text-primary
-        data-[state=active]:shadow-none
-      "
+                        rounded-none
+                        border-0
+                        border-b-2
+                        border-transparent
+                        bg-transparent
+                        px-2
+                        pb-3
+                        pt-1
+                        text-sm
+                        font-medium
+                        text-gray-600
+                        shadow-none
+                        outline-none
+                        ring-0
+                        transition-colors
+                        hover:bg-transparent
+                        hover:text-primary
+                        focus-visible:outline-none
+                        focus-visible:ring-0
+                        data-[state=active]:border-primary
+                        data-[state=active]:bg-transparent
+                        data-[state=active]:text-primary
+                        data-[state=active]:shadow-none
+                      "
                     >
                       प्राथमिक माहिती
                     </TabsTrigger>
@@ -1276,30 +1415,30 @@ const FrmMarketEntry = () => {
                     <TabsTrigger
                       value="director"
                       className="
-        rounded-none
-        border-0
-        border-b-2
-        border-transparent
-        bg-transparent
-        px-2
-        pb-3
-        pt-1
-        text-sm
-        font-medium
-        text-gray-600
-        shadow-none
-        outline-none
-        ring-0
-        transition-colors
-        hover:bg-transparent
-        hover:text-primary
-        focus-visible:outline-none
-        focus-visible:ring-0
-        data-[state=active]:border-primary
-        data-[state=active]:bg-transparent
-        data-[state=active]:text-primary
-        data-[state=active]:shadow-none
-      "
+                        rounded-none
+                        border-0
+                        border-b-2
+                        border-transparent
+                        bg-transparent
+                        px-2
+                        pb-3
+                        pt-1
+                        text-sm
+                        font-medium
+                        text-gray-600
+                        shadow-none
+                        outline-none
+                        ring-0
+                        transition-colors
+                        hover:bg-transparent
+                        hover:text-primary
+                        focus-visible:outline-none
+                        focus-visible:ring-0
+                        data-[state=active]:border-primary
+                        data-[state=active]:bg-transparent
+                        data-[state=active]:text-primary
+                        data-[state=active]:shadow-none
+                      "
                     >
                       संचालक माहिती
                     </TabsTrigger>
@@ -1307,30 +1446,30 @@ const FrmMarketEntry = () => {
                     <TabsTrigger
                       value="documents"
                       className="
-        rounded-none
-        border-0
-        border-b-2
-        border-transparent
-        bg-transparent
-        px-2
-        pb-3
-        pt-1
-        text-sm
-        font-medium
-        text-gray-600
-        shadow-none
-        outline-none
-        ring-0
-        transition-colors
-        hover:bg-transparent
-        hover:text-primary
-        focus-visible:outline-none
-        focus-visible:ring-0
-        data-[state=active]:border-primary
-        data-[state=active]:bg-transparent
-        data-[state=active]:text-primary
-        data-[state=active]:shadow-none
-      "
+                        rounded-none
+                        border-0
+                        border-b-2
+                        border-transparent
+                        bg-transparent
+                        px-2
+                        pb-3
+                        pt-1
+                        text-sm
+                        font-medium
+                        text-gray-600
+                        shadow-none
+                        outline-none
+                        ring-0
+                        transition-colors
+                        hover:bg-transparent
+                        hover:text-primary
+                        focus-visible:outline-none
+                        focus-visible:ring-0
+                        data-[state=active]:border-primary
+                        data-[state=active]:bg-transparent
+                        data-[state=active]:text-primary
+                        data-[state=active]:shadow-none
+                      "
                     >
                       कागदपत्र जोडणे
                     </TabsTrigger>
@@ -1512,7 +1651,6 @@ const FrmMarketEntry = () => {
                             onBlur={(e) => {
                               if (!validateEmail(e.target.value)) {
                                 Swal.fire({
-                                  icon: "warning",
                                   text: "Please enter a valid email address.",
                                 });
                               }
@@ -1571,6 +1709,7 @@ const FrmMarketEntry = () => {
                         <div className="grid min-w-0 grid-cols-[210px_16px_minmax(0,1fr)] items-start gap-2">
                           <Label
                             text="दिनांका पासून"
+                            required
                             className="!w-full pt-2 text-sm font-medium"
                           />
                           <span className="pt-2 text-center">:</span>
@@ -1589,6 +1728,7 @@ const FrmMarketEntry = () => {
                         <div className="grid min-w-0 grid-cols-[210px_16px_minmax(0,1fr)] items-start gap-2">
                           <Label
                             text="दिनांका पर्यंत"
+                            required
                             className="!w-full pt-2 text-sm font-medium"
                           />
                           <span className="pt-2 text-center">:</span>
@@ -1716,7 +1856,7 @@ const FrmMarketEntry = () => {
                               (mode === 2 && !values.jalanShil)
                             }
                             onValueChange={(value) =>
-                              handleTradeCategoryChange(value, setFieldValue)
+                              handleTradeCategoryChange(value, setFieldValue, values)
                             }
                           >
                             <SelectTrigger className="h-10 w-full">
@@ -1844,34 +1984,22 @@ const FrmMarketEntry = () => {
                       </div>
                     </section>
 
-                    {tradeTypeRateRows.length > 0 && (
-                      <div className="w-full overflow-x-auto">
-                        <Table className="w-full table-fixed border">
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="bg-[#184aa6] text-white">
-                                Trade Type
-                              </TableHead>
-
-                              <TableHead className="bg-[#184aa6] text-white">
-                                Trade Category
-                              </TableHead>
-                            </TableRow>
-                          </TableHeader>
-
-                          <TableBody>
-                            {tradeTypeRateRows.map((item) => (
-                              <TableRow key={item.id}>
-                                <TableCell className="break-words">
-                                  {item.tradeType}
-                                </TableCell>
-                                <TableCell className="break-words">
-                                  {item.tradeCategory}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
+                    {tradeTypeDisplayRows.length > 0 && (
+                      <div className="w-full">
+                        <ShadCNTable
+                          headers={["Trade Type", "Trade Category"]}
+                          data={tradeTypeDisplayRows}
+                          keyMapping={{
+                            "Trade Type": "tradeType",
+                            "Trade Category": "tradeCategory",
+                          }}
+                          columnStyles={{
+                            "Trade Type": { width: "50%" },
+                            "Trade Category": { width: "50%" },
+                          }}
+                          pagination={false}
+                          tableClassName="border"
+                        />
                       </div>
                     )}
 
@@ -2393,116 +2521,48 @@ const FrmMarketEntry = () => {
                     </div>
 
                     {/* Director Grid */}
-                    <div className="w-full overflow-x-auto">
-                      <Table className="w-full table-fixed border">
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="w-[90px] whitespace-nowrap bg-[#184aa6] text-white">
-                              आधार क्र.
-                            </TableHead>
-
-                            <TableHead className="w-[150px] whitespace-nowrap bg-[#184aa6] text-white">
-                              संचालकांचे नाव
-                            </TableHead>
-
-                            <TableHead className="w-[180px] whitespace-normal bg-[#184aa6] text-white">
-                              Voter ID Card No / License No
-                            </TableHead>
-
-                            <TableHead className="w-[130px] whitespace-nowrap bg-[#184aa6] text-white">
-                              मोबाईल क्र.
-                            </TableHead>
-
-                            <TableHead className="w-[170px] whitespace-nowrap bg-[#184aa6] text-white">
-                              ई-मेल
-                            </TableHead>
-
-                            <TableHead className="w-[80px] whitespace-nowrap bg-[#184aa6] text-white">
-                              लिंग
-                            </TableHead>
-
-                            <TableHead className="w-[220px] whitespace-nowrap bg-[#184aa6] text-white">
-                              पत्ता
-                            </TableHead>
-
-                            <TableHead className="w-[150px] whitespace-nowrap bg-[#184aa6] text-white">
-                              अर्जदाराचा प्रकार
-                            </TableHead>
-
-                            <TableHead className="w-[180px] whitespace-nowrap bg-[#184aa6] text-white">
-                              संचालकांचे छायाचित्र
-                            </TableHead>
-
-                            <TableHead className="w-[110px] whitespace-nowrap bg-[#184aa6] text-white">
-                              काढा
-                            </TableHead>
-                          </TableRow>
-                        </TableHeader>
-
-                        <TableBody>
-                          {directorRows.length > 0 ? (
-                            directorRows.map((item) => (
-                              <TableRow key={item.id}>
-                                <TableCell className="break-words">
-                                  {item.aadharNo}
-                                </TableCell>
-
-                                <TableCell className="break-words">
-                                  {item.directorName}
-                                </TableCell>
-
-                                <TableCell className="break-words">
-                                  {item.voterId}
-                                </TableCell>
-
-                                <TableCell className="whitespace-nowrap">
-                                  {item.mobileNo}
-                                </TableCell>
-
-                                <TableCell className="break-words">
-                                  {item.email}
-                                </TableCell>
-
-                                <TableCell className="whitespace-nowrap">
-                                  {item.gender}
-                                </TableCell>
-
-                                <TableCell className="break-words">
-                                  {item.address}
-                                </TableCell>
-
-                                <TableCell className="break-words">
-                                  {item.applicantType}
-                                </TableCell>
-
-                                <TableCell className="break-words">
-                                  {item.image?.name || ""}
-                                </TableCell>
-
-                                <TableCell>
-                                  <Button
-                                    type="button"
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => removeDirector(item.id)}
-                                  >
-                                    Remove
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))
-                          ) : (
-                            <TableRow>
-                              <TableCell
-                                colSpan={10}
-                                className="py-5 text-center"
-                              >
-                                No records found.
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
+                    <div className="w-full">
+                      <ShadCNTable
+                        headers={[
+                          "आधार क्र.",
+                          "संचालकांचे नाव",
+                          "Voter ID Card No / License No",
+                          "मोबाईल क्र.",
+                          "ई-मेल",
+                          "लिंग",
+                          "पत्ता",
+                          "अर्जदाराचा प्रकार",
+                          "संचालकांचे छायाचित्र",
+                          "काढा",
+                        ]}
+                        data={directorDisplayRows}
+                        keyMapping={{
+                          "आधार क्र.": "aadharNo",
+                          "संचालकांचे नाव": "directorName",
+                          "Voter ID Card No / License No": "voterId",
+                          "मोबाईल क्र.": "mobileNo",
+                          "ई-मेल": "email",
+                          "लिंग": "gender",
+                          "पत्ता": "address",
+                          "अर्जदाराचा प्रकार": "applicantType",
+                          "संचालकांचे छायाचित्र": "imageCell",
+                          "काढा": "removeAction",
+                        }}
+                        columnStyles={{
+                          "आधार क्र.": { width: "90px" },
+                          "संचालकांचे नाव": { width: "150px" },
+                          "Voter ID Card No / License No": { width: "180px" },
+                          "मोबाईल क्र.": { width: "130px" },
+                          "ई-मेल": { width: "170px" },
+                          "लिंग": { width: "80px" },
+                          "पत्ता": { width: "220px" },
+                          "अर्जदाराचा प्रकार": { width: "150px" },
+                          "संचालकांचे छायाचित्र": { width: "180px" },
+                          "काढा": { width: "110px" },
+                        }}
+                        pagination={false}
+                        tableClassName="border"
+                      />
                     </div>
 
                     {/* Navigation Buttons */}
@@ -2525,75 +2585,23 @@ const FrmMarketEntry = () => {
                 </TabsContent>
 
                 <TabsContent value="documents" className="m-0 px-5 py-6">
-                  <div className="w-full overflow-x-auto">
-                    <Table className="w-full table-fixed border">
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[40%] bg-[#184aa6] text-white">
-                            दस्तऐवजाचे नांव
-                          </TableHead>
-
-                          <TableHead className="w-[25%] bg-[#184aa6] text-white">
-                            शेरा
-                          </TableHead>
-
-                          <TableHead className="w-[35%] bg-[#184aa6] text-white">
-                            फाईल निवडा
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {documentRows.length > 0 ? (
-                          documentRows.map((item) => (
-                            <TableRow key={item.id}>
-                              <TableCell className="break-words align-middle">
-                                {item.documentName}
-                              </TableCell>
-
-                              <TableCell className="align-middle">
-                                <Input
-                                  value={item.remark || ""}
-                                  onChange={(e) =>
-                                    setDocumentRows((prev) =>
-                                      prev.map((row) =>
-                                        String(row.id) === String(item.id)
-                                          ? {
-                                              ...row,
-                                              remark: e.target.value,
-                                            }
-                                          : row,
-                                      ),
-                                    )
-                                  }
-                                  className="h-9 w-full"
-                                />
-                              </TableCell>
-
-                              <TableCell className="align-middle">
-                                <Input
-                                  type="file"
-                                  disabled={item.active !== "Y"}
-                                  accept=".jpg,.jpeg,.png,.pdf,.docx,.xlsx,.xls"
-                                  onChange={(e) =>
-                                    handleDocumentFile(
-                                      item.id,
-                                      e.currentTarget.files?.[0],
-                                    )
-                                  }
-                                  className="h-9 w-full"
-                                />
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        ) : (
-                          <TableRow>
-                            <TableCell colSpan={3} className="py-8 text-center">
-                              No Document Details Found.
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
+                  <div className="w-full">
+                    <ShadCNTable
+                      headers={["दस्तऐवजाचे नांव", "शेरा", "फाईल निवडा"]}
+                      data={documentDisplayRows}
+                      keyMapping={{
+                        "दस्तऐवजाचे नांव": "documentName",
+                        "शेरा": "remarkInput",
+                        "फाईल निवडा": "fileInput",
+                      }}
+                      columnStyles={{
+                        "दस्तऐवजाचे नांव": { width: "40%" },
+                        "शेरा": { width: "25%" },
+                        "फाईल निवडा": { width: "35%" },
+                      }}
+                      pagination={false}
+                      tableClassName="border"
+                    />
                   </div>
 
                   {/* Self Declaration */}

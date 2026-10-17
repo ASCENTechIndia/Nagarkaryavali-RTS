@@ -359,17 +359,19 @@ const documentInsertService = async (data) => {
 // ============================================================
 // GET TRADE TYPES BY CATEGORY
 // ============================================================
-// const getTradeTypesByCategoryService = async (categoryId, type) => {
-//   if (!categoryId) {
-//     throw new Error("Trade Category is required.");
-//   }
+const getTradeTypesByCategoryService = async (ulbId, categoryId, type) => {
+  if (!ulbId) {
+    throw new Error("ULB ID is required.");
+  }
+  if (!categoryId) {
+    throw new Error("Trade Category ID is required.");
+  }
+  if (!type) {
+    throw new Error("Type is required.");
+  }
 
-//   if (!type) {
-//     throw new Error("Type is required.");
-//   }
-
-//   return await repo.getTradeTypesByCategoryRepo(categoryId, type);
-// };
+  return await repo.getTradeTypesByCategoryRepo(ulbId, categoryId, type);
+};
 
 // ============================================================
 // GET TRADE CATEGORY BY JWALAN STATUS
@@ -473,4 +475,5 @@ module.exports = {
   updateDirectorImagesService,
   documentInsertService,
   getTradeCategoryByJwalanService,
+  getTradeTypesByCategoryService,
 };

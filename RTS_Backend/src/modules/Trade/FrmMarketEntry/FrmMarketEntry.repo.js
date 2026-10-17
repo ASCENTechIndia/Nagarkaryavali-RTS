@@ -1063,30 +1063,34 @@ const documentInsertRepo = async (data) => {
 // ============================================================
 // GET TRADE TYPES BY CATEGORY
 // ============================================================
+  const getTradeTypesByCategoryRepo = async (ulbId, categoryId, type) => {
+    const query = `
+      SELECT
+        num_tradetype_id            AS NUM_TRADETYPE_ID,
+        var_tradetype_name          AS VAR_TRADETYPE_NAME,
+        num_categorytype_catgryid   AS CATEGORY_ID
+      FROM aorts_categorytype_confg
+      INNER JOIN aorts_tradecategory_mas
+        ON  num_tradecategory_id   = num_categorytype_catgryid
+        AND num_tradecategory_ulbid = :ulbId
+      INNER JOIN aorts_tradetypes_mas
+        ON  num_tradetype_id                  = num_categorytype_catgtypid
+        AND aomk_tradetype_tradecategoryid    = num_categorytype_catgryid
+        AND aomk_tradetype_ulbid              = :ulbId
+      WHERE var_tradetype_flag         = 'Y'
+        AND num_categorytype_catgryid  = :categoryId
+        AND var_categorytype_type      = :type
+      ORDER BY var_tradetype_name
+    `;
 
-// const getTradeTypesByCategoryRepo = async (categoryId, type) => {
-//   const query = `
-//     SELECT
-//       var_tradetype_name,
-//       num_categorytype_catgtypid
-//     FROM aorts_categorytype_confg
-//     INNER JOIN aorts_tradecategory_mas
-//       ON num_tradecategory_id = num_categorytype_catgryid
-//     INNER JOIN aorts_tradetypes_mas
-//       ON num_tradetype_id = num_categorytype_catgtypid
-//      AND aomk_tradetype_tradecategoryid = num_categorytype_catgryid
-//     WHERE var_tradetype_flag = 'Y'
-//       AND num_categorytype_catgryid = :categoryId
-//       AND var_categorytype_type = :type
-//   `;
+    const result = await executeQueryTMC(query, {
+      ulbId,
+      categoryId,
+      type,
+    });
 
-//   const result = await executeQueryTMC(query, {
-//     categoryId,
-//     type,
-//   });
-
-//   return result.rows || [];
-// };
+    return result.rows || [];
+  };
 
 // ============================================================
 // GET TRADE CATEGORY BY JWALAN STATUS
@@ -1373,4 +1377,5 @@ module.exports = {
   updateDirectorImagesRepo,
   documentInsertRepo,
   getTradeCategoryByJwalanRepo,
+  getTradeTypesByCategoryRepo,
 };

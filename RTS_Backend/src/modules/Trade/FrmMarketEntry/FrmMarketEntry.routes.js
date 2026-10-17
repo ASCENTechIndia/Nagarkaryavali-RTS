@@ -58,4 +58,7 @@ router.post("/documentinsert",auth(), upload.single("document"), controller.docu
 // GET TRADE CATEGORY BY JWALAN
 router.post("/gettradecategorybyjwalanshil", auth(), controller.getTradeCategoryByJwalan);
 
+// GET TRADE TYPES BY CATEGORY
+router.post("/gettradetypesbycategory", auth(), controller.getTradeTypesByCategory);
+
 module.exports = router;
