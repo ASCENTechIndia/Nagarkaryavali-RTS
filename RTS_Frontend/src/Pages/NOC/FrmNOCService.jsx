@@ -340,6 +340,51 @@ const FrmNOCService = () => {
         return;
       }
 
+      const fromVisible = visibleFieldIds.has(11);
+      const toVisible = visibleFieldIds.has(12);
+
+      if (fromVisible && toVisible) {
+        const from = values.permitFromDate;
+        const to = values.permitToDate;
+
+        const fromValid = from instanceof Date && !isNaN(from.getTime());
+        const toValid = to instanceof Date && !isNaN(to.getTime());
+
+        if (fromValid && toValid) {
+          const fromDay = new Date(
+            from.getFullYear(),
+            from.getMonth(),
+            from.getDate()
+          ).getTime();
+
+          const toDay = new Date(
+            to.getFullYear(),
+            to.getMonth(),
+            to.getDate()
+          ).getTime();
+
+          if (toDay < fromDay) {
+            Swal.fire({
+              text: "परवानगी या दिनांकापर्यंत ही परवानगी या दिनांकापासून नंतरची असावी",
+              confirmButtonColor: "#1e3a8a",
+              allowOutsideClick: false,
+            });
+            setLoading(false);
+            return;
+          }
+
+          if (toDay === fromDay) {
+            Swal.fire({
+              text: "परवानगी या दिनांकापर्यंत ही परवानगी या दिनांकापासून पेक्षा वेगळी असावी",
+              confirmButtonColor: "#1e3a8a",
+              allowOutsideClick: false,
+            });
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
       if (tableData.length > 0) {
         const docValidation = documentValidationSchema.safeParse(tableData);
         if (!docValidation.success) {
@@ -764,7 +809,11 @@ const FrmNOCService = () => {
                           type="number"
                           name="roadLength"
                           value={values.roadLength || ""}
-                          onChange={handleChange}
+                          // onChange={handleChange}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                            setFieldValue("roadLength", value);
+                          }}
                           onBlur={handleBlur}
                           className="w-full h-9"
                         />
@@ -781,7 +830,11 @@ const FrmNOCService = () => {
                           type="number"
                           name="roadWidth"
                           value={values.roadWidth || ""}
-                          onChange={handleChange}
+                          // onChange={handleChange}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                            setFieldValue("roadWidth", value);
+                          }}
                           onBlur={handleBlur}
                           className="w-full h-9"
                         />
@@ -798,7 +851,11 @@ const FrmNOCService = () => {
                           type="number"
                           name="roadLengthWidth"
                           value={values.roadLengthWidth || ""}
-                          onChange={handleChange}
+                          // onChange={handleChange}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                            setFieldValue("roadLengthWidth", value);
+                          }}
                           onBlur={handleBlur}
                           className="w-full h-9"
                         />
@@ -834,6 +891,7 @@ const FrmNOCService = () => {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           className="w-full h-9"
+                          maxLength={10}
                         />
                       </div>
                     )}
@@ -850,6 +908,7 @@ const FrmNOCService = () => {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           className="w-full h-9"
+                          maxLength={10}
                         />
                       </div>
                     )}
@@ -866,6 +925,7 @@ const FrmNOCService = () => {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           className="w-full h-9"
+                          maxLength={10}
                         />
                       </div>
                     )}
@@ -882,6 +942,7 @@ const FrmNOCService = () => {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           className="w-full h-9"
+                          maxLength={10}
                         />
                       </div>
                     )}
