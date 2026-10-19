@@ -1851,7 +1851,7 @@ const FrmWaterConnectionApplication = () => {
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                     <div className="sm:w-40 shrink-0 flex justify-start sm:justify-between items-center">
-                      <Label text="Consume Type" required />
+                      <Label text="Consumer Type" required />
                       <span>:</span>
                     </div>
 
