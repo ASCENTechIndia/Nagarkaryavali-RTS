@@ -192,6 +192,7 @@ const getServiceDocumentsRepo = async ({
 
     const sql = `
         SELECT
+        DISTINCT
             d.num_doc_id AS DocId,
             d.var_doc_engname AS DocName,
             d.var_doc_engdocdesc AS engdocdesc,
