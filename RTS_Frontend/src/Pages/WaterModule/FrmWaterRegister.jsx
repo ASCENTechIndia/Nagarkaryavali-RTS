@@ -59,7 +59,7 @@ const FrmWaterRegister = () => {
         zoneId: "",
         serviceId: String(serviceId),
         consumerNo: "",
-        disConId: "",
+        // disConId: "",
         reason: "",
         usageTypeId: "",
         tarifRate: "",
@@ -239,10 +239,10 @@ const FrmWaterRegister = () => {
             setFieldValue("usageType", usage);
             setFieldValue("usageTypeNewSrch", usage);
             setFieldValue("tarifRate", details.rate != null ? String(details.rate) : "");
-            setFieldValue("connSize", sizeMatch ? String(sizeMatch.NUM_CONNSIZE_ID) : "");
-            setFieldValue("usageTypeId", usageMatch ? String(usageMatch.NUM_USAGETYPE_ID) : "");
-            setFieldValue("detAppliName", owner);
-            setFieldValue("detAddress", address);
+            //setFieldValue("connSize", sizeMatch ? String(sizeMatch.NUM_CONNSIZE_ID) : "");
+            //setFieldValue("usageTypeId", usageMatch ? String(usageMatch.NUM_USAGETYPE_ID) : "");
+            //setFieldValue("detAppliName", owner);
+            //setFieldValue("detAddress", address);
             setFieldValue("conAddressSrch", address);
             setFieldValue("curConSizeSrch", details.connsize_size != null ? String(details.connsize_size) : "");
             Swal.close()
@@ -392,13 +392,13 @@ const FrmWaterRegister = () => {
             return;
         }
 
-        if ((Number(serviceId) !== 22 && Number(serviceId) !== 341) && !values.disConId) {
-            Swal.fire({
-                // icon: "warning",
-                text: "Please select Disconnection Type."
-            });
-            return;
-        }
+        // if ((Number(serviceId) !== 22 && Number(serviceId) !== 341) && !values.disConId) {
+        //     Swal.fire({
+        //         // icon: "warning",
+        //         text: "Please select Disconnection Type."
+        //     });
+        //     return;
+        // }
 
         if (!values.reason.trim()) {
             Swal.fire({
@@ -446,7 +446,8 @@ const FrmWaterRegister = () => {
             wtregId: 0,
             servId: Number(values.serviceId),
             consNo: values.consumerNo.trim(),
-            disConId: Number(serviceId) == 22 ? null : Number(values.disConId),
+            disConId: null,
+            // disConId: Number(serviceId) == 22 ? null : Number(values.disConId),
             reason: values.reason.trim(),
             usageTypeId: Number(values.usageTypeId),
             tarifRate: Number(values.tarifRate || 0),
@@ -682,7 +683,7 @@ const FrmWaterRegister = () => {
                                     </Select>
                                 </div>
 
-                                {(Number(serviceId) !== 22 && Number(serviceId) !== 341) && (
+                                {/* {(Number(serviceId) !== 22 && Number(serviceId) !== 341) && (
                                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                                         <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
                                             <Label text="Disconnection Type" required className="min-w-fit" />
@@ -707,7 +708,7 @@ const FrmWaterRegister = () => {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                )}
+                                )} */}
 
                                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4 ">
                                     <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
