@@ -811,7 +811,8 @@ const FrmNOCService = () => {
                           value={values.roadLength || ""}
                           // onChange={handleChange}
                           onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                            let value = e.target.value.replace(/[^0-9.]/g, "");
+                            value = value.slice(0, 10);
                             setFieldValue("roadLength", value);
                           }}
                           onBlur={handleBlur}
@@ -832,7 +833,8 @@ const FrmNOCService = () => {
                           value={values.roadWidth || ""}
                           // onChange={handleChange}
                           onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                            let value = e.target.value.replace(/[^0-9.]/g, "");
+                            value = value.slice(0, 10);
                             setFieldValue("roadWidth", value);
                           }}
                           onBlur={handleBlur}
@@ -853,7 +855,8 @@ const FrmNOCService = () => {
                           value={values.roadLengthWidth || ""}
                           // onChange={handleChange}
                           onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                            let value = e.target.value.replace(/[^0-9.]/g, "");
+                            value = value.slice(0, 10);
                             setFieldValue("roadLengthWidth", value);
                           }}
                           onBlur={handleBlur}
@@ -872,7 +875,12 @@ const FrmNOCService = () => {
                           type="number"
                           name="excavationArea"
                           value={values.excavationArea || ""}
-                          onChange={handleChange}
+                          // onChange={handleChange}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/[^0-9.]/g, "");
+                            value = value.slice(0, 10);
+                            setFieldValue("excavationArea", value);
+                          }}
                           onBlur={handleBlur}
                           className="w-full h-9"
                         />
@@ -886,12 +894,18 @@ const FrmNOCService = () => {
                           <span>:</span>
                         </div>
                         <Input
+                          type="number"
                           name="excavationStartPoint"
                           value={values.excavationStartPoint || ""}
-                          onChange={handleChange}
+                          // onChange={handleChange}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/[^0-9.]/g, "");
+                            value = value.slice(0, 10);
+                            setFieldValue("excavationStartPoint", value);
+                          }}
                           onBlur={handleBlur}
                           className="w-full h-9"
-                          maxLength={10}
+                          // maxLength={10}
                         />
                       </div>
                     )}
@@ -903,12 +917,18 @@ const FrmNOCService = () => {
                           <span>:</span>
                         </div>
                         <Input
+                          type="number"
                           name="excavationEndPoint"
                           value={values.excavationEndPoint || ""}
-                          onChange={handleChange}
+                          // onChange={handleChange}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/[^0-9.]/g, "");
+                            value = value.slice(0, 10);
+                            setFieldValue("excavationEndPoint", value);
+                          }}
                           onBlur={handleBlur}
                           className="w-full h-9"
-                          maxLength={10}
+                          // maxLength={10}
                         />
                       </div>
                     )}
@@ -920,12 +940,18 @@ const FrmNOCService = () => {
                           <span>:</span>
                         </div>
                         <Input
+                          type="number"
                           name="latitude"
                           value={values.latitude || ""}
-                          onChange={handleChange}
+                          // onChange={handleChange}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/[^0-9.]/g, "");
+                            value = value.slice(0, 10);
+                            setFieldValue("latitude", value);
+                          }}
                           onBlur={handleBlur}
                           className="w-full h-9"
-                          maxLength={10}
+                          // maxLength={10}
                         />
                       </div>
                     )}
@@ -937,12 +963,18 @@ const FrmNOCService = () => {
                           <span>:</span>
                         </div>
                         <Input
+                          type="number"
                           name="longitude"
                           value={values.longitude || ""}
-                          onChange={handleChange}
+                          // onChange={handleChange}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/[^0-9.]/g, "");
+                            value = value.slice(0, 10);
+                            setFieldValue("longitude", value);
+                          }}
                           onBlur={handleBlur}
                           className="w-full h-9"
-                          maxLength={10}
+                          // maxLength={10}
                         />
                       </div>
                     )}
