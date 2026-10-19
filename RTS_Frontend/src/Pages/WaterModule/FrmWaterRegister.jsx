@@ -14,6 +14,26 @@ import ShadCNTable from "@/components/ui/table";
 import config from "@/utils/config";
 import { DatePicker } from "@/components/ui/calendar";
 
+const ALLOWED_TLDS = new Set([
+  "com", "org", "net", "edu", "gov", "mil", "int",
+  "in", "co.in", "net.in", "org.in", "gov.in", "ac.in", "edu.in", "res.in",
+  "io", "co", "us", "uk", "co.uk", "info", "biz", "me", "app", "dev",
+]);
+
+const hasValidTld = (email) => {
+  const parts = String(email || "").toLowerCase().split("@");
+  if (parts.length !== 2) return false;
+  const domain = parts[1];
+  const tldCandidates = domain.split(".");
+  for (let i = 0; i < tldCandidates.length; i++) {
+    const candidate = tldCandidates.slice(i).join(".");
+    if (ALLOWED_TLDS.has(candidate)) return true;
+  }
+  return false;
+};
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const FrmWaterRegister = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -327,17 +347,31 @@ const FrmWaterRegister = () => {
             return;
         }
 
-        if (!values.detEmail.trim()) {
+        const trimmedEmail = values.detEmail.trim().toLowerCase();
+
+        if (!trimmedEmail) {
             Swal.fire({
-                // icon: "warning",
                 text: "Please enter Email."
+            });
+            return;
+        }
+
+        if (!emailRegex.test(trimmedEmail)) {
+            Swal.fire({
+                text: "Invalid Email Address"
+            });
+            return;
+        }
+
+        if (!hasValidTld(trimmedEmail)) {
+            Swal.fire({
+                text: "Invalid Email Address"
             });
             return;
         }
 
         if (!values.detAddress.trim()) {
             Swal.fire({
-                // icon: "warning",
                 text: "Please enter Address."
             });
             return;
@@ -345,7 +379,6 @@ const FrmWaterRegister = () => {
 
         if (!values.usageTypeId) {
             Swal.fire({
-                // icon: "warning",
                 text: "Please select Usage Type."
             });
             return;
@@ -359,7 +392,7 @@ const FrmWaterRegister = () => {
             return;
         }
 
-        if (Number(serviceId) !== 22 && !values.disConId) {
+        if ((Number(serviceId) !== 22 && Number(serviceId) !== 341) && !values.disConId) {
             Swal.fire({
                 // icon: "warning",
                 text: "Please select Disconnection Type."
@@ -383,7 +416,7 @@ const FrmWaterRegister = () => {
             return;
         }
 
-        if (!values.erlDate) {
+        if (Number(serviceId) !== 341 && !values.erlDate) {
             Swal.fire({
                 // icon: "warning",
                 text: "Please select Earlier Connection Close Date."
@@ -649,7 +682,7 @@ const FrmWaterRegister = () => {
                                     </Select>
                                 </div>
 
-                                {Number(serviceId) !== 22 && (
+                                {(Number(serviceId) !== 22 && Number(serviceId) !== 341) && (
                                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                                         <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
                                             <Label text="Disconnection Type" required className="min-w-fit" />
@@ -767,7 +800,8 @@ const FrmWaterRegister = () => {
                                     />
                                 </div>
 
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                {Number(serviceId) !== 341 && (
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
                                     <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
                                         <Label text="Earlier Conn. Close Date" required className="min-w-fit" />
                                         <span>:</span>
@@ -780,66 +814,71 @@ const FrmWaterRegister = () => {
                                             setFieldValue("erlDate", date)
                                         }
                                     />
-                                </div>
-
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                                    <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
-                                        <Label text="Change Usage Type" className="min-w-fit" />
-                                        <span>:</span>
                                     </div>
-                                    <Select
-                                        value={values.usageTypeId}
-                                        onValueChange={(value) => {
-                                            const selected = usageTypes.find((item) =>
-                                                String(item.NUM_USAGETYPE_ID) === String(value)
-                                            );
-                                            setFieldValue("usageTypeId", value);
-                                            // setFieldValue("usageType", selected?.VAR_USAGETYPE_NAME || "");
-                                            setFieldValue("usageTypeNewSrch", selected?.VAR_USAGETYPE_NAME || "");
-                                        }}
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="-- Select Option --" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {usageTypes.map((item) => (
-                                                <SelectItem
-                                                    key={item.NUM_USAGETYPE_ID}
-                                                    value={String(item.NUM_USAGETYPE_ID)}
-                                                >
-                                                    {item.VAR_USAGETYPE_NAME}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                                )}
 
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                                    <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
-                                        <Label text="New Conn Size" className="min-w-fit" />
-                                        <span>:</span>
-                                    </div>
-                                    <Select
-                                        value={values.connSize}
-                                        onValueChange={(value) =>
-                                            setFieldValue("connSize", value)
-                                        }
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="-- Select Option --" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {connectionSizes.map((item) => (
-                                                <SelectItem
-                                                    key={item.NUM_CONNSIZE_ID}
-                                                    value={String(item.NUM_CONNSIZE_ID)}
-                                                >
-                                                    {item.NUM_CONNSIZE_SIZE}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                                {Number(serviceId) !== 161 && (
+                                    <>        
+                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                            <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                                <Label text="Change Usage Type" className="min-w-fit" />
+                                                <span>:</span>
+                                            </div>
+                                            <Select
+                                                value={values.usageTypeId}
+                                                onValueChange={(value) => {
+                                                    const selected = usageTypes.find((item) =>
+                                                        String(item.NUM_USAGETYPE_ID) === String(value)
+                                                    );
+                                                    setFieldValue("usageTypeId", value);
+                                                    // setFieldValue("usageType", selected?.VAR_USAGETYPE_NAME || "");
+                                                    setFieldValue("usageTypeNewSrch", selected?.VAR_USAGETYPE_NAME || "");
+                                                }}
+                                            >
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="-- Select Option --" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {usageTypes.map((item) => (
+                                                        <SelectItem
+                                                            key={item.NUM_USAGETYPE_ID}
+                                                            value={String(item.NUM_USAGETYPE_ID)}
+                                                        >
+                                                            {item.VAR_USAGETYPE_NAME}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                                            <div className="flex shrink-0 items-center sm:w-40 sm:justify-between">
+                                                <Label text="New Conn Size" className="min-w-fit" />
+                                                <span>:</span>
+                                            </div>
+                                            <Select
+                                                value={values.connSize}
+                                                onValueChange={(value) =>
+                                                    setFieldValue("connSize", value)
+                                                }
+                                            >
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="-- Select Option --" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {connectionSizes.map((item) => (
+                                                        <SelectItem
+                                                            key={item.NUM_CONNSIZE_ID}
+                                                            value={String(item.NUM_CONNSIZE_ID)}
+                                                        >
+                                                            {item.NUM_CONNSIZE_SIZE}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
                             <div className="my-5 border-t border-gray-200" />
