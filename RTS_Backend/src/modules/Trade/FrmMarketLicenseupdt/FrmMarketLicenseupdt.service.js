@@ -264,7 +264,7 @@ async function getDirectorDetailsService(params) {
       : null,
   }));
 
-  
+
   return {
     success: true,
     rowCount: cleanRows.length,
@@ -421,7 +421,7 @@ async function getTradeTypesByCategoryService({ categoryId, categoryType, jwalan
     throw new AppError("Category ID is required", 400);
   }
 
-  const result = await repo.getTradeTypesByCategory({categoryId, categoryType, jwalanshilstat});
+  const result = await repo.getTradeTypesByCategory({ categoryId, categoryType, jwalanshilstat });
 
   if (!result.success) {
     throw new AppError(result.error, 500);
@@ -746,7 +746,33 @@ async function insertTradeTypeLogService(payload) {
   };
 }
 
+async function uploadApplicationDocumentService(params) {
+  const { corpId, serviceId, appNo, docType, documentId, fileBuffer } = params;
 
+  if (!corpId || !serviceId || !appNo || !docType || !documentId) {
+    throw new AppError("Required document details are missing", 400);
+  }
+
+  if (!fileBuffer || fileBuffer.length === 0) {
+    throw new AppError("Document file is required", 400);
+  }
+
+  if (fileBuffer.length > 5 * 1024 * 1024) {
+    throw new AppError("Document size must not exceed 5 MB", 400);
+  }
+
+  const result = await repo.uploadApplicationDocument({ corpId, serviceId, appNo, docType, documentId, fileBuffer });
+
+  if (!result.success) {
+    throw new AppError(result.error || "Document upload failed", 500);
+  }
+
+  return {
+    success: true,
+    message: "Document uploaded successfully",
+    rowsAffected: result.rowsAffected,
+  };
+}
 
 
 module.exports = {
@@ -774,5 +800,6 @@ module.exports = {
   getTradeCategoriesService,
   getSelfDeclarationService,
   submitTradeApplicationService,
-  insertTradeTypeLogService
+  insertTradeTypeLogService,
+  uploadApplicationDocumentService
 };

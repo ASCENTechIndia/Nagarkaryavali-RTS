@@ -66,6 +66,24 @@ const initialValues = {
   applicationNo: "",
 };
 
+const ALLOWED_TLDS = new Set([
+  "com", "org", "net", "edu", "gov", "mil", "int",
+  "in", "co.in", "net.in", "org.in", "gov.in", "ac.in", "edu.in", "res.in",
+  "io", "co", "us", "uk", "co.uk", "info", "biz", "me", "app", "dev",
+]);
+
+const hasValidTld = (email) => {
+  const parts = String(email || "").toLowerCase().split("@");
+  if (parts.length !== 2) return false;
+  const domain = parts[1];
+  const tldCandidates = domain.split(".");
+  for (let i = 0; i < tldCandidates.length; i++) {
+    const candidate = tldCandidates.slice(i).join(".");
+    if (ALLOWED_TLDS.has(candidate)) return true;
+  }
+  return false;
+};
+
 const FrmWaterAppliDetails = () => {
   const location = useLocation();
   const { user, token } = useAuth();
@@ -92,7 +110,7 @@ const FrmWaterAppliDetails = () => {
   const [consumerSearch, setConsumerSearch] = useState("");
   const [searching, setSearching] = useState(false);
 
-  const tableHeaders = ["Select", "Document Name","Upload"];
+  const tableHeaders = ["Select", "Document Name", "Upload"];
 
   const tableKeyMapping = {
     Select: "checked",
@@ -526,13 +544,20 @@ const FrmWaterAppliDetails = () => {
       }
       const normalizedEmail = values.email.trim().toLowerCase();
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(normalizedEmail)) {
         Swal.fire({
           text: "Please enter a valid Email ID.",
           confirmButtonColor: "#1e3a8a",
         });
         setLoading(false);
+        return;
+      }
+
+      if (!hasValidTld(normalizedEmail)) {
+        Swal.fire({
+          text: "Invalid Email Address"
+        });
         return;
       }
 
@@ -707,15 +732,13 @@ const FrmWaterAppliDetails = () => {
 
         source: config.source,
 
-        ownerName: `${values.noFirstName} ${
-          values.noMiddleName
-        } ${values.noLastName}`.trim(),
+        ownerName: `${values.noFirstName} ${values.noMiddleName
+          } ${values.noLastName}`.trim(),
 
         usageType: "RESIDENTIAL",
 
-        detAppliName: `${values.firstName} ${
-          values.middleName
-        } ${values.lastName}`.trim(),
+        detAppliName: `${values.firstName} ${values.middleName
+          } ${values.lastName}`.trim(),
 
         detMobile: values.mobileNo,
         detAadhaar: values.aadharNo,
@@ -755,8 +778,8 @@ const FrmWaterAppliDetails = () => {
 
       setApplicationId(
         response.data?.data?.appDetId ||
-          response.data?.data?.applicationId ||
-          applicationId,
+        response.data?.data?.applicationId ||
+        applicationId,
       );
 
       const selectedDocuments = documents.filter((doc) =>
@@ -837,13 +860,13 @@ const FrmWaterAppliDetails = () => {
       previousDocuments.map((doc) =>
         Number(doc.DocId) === Number(docId)
           ? {
-              ...doc,
-              uploadedFile: file,
-              uploaded: false,
-              imageUrl: file.type.startsWith("image/")
-                ? URL.createObjectURL(file)
-                : "",
-            }
+            ...doc,
+            uploadedFile: file,
+            uploaded: false,
+            imageUrl: file.type.startsWith("image/")
+              ? URL.createObjectURL(file)
+              : "",
+          }
           : doc,
       ),
     );
@@ -885,9 +908,9 @@ const FrmWaterAppliDetails = () => {
           previousDocuments.map((item) =>
             Number(item.DocId) === Number(doc.DocId)
               ? {
-                  ...item,
-                  uploaded: true,
-                }
+                ...item,
+                uploaded: true,
+              }
               : item,
           ),
         );
@@ -1034,7 +1057,7 @@ const FrmWaterAppliDetails = () => {
                     </div>
                   </div>
 
-                   <div className="flex items-center sm:w-full gap-5">
+                  <div className="flex items-center sm:w-full gap-5">
                     <div className="sm:w-46 shrink-0 flex justify-start sm:justify-between items-center">
                       <Label
                         required

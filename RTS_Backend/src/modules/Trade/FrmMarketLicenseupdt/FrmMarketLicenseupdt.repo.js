@@ -456,16 +456,16 @@ async function updateTradeDirectorImage({
   }
 }
 
-async function getTradeTypesByCategory({ categoryId, categoryType, jwalanshilstat}) {
+async function getTradeTypesByCategory({ categoryId, categoryType, jwalanshilstat }) {
   const conditions = [
     `var_tradetype_flag = 'Y'`,
     `num_categorytype_catgryid = :categoryId`,
     `var_categorytype_type = :categoryType`,
   ];
 
-  const bindParams = {categoryId: Number(categoryId), categoryType};
+  const bindParams = { categoryId: Number(categoryId), categoryType };
 
-  if ( jwalanshilstat !== undefined && jwalanshilstat !== null && String(jwalanshilstat).trim() !== "") {
+  if (jwalanshilstat !== undefined && jwalanshilstat !== null && String(jwalanshilstat).trim() !== "") {
     conditions.push(`var_categorytype_jwalanshilstat = :jwalanshilstat`);
     bindParams.jwalanshilstat = String(jwalanshilstat).trim();
   }
@@ -1033,6 +1033,46 @@ async function insertTradeTypeLog(params) {
   return result.outBinds;
 }
 
+async function uploadApplicationDocument({ corpId, serviceId, appNo, docType, documentId, fileBuffer }) {
+  const query = `
+    INSERT INTO aorts_appdoc_det (
+      num_appdoc_corpid,
+      num_appdoc_serviceid,
+      var_appdoc_appno,
+      var_appdoc_doctype,
+      num_appdoc_documentid,
+      blob_appdoc_documentimg
+    )
+    VALUES (
+      :corpId,
+      :serviceId,
+      :appNo,
+      :docType,
+      :documentId,
+      :blobDocImage
+    )
+  `;
+
+  const buffer = Buffer.from(fileBuffer);
+
+  const bindParams = {
+    corpId: Number(corpId),
+    serviceId: Number(serviceId),
+    appNo: String(appNo),
+    docType: String(docType),
+    documentId: Number(documentId),
+    blobDocImage: {
+      val: buffer,
+      type: oracledb.BUFFER,
+      dir: oracledb.BIND_IN,
+      maxSize: buffer.length,
+    },
+  };
+
+  return await executeQueryTMC(query, bindParams, {
+    autoCommit: true,
+  });
+}
 
 module.exports = {
   getApplicationTypes,
@@ -1059,5 +1099,6 @@ module.exports = {
   getTradeCategories,
   getSelfDeclaration,
   insertTradeApplication,
-  insertTradeTypeLog
+  insertTradeTypeLog,
+  uploadApplicationDocument
 };

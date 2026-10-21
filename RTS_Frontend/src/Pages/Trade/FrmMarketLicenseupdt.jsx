@@ -21,6 +21,24 @@ const aadharRegex = /^\d{12}$/;
 const mobileRegex = /^\d{10}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const ALLOWED_TLDS = new Set([
+  "com", "org", "net", "edu", "gov", "mil", "int",
+  "in", "co.in", "net.in", "org.in", "gov.in", "ac.in", "edu.in", "res.in",
+  "io", "co", "us", "uk", "co.uk", "info", "biz", "me", "app", "dev",
+]);
+
+const hasValidTld = (email) => {
+  const parts = String(email || "").toLowerCase().split("@");
+  if (parts.length !== 2) return false;
+  const domain = parts[1];
+  const tldCandidates = domain.split(".");
+  for (let i = 0; i < tldCandidates.length; i++) {
+    const candidate = tldCandidates.slice(i).join(".");
+    if (ALLOWED_TLDS.has(candidate)) return true;
+  }
+  return false;
+};
+
 const FrmMarketLicenseUpdt = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -28,7 +46,7 @@ const FrmMarketLicenseUpdt = () => {
   const locationState = location.state || {};
 
   const [wards, setWards] = useState([]);
-  const [zones, setZones] = useState([]); 
+  const [zones, setZones] = useState([]);
   const [tradeCategory, setTradeCategory] = useState([]);
   const [tradeType, setTradeType] = useState([]);
   const [cancelGender, setCancelGender] = useState([]);
@@ -86,7 +104,7 @@ const FrmMarketLicenseUpdt = () => {
     licenseType: "T",
     licno: locationState.licenseNo || "",
     prabhag: "",
-    zoneId: "",  
+    zoneId: "",
     appliFname: "",
     appliMname: "",
     appliLname: "",
@@ -214,7 +232,7 @@ const FrmMarketLicenseUpdt = () => {
         headers: { Authorization: `Bearer ${token || localStorage.getItem("token")}` },
       }
     );
-
+    const data = response.data?.data?.data ?? response.data?.data?.rows ?? response.data?.data ?? [];
     if (response?.data?.ok && response?.data?.data?.data) {
       setZones(response.data.data.data);
     }
@@ -791,6 +809,12 @@ const FrmMarketLicenseUpdt = () => {
     if (!values.email) {
       return Swal.fire({ text: "Please enter Email" });
     }
+    if (!hasValidTld(values.email)) {
+      Swal.fire({
+        text: "Invalid Email Address"
+      });
+      return;
+    }
     if (!values.residentno) {
       return Swal.fire({ text: "Please enter Residential Address" });
     }
@@ -992,12 +1016,20 @@ const FrmMarketLicenseUpdt = () => {
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading(),
       });
+
+      debugger;
       const tradechkstr = tradeTypeGrid.map((item) => `${item.tradetypeid || ""}$${item.tradecategory_id || ""}$${item.rate || ""}`).join("#");
+
       const directorstr = directorGrid.map((item) => `${item.adharno || ""}$${item.dirctorname || ""}$${item.mobileno || ""}$${item.email || ""}$${item.gender || ""}$${item.address || ""}$${item.applitypeid || ""}`).join("#");
-      const partnerstr = partnerCorrGrid.map((item) => `${item.applitypeid || ""}$${item.newname || ""}$${item.aadharno || ""}$${item.address || ""}$${item.mobileno || ""}$${item.email || ""}$NEW$${item.gender || ""}`).join("#");
-      const corrpartnerstr = partnerCorrGrid.map((item) => `${item.existname || ""}$${item.newname || ""}$${item.aadharno || ""}$${item.gender || ""}$${item.address || ""}$${item.applitypeid || ""}`).join("#");
+
+      const partnerstr = directorGrid.map((item) => [item.directorId || item.DIRECTOR_ID || "", item.dirctorname || "", item.adharno || "", item.address || "", item.mobileno || "", item.email || "", item.applitypeid || "", item.gender || ""].join("$")).join("#");
+
+      const corrpartnerstr = showTransferPanel ? transferGrid.map((item) => [item.directorId || item.DIRECTOR_ID || "", item.dirctorname || "", item.adharno || "", item.address || "", item.mobileno || "", item.email || "", item.applitypeid || "", item.gender || "", item.relationid || "", item.applistatid || "", item.newname || "",].join("$")).join("#") : showPartnernamecorrPanel ? partnerCorrGrid.map((item) => [item.directorId || item.DIRECTOR_ID || "", item.existname || "", item.aadharno || "", item.gender || "", item.address || "", item.applitypeid || "", item.newname || ""].join("$")).join("#") : "";
+
       const tradeaddrstr = tradeAddrGrid.map((item) => `${item.TRADEADDR_ID || item.tradeaddrid || ""}$${item.TRADEADDR || item.tradeaddr || ""}`).join("#");
+
       const businesstr = tradeTypeGrid.map((item) => `${item.tradetypeid || ""}$${item.rate || "0"}$${item.tradecategory_id || ""}`).join("#");
+
       const payload = {
         userId,
         licenseno: values.licno || "",
@@ -1075,6 +1107,42 @@ const FrmMarketLicenseUpdt = () => {
         applicationId = Number(licenseDetails?.APPLI_ID || licenseDetails?.APPLICATION_ID || 0);
       }
 
+      const applicationNo = String(submitData?.applicationNo || submitData?.APPLICATIONNO || "").trim().split(":")[0].trim();
+
+      const documentRows = fileUploadsGrid.filter(
+        (row) => row.file instanceof File
+      );
+
+      if (documentRows.length > 0) {
+        if (!applicationNo) {
+          throw new Error("Application number was not returned.");
+        }
+
+        const uploadResults = await Promise.allSettled(documentRows.map(async (row) => {
+          const formData = new FormData();
+          formData.append("corpId", String(ulbId));
+          formData.append("serviceId", String(serviceid));
+          formData.append("appNo", applicationNo);
+          formData.append("docType", row.file.name.split(".").pop().toLowerCase());
+          formData.append("documentId", String(row.DocId));
+          formData.append("document", row.file);
+
+          return axios.post(`${BASE_URL}/api/FrmMarketLicenseupdt/upload-application-document`, formData,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        })
+        );
+
+        const failedUploads = uploadResults.map((result, index) => ({ result, row: documentRows[index] })).filter(({ result }) => result.status === "rejected");
+
+        if (failedUploads.length > 0) {
+          const failedNames = failedUploads.map(({ row }) => row.DocName || row.file?.name).join(", ");
+          throw new Error(`Document upload failed: ${failedNames}`);
+        }
+
+        console.log(`${documentRows.length} document(s) uploaded successfully.`);
+      }
+
       const imageRows = [...directorGrid, ...transferGrid].filter((row) => row.image instanceof File);
 
       if (imageRows.length) {
@@ -1122,6 +1190,7 @@ const FrmMarketLicenseUpdt = () => {
       });
 
       resetForm();
+      navigate("/app/FrmTrackApplication")
       setTradeCategory([]);
       setTradeType([]);
       setTradeTypeGrid([]);
@@ -1876,7 +1945,7 @@ const FrmMarketLicenseUpdt = () => {
                             </Select>
                           </div>
                         </div>
-                        
+
                         <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
                           <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
                             <Label

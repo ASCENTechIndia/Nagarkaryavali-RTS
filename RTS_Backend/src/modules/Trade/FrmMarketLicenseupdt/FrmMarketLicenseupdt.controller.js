@@ -283,7 +283,7 @@ exports.getServiceInstructions = asyncHandler(async (req, res) => {
 });
 
 exports.getTradeCategories = asyncHandler(async (req, res) => {
-  const { jwalanshilstat , categoryType } = req.body;
+  const { jwalanshilstat, categoryType } = req.body;
 
   const result = await service.getTradeCategoriesService({
     jwalanshilstat, categoryType
@@ -513,4 +513,15 @@ exports.insertTradeTypeLog = asyncHandler(async (req, res) => {
     result,
     result.message || "Trade type log inserted successfully",
   );
+});
+
+exports.uploadApplicationDocument = asyncHandler(async (req, res) => {
+  const { corpId, serviceId, appNo, docType, documentId } = req.body;
+
+  if (!req.file?.buffer) {
+    return fail(res, "Document file is required");
+  }
+
+  const result = await service.uploadApplicationDocumentService({ corpId, serviceId, appNo, docType, documentId, fileBuffer: req.file.buffer });
+  return ok(res, result, "Document uploaded successfully");
 });
